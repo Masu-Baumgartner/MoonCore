@@ -14,6 +14,7 @@
         <RepositoryUrl>https://github.com/Marcel-Baumgartner/MoonCore</RepositoryUrl>
         <RepositoryType>git</RepositoryType>
         <PackageTags>moonlight</PackageTags>
+        <Version>1.0.1</Version>
     </PropertyGroup>
 
 
@@ -28,12 +29,11 @@
     </ItemGroup>
 
     <ItemGroup>
-      <_ContentIncludedByDefault Remove="wwwroot\background.png" />
-      <_ContentIncludedByDefault Remove="wwwroot\exampleJsInterop.js" />
+      <Folder Include="Extensions\" />
     </ItemGroup>
 
     <ItemGroup>
-      <Folder Include="Extensions\" />
+      <None Include="_Imports.razor" />
     </ItemGroup>
 
 </Project>
