@@ -4,6 +4,16 @@
         <TargetFramework>net7.0</TargetFramework>
         <Nullable>enable</Nullable>
         <ImplicitUsings>enable</ImplicitUsings>
+        <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+        <Title>MoonCore</Title>
+        <Authors>Marcel (Masu) Baumgartner</Authors>
+        <Description>A core library for all moonlight panel like applications</Description>
+        <Copyright>Marcel (Masu) Baumgartner</Copyright>
+        <PackageProjectUrl>https://github.com/Marcel-Baumgartner/MoonCore</PackageProjectUrl>
+        <PackageLicenseUrl>https://github.com/Marcel-Baumgartner/MoonCore</PackageLicenseUrl>
+        <RepositoryUrl>https://github.com/Marcel-Baumgartner/MoonCore</RepositoryUrl>
+        <RepositoryType>git</RepositoryType>
+        <PackageTags>moonlight</PackageTags>
     </PropertyGroup>
 
     <ItemGroup>
