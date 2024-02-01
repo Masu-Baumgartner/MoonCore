@@ -4,6 +4,16 @@
         <TargetFramework>net7.0</TargetFramework>
         <Nullable>enable</Nullable>
         <ImplicitUsings>enable</ImplicitUsings>
+        <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+        <Title>MoonCoreUI</Title>
+        <Authors>Marcel (Masu) Baumgartner</Authors>
+        <Description>A ui library for all moonlight panel like applications</Description>
+        <Copyright>Marcel (Masu) Baumgartner</Copyright>
+        <PackageProjectUrl>https://github.com/Marcel-Baumgartner/MoonCore</PackageProjectUrl>
+        <PackageLicenseUrl>https://github.com/Marcel-Baumgartner/MoonCore</PackageLicenseUrl>
+        <RepositoryUrl>https://github.com/Marcel-Baumgartner/MoonCore</RepositoryUrl>
+        <RepositoryType>git</RepositoryType>
+        <PackageTags>moonlight</PackageTags>
     </PropertyGroup>
 
 
@@ -14,6 +24,7 @@
     <ItemGroup>
         <PackageReference Include="Microsoft.AspNetCore.Components.Web" Version="7.0.9"/>
         <PackageReference Include="BlazorTable" Version="1.17.0" />
+        <PackageReference Include="MoonCore" Version="1.0.0" />
     </ItemGroup>
 
     <ItemGroup>
@@ -23,10 +34,6 @@
 
     <ItemGroup>
       <Folder Include="Extensions\" />
-    </ItemGroup>
-
-    <ItemGroup>
-      <ProjectReference Include="..\MoonCore\MoonCore.csproj" />
     </ItemGroup>
 
 </Project>
