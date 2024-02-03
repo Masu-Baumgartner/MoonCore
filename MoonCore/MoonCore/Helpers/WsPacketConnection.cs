@@ -121,7 +121,7 @@ public class WsPacketConnection
     /// </summary>
     /// <typeparam name="T">The type of the packet</typeparam>
     /// <returns></returns>
-    public async Task<T?> Receive<T>() where T : class
+    public async Task<T?> Receive<T>()
     {
         var o = await Receive();
 
