@@ -54,4 +54,32 @@ public class ToastService
     {
         await Warning("", message, timeout);
     }
+    
+    // Progress (exceptions are ignored because we dont want to crash a process just because the ui is not updating
+    public async Task CreateProgress(string id, string text)
+    {
+        try
+        {
+            await JsRuntime.InvokeVoidAsync("moonlight.toasts.progress.create", id, text);
+        }
+        catch (Exception) { /* ignored */ }
+    }
+
+    public async Task ModifyProgress(string id, string text)
+    {
+        try
+        {
+            await JsRuntime.InvokeVoidAsync("moonlight.toasts.progress.modify", id, text);
+        }
+        catch (Exception) { /* ignored */ }
+    }
+
+    public async Task RemoveProgress(string id)
+    {
+        try
+        {
+            await JsRuntime.InvokeVoidAsync("moonlight.toasts.progress.remove", id);
+        }
+        catch (Exception) { /* ignored */ }
+    }
 }
