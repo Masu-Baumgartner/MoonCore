@@ -60,7 +60,7 @@ public class ToastService
     {
         try
         {
-            await JsRuntime.InvokeVoidAsync("moonlight.toasts.progress.create", id, text);
+            await JsRuntime.InvokeVoidAsync($"{Prefix}.create", id, text);
         }
         catch (Exception) { /* ignored */ }
     }
@@ -69,7 +69,7 @@ public class ToastService
     {
         try
         {
-            await JsRuntime.InvokeVoidAsync("moonlight.toasts.progress.modify", id, text);
+            await JsRuntime.InvokeVoidAsync($"{Prefix}.modify", id, text);
         }
         catch (Exception) { /* ignored */ }
     }
@@ -78,7 +78,7 @@ public class ToastService
     {
         try
         {
-            await JsRuntime.InvokeVoidAsync("moonlight.toasts.progress.remove", id);
+            await JsRuntime.InvokeVoidAsync($"{Prefix}.remove", id);
         }
         catch (Exception) { /* ignored */ }
     }
