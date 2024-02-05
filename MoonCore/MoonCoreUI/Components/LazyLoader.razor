@@ -1,4 +1,6 @@
-﻿@if (Loaded)
+﻿@implements IDisposable
+
+@if (Loaded)
 {
     @ChildContent
 }
@@ -26,25 +28,25 @@ else
 
 @code
 {
-    [Parameter]
-    public RenderFragment ChildContent { get; set; }
+    [Parameter] public RenderFragment ChildContent { get; set; }
 
-    [Parameter]
-    public bool ShowAsCard { get; set; } = false;
+    [Parameter] public bool ShowAsCard { get; set; } = false;
 
-    [Parameter]
-    public Func<LazyLoader, Task> Load { get; set; }
+    [Parameter] public Func<LazyLoader, Task> Load { get; set; }
 
-    [Parameter]
-    public string Text { get; set; } = "";
+    [Parameter] public string Text { get; set; } = "";
+
+    [Parameter] public bool UseThreadLock { get; set; } = true;
 
     private bool Loaded = false;
+    private CancellationTokenSource Cancellation = new();
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
         if (firstRender)
         {
             await Load.Invoke(this);
+            
             Loaded = true;
             await InvokeAsync(StateHasChanged);
         }
@@ -56,12 +58,27 @@ else
         await InvokeAsync(StateHasChanged);
     }
 
-    public async Task Reload()
+    // Explanation to preLoadTask:
+    // The preLoadTask runs during the reload function, so while the ui is blocked
+    // by the loading animation, to modify context before the regular load method gets invoked
+    public async Task Reload(Func<LazyLoader, Task>? preLoadTask)
     {
         Loaded = false;
         await InvokeAsync(StateHasChanged);
+
+        if (preLoadTask != null)
+            await preLoadTask.Invoke(this);
+
         await Load.Invoke(this);
+        
         Loaded = true;
         await InvokeAsync(StateHasChanged);
+    }
+
+    public async Task Reload() => await Reload(preLoadTask: null);
+
+    public void Dispose()
+    {
+        Cancellation.Cancel();
     }
 }
