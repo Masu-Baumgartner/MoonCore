@@ -77,7 +77,7 @@ public class HttpApiClient<TException> : IDisposable where TException : Exceptio
             "application/json"))!;
 
     public async Task Post(string path, object? body = null) => await Send(HttpMethod.Post, path,
-        body == null ? "" : JsonConvert.SerializeObject(body));
+        body == null ? "" : JsonConvert.SerializeObject(body), "application/json");
 
     #endregion
 
@@ -91,7 +91,7 @@ public class HttpApiClient<TException> : IDisposable where TException : Exceptio
             "application/json"))!;
 
     public async Task Put(string path, object? body = null) => await Send(HttpMethod.Put, path,
-        body == null ? "" : JsonConvert.SerializeObject(body));
+        body == null ? "" : JsonConvert.SerializeObject(body), "application/json");
     
     #endregion
 
@@ -105,7 +105,7 @@ public class HttpApiClient<TException> : IDisposable where TException : Exceptio
             "application/json"))!;
 
     public async Task Patch(string path, object? body = null) => await Send(HttpMethod.Patch, path,
-        body == null ? "" : JsonConvert.SerializeObject(body));
+        body == null ? "" : JsonConvert.SerializeObject(body), "application/json");
 
     #endregion
 
