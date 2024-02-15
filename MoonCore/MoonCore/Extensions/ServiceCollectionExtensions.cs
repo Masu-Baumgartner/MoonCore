@@ -1,4 +1,5 @@
-﻿using Microsoft.Extensions.DependencyInjection;
+﻿using System.Reflection;
+using Microsoft.Extensions.DependencyInjection;
 using MoonCore.Attributes;
 
 namespace MoonCore.Extensions;
@@ -22,6 +23,17 @@ public static class ServiceCollectionExtensions
     public static void ConstructMoonCoreDi<T>(this IServiceCollection collection)
     {
         var assembly = typeof(T).Assembly;
+        
+        collection.ConstructMoonCoreDi(assembly);
+    }
+    
+    /// <summary>
+    /// This checks all types in the assembly of the provided type for mooncore attributes to add them to the di
+    /// </summary>
+    /// <param name="collection"></param>
+    /// <typeparam name="T"></typeparam>
+    public static void ConstructMoonCoreDi(this IServiceCollection collection, Assembly assembly)
+    {
         var ownAssembly = typeof(ServiceCollectionExtensions).Assembly;
 
         foreach (var type in assembly.GetTypes())
