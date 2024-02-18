@@ -13,21 +13,67 @@
     @(Formatter.ConvertCamelCaseToSpaces(Property.Name))
 </label>
 
-@* Description using attribute *@
-
 @{
-    var attrs = Property.GetCustomAttributes(true);
+    var customAttributes = Property.GetCustomAttributes(true);
 
-    var descAttr = attrs
-        .FirstOrDefault(x => x.GetType() == typeof(DescriptionAttribute));
+    bool TryGetCasted<T>(out T result) where T : class
+    {
+        if (customAttributes == null)
+        {
+            result = default(T)!;
+            return false;
+        }
+
+        var attribute = customAttributes!.FirstOrDefault(x => x.GetType() == typeof(T));
+
+        if (attribute == null)
+        {
+            result = default(T)!;
+            return false;
+        }
+
+        var castedAttribute = attribute as T;
+
+        if (castedAttribute == null)
+        {
+            result = default(T)!;
+            return false;
+        }
+
+        result = castedAttribute;
+        return true;
+    }
+
+    var customCss = "form-control ";
+
+    if (TryGetCasted<CustomFormClassAttribute>(out var classAttribute))
+    {
+        customCss += classAttribute.Classes;
+    }
+
+    var formType = "";
+
+    if (Property.PropertyType == typeof(string))
+        formType = "text";
+    else if (Property.PropertyType == typeof(int))
+        formType = "number";
+    else if (Property.PropertyType == typeof(double))
+        formType = "number";
+    else if (Property.PropertyType == typeof(long))
+        formType = "number";
+    else if (Property.PropertyType == typeof(decimal))
+        formType = "number";
+
+    if (TryGetCasted<CustomFormTypeAttribute>(out var formTypeAttribute))
+    {
+        formType = formTypeAttribute.Type;
+    }
 }
 
-@if (descAttr != null)
+@if (TryGetCasted<DescriptionAttribute>(out var descriptionAttribute))
 {
-    var attribute = descAttr as DescriptionAttribute;
-
     <div class="form-text fs-5 mb-2 mt-0">
-        @(attribute!.Description)
+        @(descriptionAttribute.Description)
     </div>
 }
 
@@ -37,38 +83,40 @@
     @if (Property.PropertyType == typeof(string))
     {
         <div class="w-100">
-            <InputText id="@Property.Name" @bind-Value="Binder.StringValue" class="form-control"/>
+            <input id="@Property.Name" @bind="Binder.StringValue" type="@formType" class="@customCss"/>
         </div>
     }
     else if (Property.PropertyType == typeof(int))
     {
-        <InputNumber id="@Property.Name" @bind-Value="Binder.IntValue" class="form-control"/>
+        <input id="@Property.Name" @bind="Binder.IntValue" type="@formType" class="@customCss"/>
     }
     else if (Property.PropertyType == typeof(double))
     {
-        <InputNumber id="@Property.Name" @bind-Value="Binder.DoubleValue" class="form-control"/>
+        <input id="@Property.Name" @bind="Binder.DoubleValue" type="@formType" class="@customCss"/>
     }
     else if (Property.PropertyType == typeof(long))
     {
-        <InputNumber id="@Property.Name" @bind-Value="Binder.LongValue" class="form-control"/>
+        <input id="@Property.Name" @bind="Binder.LongValue" type="@formType" class="@customCss"/>
     }
     else if (Property.PropertyType == typeof(bool))
     {
-        <div class="form-check">
+        var css = "form-check " + customCss.Replace("form-control", ""); 
+        
+        <div class="form-check @css">
             <InputCheckbox id="@Property.Name" @bind-Value="Binder.BoolValue" class="form-check-input"/>
         </div>
     }
     else if (Property.PropertyType == typeof(DateTime))
     {
-        <InputDate id="@Property.Name" @bind-Value="Binder.DateTimeValue" class="form-control"/>
+        <InputDate id="@Property.Name" @bind-Value="Binder.DateTimeValue" class="@customCss"/>
     }
     else if (Property.PropertyType == typeof(decimal))
     {
-        <InputNumber id="@Property.Name" step="0.01" @bind-Value="Binder.DoubleValue" class="form-control"/>
+        <InputNumber id="@Property.Name" step="0.01" @bind-Value="Binder.DoubleValue" class="@customCss"/>
     }
     else if (Property.PropertyType.IsEnum)
     {
-        <select @bind="Binder.Class" class="form-select">
+        <select @bind="Binder.Class" class="form-select @customCss">
             @foreach (var status in (TProp[])Enum.GetValues(typeof(TProp)))
             {
                 if (Binder.Class.ToString() == status.ToString())
@@ -121,11 +169,9 @@
 
 @code
 {
-    [Parameter]
-    public object Data { get; set; }
+    [Parameter] public object Data { get; set; }
 
-    [Parameter]
-    public PropertyInfo Property { get; set; }
+    [Parameter] public PropertyInfo Property { get; set; }
 
     private PropBinder<TProp> Binder;
     private TProp[] Items = Array.Empty<TProp>();
