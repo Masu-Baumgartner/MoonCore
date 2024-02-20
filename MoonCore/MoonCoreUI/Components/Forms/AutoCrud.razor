@@ -11,32 +11,57 @@
 @inject Repository<TItem> ItemRepository
 @inject ToastService ToastService
 
-<div class="card">
-    <div class="card-header">
-        <h3 class="card-title">@(Title)</h3>
-        <div class="card-toolbar">
-            @Toolbar
-            <button @onclick="StartCreate" class="btn btn-icon btn-success ms-3">
+<div class="card card-body mb-5 p-3">
+    <div class="d-flex justify-content-between align-items-center">
+        <div class="fs-3 fw-semibold ms-3">
+            @Title
+        </div>
+        <div class="text-end">
+            @if (Toolbar != null)
+            {
+                @Toolbar
+            }
+            <button @onclick="StartCreate" type="button" class="btn btn-icon btn-success ms-3">
                 <i class="bx bx-sm bx-plus"></i>
             </button>
         </div>
     </div>
-    <div class="card-body">
-        <LazyLoader @ref="LazyLoader" Load="LoadItems">
+</div>
+
+
+<div class="card card-body px-5">
+    <LazyLoader @ref="LazyLoader" Load="LoadItems">
+        @if (Items.Length == 0)
+        {
+            if (NoItemsView == null)
+            {
+                <span class="text-center text-muted">No items found</span>
+            }
+            else
+            {
+                @NoItemsView
+            }
+        }
+        else
+        {
             <Table TableItem="TItem"
                    Items="Items"
                    PageSize="50"
                    TableClass="table table-row-bordered table-row-gray-100 align-middle gs-0 gy-3 fs-6"
                    TableHeadClass="fw-bold text-muted">
                 @View
-                <Column TableItem="TItem" Field="IdExpression" Title="" Sortable="false" Filterable="false">
+                <Column TableItem="TItem" Class="py-1 my-0" Field="IdExpression" Title="" Sortable="false" Filterable="false">
                     <Template>
                         <div class="text-end">
                             <div class="btn-group">
-                                <button @onclick="() => StartUpdate(context)" class="btn btn-icon btn-warning">
+                                @if (Actions != null)
+                                {
+                                    @Actions.Invoke(context)
+                                }
+                                <button @onclick="() => StartUpdate(context)" type="button" class="btn btn-icon btn-warning">
                                     <i class="bx bx-sm bx-slider"></i>
                                 </button>
-                                <button @onclick="() => StartDelete(context)" class="btn btn-icon btn-danger">
+                                <button @onclick="() => StartDelete(context)" type="button" class="btn btn-icon btn-danger">
                                     <i class="bx bx-sm bx-trash"></i>
                                 </button>
                             </div>
@@ -44,8 +69,8 @@
                     </Template>
                 </Column>
             </Table>
-        </LazyLoader>
-    </div>
+        }
+    </LazyLoader>
 </div>
 
 <SmartModal @ref="CreateModal" CssClasses="modal-dialog-centered modal-lg">
@@ -104,26 +129,29 @@
 
 @code
 {
-    [Parameter]
-    public string Title { get; set; } = "";
+    [Parameter] public string Title { get; set; } = "";
 
-    [Parameter]
-    public Func<Repository<TItem>, TItem[]> Load { get; set; }
+    [Parameter] public Func<Repository<TItem>, TItem[]> Load { get; set; }
 
-    [Parameter]
-    public RenderFragment View { get; set; }
+    [Parameter] public RenderFragment View { get; set; }
     
-    [Parameter]
-    public RenderFragment Toolbar { get; set; }
+    [Parameter] public RenderFragment? NoItemsView { get; set; }
+
+    [Parameter] public RenderFragment? Toolbar { get; set; }
     
-    [Parameter]
-    public Func<TItem, Task>? ValidateAdd { get; set; }
+    [Parameter] public RenderFragment<TItem>? Actions { get; set; }
+
+    [Parameter] public Func<TItem, Task>? ValidateAdd { get; set; }
+
+    [Parameter] public Func<TItem, Task>? ValidateUpdate { get; set; }
+
+    [Parameter] public Func<TItem, Task>? ValidateDelete { get; set; }
     
-    [Parameter]
-    public Func<TItem, Task>? ValidateUpdate { get; set; }
-    
-    [Parameter]
-    public Func<TItem, Task>? ValidateDelete { get; set; }
+    [Parameter] public Func<TItem, Task>? CustomAdd { get; set; }
+
+    [Parameter] public Func<TItem, Task>? CustomUpdate { get; set; }
+
+    [Parameter] public Func<TItem, Task>? CustomDelete { get; set; }
 
     private TItem[] Items;
     private TCreateForm CreateForm;
@@ -142,6 +170,9 @@
     {
         if (Load == null)
             throw new ArgumentNullException(nameof(Load));
+
+        if (View == null)
+            throw new ArgumentException(nameof(View));
 
         CreateForm = Activator.CreateInstance<TCreateForm>()!;
         UpdateForm = Activator.CreateInstance<TUpdateForm>()!;
@@ -171,10 +202,13 @@
 
         if (ValidateUpdate != null) // Optional additional validation
             await ValidateUpdate.Invoke(item);
-        
-        ItemRepository.Update(item);
 
-    // Reset
+        if (CustomUpdate != null)
+            await CustomUpdate.Invoke(item);
+        else
+            ItemRepository.Update(item);
+
+        // Reset
         await UpdateModal.Hide();
         await LazyLoader.Reload();
         await ToastService.Success("Successfully updated item");
@@ -189,13 +223,16 @@
     private async Task FinishCreate()
     {
         var item = Mapper.Map<TItem>(CreateForm!);
-        
+
         if (ValidateAdd != null) // Optional additional validation
             await ValidateAdd.Invoke(item);
-        
-        ItemRepository.Add(item);
 
-    // Reset
+        if (CustomAdd != null)
+            await CustomAdd.Invoke(item);
+        else
+            ItemRepository.Add(item);
+
+        // Reset
         await CreateModal.Hide();
         await LazyLoader.Reload();
         await ToastService.Success("Successfully added item");
@@ -211,10 +248,13 @@
     {
         if (ValidateDelete != null) // Optional additional validation
             await ValidateDelete.Invoke(ItemToDelete);
-        
-        ItemRepository.Delete(ItemToDelete);
 
-    // Reset
+        if (CustomDelete != null)
+            await CustomDelete.Invoke(ItemToDelete);
+        else
+            ItemRepository.Delete(ItemToDelete);
+
+        // Reset
         await DeleteModal.Hide();
         await LazyLoader.Reload();
         await ToastService.Success("Successfully deleted item");
@@ -222,19 +262,19 @@
 
     private Expression<Func<TItem, object>> CreateExpression()
     {
-    // Parameter expression for the input object
+        // Parameter expression for the input object
         var inputParam = Expression.Parameter(typeof(TItem), "input");
 
-    // Convert the input object to the actual model type (MyModel in this example)
+        // Convert the input object to the actual model type (MyModel in this example)
         var castedInput = Expression.Convert(inputParam, typeof(TItem));
 
-    // Create a property access expression using the property name
+        // Create a property access expression using the property name
         var propertyAccess = Expression.Property(castedInput, "Id");
 
-    // Convert the property value to an object
+        // Convert the property value to an object
         var castedResult = Expression.Convert(propertyAccess, typeof(object));
 
-    // Create a lambda expression
+        // Create a lambda expression
         var lambda = Expression.Lambda<Func<TItem, object>>(castedResult, inputParam);
 
         return lambda;

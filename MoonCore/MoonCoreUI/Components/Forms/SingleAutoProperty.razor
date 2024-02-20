@@ -1,0 +1,41 @@
+@using System.Reflection
+@using System.Linq.Expressions
+
+@typeparam TItem
+
+<AutoProperty TProp="TItem" Data="Model" Property="PropertyInfo" />
+
+@code
+{
+    [Parameter]
+    public TItem Model { get; set; }
+    
+    [Parameter]
+    public Expression<Func<TItem, object>> Field { get; set; }
+
+    private PropertyInfo PropertyInfo;
+    
+    protected override void OnInitialized()
+    {
+        PropertyInfo = GetPropertyInfo(Field);
+    }
+
+    private PropertyInfo GetPropertyInfo(Expression<Func<TItem, object>> expression)
+    {
+        if (expression.Body is MemberExpression memberExpression)
+        {
+            if (memberExpression.Member is PropertyInfo propertyInfo)
+            {
+                return propertyInfo;
+            }
+            else
+            {
+                throw new ArgumentException("Expression does not represent a property.");
+            }
+        }
+        else
+        {
+            throw new ArgumentException("Expression is not a member access expression.");
+        }
+    }
+}
