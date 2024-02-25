@@ -9,9 +9,12 @@
 @typeparam TProp
 @inject IServiceProvider ServiceProvider
 
-<label class="form-label">
-    @(Formatter.ConvertCamelCaseToSpaces(Property.Name))
-</label>
+@if (EnablePropertyName)
+{
+    <label class="form-label">
+        @(Formatter.ConvertCamelCaseToSpaces(Property.Name))
+    </label>
+}
 
 @{
     var customAttributes = Property.GetCustomAttributes(true);
@@ -68,6 +71,8 @@
     {
         formType = formTypeAttribute.Type;
     }
+
+    var placeholder = EnablePlaceholderName ? Property.Name : "";
 }
 
 @if (TryGetCasted<DescriptionAttribute>(out var descriptionAttribute))
@@ -83,7 +88,7 @@
     @if (Property.PropertyType == typeof(string))
     {
         <div class="w-100">
-            <input id="@Property.Name" @bind="Binder.StringValue" type="@formType" class="@customCss"/>
+            <input id="@Property.Name" @bind="Binder.StringValue" type="@formType" class="@customCss" placeholder="@placeholder"/>
         </div>
     }
     else if (Property.PropertyType == typeof(int))
@@ -172,6 +177,9 @@
     [Parameter] public object Data { get; set; }
 
     [Parameter] public PropertyInfo Property { get; set; }
+
+    [Parameter] public bool EnablePropertyName { get; set; } = true;
+    [Parameter] public bool EnablePlaceholderName { get; set; } = false;
 
     private PropBinder<TProp> Binder;
     private TProp[] Items = Array.Empty<TProp>();
