@@ -4,9 +4,9 @@
 
 @code
 {
-    [Parameter] public RenderFragment<TItem>? Template { get; set; }
+    [Parameter] public RenderFragment<TItem?>? Template { get; set; }
 
-    [Parameter] public Expression<Func<TItem, object>>? Field { get; set; }
+    [Parameter] public Expression<Func<TItem, object?>>? Field { get; set; }
 
     [Parameter] public string Title { get; set; } = "";
 

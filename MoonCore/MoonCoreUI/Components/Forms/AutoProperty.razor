@@ -88,7 +88,7 @@
     @if (Property.PropertyType == typeof(string))
     {
         <div class="w-100">
-            <input id="@Property.Name" @bind="Binder.StringValue" type="@formType" class="@customCss" placeholder="@placeholder"/>
+            <input id="@Property.Name" @bind="Binder.StringValue" type="@formType" class="@customCss" placeholder="@placeholder" autocomplete="off" spellcheck="false"/>
         </div>
     }
     else if (Property.PropertyType == typeof(int))

@@ -29,7 +29,9 @@
                     <td class="@column.CssClasses">
                         @if (column.Template == null)
                         {
-                            @column.Field!.Compile().Invoke(item).ToString()
+                            var val = column.Field!.Compile().Invoke(item);
+                            
+                            @(val == null ? "-" : val.ToString())
                         }
                         else
                         {
