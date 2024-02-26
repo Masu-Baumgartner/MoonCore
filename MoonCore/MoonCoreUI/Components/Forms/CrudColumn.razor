@@ -1,0 +1,26 @@
+@using System.Linq.Expressions
+
+@typeparam TItem
+
+@code
+{
+    [Parameter] public RenderFragment<TItem>? Template { get; set; }
+
+    [Parameter] public Expression<Func<TItem, object>>? Field { get; set; }
+
+    [Parameter] public string Title { get; set; } = "";
+
+    [Parameter] public bool Filterable { get; set; }
+
+    [Parameter] public string CssClasses { get; set; } = "";
+
+    [CascadingParameter] public CrudTable<TItem>? Parent { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (Parent != null)
+        {
+            await Parent.AddColumn(this);
+        }
+    }
+}

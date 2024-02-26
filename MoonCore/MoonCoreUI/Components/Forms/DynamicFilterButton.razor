@@ -1,0 +1,101 @@
+@using System.Reflection
+@using MoonCore.Helpers
+@using MoonCoreUI.Helpers
+
+@typeparam TItem
+
+@if (Properties.Length > 0)
+{
+    <div class="btn-group dropstart">
+        <button class="btn btn-icon btn-secondary rounded" type="button" id="defaultDropdown" data-bs-toggle="dropdown" data-bs-auto-close="true" aria-expanded="false">
+            <i class="bx bx-sm bx-filter-alt"></i>
+        </button>
+        <div class="dropdown-menu py-1 px-2 fs-5 me-2 bg-secondary" style="min-width: 15rem">
+            @foreach (var property in Properties)
+            {
+                <div class="my-2 text-center">
+                    @{
+                        var typeToCreate = typeof(AutoProperty<>).MakeGenericType(property.PropertyType);
+                        var rf = ComponentHelper.FromType(typeToCreate, parameters =>
+                        {
+                            parameters.Add("Data", Model);
+                            parameters.Add("Property", property);
+                            parameters.Add("EnablePropertyName", false);
+                            parameters.Add("EnablePlaceholderName", true);
+                        });
+                    }
+
+                    @rf
+                </div>
+            }
+            <div class="my-2 text-center">
+                <WButton Text="Apply" CssClasses="btn btn-primary" OnClick="Apply" />
+            </div>
+        </div>
+    </div>
+}
+
+@code
+{
+    public SmartEventHandler OnFilterChanged { get; set; } = new();
+    
+    private PropertyInfo[] Properties =Array.Empty<PropertyInfo>();
+    private TItem Model;
+
+    protected override void OnInitialized()
+    {
+        Model = Activator.CreateInstance<TItem>();
+    }
+
+    public async Task SetFilterProperties(PropertyInfo[] properties)
+    {
+        Properties = properties;
+
+        await InvokeAsync(StateHasChanged);
+    }
+
+    public async Task<TItem[]> ProcessItems(TItem[] raw)
+    {
+        var currentFilterItems = raw;
+        
+        foreach (var property in Properties)
+        {
+            var defaultValue = property.PropertyType.IsValueType ? Activator.CreateInstance(property.PropertyType) : null;
+            
+            if(defaultValue == null && property.GetValue(Model) == null)
+                continue;
+            
+            if(defaultValue == null && property.PropertyType == typeof(string) && string.IsNullOrEmpty((string)property.GetValue(Model)!))
+                continue;
+
+            if (defaultValue == null)
+                Logger.Info($"Default is null, value is not: {property.GetValue(Model).GetType().FullName}");
+            
+            if(defaultValue != null && defaultValue.Equals(property.GetValue(Model)))
+                continue;
+            
+            if (property.PropertyType == typeof(string))
+            {
+                currentFilterItems = currentFilterItems
+                    .Where(x => ((string)property.GetValue(x)).Contains((string)property.GetValue(Model)))
+                    .ToArray();
+            }
+            else if (property.PropertyType == typeof(int))
+            {
+                currentFilterItems = currentFilterItems
+                    .Where(x => (int)property.GetValue(x) == ((int)property.GetValue(Model)))
+                    .ToArray();
+            }
+            else
+            {
+                currentFilterItems = currentFilterItems
+                    .Where(x => property.GetValue(x) == property.GetValue(Model))
+                    .ToArray();
+            }
+        }
+        
+        return currentFilterItems;
+    }
+
+    private async Task Apply() => await OnFilterChanged.Invoke();
+}

@@ -1,0 +1,171 @@
+@using System.Linq.Expressions
+@using System.Reflection
+
+@typeparam TItem
+
+<div class="table-responsive">
+    <table class="table table-row-bordered table-row-gray-100 align-middle gs-0 gy-3 fs-6">
+        <CascadingValue Value="@this">
+            @ChildContent
+        </CascadingValue>
+
+        <thead class="fw-bold text-muted">
+        <tr>
+            @foreach (var column in Columns)
+            {
+                <th>
+                    @column.Title
+                </th>
+            }
+        </tr>
+        </thead>
+
+        <tbody>
+        @foreach (var item in PagedItems)
+        {
+            <tr>
+                @foreach (var column in Columns)
+                {
+                    <td class="@column.CssClasses">
+                        @if (column.Template == null)
+                        {
+                            @column.Field!.Compile().Invoke(item).ToString()
+                        }
+                        else
+                        {
+                            @column.Template.Invoke(item)
+                        }
+                    </td>
+                }
+            </tr>
+        }
+        </tbody>
+    </table>
+</div>
+<div class="d-flex justify-content-end">
+    <ul class="pagination">
+        <li class="page-item disabled">
+            @* as we use the skip function our pages start at 0 but the user should not that, so we add a 1 *@
+            <span class="page-link">@(Page + 1)/@((ItemsCount == 0 ? 0 : LastPage) + 1)</span>
+        </li>
+        <li class="page-item disabled">
+            <span class="page-link">@(ItemsCount)</span>
+        </li>
+        <li class="page-item disabled">
+            <a class="page-link">&nbsp;</a>
+        </li>
+        <li class="page-item @(Page == 0 ? "disabled" : "")">
+            <a class="page-link" href="#" @onclick:preventDefault @onclick="() => SetPage(0)">First</a>
+        </li>
+        <li class="page-item @(Page == 0 ? "disabled": "")">
+            <a class="page-link" href="#" @onclick:preventDefault @onclick="() => ChangePage(-1)">Previous</a>
+        </li>
+        <li class="page-item @(Page == LastPage ? "disabled" : "")">
+            <a class="page-link" href="#" @onclick:preventDefault @onclick="() => ChangePage(1)">Next</a>
+        </li>
+        <li class="page-item @(Page == LastPage ? "disabled" : "")">
+            <a class="page-link" href="#" @onclick:preventDefault @onclick="() => SetPage(LastPage)">Last</a>
+        </li>
+    </ul>
+</div>
+
+@code
+{
+    [Parameter] public RenderFragment ChildContent { get; set; }
+
+    [Parameter] public DynamicFilterButton<TItem>? Filter { get; set; }
+
+    [Parameter] public IEnumerable<TItem> Items { get; set; }
+
+    [Parameter] public int PageSize { get; set; } = 25;
+
+    private List<CrudColumn<TItem>> Columns = new();
+    private TItem[] FilteredItems = Array.Empty<TItem>();
+    private TItem[] PagedItems => FilteredItems.Skip(Page * PageSize).Take(PageSize).ToArray();
+    private int ItemsCount = 0;
+    private int LastPage = 0;
+
+    private int Page = 0;
+
+    public Task AddColumn(CrudColumn<TItem> column)
+    {
+        Columns.Add(column);
+
+        return Task.CompletedTask;
+    }
+
+    public async Task Refresh()
+    {
+        ItemsCount = Items.Count();
+        LastPage = (ItemsCount / PageSize) - 1;
+        
+        if (Filter != null)
+            FilteredItems = await Filter.ProcessItems(Items.ToArray());
+        else
+            FilteredItems = Items.ToArray();
+
+        await InvokeAsync(StateHasChanged);
+    }
+
+    public async Task ChangePage(int diff) => await SetPage(Page + diff);
+
+    public async Task SetPage(int page)
+    {
+        Page = page;
+
+        if (Page < 0)
+            Page = 0;
+
+        if (ItemsCount > 0)
+        {
+            if (Page > LastPage)
+                Page = LastPage;
+        }
+
+        await InvokeAsync(StateHasChanged);
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            // Configure filter
+            if (Filter != null)
+            {
+                var properties = new List<PropertyInfo>();
+
+                foreach (var column in Columns.Where(x => x.Field != null && x.Filterable))
+                    properties.Add(GetPropertyInfo(column.Field!));
+
+                await Filter.SetFilterProperties(properties.ToArray());
+
+                Filter.OnFilterChanged += async () => await Refresh();
+            }
+
+            await Refresh();
+        }
+    }
+
+    private PropertyInfo GetPropertyInfo(Expression<Func<TItem, object>> expression)
+    {
+        MemberExpression? memberExpression = default;
+
+        if (expression.Body is MemberExpression body)
+            memberExpression = body;
+        else if (expression.Body is UnaryExpression unaryExpression && unaryExpression.NodeType == ExpressionType.Convert)
+        {
+            if (unaryExpression.Operand is MemberExpression operand)
+                memberExpression = operand;
+        }
+
+        if (memberExpression == null)
+            throw new ArgumentException("Unable to process expression");
+
+        if (memberExpression.Member is PropertyInfo propertyInfo)
+        {
+            return propertyInfo;
+        }
+
+        throw new ArgumentException("Expression does not represent a property.");
+    }
+}

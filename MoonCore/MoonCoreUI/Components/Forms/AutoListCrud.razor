@@ -1,7 +1,6 @@
-@using BlazorTable
-@using System.Linq.Expressions
 @using Mappy.Net
 @using MoonCore.Abstractions
+@using MoonCore.Helpers
 @using MoonCoreUI.Services
 
 @typeparam TItem where TItem : class
@@ -13,98 +12,173 @@
 @inject Repository<TRootItem> RootRepository
 @inject Repository<TItem> ItemRepository
 
-<div class="card card-body mb-5 p-3">
-    <div class="d-flex justify-content-between align-items-center">
-        <div class="fs-3 fw-semibold ms-3">
-            @Title
-        </div>
-        <div class="text-end">
-            @if (Toolbar != null)
+@if (ShowCreate)
+{
+    <div class="card card-body p-5 mb-5">
+        <a href="#" @onclick:preventDefault @onclick="GoToView" class="text-muted mb-1">
+            <i class="bx bx-sm bx-left-arrow-alt align-middle"></i>
+            @if (string.IsNullOrEmpty(Title))
             {
-                @Toolbar
-            }
-            <button @onclick="StartCreate" type="button" class="btn btn-icon btn-success ms-3">
-                <i class="bx bx-sm bx-plus"></i>
-            </button>
-        </div>
-    </div>
-</div>
-
-<div class="card card-body px-5">
-    <LazyLoader @ref="LazyLoader" Load="LoadItems">
-        @if (Items.Length == 0)
-        {
-            if (NoItemsView == null)
-            {
-                <span class="text-center text-muted fw-semibold fs-4">No items found</span>
+                <span class="align-middle">Back to @ItemName</span>
             }
             else
             {
-                @NoItemsView
+                <span class="align-middle">Back to @Title</span>
             }
-        }
-        else
-        {
-            <Table TableItem="TItem"
-                   Items="Items"
-                   PageSize="50"
-                   TableClass="table table-row-bordered table-row-gray-100 align-middle gs-0 gy-3 fs-6"
-                   TableHeadClass="fw-bold text-muted">
-                @View
-                <Column TableItem="TItem" Class="py-1 my-0" Field="IdExpression" Title="" Sortable="false" Filterable="false">
-                    <Template>
-                        <div class="text-end">
-                            <div class="btn-group">
-                                <button @onclick="() => StartUpdate(context)" type="button" class="btn btn-icon btn-warning">
-                                    <i class="bx bx-sm bx-slider"></i>
-                                </button>
-                                <button @onclick="() => StartDelete(context)" type="button" class="btn btn-icon btn-danger">
-                                    <i class="bx bx-sm bx-trash"></i>
-                                </button>
-                            </div>
-                        </div>
-                    </Template>
-                </Column>
-            </Table>
-        }
-    </LazyLoader>
-</div>
-
-<SmartModal @ref="CreateModal" CssClasses="modal-dialog-centered modal-lg">
-    <div class="modal-header">
-        <h5 class="modal-title">Create</h5>
-        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </a>
+        <div class="fw-semibold fs-2">
+            @if (string.IsNullOrEmpty(CreateText))
+            {
+                <span>Create @ItemName</span>
+            }
+            else
+            {
+                @CreateText
+            }
+        </div>
     </div>
+
     <SmartForm Model="CreateForm" OnValidSubmit="FinishCreate">
-        <div class="modal-body">
-            <div class="row">
+        <div class="card card-body p-8 mb-5">
+            <div class="row g-5">
                 <AutoForm Columns="@(CreateForm.GetType().GetProperties().Length > 1 ? 6 : 12)" Model="CreateForm"/>
             </div>
         </div>
-        <div class="modal-footer">
-            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-            <button type="submit" class="btn btn-primary">Save changes</button>
+
+        <div class="card card-body p-5">
+            <div class="d-flex justify-content-end">
+                <button type="submit" class="btn btn-primary">
+                    @if (string.IsNullOrEmpty(CreateText))
+                    {
+                        <span>Create @ItemName</span>
+                    }
+                    else
+                    {
+                        @CreateText
+                    }
+                </button>
+            </div>
         </div>
     </SmartForm>
-</SmartModal>
-
-<SmartModal @ref="UpdateModal" CssClasses="modal-dialog-centered modal-lg">
-    <div class="modal-header">
-        <h5 class="modal-title">Update</h5>
-        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+}
+else if (ShowUpdate)
+{
+    <div class="card card-body p-5 mb-5">
+        <a href="#" @onclick:preventDefault @onclick="GoToView" class="text-muted mb-1">
+            <i class="bx bx-sm bx-left-arrow-alt align-middle"></i>
+            @if (string.IsNullOrEmpty(Title))
+            {
+                <span class="align-middle">Back to @ItemName</span>
+            }
+            else
+            {
+                <span class="align-middle">Back to @Title</span>
+            }
+        </a>
+        <div class="fw-semibold fs-2">
+            @if (string.IsNullOrEmpty(UpdateText))
+            {
+                <span>Update @ItemName</span>
+            }
+            else
+            {
+                @UpdateText
+            }
+        </div>
     </div>
+
     <SmartForm Model="UpdateForm" OnValidSubmit="FinishUpdate">
-        <div class="modal-body">
-            <div class="row">
+        <div class="card card-body p-8 mb-5">
+            <div class="row g-5">
                 <AutoForm Columns="@(UpdateForm.GetType().GetProperties().Length > 1 ? 6 : 12)" Model="UpdateForm"/>
             </div>
         </div>
-        <div class="modal-footer">
-            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-            <button type="submit" class="btn btn-primary">Save changes</button>
+
+        <div class="card card-body p-5">
+            <div class="d-flex justify-content-end">
+                <button type="submit" class="btn btn-primary">
+                    @if (string.IsNullOrEmpty(UpdateText))
+                    {
+                        <span>Update @ItemName</span>
+                    }
+                    else
+                    {
+                        @UpdateText
+                    }
+                </button>
+            </div>
         </div>
     </SmartForm>
-</SmartModal>
+}
+else
+{
+    <div class="card card-body mb-5 p-3">
+        <div class="d-flex justify-content-between align-items-center">
+            <div class="fs-3 fw-semibold ms-3">
+                @Title
+            </div>
+            <div class="text-end">
+                @if (Toolbar != null)
+                {
+                    @Toolbar
+                }
+                <DynamicFilterButton @ref="FilterButton" TItem="TItem"/>
+                <button @onclick="StartCreate" type="button" class="btn btn-primary ms-3">
+                    @if (string.IsNullOrEmpty(CreateText))
+                    {
+                        <span>Create @ItemName</span>
+                    }
+                    else
+                    {
+                        @CreateText
+                    }
+                </button>
+            </div>
+        </div>
+    </div>
+
+
+    <div class="card card-body px-5">
+        <LazyLoader @ref="LazyLoader" Load="LoadItems">
+            @if (Items.Length == 0)
+            {
+                if (NoItemsView == null)
+                {
+                    <span class="text-center text-muted fs-5">No items found</span>
+                }
+                else
+                {
+                    @NoItemsView
+                }
+            }
+            else
+            {
+                <CrudTable TItem="TItem" Items="Items" Filter="FilterButton" PageSize="@PageSize">
+                    @View
+
+                    <CrudColumn TItem="TItem" CssClasses="py-1 my-0">
+                        <Template>
+                            <div class="text-end">
+                                <div class="btn-group">
+                                    @if (Actions != null)
+                                    {
+                                        @Actions.Invoke(context)
+                                    }
+                                    <button @onclick="() => StartUpdate(context)" type="button" class="btn btn-icon btn-warning">
+                                        <i class="bx bx-sm bx-slider"></i>
+                                    </button>
+                                    <button @onclick="() => StartDelete(context)" type="button" class="btn btn-icon btn-danger">
+                                        <i class="bx bx-sm bx-trash"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        </Template>
+                    </CrudColumn>
+                </CrudTable>
+            }
+        </LazyLoader>
+    </div>
+}
 
 <SmartModal @ref="DeleteModal" CssClasses="modal-dialog-centered">
     <div class="modal-header">
@@ -112,7 +186,7 @@
         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
     </div>
     <div class="modal-body">
-        <p class="text-gray-400 fs-5 fw-semibold">
+        <p class="text-gray-800 fs-5 fw-semibold">
             This action cannot be undone. The data will be deleted and cannot be restored
         </p>
     </div>
@@ -127,6 +201,10 @@
 @code
 {
     [Parameter] public string Title { get; set; } = "";
+    
+    [Parameter] public string CreateText { get; set; } = "";
+
+    [Parameter] public string UpdateText { get; set; } = "";
 
     [Parameter] public TRootItem RootItem { get; set; }
 
@@ -138,11 +216,15 @@
 
     [Parameter] public RenderFragment? Toolbar { get; set; }
 
+    [Parameter] public RenderFragment<TItem>? Actions { get; set; }
+
     [Parameter] public Func<TItem, Task>? ValidateAdd { get; set; }
 
     [Parameter] public Func<TItem, Task>? ValidateUpdate { get; set; }
 
     [Parameter] public Func<TItem, Task>? ValidateDelete { get; set; }
+
+    [Parameter] public int PageSize { get; set; } = 25;
 
     private TItem[] Items;
     private TCreateForm CreateForm;
@@ -150,12 +232,16 @@
     private TItem ItemToUpdate;
     private TItem ItemToDelete;
 
-    private SmartModal CreateModal;
-    private SmartModal UpdateModal;
     private SmartModal DeleteModal;
+    
+    private DynamicFilterButton<TItem> FilterButton;
 
-    private Expression<Func<TItem, object>> IdExpression;
+    private bool ShowCreate = false;
+    private bool ShowUpdate = false;
+
     private LazyLoader LazyLoader;
+
+    private string ItemName => Formatter.ConvertCamelCaseToSpaces(typeof(TItem).Name);
 
     protected override void OnInitialized()
     {
@@ -164,8 +250,6 @@
 
         CreateForm = Activator.CreateInstance<TCreateForm>()!;
         UpdateForm = Activator.CreateInstance<TUpdateForm>()!;
-
-        IdExpression = CreateExpression();
     }
 
     public async Task Reload() => await LazyLoader.Reload();
@@ -181,7 +265,9 @@
     {
         UpdateForm = Mapper.Map<TUpdateForm>(item);
         ItemToUpdate = item;
-        await UpdateModal.Show();
+        
+        ShowUpdate = true;
+        await InvokeAsync(StateHasChanged);
     }
 
     private async Task FinishUpdate()
@@ -194,7 +280,8 @@
         ItemRepository.Update(item);
 
         // Reset
-        await UpdateModal.Hide();
+        ShowUpdate = false;
+        await InvokeAsync(StateHasChanged);
         await LazyLoader.Reload();
         await ToastService.Success("Successfully updated item");
     }
@@ -202,7 +289,9 @@
     private async Task StartCreate()
     {
         CreateForm = Activator.CreateInstance<TCreateForm>()!;
-        await CreateModal.Show();
+        
+        ShowCreate = true;
+        await InvokeAsync(StateHasChanged);
     }
 
     private async Task FinishCreate()
@@ -216,7 +305,8 @@
         RootRepository.Update(RootItem);
 
         // Reset
-        await CreateModal.Hide();
+        ShowCreate = false;
+        await InvokeAsync(StateHasChanged);
         await LazyLoader.Reload();
         await ToastService.Success("Successfully added item");
     }
@@ -249,24 +339,12 @@
         await LazyLoader.Reload();
         await ToastService.Success("Successfully deleted item");
     }
-
-    private Expression<Func<TItem, object>> CreateExpression()
+    
+    private async Task GoToView()
     {
-        // Parameter expression for the input object
-        var inputParam = Expression.Parameter(typeof(TItem), "input");
+        ShowCreate = false;
+        ShowUpdate = false;
 
-        // Convert the input object to the actual model type (MyModel in this example)
-        var castedInput = Expression.Convert(inputParam, typeof(TItem));
-
-        // Create a property access expression using the property name
-        var propertyAccess = Expression.Property(castedInput, "Id");
-
-        // Convert the property value to an object
-        var castedResult = Expression.Convert(propertyAccess, typeof(object));
-
-        // Create a lambda expression
-        var lambda = Expression.Lambda<Func<TItem, object>>(castedResult, inputParam);
-
-        return lambda;
+        await InvokeAsync(StateHasChanged);
     }
 }
