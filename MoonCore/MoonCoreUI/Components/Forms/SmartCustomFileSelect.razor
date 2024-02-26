@@ -4,8 +4,8 @@
 
 @inject ToastService ToastService
 
-<InputFile OnChange="OnFileChanged" type="file" id="fileUpload" hidden=""/>
-<label for="fileUpload" class="">
+<InputFile OnChange="OnFileChanged" type="file" id="@Id" hidden=""/>
+<label for="@Id" class="">
     @if (SelectedFile == null)
     {
         @ChildContent
@@ -25,6 +25,13 @@
 
     [Parameter]
     public RenderFragment ChildContent { get; set; }
+
+    private string Id;
+
+    protected override void OnInitialized()
+    {
+        Id = "fileUpload" + GetHashCode();
+    }
 
     private async Task OnFileChanged(InputFileChangeEventArgs arg)
     {
