@@ -1,0 +1,17 @@
+﻿@page "/"
+@using MoonCore.Helpers
+@using MoonCoreUI.Test.Data
+
+<PageTitle>Index</PageTitle>
+
+@inject NetworkService NetworkService
+
+<button @onclick="Callback">sefsefsefsef</button>
+
+@code
+{
+    private async Task Callback()
+    {
+        await NetworkService.OnConsoleMessage.Emit(Formatter.GenerateString(16));
+    }
+}

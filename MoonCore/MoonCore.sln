@@ -4,6 +4,10 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MoonCore", "MoonCore\MoonCo
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MoonCoreUI", "MoonCoreUI\MoonCoreUI.csproj", "{F4164EB0-F9C6-42BF-8121-151DE008198C}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MoonCore.Test", "MoonCore.Test\MoonCore.Test.csproj", "{1A4592F2-EF62-41B2-8981-7D2A68A0B1E0}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MoonCoreUI.Test", "MoonCoreUI.Test\MoonCoreUI.Test.csproj", "{1AD8071E-6130-4310-8BA7-52EEFDF1EA7E}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -18,5 +22,13 @@ Global
 		{F4164EB0-F9C6-42BF-8121-151DE008198C}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{F4164EB0-F9C6-42BF-8121-151DE008198C}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{F4164EB0-F9C6-42BF-8121-151DE008198C}.Release|Any CPU.Build.0 = Release|Any CPU
+		{1A4592F2-EF62-41B2-8981-7D2A68A0B1E0}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{1A4592F2-EF62-41B2-8981-7D2A68A0B1E0}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{1A4592F2-EF62-41B2-8981-7D2A68A0B1E0}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{1A4592F2-EF62-41B2-8981-7D2A68A0B1E0}.Release|Any CPU.Build.0 = Release|Any CPU
+		{1AD8071E-6130-4310-8BA7-52EEFDF1EA7E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{1AD8071E-6130-4310-8BA7-52EEFDF1EA7E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{1AD8071E-6130-4310-8BA7-52EEFDF1EA7E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{1AD8071E-6130-4310-8BA7-52EEFDF1EA7E}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal

@@ -360,4 +360,26 @@ public static class Formatter
             }
         };
     }
+
+    /// <summary>
+    /// This method converts a string to its base64 representation
+    /// </summary>
+    /// <param name="text">The text to encode into base64</param>
+    /// <returns>A base64 string</returns>
+    public static string FromTextToBase64(string text)
+    {
+        var data = Encoding.UTF8.GetBytes(text);
+        return Convert.ToBase64String(data);
+    }
+    
+    /// <summary>
+    /// This method converts a base64 string to a utf 8 string
+    /// </summary>
+    /// <param name="base64">The base64 string to decode into a utf 8 string</param>
+    /// <returns>A utf 8 string</returns>
+    public static string FromBase64ToText(string base64)
+    {
+        var data = Convert.FromBase64String(base64);
+        return Encoding.UTF8.GetString(data);
+    }
 }
