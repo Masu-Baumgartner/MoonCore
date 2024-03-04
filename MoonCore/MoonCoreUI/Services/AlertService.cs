@@ -13,32 +13,32 @@ public class AlertService
         JsRuntime = jsRuntime;
     }
 
-    public async Task Info(string title, string message)
+    public async Task Info(string title, string message = "")
     {
         await JsRuntime.InvokeVoidAsync($"{Prefix}.info", title, message);
     }
     
-    public async Task Success(string title, string message)
+    public async Task Success(string title, string message = "")
     {
         await JsRuntime.InvokeVoidAsync($"{Prefix}.success", title, message);
     }
     
-    public async Task Warning(string title, string message)
+    public async Task Warning(string title, string message = "")
     {
         await JsRuntime.InvokeVoidAsync($"{Prefix}.warning", title, message);
     }
     
-    public async Task Error(string title, string message)
+    public async Task Error(string title, string message = "")
     {
         await JsRuntime.InvokeVoidAsync($"{Prefix}.error", title, message);
     }
     
-    public async Task<string> Text(string title, string message, string initialValue = "")
+    public async Task<string> Text(string title, string message = "", string initialValue = "")
     {
         return await JsRuntime.InvokeAsync<string>($"{Prefix}.text", title, message, initialValue);
     }
     
-    public async Task<bool> YesNo(string title, string yes, string no)
+    public async Task<bool> YesNo(string title, string yes = "Yes", string no = "No")
     {
         try
         {
