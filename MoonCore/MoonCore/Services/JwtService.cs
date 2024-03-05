@@ -35,7 +35,7 @@ public class JwtService<T> where T : struct, Enum
         return Task.FromResult(jwt);
     }
 
-    public Task<bool> Validate(string token)
+    public Task<bool> Validate(string token, params T[] allowedTypes)
     {
         // Null/empty check
         if (string.IsNullOrEmpty(token))
@@ -61,7 +61,7 @@ public class JwtService<T> where T : struct, Enum
                 return Task.FromResult(false);
 
             // Jwt type validation
-            if (Enum.GetNames<T>().Length == 0)
+            if (allowedTypes.Length == 0)
                 return Task.FromResult(true);
 
             var headerData = JsonConvert.DeserializeObject<Dictionary<string, string>>(headerJson);
@@ -72,9 +72,9 @@ public class JwtService<T> where T : struct, Enum
             if (!headerData.ContainsKey("type")) // => Invalid header, Type is missing
                 return Task.FromResult(false);
 
-            foreach (var name in Enum.GetNames<T>())
+            foreach (var name in allowedTypes)
             {
-                if (headerData["type"] == name) // => Correct type found
+                if (headerData["type"] == name.ToString()) // => Correct type found
                     return Task.FromResult(true);
             }
 
