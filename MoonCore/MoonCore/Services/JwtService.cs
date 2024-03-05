@@ -20,7 +20,7 @@ public class JwtService<T> where T : struct, Enum
         var builder = new JwtBuilder()
             .WithSecret(Token)
             .IssuedAt(DateTime.UtcNow)
-            .AddHeader("type", type)
+            .AddHeader("type", type.ToString())
             .ExpirationTime(DateTime.UtcNow.Add(validDuration))
             .WithAlgorithm(new HMACSHA512Algorithm());
 
