@@ -36,17 +36,31 @@
 
     private bool IsReady = false;
 
-    public async Task Show<T>(string title, Func<T, Task> handle, string submitText = "Submit", string cancelText = "Cancel", int columns = 12)
+    public async Task Show<T>(string title, Func<T, Task> handle, string submitText = "Submit", string cancelText = "Cancel", int columns = 12, T? formModel = default)
+    {
+        await ShowInternal(title, handle, typeof(T), submitText, cancelText, columns, formModel);
+    }
+    
+    public async Task Show(string title, Func<object, Task> handle, Type formType, string submitText = "Submit", string cancelText = "Cancel", int columns = 12, object? formModel = default)
+    {
+        await ShowInternal(title, handle, formType, submitText, cancelText, columns, formModel);
+    }
+
+    private async Task ShowInternal(string title, object handle, Type formType, string submitText = "Submit", string cancelText = "Cancel", int columns = 12, object? formModel = default)
     {
         // Note:
         // The IsReady is used to rerender the smart form in order to ensure it is a new instance
-        
         
         IsReady = false;
         await InvokeAsync(StateHasChanged);
         
         Title = title;
-        Form = Activator.CreateInstance<T>()!;
+
+        if (formModel != null)
+            Form = formModel;
+        else
+            Form = Activator.CreateInstance(formType)!;
+        
         HandleCall = handle;
 
         Submit = submitText;
