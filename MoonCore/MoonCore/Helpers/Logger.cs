@@ -26,8 +26,6 @@ public class Logger
 
             if (enableFileLogRotate)
             {
-                var latestLogPath = PathBuilder.File("storage", "logs", "latest.log");
-
                 string? GetCurrentRotateName()
                 {
                     var counter = 0;
@@ -49,12 +47,12 @@ public class Logger
                     return currentName;
                 }
 
-                if (File.Exists(latestLogPath))
+                if (File.Exists(logPath))
                 {
                     var currentRotateName = GetCurrentRotateName();
                     
                     if(currentRotateName != null)
-                        File.Move(latestLogPath, currentRotateName);
+                        File.Move(logPath, currentRotateName);
                 }
             }
         }
