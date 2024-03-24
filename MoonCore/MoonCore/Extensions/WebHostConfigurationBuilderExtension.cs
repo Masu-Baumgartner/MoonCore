@@ -25,7 +25,6 @@ public static class WebHostConfigurationBuilderExtension
             {
                 options.ConfigureHttpsDefaults(adapterOptions =>
                 {
-                    // Load certificates dynamically based on the host name
                     adapterOptions.ServerCertificateSelector = (_, _) => certificate;
                 });
             });

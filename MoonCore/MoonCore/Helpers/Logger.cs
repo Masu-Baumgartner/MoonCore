@@ -6,10 +6,9 @@ namespace MoonCore.Helpers;
 
 public class Logger
 {
-    public static void Setup(bool logInConsole = true, bool logInFile = false, string logPath = "", bool isDebug = false)
+    public static void Setup(bool logInConsole = true, bool logInFile = false, string logPath = "", bool isDebug = false, bool enableFileLogRotate = true, string? rotateLogNameTemplate = default)
     {
         var logConfig = new LoggerConfiguration();
-        var now = DateTime.UtcNow;
 
         logConfig = logConfig.Enrich.FromLogContext();
 
@@ -24,6 +23,40 @@ public class Logger
         {
             logConfig = logConfig.WriteTo.File(logPath,
                 outputTemplate: "{Timestamp:HH:mm:ss} [{Level:u3}] {SourceContext} {Message:lj}{NewLine}{Exception}");
+
+            if (enableFileLogRotate)
+            {
+                var latestLogPath = PathBuilder.File("storage", "logs", "latest.log");
+
+                string? GetCurrentRotateName()
+                {
+                    var counter = 0;
+                    string currentName;
+
+                    while (true)
+                    {
+                        if (rotateLogNameTemplate == null)
+                            currentName = $"{logPath}.{counter}";
+                        else
+                            currentName = string.Format(rotateLogNameTemplate, counter);
+
+                        if (!File.Exists(currentName))
+                            break;
+
+                        counter++;
+                    }
+
+                    return currentName;
+                }
+
+                if (File.Exists(latestLogPath))
+                {
+                    var currentRotateName = GetCurrentRotateName();
+                    
+                    if(currentRotateName != null)
+                        File.Move(latestLogPath, currentRotateName);
+                }
+            }
         }
 
         if (isDebug)
