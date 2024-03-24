@@ -158,7 +158,7 @@ public static class Formatter
             return (i / (conversionStep * conversionStep)).Round(2) + " GB";
         }
     }
-    
+
     private static double Round(this double d, int decimals)
     {
         return Math.Round(d, decimals);
@@ -181,6 +181,21 @@ public static class Formatter
         }
 
         return input;
+    }
+
+    /// <summary>
+    /// Like .Replace but it only replaces at the start of a string
+    /// </summary>
+    /// <param name="input">The input string</param>
+    /// <param name="substringToReplace">The string to search for</param>
+    /// <param name="newSubstring">The string to replace with</param>
+    /// <returns></returns>
+    public static string ReplaceStart(string input, string substringToReplace, string newSubstring)
+    {
+        if (input.StartsWith(substringToReplace))
+            return newSubstring + input.Substring(substringToReplace.Length);
+        else
+            return input;
     }
 
     /// <summary>
@@ -250,7 +265,7 @@ public static class Formatter
 
         return $"{i2s(input.Day)}.{i2s(input.Month)}.{input.Year} {i2s(input.Hour)}:{i2s(input.Minute)}";
     }
-    
+
     /// <summary>
     /// Formats a date into the standard (NOT AMERICAN) format 
     /// </summary>
@@ -275,7 +290,7 @@ public static class Formatter
     /// <param name="conversionStep">Its 1024, not 1000. If you are a 1000 user you should set conversionStep to 1000</param>
     /// <returns></returns>
     public static string FormatSize(double bytes, double conversionStep) => FormatSize((long)bytes, conversionStep);
-    
+
     /// <summary>
     /// Formats a datetime to a "x days ago" format
     /// </summary>
@@ -308,7 +323,7 @@ public static class Formatter
 
         return Math.Round(timeSince.TotalDays) + " days ago";
     }
-    
+
     /// <summary>
     /// This will replace every placeholder with the respective value if specified in the model
     /// For example:
@@ -325,8 +340,8 @@ public static class Formatter
             foreach (var property in model.GetType().GetProperties())
             {
                 var value = property.GetValue(model);
-                
-                if(value == null)
+
+                if (value == null)
                     continue;
 
                 var placeholder = "{{" + $"{model.GetType().Name}.{property.Name}" + "}}";
@@ -337,7 +352,7 @@ public static class Formatter
 
         return text;
     }
-    
+
     /// <summary>
     /// Formats multi line texts into a render fragment for blazor
     /// </summary>
@@ -371,7 +386,7 @@ public static class Formatter
         var data = Encoding.UTF8.GetBytes(text);
         return Convert.ToBase64String(data);
     }
-    
+
     /// <summary>
     /// This method converts a base64 string to a utf 8 string
     /// </summary>
