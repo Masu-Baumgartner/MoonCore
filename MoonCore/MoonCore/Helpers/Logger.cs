@@ -8,6 +8,38 @@ public class Logger
 {
     public static void Setup(bool logInConsole = true, bool logInFile = false, string logPath = "", bool isDebug = false, bool enableFileLogRotate = true, string? rotateLogNameTemplate = default)
     {
+        if (enableFileLogRotate)
+        {
+            string? GetCurrentRotateName()
+            {
+                var counter = 0;
+                string currentName;
+
+                while (true)
+                {
+                    if (rotateLogNameTemplate == null)
+                        currentName = $"{logPath}.{counter}";
+                    else
+                        currentName = string.Format(rotateLogNameTemplate, counter);
+
+                    if (!File.Exists(currentName))
+                        break;
+
+                    counter++;
+                }
+
+                return currentName;
+            }
+
+            if (File.Exists(logPath))
+            {
+                var currentRotateName = GetCurrentRotateName();
+                    
+                if(currentRotateName != null)
+                    File.Move(logPath, currentRotateName);
+            }
+        }
+        
         var logConfig = new LoggerConfiguration();
 
         logConfig = logConfig.Enrich.FromLogContext();
@@ -23,38 +55,6 @@ public class Logger
         {
             logConfig = logConfig.WriteTo.File(logPath,
                 outputTemplate: "{Timestamp:HH:mm:ss} [{Level:u3}] {SourceContext} {Message:lj}{NewLine}{Exception}");
-
-            if (enableFileLogRotate)
-            {
-                string? GetCurrentRotateName()
-                {
-                    var counter = 0;
-                    string currentName;
-
-                    while (true)
-                    {
-                        if (rotateLogNameTemplate == null)
-                            currentName = $"{logPath}.{counter}";
-                        else
-                            currentName = string.Format(rotateLogNameTemplate, counter);
-
-                        if (!File.Exists(currentName))
-                            break;
-
-                        counter++;
-                    }
-
-                    return currentName;
-                }
-
-                if (File.Exists(logPath))
-                {
-                    var currentRotateName = GetCurrentRotateName();
-                    
-                    if(currentRotateName != null)
-                        File.Move(logPath, currentRotateName);
-                }
-            }
         }
 
         if (isDebug)
