@@ -27,7 +27,7 @@ public class HttpApiClient<TException> : IDisposable where TException : Exceptio
     }
 
     public async Task<string> Send(HttpMethod method, string path, string? body = null,
-        string contentType = "text/plain")
+        string contentType = "text/plain", Stream? fileStream = null, string? fileName = null)
     {
         var request = new HttpRequestMessage();
 
@@ -35,7 +35,19 @@ public class HttpApiClient<TException> : IDisposable where TException : Exceptio
         request.Method = method;
 
         if (body != null)
+        {
             request.Content = new StringContent(body, Encoding.UTF8, new MediaTypeHeaderValue(contentType));
+        }
+        else if (fileStream != null && !string.IsNullOrEmpty(fileName))
+        {
+            var content = new MultipartFormDataContent();
+            var fileContent = new StreamContent(fileStream);
+            fileContent.Headers.ContentType = new MediaTypeHeaderValue("application/octet-stream");
+  
+            content.Add(fileContent, "file", fileName);
+
+            request.Content = content;
+        }
 
         var response = await Client.SendAsync(request);
 
@@ -78,6 +90,9 @@ public class HttpApiClient<TException> : IDisposable where TException : Exceptio
 
     public async Task Post(string path, object? body = null) => await Send(HttpMethod.Post, path,
         body == null ? "" : JsonConvert.SerializeObject(body), "application/json");
+
+    public async Task PostFile(string path, Stream dataStream, string fileName) =>
+        await Send(HttpMethod.Post, path, fileStream: dataStream, fileName: fileName);
 
     #endregion
 
