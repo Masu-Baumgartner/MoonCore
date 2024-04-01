@@ -26,7 +26,7 @@ public class HttpApiClient<TException> : IDisposable where TException : Exceptio
         BaseUrl = baseUrl.EndsWith("/") ? baseUrl : baseUrl + "/";
     }
 
-    public async Task<string> Send(HttpMethod method, string path, string? body = null,
+    public async Task<HttpContent> SendRaw(HttpMethod method, string path, string? body = null,
         string contentType = "text/plain", Stream? fileStream = null, string? fileName = null)
     {
         var request = new HttpRequestMessage();
@@ -54,10 +54,26 @@ public class HttpApiClient<TException> : IDisposable where TException : Exceptio
         if (!response.IsSuccessStatusCode)
         {
             await HandleRequestError(response, path);
-            return "";
+            return null!;
         }
 
-        return await response.Content.ReadAsStringAsync();
+        return response.Content;
+    }
+
+    public async Task<string> Send(HttpMethod method, string path, string? body = null,
+        string contentType = "text/plain", Stream? fileStream = null, string? fileName = null)
+    {
+        var content = await SendRaw(method, path, body, contentType, fileStream, fileName);
+
+        return await content.ReadAsStringAsync();
+    }
+    
+    public async Task<Stream> SendStream(HttpMethod method, string path, string? body = null,
+        string contentType = "text/plain", Stream? fileStream = null, string? fileName = null)
+    {
+        var content = await SendRaw(method, path, body, contentType, fileStream, fileName);
+
+        return await content.ReadAsStreamAsync();
     }
 
     private async Task HandleRequestError(HttpResponseMessage response, string path)
@@ -73,6 +89,9 @@ public class HttpApiClient<TException> : IDisposable where TException : Exceptio
 
     public async Task<string> GetAsString(string path) =>
         await Send(HttpMethod.Get, path);
+    
+    public async Task<Stream> GetAsStream(string path) =>
+        await SendStream(HttpMethod.Get, path);
 
     public async Task<T> Get<T>(string path) =>
         JsonConvert.DeserializeObject<T>(await Send(HttpMethod.Get, path))!;
@@ -83,6 +102,9 @@ public class HttpApiClient<TException> : IDisposable where TException : Exceptio
 
     public async Task<string> PostAsString(string path, string body, string contentType = "text/plain") =>
         await Send(HttpMethod.Post, path, body, contentType);
+    
+    public async Task<Stream> PostAsStream(string path, string body, string contentType = "text/plain") =>
+        await SendStream(HttpMethod.Post, path, body, contentType);
 
     public async Task<T> Post<T>(string path, object body) =>
         JsonConvert.DeserializeObject<T>(await Send(HttpMethod.Post, path, JsonConvert.SerializeObject(body),
