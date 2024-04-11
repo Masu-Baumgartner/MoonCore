@@ -5,11 +5,12 @@ namespace MoonCore.Extensions;
 
 public static class WebHostConfigurationBuilderExtension
 {
-    public static void ConfigureMoonCoreHttp(this IWebHostBuilder webHostBuilder, int httpPort, bool enableHttps, int httpsPort = 443, X509Certificate2? certificate = default)
+    public static void ConfigureMoonCoreHttp(this IWebHostBuilder webHostBuilder, int httpPort, bool enableHttps, int httpsPort = 443, X509Certificate2? certificate = default, bool httpsOnly = false)
     {
         var urls = new List<string>();
         
-        urls.Add($"http://0.0.0.0:{httpPort}");
+        if(!httpsOnly)
+            urls.Add($"http://0.0.0.0:{httpPort}");
         
         if(enableHttps)
             urls.Add($"https://0.0.0.0:{httpsPort}");
