@@ -88,10 +88,10 @@ public class WsPacketConnection
     /// </summary>
     /// <returns></returns>
     /// <exception cref="ArgumentException">Will be thrown if the received packet id is not known to the registry</exception>
-    public async Task<object?> Receive()
+    public async Task<object?> Receive(int bufferSize = 4096)
     {
         // Build buffer and read
-        var buffer = new byte[1024];
+        var buffer = new byte[bufferSize];
         await WebSocket.ReceiveAsync(buffer, CancellationToken.None);
 
         // Decode and deserialize
@@ -121,9 +121,9 @@ public class WsPacketConnection
     /// </summary>
     /// <typeparam name="T">The type of the packet</typeparam>
     /// <returns></returns>
-    public async Task<T?> Receive<T>()
+    public async Task<T?> Receive<T>(int bufferSize = 4096)
     {
-        var o = await Receive();
+        var o = await Receive(bufferSize);
 
         if (o == null)
             return default;
