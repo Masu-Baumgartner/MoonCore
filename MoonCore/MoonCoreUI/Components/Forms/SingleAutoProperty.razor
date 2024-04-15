@@ -3,18 +3,16 @@
 
 @typeparam TItem
 
-<AutoProperty TProp="TItem" Data="Model" Property="PropertyInfo" />
+<AutoProperty TProp="TItem" Data="Model" Property="PropertyInfo"/>
 
 @code
 {
-    [Parameter]
-    public TItem Model { get; set; }
-    
-    [Parameter]
-    public Expression<Func<TItem, object>> Field { get; set; }
+    [Parameter] public TItem Model { get; set; }
+
+    [Parameter] public Expression<Func<TItem, object>> Field { get; set; }
 
     private PropertyInfo PropertyInfo;
-    
+
     protected override void OnInitialized()
     {
         PropertyInfo = GetPropertyInfo(Field);
@@ -22,11 +20,33 @@
 
     private PropertyInfo GetPropertyInfo(Expression<Func<TItem, object>> expression)
     {
-        if (expression.Body is MemberExpression memberExpression)
+        // Check if the expression body is a UnaryExpression (which it will be if there's a Convert operation)
+        if (expression.Body is UnaryExpression unaryExpression)
         {
-            if (memberExpression.Member is PropertyInfo propertyInfo)
+            // Check if the operand of the UnaryExpression is a MemberExpression
+            if (unaryExpression.Operand is MemberExpression memberExpression)
             {
-                return propertyInfo;
+                // Check if the MemberExpression represents a property
+                if (memberExpression.Member is PropertyInfo propertyInfo)
+                {
+                    return propertyInfo;
+                }
+                else
+                {
+                    throw new ArgumentException("Expression does not represent a property.");
+                }
+            }
+            else
+            {
+                throw new ArgumentException("Expression is not a member access expression.");
+            }
+        }
+        // Handle the case where the expression body is a simple MemberExpression
+        else if (expression.Body is MemberExpression simpleMemberExpression)
+        {
+            if (simpleMemberExpression.Member is PropertyInfo simplePropertyInfo)
+            {
+                return simplePropertyInfo;
             }
             else
             {

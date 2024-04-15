@@ -1,17 +1,20 @@
 ﻿@page "/"
 @using MoonCore.Helpers
+@using MoonCoreUI.Components.Forms
 @using MoonCoreUI.Test.Data
 
 <PageTitle>Index</PageTitle>
 
-@inject NetworkService NetworkService
+<SingleAutoProperty TItem="WeatherForecast" Model="Forecast" Field="@(x => x.TemperatureC)"></SingleAutoProperty>
 
-<button @onclick="Callback">sefsefsefsef</button>
+<button @onclick="Callback"></button>
 
 @code
 {
-    private async Task Callback()
+    private WeatherForecast Forecast = new();
+
+    private void Callback()
     {
-        await NetworkService.OnConsoleMessage.Emit(Formatter.GenerateString(16));
+        Console.WriteLine(Forecast.TemperatureC);
     }
 }
