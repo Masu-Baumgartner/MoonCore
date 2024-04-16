@@ -5,7 +5,7 @@ using MoonCoreUI.Test.Data;
 
 var builder = WebApplication.CreateBuilder(args);
 
-Logger.Setup();
+Logger.Setup(isDebug: true);
 
 // Add services to the container.
 builder.Services.AddRazorPages();

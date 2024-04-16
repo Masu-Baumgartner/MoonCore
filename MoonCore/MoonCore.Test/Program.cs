@@ -2,6 +2,8 @@
 using MoonCore.Helpers;
 using MoonCore.Test;
 
+Logger.Setup(isDebug: true);
+
 var clientWs = new ClientWebSocket();
 await clientWs.ConnectAsync(new Uri("ws://localhost:5171/testy"), CancellationToken.None);
 
