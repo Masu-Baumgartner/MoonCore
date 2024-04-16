@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using System.Net.WebSockets;
+using Microsoft.AspNetCore.Mvc;
 using MoonCore.Helpers;
 using MoonCoreUI.Test.Data;
 
@@ -8,13 +9,6 @@ namespace MoonCoreUI.Test.Controllers;
 [Route("testy")]
 public class TestyController : ControllerBase
 {
-    private readonly NetworkService NetworkService;
-
-    public TestyController(NetworkService networkService)
-    {
-        NetworkService = networkService;
-    }
-
     [HttpGet]
     public async Task<ActionResult> Ws()
     {
@@ -23,9 +17,27 @@ public class TestyController : ControllerBase
         
         var socket = await HttpContext.WebSockets.AcceptWebSocketAsync();
 
-        var client = await NetworkService.Connection.AddClient(socket);
+        var aws = new AdvancedWebsocketStream(socket);
+        
+        aws.RegisterPacket<WeatherForecast>(1);
 
-        await client.PacketConnection.WaitForClose();
+        while (socket.State == WebSocketState.Open)
+        {
+            var packet = await aws.ReceivePacket();
+
+            if (packet is WeatherForecast forecast)
+            {
+                Logger.Info(forecast.Summary);
+                Logger.Info(forecast.Date.ToString());
+                Logger.Info(forecast.TemperatureC.ToString());
+            }
+            else
+            {
+                Logger.Info(packet.GetType().ToString());
+            }
+        }
+
+        await aws.WaitForClose();
 
         return Ok();
     }
