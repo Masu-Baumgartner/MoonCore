@@ -7,11 +7,14 @@ namespace MoonCore.Helpers;
 public class AdvancedWebsocketStream
 {
     private readonly WebSocket Socket;
+    private readonly int MaxBufferSize;
+    
     private readonly Dictionary<int, Type> Packets = new();
 
-    public AdvancedWebsocketStream(WebSocket socket)
+    public AdvancedWebsocketStream(WebSocket socket, int maxBufferSize = 10 * 1024)
     {
         Socket = socket;
+        MaxBufferSize = maxBufferSize;
     }
 
     public void RegisterPacket<T>(int id) => RegisterPacket(id, typeof(T));
@@ -31,9 +34,14 @@ public class AdvancedWebsocketStream
         await Socket.ReceiveAsync(lengthBuffer, CancellationToken.None);
         var length = BitConverter.ToInt32(lengthBuffer);
 
+        // Validate length
         if (length <= 0)
             throw new ArgumentException("The packet length cannot be less or equal than zero");
 
+        if (length > MaxBufferSize)
+            throw new ArgumentException("The packet lenght cannot be greater than the max buffer size");
+
+        // Packet
         var packetBuffer = new byte[length];
         await Socket.ReceiveAsync(packetBuffer, CancellationToken.None);
 
@@ -58,17 +66,19 @@ public class AdvancedWebsocketStream
         if (Socket.State != WebSocketState.Open)
             throw new ArgumentException("The websocket connection needs to be open in order to send packets");
 
-        var buffer = EncodePacket(packet);
+        using var dataStream = new MemoryStream();
 
-        // Send length
-        var length = buffer.Length;
-        var lengthBuffer = BitConverter.GetBytes(length);
+        // Encode packet
+        var packetStream = EncodePacket(packet);
+
+        // Write length
+        dataStream.Write(BitConverter.GetBytes(packetStream.Length));
+
+        // Copy packet stream to data stream
+        packetStream.WriteTo(dataStream);
+        await packetStream.DisposeAsync();
         
-        await Socket.SendAsync(lengthBuffer, WebSocketMessageType.Binary, WebSocketMessageFlags.None,
-            CancellationToken.None);
-        
-        // Send packet
-        await Socket.SendAsync(buffer, WebSocketMessageType.Binary, WebSocketMessageFlags.None, CancellationToken.None);
+        await Socket.SendAsync(dataStream.ToArray(), WebSocketMessageType.Binary, WebSocketMessageFlags.EndOfMessage, CancellationToken.None);
     }
     
     public async Task WaitForClose()
@@ -92,7 +102,7 @@ public class AdvancedWebsocketStream
             await Socket.CloseOutputAsync(WebSocketCloseStatus.Empty, null, CancellationToken.None);
     }
 
-    private byte[] EncodePacket(object packet)
+    private MemoryStream EncodePacket(object packet)
     {
         var type = packet.GetType();
 
@@ -101,17 +111,19 @@ public class AdvancedWebsocketStream
         if (packetId == -1)
             throw new ArgumentException($"Sending packet type which has not been registered: {packet.GetType().Name}");
 
+        var memoryStream = new MemoryStream();
+        
         // Header
-        var headerBuffer = BitConverter.GetBytes(packetId);
+        memoryStream.Write(BitConverter.GetBytes(packetId));
 
         // Body
         var jsonText = JsonConvert.SerializeObject(packet);
-        var bodyBuffer = Encoding.UTF8.GetBytes(jsonText);
+        memoryStream.Write(Encoding.UTF8.GetBytes(jsonText));
 
-        return headerBuffer.Concat(bodyBuffer).ToArray();
+        return memoryStream;
     }
 
-    private object? DecodePacket(ReadOnlySpan<byte> buffer)
+    private object? DecodePacket(byte[] buffer)
     {
         if (buffer.Length < 5) // 4 (header) + minimum 1 as body
         {
@@ -119,7 +131,8 @@ public class AdvancedWebsocketStream
             return default;
         }
 
-        var headerBuffer = buffer.Slice(0, 4);
+        var headerBuffer = new byte[4];
+        Array.Copy(buffer, 0, headerBuffer, 0, 4);
         var packetId = BitConverter.ToInt32(headerBuffer);
 
         var packetType = Packets.TryGetValue(packetId, out var packet) ? packet : default;
@@ -130,7 +143,9 @@ public class AdvancedWebsocketStream
             return default;
         }
 
-        var bodyBuffer = buffer.Slice(4);
+        var bodyBuffer = new byte[buffer.Length - 4];
+        Array.Copy(buffer, 4, bodyBuffer, 0, buffer.Length - 4);
+
         var jsonText = Encoding.UTF8.GetString(bodyBuffer);
 
         if (string.IsNullOrEmpty(jsonText))
@@ -145,7 +160,7 @@ public class AdvancedWebsocketStream
         {
             result = JsonConvert.DeserializeObject(jsonText, packetType);
         }
-        catch (JsonSerializationException e)
+        catch (JsonReaderException e)
         {
             Logger.Warn($"An error occured while deserializating the json text of the packet {packetType.Name}");
             Logger.Warn(e);
