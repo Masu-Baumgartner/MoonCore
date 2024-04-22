@@ -10,8 +10,8 @@
             <select class="form-select" @onmousedown:preventDefault @onmousedown="() => SetShow(!ShowDropdown)">
                 <option selected="">@Placeholder</option>
             </select>
-            <button class="btn btn-icon btn-outline-secondary" type="button" @onmousedown:preventDefault>
-                <i class="bx bx-x"></i>
+            <button class="btn btn-icon btn-secondary" type="button" @onmousedown:preventDefault>
+                <i class="bx bx-sm bx-x"></i>
             </button>
         }
         else
@@ -19,8 +19,8 @@
             <select class="form-select" @onmousedown:preventDefault @onmousedown="() => SetShow(!ShowDropdown)">
                 <option selected="">@DisplayFunc(CurrentValue)</option>
             </select>
-            <button class="btn btn-icon btn-outline-secondary" type="button" @onmousedown:preventDefault @onmousedown="() => SelectItem(default)">
-                <i class="bx bx-x"></i>
+            <button class="btn btn-icon btn-secondary" type="button" @onmousedown:preventDefault @onmousedown="() => SelectItem(default)">
+                <i class="bx bx-sm bx-x"></i>
             </button>
         }
     </div>
@@ -31,8 +31,8 @@
 
     @if (ShowDropdown)
     {
-        <div class="dropdown-menu w-100 show">
-            <div class="d-flex justify-content-center mb-2">
+        <div class="dropdown-menu w-100 show p-2">
+            <div class="d-flex justify-content-center mb-2 mx-1">
                 <input @ref="FilterRef" class="form-control" type="text" placeholder="@SearchPlaceholder" @bind-value="SearchTerm" @bind-value:event="oninput" @onfocusout="() => SetShow(false)"/>
             </div>
             <div style="max-height: 200px; overflow-y: auto;">

@@ -156,7 +156,7 @@
                     return prop.GetValue(x) as string ?? "N/A";
                 });
 
-                <SmartDropdown @bind-Value="Binder.Class" DisplayFunc="displayFunc" SearchProp="searchFunc" Items="Items"/>
+                <AdvancedSmartDropdown @bind-Value="Binder.Class" DisplayFunc="displayFunc" SearchProp="searchFunc" Items="Items"/>
             }
             else
             {
