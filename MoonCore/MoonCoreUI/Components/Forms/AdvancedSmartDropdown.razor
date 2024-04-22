@@ -1,0 +1,181 @@
+﻿@using Microsoft.AspNetCore.Components.Forms
+
+@typeparam T
+@inherits InputBase<T>
+
+<div class="dropdown w-100">
+    <div class="input-group">
+        @if (CurrentValue == null)
+        {
+            <select class="form-select" @onmousedown:preventDefault @onmousedown="() => SetShow(!ShowDropdown)">
+                <option selected="">@Placeholder</option>
+            </select>
+            <button class="btn btn-icon btn-outline-secondary" type="button" @onmousedown:preventDefault>
+                <i class="bx bx-x"></i>
+            </button>
+        }
+        else
+        {
+            <select class="form-select" @onmousedown:preventDefault @onmousedown="() => SetShow(!ShowDropdown)">
+                <option selected="">@DisplayFunc(CurrentValue)</option>
+            </select>
+            <button class="btn btn-icon btn-outline-secondary" type="button" @onmousedown:preventDefault @onmousedown="() => SelectItem(default)">
+                <i class="bx bx-x"></i>
+            </button>
+        }
+    </div>
+
+    @{
+        var anyItems = FilteredItems.Any();
+    }
+
+    @if (ShowDropdown)
+    {
+        <div class="dropdown-menu w-100 show">
+            <div class="d-flex justify-content-center mb-2">
+                <input @ref="FilterRef" class="form-control" type="text" placeholder="@SearchPlaceholder" @bind-value="SearchTerm" @bind-value:event="oninput" @onfocusout="() => SetShow(false)"/>
+            </div>
+            <div style="max-height: 200px; overflow-y: auto;">
+                @if (anyItems)
+                {
+                    foreach (var item in FilteredItems)
+                    {
+                        <button class="dropdown-item py-2" type="button" @onmousedown:preventDefault @onclick="() => SelectItem(item)">@DisplayFunc(item)</button>
+                    }
+                }
+                else
+                {
+                    foreach (var item in Items.Take(MaximumSize))
+                    {
+                        <button class="dropdown-item py-2" type="button" @onmousedown:preventDefault @onclick="() => SelectItem(item)">@DisplayFunc(item)</button>
+                    }
+                }
+            </div>
+        </div>
+    }
+</div>
+
+@code {
+
+    [Parameter] public IEnumerable<T> Items { get; set; }
+
+    [Parameter] public Func<T, string> DisplayFunc { get; set; }
+
+    [Parameter] public Func<T, string> SearchProp { get; set; }
+
+    [Parameter] public Func<Task>? OnSelected { get; set; }
+
+    [Parameter] public string Placeholder { get; set; } = "Select an option ...";
+
+    [Parameter] public string SearchPlaceholder { get; set; } = "Enter text to search";
+
+    [Parameter] public int MaximumSize { get; set; } = 50;
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (ShowDropdown)
+        {
+            await FilterRef.FocusAsync();
+        }
+    }
+
+    private bool ShowDropdown = false;
+
+    private string SearchTerm
+    {
+        get => searchTerm;
+        set
+        {
+            searchTerm = value;
+            FilteredItems = Items.OrderByDescending(x => Matches(SearchProp(x), searchTerm)).Take(MaximumSize).ToList();
+        }
+    }
+
+    private string searchTerm = "";
+
+    private List<T> FilteredItems = new();
+    private ElementReference FilterRef;
+
+    private async Task SelectItem(T? item)
+    {
+        CurrentValue = item;
+        SearchTerm = "";
+        FilteredItems.Clear();
+
+        if (OnSelected != null)
+            await OnSelected.Invoke();
+
+        ShowDropdown = false;
+        await InvokeAsync(StateHasChanged);
+    }
+
+    protected override bool TryParseValueFromString(string? value, out T result, out string? validationErrorMessage)
+    {
+        // Check if the value is null or empty
+        if (string.IsNullOrEmpty(value))
+        {
+            result = default(T)!;
+            validationErrorMessage = "Value cannot be null or empty";
+            return false;
+        }
+
+        // Try to find an item that matches the search term
+        var item = FilteredItems.OrderByDescending(x => Matches(SearchProp(x), value)).FirstOrDefault();
+        if (item != null)
+        {
+            result = item;
+            validationErrorMessage = null;
+            return true;
+        }
+
+        result = default!;
+        validationErrorMessage = $"No item found for search term '{value}'";
+        return false;
+    }
+
+    private float Matches(string input, string search)
+    {
+        if (string.IsNullOrEmpty(input) || string.IsNullOrEmpty(search))
+            return 0;
+
+        // Normalize both strings to lowercase and remove common separators
+        var cleanedSearch = NormalizeString(search);
+        var cleanedInput = NormalizeString(input);
+
+        // Early exit if the strings are identical
+        if (cleanedInput == cleanedSearch)
+            return 10000;
+
+        float matches = 0;
+        var searchLength = cleanedSearch.Length;
+        var inputLength = cleanedInput.Length;
+
+        for (var i = 0; i <= inputLength - searchLength; i++)
+        {
+            int j;
+            for (j = 0; j < searchLength; j++)
+            {
+                if (cleanedInput[i + j] != cleanedSearch[j])
+                    break;
+            }
+            if (j == searchLength)
+                matches++;
+        }
+
+        // Calculate the match score based on the number of matches and the length of the search term
+        var matchScore = matches / searchLength;
+
+        return matchScore;
+    }
+
+    private string NormalizeString(string input)
+    {
+        return input.ToLower().Replace(" ", "").Replace("-", "");
+    }
+
+    private async Task SetShow(bool b)
+    {
+        ShowDropdown = b;
+        await InvokeAsync(StateHasChanged);
+    }
+}
