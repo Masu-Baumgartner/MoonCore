@@ -31,10 +31,13 @@
 
     @if (ShowDropdown)
     {
-        <div class="dropdown-menu w-100 show p-2">
-            <div class="d-flex justify-content-center mb-2 mx-1">
-                <input @ref="FilterRef" class="form-control" type="text" placeholder="@SearchPlaceholder" @bind-value="SearchTerm" @bind-value:event="oninput" @onfocusout="() => SetShow(false)"/>
-            </div>
+        <div class="dropdown-menu w-100 show">
+            @if (ItemsCount > MinimumSearchSize)
+            {
+                <div class="d-flex justify-content-center mb-2 mx-1">
+                    <input @ref="FilterRef" class="form-control" type="text" placeholder="@SearchPlaceholder" @bind-value="SearchTerm" @bind-value:event="oninput" />
+                </div>
+            }
             <div style="max-height: 200px; overflow-y: auto;">
                 @if (anyItems)
                 {
@@ -71,13 +74,9 @@
 
     [Parameter] public int MaximumSize { get; set; } = 50;
 
-    protected override async Task OnAfterRenderAsync(bool firstRender)
-    {
-        if (ShowDropdown)
-        {
-            await FilterRef.FocusAsync();
-        }
-    }
+    [Parameter] public int MinimumSearchSize { get; set; } = 10;
+
+    private int ItemsCount;
 
     private bool ShowDropdown = false;
 
@@ -95,6 +94,20 @@
 
     private List<T> FilteredItems = new();
     private ElementReference FilterRef;
+    
+    protected override void OnParametersSet()
+    {
+        ItemsCount = Items.Count();
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (ShowDropdown)
+        {
+            if(FilterRef.Context != null)
+                await FilterRef.FocusAsync();
+        }
+    }
 
     private async Task SelectItem(T? item)
     {
