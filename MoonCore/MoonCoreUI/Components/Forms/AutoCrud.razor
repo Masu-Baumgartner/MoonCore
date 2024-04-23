@@ -1,6 +1,4 @@
-﻿@using BlazorTable
-@using System.Linq.Expressions
-@using Mappy.Net
+﻿@using Mappy.Net
 @using MoonCore.Abstractions
 @using MoonCore.Helpers
 @using MoonCoreUI.Services
@@ -39,10 +37,8 @@
     </div>
 
     <SmartForm Model="CreateForm" OnValidSubmit="FinishCreate">
-        <div class="card card-body p-8 mb-5">
-            <div class="row g-5">
-                <AutoForm Columns="@(CreateForm.GetType().GetProperties().Length > 1 ? 6 : 12)" Model="CreateForm"/>
-            </div>
+        <div class="mb-5">
+            <AdvancedAutoForm Columns="@(CreateForm.GetType().GetProperties().Length > 1 ? 6 : 12)" Model="CreateForm"/>
         </div>
 
         <div class="card card-body p-5">
@@ -90,7 +86,7 @@ else if (ShowUpdate)
     <SmartForm Model="UpdateForm" OnValidSubmit="FinishUpdate">
         <div class="card card-body p-8 mb-5">
             <div class="row g-5">
-                <AutoForm Columns="@(UpdateForm.GetType().GetProperties().Length > 1 ? 6 : 12)" Model="UpdateForm"/>
+                <AdvancedAutoForm Columns="@(UpdateForm.GetType().GetProperties().Length > 1 ? 6 : 12)" Model="UpdateForm"/>
             </div>
         </div>
 

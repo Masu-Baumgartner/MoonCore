@@ -84,7 +84,7 @@
 
 @* Actual value binding *@
 
-<div class="input-group mb-5">
+<div class="mt-auto">
     @if (Property.PropertyType == typeof(string))
     {
         <div class="w-100">
@@ -93,7 +93,17 @@
     }
     else if (Property.PropertyType == typeof(int))
     {
-        <input id="@Property.Name" @bind="Binder.IntValue" type="@formType" class="@customCss"/>
+        if (TryGetCasted<ByteSizeAttribute>(out var byteSizeAttribute))
+        {
+            <ByteSizeInput @bind-Value="Binder.IntValue"
+                           Converter="byteSizeAttribute.Converter"
+                           MinimumUnit="byteSizeAttribute.MinimumUnit"
+                           DefaultUnit="byteSizeAttribute.DefaultUnit" />
+        }
+        else
+        {
+            <input id="@Property.Name" @bind="Binder.IntValue" type="@formType" class="@customCss"/>
+        }
     }
     else if (Property.PropertyType == typeof(double))
     {
@@ -156,7 +166,7 @@
                     return prop.GetValue(x) as string ?? "N/A";
                 });
 
-                <SmartDropdown @bind-Value="Binder.Class" DisplayFunc="displayFunc" SearchProp="searchFunc" Items="Items"/>
+                <AdvancedSmartDropdown @bind-Value="Binder.Class" DisplayFunc="displayFunc" SearchProp="searchFunc" Items="Items"/>
             }
             else
             {
