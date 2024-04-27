@@ -10,7 +10,7 @@
         <button class="btn btn-icon btn-secondary rounded" type="button" id="defaultDropdown" data-bs-toggle="dropdown" data-bs-auto-close="true" aria-expanded="false">
             <i class="bx bx-sm bx-filter-alt"></i>
         </button>
-        <div class="dropdown-menu py-1 px-2 fs-5 me-2 bg-secondary" style="min-width: 15rem">
+        <div class="dropdown-menu py-1 px-2 fs-5 me-2 bg-@Color" style="min-width: 15rem">
             @foreach (var property in Properties)
             {
                 <div class="my-2 text-center">
@@ -39,8 +39,11 @@
 {
     public SmartEventHandler OnFilterChanged { get; set; } = new();
     
-    private PropertyInfo[] Properties =Array.Empty<PropertyInfo>();
+    private PropertyInfo[] Properties = Array.Empty<PropertyInfo>();
     private TItem Model;
+
+    [Parameter]
+    public string Color { get; set; }
 
     protected override void OnInitialized()
     {
