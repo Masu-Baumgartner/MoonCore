@@ -63,4 +63,10 @@ public class PropBinder<T>
         get => (double)PropertyInfo.GetValue(DataObject)!;
         set => PropertyInfo.SetValue(DataObject, value);
     }
+    
+    public List<T> ClassList
+    {
+        get => (List<T>)PropertyInfo.GetValue(DataObject)!;
+        set => PropertyInfo.SetValue(DataObject, value);
+    }
 }
