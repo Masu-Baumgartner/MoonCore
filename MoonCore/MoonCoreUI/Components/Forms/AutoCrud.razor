@@ -118,7 +118,7 @@ else
                 {
                     @Toolbar
                 }
-                <DynamicFilterButton @ref="FilterButton" TItem="TItem"/>
+                <DynamicFilterButton @ref="FilterButton" TItem="TItem" Color="FilterMenuColor"/>
                 <button @onclick="StartCreate" type="button" class="btn btn-primary ms-3">
                     @if (string.IsNullOrEmpty(CreateText))
                     {
@@ -225,6 +225,9 @@ else
     [Parameter] public Func<TItem, Task>? CustomDelete { get; set; }
 
     [Parameter] public int PageSize { get; set; } = 25;
+
+    [Parameter]
+    public string FilterMenuColor { get; set; } = "gray-700";
 
     private TItem[] Items;
     private TCreateForm CreateForm;
