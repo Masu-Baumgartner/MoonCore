@@ -86,13 +86,13 @@
         set
         {
             searchTerm = value;
-            FilteredItems = Items.OrderByDescending(x => Matches(SearchProp(x), searchTerm)).Take(MaximumSize).ToList();
+            FilteredItems = Items.OrderByDescending(x => Matches(SearchProp(x), searchTerm)).Take(MaximumSize).ToArray();
         }
     }
 
     private string searchTerm = "";
 
-    private List<T> FilteredItems = new();
+    private T[] FilteredItems = Array.Empty<T>();
     private ElementReference FilterRef;
     
     protected override void OnParametersSet()
@@ -113,7 +113,7 @@
     {
         CurrentValue = item;
         SearchTerm = "";
-        FilteredItems.Clear();
+        FilteredItems = Array.Empty<T>();
 
         if (OnSelected != null)
             await OnSelected.Invoke();

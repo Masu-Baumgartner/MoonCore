@@ -5,16 +5,29 @@
 @foreach (var prop in typeof(TForm).GetProperties())
 {
     <div class="col-md-@(Columns) col-12">
-        @{
+        
+        @if (prop.PropertyType.IsSubclassOf(typeof(List<>)))
+        {
+            var typeToCreate = typeof(AutoListProperty<,>).MakeGenericType(prop.PropertyType, prop.PropertyType.GetGenericArguments().First());
+            var rf = ComponentHelper.FromType(typeToCreate, parameters =>
+            {
+                parameters.Add("Data", Model);
+                parameters.Add("Property", prop);
+            });
+            
+            @rf
+        }
+        else
+        {
             var typeToCreate = typeof(AutoProperty<>).MakeGenericType(prop.PropertyType);
             var rf = ComponentHelper.FromType(typeToCreate, parameters =>
             {
                 parameters.Add("Data", Model);
                 parameters.Add("Property", prop);
             });
+            
+            @rf
         }
-
-        @rf
     </div>
 }
 

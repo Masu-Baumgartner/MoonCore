@@ -1,14 +1,26 @@
 ﻿@page "/"
 @using Bogus
+@using MoonCore.Helpers
 @using MoonCoreUI.Test.Data
 @using MoonCoreUI.Components.Forms
 
 <PageTitle>Index</PageTitle>
 
-<AdvancedSmartDropdown T="WeatherForecast" Items="Forecasts" @bind-Value="Forecast" SearchProp="@(x => x.Summary)" DisplayFunc="@(x => x.Summary)" />
+<MultiItemSelect T="WeatherForecast"
+                 @bind-Value="Selected"
+                 Items="Forecasts"
+                 DisplayProp="@(x => x.Summary)"
+                 SearchProp="@(x => x.Summary)">
+</MultiItemSelect>
+
+<div class="row">
+    <WButton Text="teyty" OnClick="OnClick"></WButton>
+</div>
 
 @code
 {
+    private List<WeatherForecast> Selected = new();
+    
     private List<WeatherForecast> Forecasts = new();
     private WeatherForecast Forecast;
 
@@ -23,5 +35,15 @@
                 Summary = faker.Address.City()
             });
         }
+    }
+
+    private Task OnClick()
+    {
+        foreach (var forecast in Selected)
+        {
+            Logger.Info(forecast.Summary);
+        }
+        
+        return Task.CompletedTask;
     }
 }

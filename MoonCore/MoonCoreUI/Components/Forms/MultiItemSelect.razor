@@ -1,0 +1,148 @@
+@typeparam T
+@inherits InputBase<List<T>>
+
+@if (CurrentValue != null)
+{
+    <div class="dropdown w-100 border rounded">
+        <div class="d-flex flex-wrap">
+            @if (CurrentValue.Any())
+            {
+                foreach (var item in CurrentValue)
+                {
+                    <span class="badge badge-secondary fs-6 mx-1 text-body px-3 py-2 my-1 border-hover-secondary border border-2 border-none fw-normal">
+                        @(DisplayProp.Invoke(item))
+                        <a href="#" @onclick:preventDefault @onclick="() => RemoveItem(item)" class="text-body">
+                            <i class="bx bx-sm bx-x ms-2"></i>
+                        </a>
+                    </span>
+                }
+            }
+            <input class="form-control form-control-transparent w-unset flex-grow-1" type="text" placeholder="Search..." @bind-value="SearchTerm" @bind-value:event="oninput" @onfocusin="() => SetShow(true)" @onfocusout="() => SetShow(false)"/>
+        </div>
+        @if (ShowDropdown)
+        {
+            <div class="dropdown-menu w-100 show">
+                <div style="max-height: 200px; overflow-y: auto;">
+                    @if (FilteredItems.Any())
+                    {
+                        foreach (var item in FilteredItems)
+                        {
+                            if (!CurrentValue.Contains(item))
+                            {
+                                <button class="dropdown-item py-2" type="button" @onmousedown:preventDefault @onmousedown="() => AddItem(item)">@DisplayProp(item)</button>
+                            }
+                        }
+                    }
+                    else
+                    {
+                        foreach (var item in Items.Take(MaximumSize))
+                        {
+                            if (!CurrentValue.Contains(item))
+                            {
+                                <button class="dropdown-item py-2" type="button" @onmousedown:preventDefault @onmousedown="() => AddItem(item)">@DisplayProp(item)</button>
+                            }
+                        }
+                    }
+                </div>
+            </div>
+        }
+    </div>
+}
+
+@code
+{
+    [Parameter] public IEnumerable<T> Items { get; set; }
+
+    [Parameter] public Func<T, string> DisplayProp { get; set; }
+    [Parameter] public Func<T, string> SearchProp { get; set; }
+    [Parameter] public int MaximumSize { get; set; } = 25;
+
+    [Parameter] public string ItemColor { get; set; } = "secondary";
+
+    private T[] FilteredItems = Array.Empty<T>();
+
+    private bool ShowDropdown = false;
+
+    private string SearchTerm
+    {
+        get => searchTerm;
+        set
+        {
+            searchTerm = value;
+            FilteredItems = Items.OrderByDescending(x => Matches(SearchProp(x), searchTerm)).Take(MaximumSize).ToArray();
+        }
+    }
+
+    private string searchTerm = "";
+    
+    private async Task RemoveItem(T item)
+    {
+        if (CurrentValue != null && CurrentValue.Contains(item))
+            CurrentValue.Remove(item);
+
+        await InvokeAsync(StateHasChanged);
+    }
+
+    private async Task AddItem(T item)
+    {
+        if (CurrentValue != null && !CurrentValue.Contains(item))
+            CurrentValue.Add(item);
+
+        await InvokeAsync(StateHasChanged);
+    }
+
+    private float Matches(string input, string search)
+    {
+        if (string.IsNullOrEmpty(input) || string.IsNullOrEmpty(search))
+            return 0;
+
+        // Normalize both strings to lowercase and remove common separators
+        var cleanedSearch = NormalizeString(search);
+        var cleanedInput = NormalizeString(input);
+
+        // Early exit if the strings are identical
+        if (cleanedInput == cleanedSearch)
+            return 10000;
+
+        float matches = 0;
+        var searchLength = cleanedSearch.Length;
+        var inputLength = cleanedInput.Length;
+
+        for (var i = 0; i <= inputLength - searchLength; i++)
+        {
+            int j;
+            for (j = 0; j < searchLength; j++)
+            {
+                if (cleanedInput[i + j] != cleanedSearch[j])
+                    break;
+            }
+
+            if (j == searchLength)
+                matches++;
+        }
+
+        // Calculate the match score based on the number of matches and the length of the search term
+        var matchScore = matches / searchLength;
+
+        return matchScore;
+    }
+
+    private string NormalizeString(string input)
+    {
+        return input.ToLower().Replace(" ", "").Replace("-", "");
+    }
+
+    private async Task SetShow(bool b)
+    {
+        ShowDropdown = b;
+        await InvokeAsync(StateHasChanged);
+    }
+
+    protected override bool TryParseValueFromString(string? value, out List<T> result, out string? validationErrorMessage)
+    {
+        result = new List<T>();
+        validationErrorMessage = "";
+
+        return false;
+    }
+}

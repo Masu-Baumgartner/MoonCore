@@ -1,10 +1,10 @@
 ﻿@using System.Reflection
 @using System.ComponentModel
-@using Microsoft.AspNetCore.Components.Forms
 @using Microsoft.Extensions.DependencyInjection
 @using MoonCore.Abstractions
 @using MoonCore.Helpers
 @using MoonCoreUI.Attributes
+@using MoonCoreUI.Helpers
 
 @typeparam TProp
 @inject IServiceProvider ServiceProvider
@@ -147,22 +147,19 @@
     }
     else if (Property.PropertyType.IsClass)
     {
-        var attribute = Property.GetCustomAttributes(true)
-            .FirstOrDefault(x => x.GetType() == typeof(SelectorAttribute)) as SelectorAttribute;
-
-        if (attribute != null)
+        if (TryGetCasted(out SelectorAttribute selectorAttribute))
         {
-            if (attribute.UseDropdown)
+            if (selectorAttribute.UseDropdown)
             {
                 var displayFunc = new Func<TProp, string>(x =>
                 {
-                    var prop = typeof(TProp).GetProperties().First(x => x.Name == attribute.DisplayProp);
+                    var prop = typeof(TProp).GetProperties().First(x => x.Name == selectorAttribute.DisplayProp);
                     return prop.GetValue(x) as string ?? "N/A";
                 });
 
                 var searchFunc = new Func<TProp, string>(x =>
                 {
-                    var prop = typeof(TProp).GetProperties().First(x => x.Name == attribute.SelectorProp);
+                    var prop = typeof(TProp).GetProperties().First(x => x.Name == selectorAttribute.SelectorProp);
                     return prop.GetValue(x) as string ?? "N/A";
                 });
 
@@ -172,7 +169,7 @@
             {
                 var displayFunc = new Func<TProp, string>(x =>
                 {
-                    var prop = typeof(TProp).GetProperties().First(x => x.Name == attribute.DisplayProp);
+                    var prop = typeof(TProp).GetProperties().First(x => x.Name == selectorAttribute.DisplayProp);
                     return prop.GetValue(x) as string ?? "N/A";
                 });
 
