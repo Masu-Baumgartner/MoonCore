@@ -1,15 +1,16 @@
 @typeparam T
+@using MoonCoreUI.Helpers
 @inherits InputBase<List<T>>
 
 @if (CurrentValue != null)
 {
     <div class="dropdown w-100 border rounded">
-        <div class="d-flex flex-wrap">
+        <div class="d-flex flex-wrap m-1">
             @if (CurrentValue.Any())
             {
                 foreach (var item in CurrentValue)
                 {
-                    <span class="badge badge-secondary fs-6 mx-1 text-body px-3 py-2 my-1 border-hover-secondary border border-2 border-none fw-normal">
+                    <span class="badge badge-@ItemColor fs-6 mx-1 text-body px-3 py-2 my-1 border-hover-@ItemColor border border-2 border-none fw-normal">
                         @(DisplayProp.Invoke(item))
                         <a href="#" @onclick:preventDefault @onclick="() => RemoveItem(item)" class="text-body">
                             <i class="bx bx-sm bx-x ms-2"></i>
@@ -69,7 +70,7 @@
         set
         {
             searchTerm = value;
-            FilteredItems = Items.OrderByDescending(x => Matches(SearchProp(x), searchTerm)).Take(MaximumSize).ToArray();
+            FilteredItems = Items.OrderByDescending(x => FormHelper.CalculateMatchScore(SearchProp(x), searchTerm)).Take(MaximumSize).ToArray();
         }
     }
 
@@ -89,47 +90,6 @@
             CurrentValue.Add(item);
 
         await InvokeAsync(StateHasChanged);
-    }
-
-    private float Matches(string input, string search)
-    {
-        if (string.IsNullOrEmpty(input) || string.IsNullOrEmpty(search))
-            return 0;
-
-        // Normalize both strings to lowercase and remove common separators
-        var cleanedSearch = NormalizeString(search);
-        var cleanedInput = NormalizeString(input);
-
-        // Early exit if the strings are identical
-        if (cleanedInput == cleanedSearch)
-            return 10000;
-
-        float matches = 0;
-        var searchLength = cleanedSearch.Length;
-        var inputLength = cleanedInput.Length;
-
-        for (var i = 0; i <= inputLength - searchLength; i++)
-        {
-            int j;
-            for (j = 0; j < searchLength; j++)
-            {
-                if (cleanedInput[i + j] != cleanedSearch[j])
-                    break;
-            }
-
-            if (j == searchLength)
-                matches++;
-        }
-
-        // Calculate the match score based on the number of matches and the length of the search term
-        var matchScore = matches / searchLength;
-
-        return matchScore;
-    }
-
-    private string NormalizeString(string input)
-    {
-        return input.ToLower().Replace(" ", "").Replace("-", "");
     }
 
     private async Task SetShow(bool b)

@@ -84,10 +84,8 @@ else if (ShowUpdate)
     </div>
 
     <SmartForm Model="UpdateForm" OnValidSubmit="FinishUpdate">
-        <div class="card card-body p-8 mb-5">
-            <div class="row g-5">
-                <AdvancedAutoForm Columns="@(UpdateForm.GetType().GetProperties().Length > 1 ? 6 : 12)" Model="UpdateForm"/>
-            </div>
+        <div class="mb-5">
+            <AdvancedAutoForm Columns="@(UpdateForm.GetType().GetProperties().Length > 1 ? 6 : 12)" Model="UpdateForm"/>
         </div>
 
         <div class="card card-body p-5">

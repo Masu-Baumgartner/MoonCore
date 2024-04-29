@@ -4,6 +4,7 @@
 @using MoonCore.Abstractions
 @using MoonCore.Helpers
 @using MoonCoreUI.Attributes
+@using MoonCoreUI.Helpers
 
 @typeparam TProp where TProp : List<TListItem>
 @typeparam TListItem
@@ -14,38 +15,6 @@
     <label class="form-label">
         @(Formatter.ConvertCamelCaseToSpaces(Property.Name))
     </label>
-}
-
-@{
-    var customAttributes = Property.GetCustomAttributes(true);
-
-    bool TryGetCasted<T>(out T result) where T : class
-    {
-        if (customAttributes == null)
-        {
-            result = default(T)!;
-            return false;
-        }
-
-        var attribute = customAttributes!.FirstOrDefault(x => x.GetType() == typeof(T));
-
-        if (attribute == null)
-        {
-            result = default(T)!;
-            return false;
-        }
-
-        var castedAttribute = attribute as T;
-
-        if (castedAttribute == null)
-        {
-            result = default(T)!;
-            return false;
-        }
-
-        result = castedAttribute;
-        return true;
-    }
 }
 
 @if (TryGetCasted<DescriptionAttribute>(out var descriptionAttribute))
@@ -60,70 +29,12 @@
 <div class="mt-auto">
     @if (TryGetCasted(out MultiSelectionAttribute multiSelectionAttribute))
     {
-        var displayFunc = new Func<TListItem, string>(x =>
-        {
-            if (multiSelectionAttribute.DisplayProp.Contains("{{"))
-            {
-                // Syntax:
-                // # => indicates the start of a multi selection thing
-                // {{PropName}}
-                // the rest is read as a string
-
-                var result = multiSelectionAttribute.DisplayProp;
-
-                foreach (var property in typeof(TListItem).GetProperties())
-                {
-                    var identifier = "{{" + property.Name + "}}";
-
-                    if (result.Contains(identifier))
-                    {
-                        var val = property.GetValue(x);
-
-                        string resVal;
-
-                        if (val is string s)
-                            resVal = s ?? "null";
-                        if (val is null)
-                            resVal = "null";
-                        else
-                            resVal = val.ToString() ?? "null";
-
-                        result = result.Replace(identifier, resVal);
-                    }
-                }
-
-                return result;
-            }
-            else
-            {
-                var prop = typeof(TListItem).GetProperties().First(y => y.Name == multiSelectionAttribute.DisplayProp);
-
-                var val = prop.GetValue(x);
-
-                if (val is string valAsString)
-                    return valAsString;
-                if (val is null)
-                    return "null";
-            
-                return val.ToString() ?? "null";
-            }
-        });
-
-        var searchFunc = new Func<TListItem, string>(x =>
-        {
-            var prop = typeof(TListItem).GetProperties().First(y => y.Name == multiSelectionAttribute.SearchProp);
-
-            var val = prop.GetValue(x);
-
-            if (val is string valAsString)
-                return valAsString;
-            if (val is null)
-                return "null";
-            
-            return val.ToString() ?? "null";
-        });
-        
-        <MultiItemSelect Value="Binder.Class" ValueExpression="@(() => Binder.Class)" Items="Items" DisplayProp="displayFunc" SearchProp="searchFunc" ItemColor="@multiSelectionAttribute.ItemColor" />
+        <MultiItemSelect Value="Binder.Class"
+                         ValueExpression="@(() => Binder.Class)"
+                         Items="Items"
+                         DisplayProp="DisplayFunc"
+                         SearchProp="SearchFunc"
+                         ItemColor="@multiSelectionAttribute.ItemColor" />
     }
 </div>
 
@@ -138,6 +49,11 @@
 
     private PropBinder<TProp> Binder;
     private TListItem[] Items = Array.Empty<TListItem>();
+    
+    // Cache
+    private Func<TListItem, string> DisplayFunc;
+    private Func<TListItem, string> SearchFunc;
+    private List<object> Attributes;
 
     protected override void OnInitialized()
     {
@@ -147,6 +63,15 @@
     protected override void OnParametersSet()
     {
         Binder = new(Property, Data);
+
+        Attributes = Property.GetCustomAttributes(true).ToList();
+        
+        // Init- Multi selection attribute
+        if (TryGetCasted(out MultiSelectionAttribute multiSelectionAttribute))
+        {
+            DisplayFunc = FormHelper.GetPropertyExpression<TListItem>(multiSelectionAttribute.DisplayProp);
+            SearchFunc = FormHelper.GetPropertyExpression<TListItem>(multiSelectionAttribute.SearchProp);
+        }
     }
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
@@ -159,11 +84,31 @@
                 var repo = ServiceProvider.GetRequiredService(typeToGetByDi);
                 var dbSet = repo.GetType().GetMethods().First(x => x.Name == "Get").Invoke(repo, null) as IEnumerable<TListItem>;
                 Items = dbSet!.ToArray();
-                
-                Logger.Debug("Items lenght: " + Items.Length);
 
                 await InvokeAsync(StateHasChanged);
             }
         }
+    }
+    
+    private bool TryGetCasted<T>(out T result) where T : class
+    {
+        var attribute = Attributes.FirstOrDefault(x => x.GetType() == typeof(T));
+
+        if (attribute == null)
+        {
+            result = default!;
+            return false;
+        }
+
+        var castedAttribute = attribute as T;
+
+        if (castedAttribute == null)
+        {
+            result = default!;
+            return false;
+        }
+
+        result = castedAttribute;
+        return true;
     }
 }

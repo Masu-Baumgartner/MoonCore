@@ -17,61 +17,6 @@
 }
 
 @{
-    var customAttributes = Property.GetCustomAttributes(true);
-
-    bool TryGetCasted<T>(out T result) where T : class
-    {
-        if (customAttributes == null)
-        {
-            result = default(T)!;
-            return false;
-        }
-
-        var attribute = customAttributes!.FirstOrDefault(x => x.GetType() == typeof(T));
-
-        if (attribute == null)
-        {
-            result = default(T)!;
-            return false;
-        }
-
-        var castedAttribute = attribute as T;
-
-        if (castedAttribute == null)
-        {
-            result = default(T)!;
-            return false;
-        }
-
-        result = castedAttribute;
-        return true;
-    }
-
-    var customCss = "form-control ";
-
-    if (TryGetCasted<CustomFormClassAttribute>(out var classAttribute))
-    {
-        customCss += classAttribute.Classes;
-    }
-
-    var formType = "";
-
-    if (Property.PropertyType == typeof(string))
-        formType = "text";
-    else if (Property.PropertyType == typeof(int))
-        formType = "number";
-    else if (Property.PropertyType == typeof(double))
-        formType = "number";
-    else if (Property.PropertyType == typeof(long))
-        formType = "number";
-    else if (Property.PropertyType == typeof(decimal))
-        formType = "number";
-
-    if (TryGetCasted<CustomFormTypeAttribute>(out var formTypeAttribute))
-    {
-        formType = formTypeAttribute.Type;
-    }
-
     var placeholder = EnablePlaceholderName ? Property.Name : "";
 }
 
@@ -88,7 +33,7 @@
     @if (Property.PropertyType == typeof(string))
     {
         <div class="w-100">
-            <input id="@Property.Name" @bind="Binder.StringValue" type="@formType" class="@customCss" placeholder="@placeholder" autocomplete="off" spellcheck="false"/>
+            <input id="@Property.Name" @bind="Binder.StringValue" type="@FormType" class="@CustomCss" placeholder="@placeholder" autocomplete="off" spellcheck="false"/>
         </div>
     }
     else if (Property.PropertyType == typeof(int))
@@ -102,20 +47,20 @@
         }
         else
         {
-            <input id="@Property.Name" @bind="Binder.IntValue" type="@formType" class="@customCss"/>
+            <input id="@Property.Name" @bind="Binder.IntValue" type="@FormType" class="@CustomCss"/>
         }
     }
     else if (Property.PropertyType == typeof(double))
     {
-        <input id="@Property.Name" @bind="Binder.DoubleValue" type="@formType" class="@customCss"/>
+        <input id="@Property.Name" @bind="Binder.DoubleValue" type="@FormType" class="@CustomCss"/>
     }
     else if (Property.PropertyType == typeof(long))
     {
-        <input id="@Property.Name" @bind="Binder.LongValue" type="@formType" class="@customCss"/>
+        <input id="@Property.Name" @bind="Binder.LongValue" type="@FormType" class="@CustomCss"/>
     }
     else if (Property.PropertyType == typeof(bool))
     {
-        var css = "form-check " + customCss.Replace("form-control", ""); 
+        var css = "form-check " + CustomCss.Replace("form-control", ""); 
         
         <div class="form-check @css">
             <InputCheckbox id="@Property.Name" @bind-Value="Binder.BoolValue" class="form-check-input"/>
@@ -123,15 +68,15 @@
     }
     else if (Property.PropertyType == typeof(DateTime))
     {
-        <InputDate id="@Property.Name" @bind-Value="Binder.DateTimeValue" class="@customCss"/>
+        <InputDate id="@Property.Name" @bind-Value="Binder.DateTimeValue" class="@CustomCss"/>
     }
     else if (Property.PropertyType == typeof(decimal))
     {
-        <InputNumber id="@Property.Name" step="0.01" @bind-Value="Binder.DoubleValue" class="@customCss"/>
+        <InputNumber id="@Property.Name" step="0.01" @bind-Value="Binder.DoubleValue" class="@CustomCss"/>
     }
     else if (Property.PropertyType.IsEnum)
     {
-        <select @bind="Binder.Class" class="form-select @customCss">
+        <select @bind="Binder.Class" class="form-select @CustomCss">
             @foreach (var status in (TProp[])Enum.GetValues(typeof(TProp)))
             {
                 if (Binder.Class.ToString() == status.ToString())
@@ -151,29 +96,11 @@
         {
             if (selectorAttribute.UseDropdown)
             {
-                var displayFunc = new Func<TProp, string>(x =>
-                {
-                    var prop = typeof(TProp).GetProperties().First(x => x.Name == selectorAttribute.DisplayProp);
-                    return prop.GetValue(x) as string ?? "N/A";
-                });
-
-                var searchFunc = new Func<TProp, string>(x =>
-                {
-                    var prop = typeof(TProp).GetProperties().First(x => x.Name == selectorAttribute.SelectorProp);
-                    return prop.GetValue(x) as string ?? "N/A";
-                });
-
-                <AdvancedSmartDropdown @bind-Value="Binder.Class" DisplayFunc="displayFunc" SearchProp="searchFunc" Items="Items"/>
+                <AdvancedSmartDropdown @bind-Value="Binder.Class" DisplayFunc="DisplayFunc" SearchProp="SearchFunc" Items="Items"/>
             }
             else
             {
-                var displayFunc = new Func<TProp, string>(x =>
-                {
-                    var prop = typeof(TProp).GetProperties().First(x => x.Name == selectorAttribute.DisplayProp);
-                    return prop.GetValue(x) as string ?? "N/A";
-                });
-
-                <SmartSelect @bind-Value="Binder.Class" DisplayField="displayFunc" Items="Items" CanBeNull="true"/>
+                <SmartSelect @bind-Value="Binder.Class" DisplayField="DisplayFunc" Items="Items" CanBeNull="true"/>
             }
         }
     }
@@ -190,6 +117,13 @@
 
     private PropBinder<TProp> Binder;
     private TProp[] Items = Array.Empty<TProp>();
+    
+    // Cache
+    private List<object> Attributes;
+    private Func<TProp, string> DisplayFunc;
+    private Func<TProp, string> SearchFunc;
+    private string CustomCss;
+    private string FormType;
 
     protected override void OnInitialized()
     {
@@ -199,6 +133,41 @@
     protected override void OnParametersSet()
     {
         Binder = new(Property, Data);
+        
+        //
+        Attributes = Property.GetCustomAttributes(true).ToList();
+
+        // CSS
+        CustomCss = "form-control ";
+        
+        if (TryGetCasted<CustomFormClassAttribute>(out var classAttribute))
+        {
+            CustomCss += classAttribute.Classes;
+        }
+        
+        // Form type
+        FormType = "text";
+        
+        if (Property.PropertyType == typeof(int))
+            FormType = "number";
+        else if (Property.PropertyType == typeof(double))
+            FormType = "number";
+        else if (Property.PropertyType == typeof(long))
+            FormType = "number";
+        else if (Property.PropertyType == typeof(decimal))
+            FormType = "number";
+
+        if (TryGetCasted<CustomFormTypeAttribute>(out var formTypeAttribute))
+            FormType = formTypeAttribute.Type;
+
+        // 
+        if (TryGetCasted(out SelectorAttribute selectorAttribute))
+        {
+            DisplayFunc = FormHelper.GetPropertyExpression<TProp>(selectorAttribute.DisplayProp);
+            
+            if (selectorAttribute.UseDropdown)
+                SearchFunc = FormHelper.GetPropertyExpression<TProp>(selectorAttribute.SelectorProp);
+        }
     }
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
@@ -215,5 +184,27 @@
                 await InvokeAsync(StateHasChanged);
             }
         }
+    }
+    
+    private bool TryGetCasted<T>(out T result) where T : class
+    {
+        var attribute = Attributes.FirstOrDefault(x => x.GetType() == typeof(T));
+
+        if (attribute == null)
+        {
+            result = default!;
+            return false;
+        }
+
+        var castedAttribute = attribute as T;
+
+        if (castedAttribute == null)
+        {
+            result = default!;
+            return false;
+        }
+
+        result = castedAttribute;
+        return true;
     }
 }

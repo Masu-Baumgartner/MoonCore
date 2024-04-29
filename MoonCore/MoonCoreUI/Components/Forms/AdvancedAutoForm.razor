@@ -1,62 +1,26 @@
 ﻿@using System.Reflection
-@using MoonCore.Helpers
 @using MoonCoreUI.Attributes
 @using MoonCoreUI.Helpers
 
 @typeparam TForm
 
 <div class="row g-5">
-    @foreach (var kvp in PropertySections)
+    @foreach (var sectionRender in PropertyRenders)
     {
         <div class="col-12">
             <div class="card">
-                @if (!string.IsNullOrEmpty(kvp.Key))
+                @if (!string.IsNullOrEmpty(sectionRender.Key))
                 {
                     <div class="card-header">
-                        <span class="card-title">@kvp.Key</span>
+                        <span class="card-title">@sectionRender.Key</span>
                     </div>
                 }
                 <div class="card-body">
                     <div class="row g-5">
-                        @foreach (var prop in kvp.Value)
+                        @foreach (var render in sectionRender.Value)
                         {
                             <div class="col-md-@(Columns) col-12 d-flex flex-column">
-                                @{
-                                    var isGeneric = prop.PropertyType.IsGenericType;
-                                    bool isList = false;
-
-                                    if (isGeneric)
-                                    {
-                                        var xyz = prop.PropertyType.GetGenericTypeDefinition();
-                                        Logger.Debug($"Prop type: {xyz}");
-
-                                        if (xyz == typeof(List<>))
-                                            isList = true;
-                                    }
-                                }
-                                
-                                @if (isList)
-                                {
-                                    var typeToCreate = typeof(AutoListProperty<,>).MakeGenericType(prop.PropertyType, prop.PropertyType.GetGenericArguments().First());
-                                    var rf = ComponentHelper.FromType(typeToCreate, parameters =>
-                                    {
-                                        parameters.Add("Data", Model);
-                                        parameters.Add("Property", prop);
-                                    });
-
-                                    @rf
-                                }
-                                else
-                                {
-                                    var typeToCreate = typeof(AutoProperty<>).MakeGenericType(prop.PropertyType);
-                                    var rf = ComponentHelper.FromType(typeToCreate, parameters =>
-                                    {
-                                        parameters.Add("Data", Model);
-                                        parameters.Add("Property", prop);
-                                    });
-
-                                    @rf
-                                }
+                                @render
                             </div>
                         }
                     </div>
@@ -71,15 +35,53 @@
     [Parameter] public TForm Model { get; set; }
 
     [Parameter] public int Columns { get; set; } = 6;
+    
+    private Dictionary<string, List<RenderFragment>> PropertyRenders = new();
 
-    private Dictionary<string, PropertyInfo[]> PropertySections = new();
-
-    protected override void OnInitialized()
+    protected override void OnParametersSet()
     {
+        // Read reflection data
         var properties = typeof(TForm).GetProperties();
         var propertiesGrouped = properties.GroupBy(x => GetSectionId(x));
 
-        PropertySections = propertiesGrouped.ToDictionary(x => x.Key, x => x.ToArray());
+        // Build sections
+        var propertySections = propertiesGrouped.ToDictionary(x => x.Key, x => x.ToArray());
+        
+        // Render sections
+        foreach (var section in propertySections)
+        {
+            var renders = new List<RenderFragment>();
+
+            foreach (var property in section.Value)
+            {
+                Type typeOfComponent;
+
+                // Determine if property is a list
+                if (FormHelper.IsGenericVersionOf(property.PropertyType, typeof(List<>)))
+                {
+                    typeOfComponent = typeof(AutoListProperty<,>)
+                        .MakeGenericType(
+                            property.PropertyType,
+                            property.PropertyType
+                                .GetGenericArguments()
+                                .First());
+                }
+                else
+                {
+                    typeOfComponent = typeof(AutoProperty<>).MakeGenericType(property.PropertyType);
+                }
+                
+                var render = ComponentHelper.FromType(typeOfComponent, parameters =>
+                {
+                    parameters.Add("Data", Model!);
+                    parameters.Add("Property", property);
+                });
+                
+                renders.Add(render);
+            }
+            
+            PropertyRenders.Add(section.Key, renders);
+        }
     }
 
     private string GetSectionId(PropertyInfo info)
