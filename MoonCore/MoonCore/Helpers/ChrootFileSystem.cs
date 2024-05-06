@@ -44,15 +44,15 @@ public class ChrootFileSystem
 
         DirectoryInfo? info = null;
 
-        foreach (var part in parts)
+        for (int i = 0; i <= parts.Length; i++)
         {
             if (info == null)
-                info = new DirectoryInfo(RootDirectory + part);
+                info = new DirectoryInfo(RootDirectory + parts[i]);
             else
             {
                 info = info
                     .GetDirectories()
-                    .FirstOrDefault(x => x.Name == part);
+                    .FirstOrDefault(x => x.Name == parts[i]);
                 
                 if(info == null)
                     throw new DirectoryNotFoundException(path);
@@ -61,7 +61,7 @@ public class ChrootFileSystem
             if (info != null && (info.Attributes.HasFlag(FileAttributes.ReparsePoint) || info.LinkTarget != null))
                 throw new UnsafeAccessException($"Unsafe access detected: {path}");
 
-            if (info != null && part == parts.Last())
+            if (info != null && i + 1 == parts.Length)
                 return info;
         }
         
