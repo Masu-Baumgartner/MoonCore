@@ -25,9 +25,9 @@ public class UnixFileSystem
         BaseDirectoryFd = Syscall.open(BaseDirectory, OpenFlags.O_DIRECTORY | OpenFlags.O_RDONLY);
     }
 
-    public UnixFsError? ReadDir(string path, out Stat[] stats)
+    public UnixFsError? ReadDir(string path, out UnixFsEntry[] stats)
     {
-        stats = Array.Empty<Stat>();
+        stats = Array.Empty<UnixFsEntry>();
 
         var error = GetSafePath(path, out int parentDirectoryFd, out string fileName, out Action closeFd);
 
@@ -37,37 +37,74 @@ public class UnixFileSystem
         error = OpenAt(parentDirectoryFd, fileName, OpenFlags.O_DIRECTORY | OpenFlags.O_RDONLY, 0,
             out int fileDescriptor);
 
-        if (error != null)
+        if (error != null && fileName != "")
             return error;
 
-        error = Internal_Readdir(fileDescriptor, fileName, out var entries);
-        
+        error = Internal_Readdir(fileName == "" ? parentDirectoryFd : fileDescriptor, out stats);
+
         closeFd.Invoke();
         Syscall.close(fileDescriptor);
 
         return error;
     }
 
-    public UnixFsError? Internal_Readdir(int directoryFd, string fileName, out Dirent[] stats)
+    public UnixFsError? Internal_Readdir(int fd, out UnixFsEntry[] stats)
     {
-        Dirent? dir;
-        
-        Console.WriteLine($"Reading from {directoryFd}");
-        Console.WriteLine(UnixPath.ReadLink($"/proc/self/fd/{directoryFd}"));
+        var directoryFd = Syscall.fdopendir(fd);
 
-        var x = Syscall.fdopendir(directoryFd);
-        dir = Syscall.readdir(x);
-            
-        if(dir != null)
-            Console.WriteLine(dir.d_name);
-        else
+        var lastError = Syscall.GetLastError();
+
+        if (lastError != 0)
         {
-            stats = Array.Empty<Dirent>();
-            return UnixFsError.GetLastError("ls");
+            stats = Array.Empty<UnixFsEntry>();
+            return UnixFsError.BuildFromErrno("fd open dir", lastError);
         }
 
-        stats = Array.Empty<Dirent>();
-        return UnixFsError.NoError;
+        Dirent? currentDir;
+        List<UnixFsEntry> entries = new();
+
+        do
+        {
+            currentDir = Syscall.readdir(directoryFd);
+
+            var readDirError = Syscall.GetLastError();
+
+            if (readDirError != 0)
+            {
+                stats = Array.Empty<UnixFsEntry>();
+                return UnixFsError.BuildFromErrno("readdir", readDirError);
+            }
+
+            if (currentDir != null)
+            {
+                if (currentDir.d_name == "." || currentDir.d_name == "..")
+                    continue;
+
+                var error = LStatAt(fd, currentDir.d_name, out var stat);
+
+                if (error != null)
+                {
+                    stats = Array.Empty<UnixFsEntry>();
+                    return error;
+                }
+
+                entries.Add(new()
+                {
+                    Name = currentDir.d_name,
+                    IsDirectory = IsFileType(stat.st_mode, FilePermissions.S_IFDIR),
+                    IsFile = IsFileType(stat.st_mode, FilePermissions.S_IFREG),
+                    Size = stat.st_size,
+                    LastChanged = DateTimeOffset.FromUnixTimeSeconds(stat.st_mtime).UtcDateTime,
+                    CreatedAt = DateTimeOffset.FromUnixTimeSeconds(stat.st_ctime).UtcDateTime
+                });
+            }
+        } while (currentDir != null);
+
+        stats = entries.ToArray();
+
+        Syscall.closedir(directoryFd);
+
+        return UnixFsError.AutoHandle("close dir in internal read dir");
     }
 
     public UnixFsError? Rename(string oldPath, string newPath)

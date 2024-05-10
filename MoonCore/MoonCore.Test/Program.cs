@@ -5,6 +5,7 @@ Logger.Setup(isDebug: true);
 
 var unixFs = new UnixFileSystem("/home/masu/chroot");
 
-var error = unixFs.ReadDir("uwu", out _);
+var error = unixFs.ReadDir("", out var entries);
+
 
 error.ThrowIfError();

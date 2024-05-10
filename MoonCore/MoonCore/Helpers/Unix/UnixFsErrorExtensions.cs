@@ -7,7 +7,7 @@ public static class UnixFsErrorExtensions
         if(error == null)
             return;
 
-        throw new UnixFsException(string.IsNullOrEmpty(error.Message) ? $"An unhanded unix fs error occured: {error.Errno}" : error.Message)
+        throw new UnixFsException(string.IsNullOrEmpty(error.Message) ? $"An unhanded unix fs error occured: {error.Errno}" : error.Message + $" ({error.Errno})")
         {
             Errno = error.Errno
         };
