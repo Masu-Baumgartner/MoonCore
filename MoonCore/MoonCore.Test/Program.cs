@@ -1,10 +1,10 @@
 ﻿using MoonCore.Helpers;
+using MoonCore.Helpers.Unix;
 
 Logger.Setup(isDebug: true);
 
-var chrootEnv = new ChrootFileSystem("/home/masu/chroot");
+var unixFs = new UnixFileSystem("/home/masu/chroot");
 
-foreach (var listDirectory in chrootEnv.ListDirectories("/x/x"))
-{
-    Console.WriteLine(listDirectory.Name);
-}
+var error = unixFs.ReadDir("uwu", out _);
+
+error.ThrowIfError();

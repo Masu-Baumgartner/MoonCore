@@ -25,9 +25,54 @@ public class UnixFileSystem
         BaseDirectoryFd = Syscall.open(BaseDirectory, OpenFlags.O_DIRECTORY | OpenFlags.O_RDONLY);
     }
 
+    public UnixFsError? ReadDir(string path, out Stat[] stats)
+    {
+        stats = Array.Empty<Stat>();
+
+        var error = GetSafePath(path, out int parentDirectoryFd, out string fileName, out Action closeFd);
+
+        if (error != null)
+            return error;
+
+        error = OpenAt(parentDirectoryFd, fileName, OpenFlags.O_DIRECTORY | OpenFlags.O_RDONLY, 0,
+            out int fileDescriptor);
+
+        if (error != null)
+            return error;
+
+        error = Internal_Readdir(fileDescriptor, fileName, out var entries);
+        
+        closeFd.Invoke();
+        Syscall.close(fileDescriptor);
+
+        return error;
+    }
+
+    public UnixFsError? Internal_Readdir(int directoryFd, string fileName, out Dirent[] stats)
+    {
+        Dirent? dir;
+        
+        Console.WriteLine($"Reading from {directoryFd}");
+        Console.WriteLine(UnixPath.ReadLink($"/proc/self/fd/{directoryFd}"));
+
+        var x = Syscall.fdopendir(directoryFd);
+        dir = Syscall.readdir(x);
+            
+        if(dir != null)
+            Console.WriteLine(dir.d_name);
+        else
+        {
+            stats = Array.Empty<Dirent>();
+            return UnixFsError.GetLastError("ls");
+        }
+
+        stats = Array.Empty<Dirent>();
+        return UnixFsError.NoError;
+    }
+
     public UnixFsError? Rename(string oldPath, string newPath)
     {
-        if(oldPath == newPath)
+        if (oldPath == newPath)
             return UnixFsError.NoError;
 
         var error = GetSafePath(oldPath, out int oldParentDirectoryFd, out string oldParentFileName,
@@ -39,7 +84,7 @@ public class UnixFileSystem
             return error;
         }
 
-        if(oldParentFileName == ".")
+        if (oldParentFileName == ".")
             return UnixFsError.BuildFromErrno("Unable to rename root", 0);
 
         error = LStatAt(oldParentDirectoryFd, oldParentFileName, out _);
@@ -82,12 +127,12 @@ public class UnixFileSystem
             }
         }
 
-        if(newParentFileName == ".")
+        if (newParentFileName == ".")
             return UnixFsError.BuildFromErrno("Unable to rename root", 0);
 
         error = LStatAt(newParentDirectoryFd, newParentFileName, out _);
 
-        if(error == null)
+        if (error == null)
             return UnixFsError.BuildFromErrno("Target exists", Errno.EEXIST);
         else if (error.Errno != Errno.ENOENT)
             return error;
@@ -233,7 +278,7 @@ public class UnixFileSystem
         {
             var lStatError = LStat(path, out Stat lstat);
 
-            if(lStatError == null && IsFileType(lstat.st_mode, FilePermissions.S_IFDIR))
+            if (lStatError == null && IsFileType(lstat.st_mode, FilePermissions.S_IFDIR))
                 return UnixFsError.NoError;
 
             return error;
@@ -286,7 +331,8 @@ public class UnixFileSystem
         return UnixFsError.AutoHandle("An error occured in mkdirat");
     }
 
-    public UnixFsError? OpenFileAt(int parentDirectoryFd, string path, OpenFlags flags, FilePermissions permissions, out SafeFileHandle handle)
+    public UnixFsError? OpenFileAt(int parentDirectoryFd, string path, OpenFlags flags, FilePermissions permissions,
+        out SafeFileHandle handle)
     {
         var error = OpenAt(parentDirectoryFd, path, flags, permissions, out int fileDescriptor);
 
@@ -325,7 +371,8 @@ public class UnixFileSystem
         return UnixFsError.NoError;
     }
 
-    private UnixFsError? Internal_OpenAt(int parentDirectoryFd, string path, OpenFlags flags, FilePermissions permissions,
+    private UnixFsError? Internal_OpenAt(int parentDirectoryFd, string path, OpenFlags flags,
+        FilePermissions permissions,
         out int fileDescriptor)
     {
         if (!flags.HasFlag(OpenFlags.O_CLOEXEC))
