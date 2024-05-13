@@ -31,84 +31,62 @@ public class UnixFileSystem
 
         if (normalized == ".")
             return UnixFsError.BuildFromErrno("Path error", Errno.EINVAL);
-        
-        
+
+        return Internal_RemoveAll(path);
     }
 
     public UnixFsError? Internal_RemoveAll(string path)
     {
+        // Prevent invalid values
         if(string.IsNullOrEmpty(path))
             return UnixFsError.NoError;
         
         if(path.EndsWith("."))
             return UnixFsError.BuildFromErrno("Ends with dot", Errno.EINVAL);
 
-        var error = Remove(path);
+        // Try to remove it
+        var fileRmError = Remove(path);
         
-        if(error == null || error.Errno == Errno.ENOENT)
+        if(fileRmError == null || fileRmError.Errno == Errno.ENOENT)
             return UnixFsError.NoError;
-        
-        SplitPath(path, out var parentDirectory, out var baseDirectory);
 
-        error = Open(parentDirectory, out var parentFileHandle);
-        
-        if(error != null && error.Errno == Errno.ENOENT)
-            return UnixFsError.NoError;
+        // If the rm failed, we need to check how we can rm it so we lstat
+        var error = LStat(path, out var stat);
 
         if (error != null)
             return error;
-        
-        parentFileHandle.Close();
-        
-        
-    }
 
-    public UnixFsError? RemoveAllFrom(SafeFileHandle handle, string baseDirectory)
-    {
-        var parentFd = (int)handle.DangerousGetHandle();
+        // not a directory? idk how to rm, so we return the initial rm error
+        if (!IsFileType(stat.st_mode, FilePermissions.S_IFDIR))
+            return fileRmError;
 
-        var error = UnlinkAt(parentFd, baseDirectory, 0);
+        // read the contents of the directory
+        error = ReadDir(path, out var items);
+
+        if (error != null)
+            return error;
+
+        // the directory is empty but the above rm failed? unknown error => return the initial one
+        if (items.Length == 0)
+            return fileRmError;
+
+        // Delete recursively and stop if any error has been encountered
+        foreach (var entry in items)
+        {
+            var normalizedSubPath = NormalizePath(path + "/" + entry.Name);
+            var recursiveRmError = Internal_RemoveAll(normalizedSubPath);
+
+            if (recursiveRmError != null)
+                return recursiveRmError;
+        }
         
-        if(error == null || error.Errno == Errno.ENOENT)
+        // Now that the contents of the directory are deleted, we can try to delete this item we initially wanted to delete
+        fileRmError = Remove(path);
+        
+        if(fileRmError == null || fileRmError.Errno == Errno.ENOENT)
             return UnixFsError.NoError;
         
-        if(error.Errno != Errno.EISDIR && error.Errno != Errno.EPERM && error.Errno != Errno.EACCES)
-            return UnixFsError.BuildFromErrno("unlinkat", error.Errno);
-
-        var statError = Internal_FStatAt(parentFd, baseDirectory, AtFlags.AT_SYMLINK_NOFOLLOW, out var statInfo);
-
-        if (statError != null)
-        {
-            if(statError.Errno == Errno.ENOENT)
-                return UnixFsError.NoError;
-            
-            return UnixFsError.BuildFromErrno("fstatat", statError.Errno);
-        }
-        
-        if((statInfo.st_mode & FilePermissions.S_IFMT) != FilePermissions.S_IFDIR)
-            return UnixFsError.BuildFromErrno("unlinkat", error.Errno);
-
-        UnixFsError? recurseError = null;
-        
-        while (true)
-        {
-            error = OpenFdAt(parentFd, baseDirectory, out var file);
-
-            if (error != null)
-            {
-                if(error.Errno == Errno.ENOENT)
-                    return UnixFsError.NoError;
-                
-                recurseError = UnixFsError.BuildFromErrno("openfdat", error.Errno);
-                
-                break;
-            }
-
-            while (true)
-            {
-                
-            }
-        }
+        return fileRmError;
     }
 
     public UnixFsError? OpenFdAt(int directoryFd, string path, out SafeFileHandle handle)
