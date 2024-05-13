@@ -25,6 +25,226 @@ public class UnixFileSystem
         BaseDirectoryFd = Syscall.open(BaseDirectory, OpenFlags.O_DIRECTORY | OpenFlags.O_RDONLY);
     }
 
+    public UnixFsError? RemoveAll(string path)
+    {
+        var normalized = NormalizePath(path);
+
+        if (normalized == ".")
+            return UnixFsError.BuildFromErrno("Path error", Errno.EINVAL);
+        
+        
+    }
+
+    public UnixFsError? Internal_RemoveAll(string path)
+    {
+        if(string.IsNullOrEmpty(path))
+            return UnixFsError.NoError;
+        
+        if(path.EndsWith("."))
+            return UnixFsError.BuildFromErrno("Ends with dot", Errno.EINVAL);
+
+        var error = Remove(path);
+        
+        if(error == null || error.Errno == Errno.ENOENT)
+            return UnixFsError.NoError;
+        
+        SplitPath(path, out var parentDirectory, out var baseDirectory);
+
+        error = Open(parentDirectory, out var parentFileHandle);
+        
+        if(error != null && error.Errno == Errno.ENOENT)
+            return UnixFsError.NoError;
+
+        if (error != null)
+            return error;
+        
+        parentFileHandle.Close();
+        
+        
+    }
+
+    public UnixFsError? RemoveAllFrom(SafeFileHandle handle, string baseDirectory)
+    {
+        var parentFd = (int)handle.DangerousGetHandle();
+
+        var error = UnlinkAt(parentFd, baseDirectory, 0);
+        
+        if(error == null || error.Errno == Errno.ENOENT)
+            return UnixFsError.NoError;
+        
+        if(error.Errno != Errno.EISDIR && error.Errno != Errno.EPERM && error.Errno != Errno.EACCES)
+            return UnixFsError.BuildFromErrno("unlinkat", error.Errno);
+
+        var statError = Internal_FStatAt(parentFd, baseDirectory, AtFlags.AT_SYMLINK_NOFOLLOW, out var statInfo);
+
+        if (statError != null)
+        {
+            if(statError.Errno == Errno.ENOENT)
+                return UnixFsError.NoError;
+            
+            return UnixFsError.BuildFromErrno("fstatat", statError.Errno);
+        }
+        
+        if((statInfo.st_mode & FilePermissions.S_IFMT) != FilePermissions.S_IFDIR)
+            return UnixFsError.BuildFromErrno("unlinkat", error.Errno);
+
+        UnixFsError? recurseError = null;
+        
+        while (true)
+        {
+            error = OpenFdAt(parentFd, baseDirectory, out var file);
+
+            if (error != null)
+            {
+                if(error.Errno == Errno.ENOENT)
+                    return UnixFsError.NoError;
+                
+                recurseError = UnixFsError.BuildFromErrno("openfdat", error.Errno);
+                
+                break;
+            }
+
+            while (true)
+            {
+                
+            }
+        }
+    }
+
+    public UnixFsError? OpenFdAt(int directoryFd, string path, out SafeFileHandle handle)
+    {
+        int fd;
+
+        while (true)
+        {
+            var error = OpenAt(directoryFd, path, OpenFlags.O_RDONLY | OpenFlags.O_CLOEXEC | OpenFlags.O_NOFOLLOW, 0, out fd);
+            
+            if(error == null)
+                break;
+            
+            if(error.Errno == Errno.EINTR)
+                continue;
+
+            handle = default!;
+            return error;
+        }
+
+        handle = new SafeFileHandle(new IntPtr(fd), true);
+        return UnixFsError.NoError;
+    }
+
+    public UnixFsError? Open(string path, out SafeFileHandle handle)
+    {
+        return OpenFile(path, OpenFlags.O_RDONLY, 0, out handle);
+    }
+
+    public UnixFsError? OpenFile(string path, OpenFlags flags, FilePermissions permissions, out SafeFileHandle handle)
+    {
+        var error = Internal_OpenFile(path, flags, permissions, out int fd);
+
+        if (error != null)
+        {
+            handle = default!;
+            return error;
+        }
+
+        handle = new SafeFileHandle(new IntPtr(fd), true);
+        
+        return UnixFsError.NoError;
+    }
+
+    public UnixFsError? Internal_OpenFile(string path, OpenFlags flags, FilePermissions permissions, out int fd)
+    {
+        var error = GetSafePath(path, out var parentDirectoryFd, out var fileName, out var closeFd);
+
+        closeFd.Invoke();
+
+        if (error != null)
+        {
+            fd = 0;
+            return error;
+        }
+
+        return OpenAt(parentDirectoryFd, fileName, flags, permissions, out fd);
+    }
+
+    public UnixFsError? Remove(string path)
+    {
+        var error = GetSafePath(path, out var parentDirectoryFd, out var fileName, out var closeFd);
+
+        if (error != null)
+            return error;
+        
+        if(fileName == ".")
+            return UnixFsError.BuildFromErrno("Path error", Errno.EINVAL);
+
+        error = UnlinkAt(parentDirectoryFd, fileName, 0);
+        
+        if(error == null)
+            return UnixFsError.NoError;
+
+        var dirError = UnlinkAt(parentDirectoryFd, fileName, AtFlags.AT_REMOVEDIR);
+        
+        if(dirError == null)
+            return UnixFsError.NoError;
+
+        if (dirError.Errno != Errno.ENOTDIR)
+            error = dirError;
+
+        return error;
+    }
+
+    public UnixFsError? UnlinkAt(int parentDirectoryFd, string fileName, AtFlags flags)
+    {
+        Syscall.unlinkat(parentDirectoryFd, fileName, flags);
+        
+        return UnixFsError.AutoHandle("unlink at");
+    }
+    
+    private void SplitPath(string path, out string parentDirectory, out string baseDirectory)
+    {
+        // If no better parent is found, the path is relative from "here"
+        string dirname = ".";
+
+        // Remove all but one leading slash.
+        while (path.Length > 1 && path[0] == '/' && path[1] == '/')
+        {
+            path = path.Substring(1);
+        }
+
+        int i = path.Length - 1;
+
+        // Remove trailing slashes.
+        for (; i > 0 && path[i] == '/'; i--)
+        {
+            path = path.Substring(0, i);
+        }
+
+        // If no slashes in path, base is path
+        string basename = path;
+
+        // Remove leading directory path
+        for (i--; i >= 0; i--)
+        {
+            if (path[i] == '/')
+            {
+                if (i == 0)
+                {
+                    dirname = path.Substring(0, 1);
+                }
+                else
+                {
+                    dirname = path.Substring(0, i);
+                }
+                basename = path.Substring(i + 1);
+                break;
+            }
+        }
+
+        parentDirectory = dirname;
+        baseDirectory = basename;
+    }
+
     public UnixFsError? ReadDir(string path, out UnixFsEntry[] stats)
     {
         stats = Array.Empty<UnixFsEntry>();
