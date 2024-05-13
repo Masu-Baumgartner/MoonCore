@@ -21,7 +21,7 @@ public class UnixFileSystem : IDisposable
 
     public UnixFileSystem(string baseDirectory)
     {
-        BaseDirectory = baseDirectory;
+        BaseDirectory = baseDirectory.EndsWith("/") ? baseDirectory.Remove(baseDirectory.Length - 2) : baseDirectory;
 
         BaseDirectoryFd = Syscall.open(BaseDirectory, OpenFlags.O_DIRECTORY | OpenFlags.O_RDONLY);
     }
@@ -113,7 +113,7 @@ public class UnixFileSystem : IDisposable
             out int fd);
         parentDirectoryFd = fd;
 
-        if (parentDirectoryFd != 0)
+        if (parentDirectoryFd != 0 && parentDirectoryFd != BaseDirectoryFd)
             closeFd = () => Syscall.close(fd);
 
         return openAtResult;
@@ -134,6 +134,6 @@ public class UnixFileSystem : IDisposable
 
     public void Dispose()
     {
-        Syscall.close(BaseDirectoryFd);
+        //Syscall.close(BaseDirectoryFd);
     }
 }

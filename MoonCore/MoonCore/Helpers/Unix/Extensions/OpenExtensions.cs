@@ -31,16 +31,18 @@ public static class OpenExtensions
         FilePermissions permissions, out int fd)
     {
         var error = fs.GetSafePath(path, out var parentDirectoryFd, out var fileName, out var closeFd);
-
-        closeFd.Invoke();
-
+        
         if (error != null)
         {
             fd = 0;
             return error;
         }
 
-        return fs.OpenAt(parentDirectoryFd, fileName, flags, permissions, out fd);
+        error = fs.OpenAt(parentDirectoryFd, fileName, flags, permissions, out fd);
+        
+        closeFd.Invoke();
+
+        return error;
     }
 
     public static UnixFsError? OpenAt(this UnixFileSystem fs, int parentDirectoryFd, string path, OpenFlags flags,

@@ -1,3 +1,4 @@
+using Mono.Unix;
 using Mono.Unix.Native;
 
 namespace MoonCore.Helpers.Unix.Extensions;
@@ -13,23 +14,25 @@ public static class ReadDirExtensions
         if (error != null)
             return error;
 
-        error = fs.OpenAt(parentDirectoryFd, fileName, OpenFlags.O_DIRECTORY | OpenFlags.O_RDONLY, 0,
+        var openAtError = fs.OpenAt(parentDirectoryFd, fileName, OpenFlags.O_DIRECTORY | OpenFlags.O_RDONLY, 0,
             out int fileDescriptor);
 
-        if (error != null && fileName != "")
-            return error;
+        if (openAtError != null && fileName != "")
+            return openAtError;
 
         error = fs.Internal_Readdir(fileName == "" ? parentDirectoryFd : fileDescriptor, out stats);
 
         closeFd.Invoke();
-        Syscall.close(fileDescriptor);
+        
+        if(openAtError == null && fileName != "")
+            Syscall.close(fileDescriptor);
 
         return error;
     }
 
     public static UnixFsError? Internal_Readdir(this UnixFileSystem fs, int fd, out UnixFsEntry[] stats)
     {
-        var directoryFd = Syscall.fdopendir(fd);
+        var directoryFd = Syscall.opendir(UnixPath.ReadLink("/proc/self/fd/" + fd));
 
         var lastError = Syscall.GetLastError();
 

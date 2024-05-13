@@ -4,8 +4,9 @@ using MoonCore.Helpers.Unix.Extensions;
 
 Logger.Setup(isDebug: true);
 
-var unixFs = new UnixFileSystem("/home/masu/chroot");
+var unixFs = new UnixFileSystem("/var/lib/moonlight/volumes/2");
 
-var error = unixFs.RemoveAll("x");
-
-error.ThrowIfError();
+unixFs.ReadDir("/cache", out _).ThrowIfError();
+unixFs.ReadDir("/cache", out _).ThrowIfError();
+Console.WriteLine("Removing");
+unixFs.RemoveAll("/cache/app").ThrowIfError();

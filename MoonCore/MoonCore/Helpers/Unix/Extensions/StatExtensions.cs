@@ -29,9 +29,11 @@ public static class StatExtensions
             return error;
         }
 
+        error = fs.Internal_FStatAt(parentDirectoryFd, fileName, flags, out stat);
+        
         closeFd.Invoke();
 
-        return fs.Internal_FStatAt(parentDirectoryFd, fileName, flags, out stat);
+        return error;
     }
 
     private static UnixFsError? Internal_FStatAt(this UnixFileSystem fs, int parentDirectoryFd, string name, AtFlags flags, out Stat stat)
