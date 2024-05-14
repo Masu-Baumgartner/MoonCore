@@ -134,6 +134,6 @@ public class UnixFileSystem : IDisposable
 
     public void Dispose()
     {
-        //Syscall.close(BaseDirectoryFd);
+        Syscall.close(BaseDirectoryFd);
     }
 }
