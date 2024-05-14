@@ -1,10 +1,12 @@
 ﻿using MoonCore.Helpers;
+using MoonCore.Helpers.Unix;
+using MoonCore.Helpers.Unix.Extensions;
 
 Logger.Setup(isDebug: true);
 
-var chrootEnv = new ChrootFileSystem("/home/masu/chroot");
+var unixFs = new UnixFileSystem("/var/lib/moonlight/volumes/2");
 
-foreach (var listDirectory in chrootEnv.ListDirectories("/x/x"))
-{
-    Console.WriteLine(listDirectory.Name);
-}
+unixFs.ReadDir("/cache", out _).ThrowIfError();
+unixFs.ReadDir("/cache", out _).ThrowIfError();
+Console.WriteLine("Removing");
+unixFs.RemoveAll("/cache/app").ThrowIfError();
