@@ -1,4 +1,8 @@
-﻿@implements IDisposable
+﻿@using MoonCoreUI.Models
+
+@implements IDisposable
+
+@inject  MoonCoreUiConfiguration Configuration
 
 @if (Loaded)
 {
@@ -6,7 +10,13 @@
 }
 else
 {
-    if (ShowAsCard)
+    if (UseSkeleton)
+    {
+        <div class="card placeholder placeholder-wave bg-light w-100 d-flex justify-content-center align-items-center" style="height: @(SkeletonHeight)vw">
+            <span class="fs-2 fw-semibold">@(Text)</span>
+        </div>
+    }
+    else if (ShowAsCard)
     {
         <div class="d-flex flex-column flex-center">
             <div class="card card-body">
@@ -36,10 +46,22 @@ else
 
     [Parameter] public string Text { get; set; } = "";
 
-    [Parameter] public bool UseThreadLock { get; set; } = true;
+    [Parameter] public bool UseGlobalSettings { get; set; } = true;
+
+    [Parameter] public bool UseSkeleton { get; set; } = false;
+    [Parameter] public int SkeletonHeight { get; set; } = 20;
 
     private bool Loaded = false;
     private CancellationTokenSource Cancellation = new();
+
+    protected override void OnInitialized()
+    {
+        if(!UseGlobalSettings)
+            return;
+
+        UseSkeleton = Configuration.UseSkeletonInLazyLoader;
+        SkeletonHeight = Configuration.LazyLoaderSkeletonHeight;
+    }
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
