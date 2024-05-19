@@ -1,24 +1,26 @@
 using System.Text;
 using Microsoft.JSInterop;
+using MoonCoreUI.Extensions;
+using MoonCoreUI.Models;
 
 namespace MoonCoreUI.Services;
 
 public class FileDownloadService
 {
-    public static string Prefix { get; set; } = "mooncore.utils";
-    
+    private readonly MoonCoreUiConfiguration Configuration;
     private readonly IJSRuntime JsRuntime;
     
-    public FileDownloadService(IJSRuntime jsRuntime)
+    public FileDownloadService(IJSRuntime jsRuntime, MoonCoreUiConfiguration configuration)
     {
         JsRuntime = jsRuntime;
+        Configuration = configuration;
     }
 
     public async Task DownloadStream(string fileName, Stream stream)
     {
         using var streamRef = new DotNetStreamReference(stream);
 
-        await JsRuntime.InvokeVoidAsync($"{Prefix}.download", fileName, streamRef);
+        await JsRuntime.InvokeVoidAsyncHandled($"{Configuration.FileDownloadJavascriptPrefix}.download", fileName, streamRef);
     }
 
     public async Task DownloadBytes(string fileName, byte[] bytes)

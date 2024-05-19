@@ -1,20 +1,21 @@
 using Microsoft.JSInterop;
+using MoonCoreUI.Models;
 
 namespace MoonCoreUI.Services;
 
 public class ClipboardService
 {
-    public static string Prefix { get; set; } = "mooncore";
-    
+    private readonly MoonCoreUiConfiguration Configuration;
     private readonly IJSRuntime JsRuntime;
 
-    public ClipboardService(IJSRuntime jsRuntime)
+    public ClipboardService(IJSRuntime jsRuntime, MoonCoreUiConfiguration configuration)
     {
         JsRuntime = jsRuntime;
+        Configuration = configuration;
     }
 
     public async Task Copy(string content)
     {
-        await JsRuntime.InvokeVoidAsync($"{Prefix}.copy", content);
+        await JsRuntime.InvokeVoidAsync($"{Configuration.ClipboardJavascriptPrefix}.copy", content);
     }
 }

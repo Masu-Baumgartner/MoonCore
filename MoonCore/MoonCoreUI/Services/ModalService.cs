@@ -1,23 +1,24 @@
 ﻿using Microsoft.JSInterop;
+using MoonCoreUI.Models;
 
 namespace MoonCoreUI.Services;
 
 public class ModalService
 {
-    public static string Prefix { get; set; } = "mooncore";
-    
+    private readonly MoonCoreUiConfiguration Configuration;
     private readonly IJSRuntime JsRuntime;
 
-    public ModalService(IJSRuntime jsRuntime)
+    public ModalService(IJSRuntime jsRuntime, MoonCoreUiConfiguration configuration)
     {
         JsRuntime = jsRuntime;
+        Configuration = configuration;
     }
 
     public async Task Show(string id, bool focus = true) // Focus can be specified to fix issues with other components
     {
         try
         {
-            await JsRuntime.InvokeVoidAsync($"{Prefix}.show", id, focus);
+            await JsRuntime.InvokeVoidAsync($"{Configuration.ModalJavascriptPrefix}.show", id, focus);
         }
         catch (Exception)
         {
@@ -29,7 +30,7 @@ public class ModalService
     {
         try
         {
-            await JsRuntime.InvokeVoidAsync($"{Prefix}.hide", id);
+            await JsRuntime.InvokeVoidAsync($"{Configuration.ModalJavascriptPrefix}.hide", id);
         }
         catch (Exception)
         {
