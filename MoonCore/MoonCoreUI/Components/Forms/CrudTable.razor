@@ -3,8 +3,8 @@
 
 @typeparam TItem
 
-<div class="table-responsive">
-    <table class="table table-row-bordered table-row-gray-100 align-middle gs-0 gy-3 fs-6">
+<div class="table-responsive mb-3">
+    <table class="table table-row-bordered table-row-gray-200 align-middle gs-0 gy-3 fs-6 table-rounded">
         <CascadingValue Value="@this">
             @ChildContent
         </CascadingValue>
@@ -13,15 +13,22 @@
         <tr>
             @foreach (var column in Columns)
             {
-                <th>
-                    @column.Title
+                <th class="@column.HeadCssClasses">
+                    @if (column.HeadTemplate != null)
+                    {
+                        @column.HeadTemplate
+                    }
+                    else
+                    {
+                        @column.Title
+                    }
                 </th>
             }
         </tr>
         </thead>
-
         <tbody>
-        @foreach (var item in PagedItems)
+
+        @foreach (var item in CurrentItems)
         {
             <tr>
                 @foreach (var column in Columns)
@@ -30,7 +37,7 @@
                         @if (column.Template == null)
                         {
                             var val = column.Field!.Compile().Invoke(item);
-                            
+
                             @(val == null ? "-" : val.ToString())
                         }
                         else
@@ -44,33 +51,56 @@
         </tbody>
     </table>
 </div>
+
 @if (ShowPagination)
 {
-    <div class="d-flex justify-content-end">
-        <ul class="pagination">
-            <li class="page-item disabled">
-                @* as we use the skip function our pages start at 0 but the user should not that, so we add a 1 *@
-                <span class="page-link">@(Page + 1)/@((ItemsCount == 0 ? 0 : LastPage) + 1)</span>
-            </li>
-            <li class="page-item disabled">
-                <span class="page-link">@(ItemsCount)</span>
-            </li>
-            <li class="page-item disabled">
-                <a class="page-link">&nbsp;</a>
-            </li>
-            <li class="page-item @(Page == 0 ? "disabled" : "")">
-                <a class="page-link" href="#" @onclick:preventDefault @onclick="() => SetPage(0)">First</a>
-            </li>
-            <li class="page-item @(Page == 0 ? "disabled": "")">
-                <a class="page-link" href="#" @onclick:preventDefault @onclick="() => ChangePage(-1)">Previous</a>
-            </li>
-            <li class="page-item @(Page == LastPage ? "disabled" : "")">
-                <a class="page-link" href="#" @onclick:preventDefault @onclick="() => ChangePage(1)">Next</a>
-            </li>
-            <li class="page-item @(Page == LastPage ? "disabled" : "")">
-                <a class="page-link" href="#" @onclick:preventDefault @onclick="() => SetPage(LastPage)">Last</a>
-            </li>
-        </ul>
+    <div class="d-flex justify-content-between align-items-center mx-2">
+        <div class="d-none d-lg-block">
+            <span class="text-gray-600 fs-5">Showing @CurrentItems.Length of @TotalItems results</span>
+        </div>
+        <div>
+            @if (AllowPageSizeChange)
+            {
+                <div class="input-group input-group-sm">
+                    <span class="input-group-text">Per page</span>
+                    <select class="form-select">
+                        <option selected="selected">10</option>
+                        <option>25</option>
+                        <option>50</option>
+                        <option>100</option>
+                    </select>
+                </div>
+            }
+        </div>
+        <div>
+            <ul class="pagination">
+                <li class="page-item previous @(Page <= 0 ? "disabled" : "")">
+                    <a href="#" class="page-link" @onclick:preventDefault @onclick="() => SetPage(Page - 1)">
+                        <i class="previous"></i>
+                    </a>
+                </li>
+                @if (Page > 0)
+                {
+                    <li class="page-item ">
+                        <a href="#" class="page-link" @onclick:preventDefault @onclick="() => SetPage(Page - 1)">@(Page)</a>
+                    </li>
+                }
+                <li class="page-item active">
+                    <a href="#" class="page-link" @onclick:preventDefault>@(Page + 1)</a>
+                </li>
+                @if (Page < TotalPages)
+                {
+                    <li class="page-item ">
+                        <a href="#" class="page-link" @onclick:preventDefault @onclick="() => SetPage(Page + 1)">@(Page + 2)</a>
+                    </li>
+                }
+                <li class="page-item next @(Page >= TotalPages ? "disabled" : "")">
+                    <a href="#" class="page-link" @onclick:preventDefault @onclick="() => SetPage(Page + 1)">
+                        <i class="next"></i>
+                    </a>
+                </li>
+            </ul>
+        </div>
     </div>
 }
 
@@ -78,21 +108,33 @@
 {
     [Parameter] public RenderFragment ChildContent { get; set; }
 
-    [Parameter] public DynamicFilterButton<TItem>? Filter { get; set; }
-
-    [Parameter] public IEnumerable<TItem> Items { get; set; }
+    [Parameter] public IEnumerable<TItem> ItemSource { get; set; }
 
     [Parameter] public int PageSize { get; set; } = 25;
 
     [Parameter] public bool ShowPagination { get; set; } = true;
 
-    private List<CrudColumn<TItem>> Columns = new();
-    private TItem[] FilteredItems = Array.Empty<TItem>();
-    private TItem[] PagedItems => FilteredItems.Skip(Page * PageSize).Take(PageSize).ToArray();
-    private int ItemsCount = 0;
-    private int LastPage = 0;
+    [Parameter] public bool AllowPageSizeChange { get; set; } = true;
 
+    private List<CrudColumn<TItem>> Columns = new();
+
+    private TItem[] CurrentItems = Array.Empty<TItem>();
+    private int TotalItems = 0;
     private int Page = 0;
+    private int TotalPages = 0;
+    
+    public async Task SetPage(int x)
+    {
+        Page = x;
+
+        if (Page < 0)
+            Page = 0;
+
+        if (Page > TotalPages)
+            Page = TotalPages;
+
+        await InvokeAsync(StateHasChanged);
+    }
 
     public Task AddColumn(CrudColumn<TItem> column)
     {
@@ -101,33 +143,26 @@
         return Task.CompletedTask;
     }
 
-    public async Task Refresh()
+    public async Task Refresh(bool fullRefresh = false)
     {
-        ItemsCount = Items.Count();
-        LastPage = (ItemsCount / PageSize) - 1;
-        
-        if (Filter != null)
-            FilteredItems = await Filter.ProcessItems(Items.ToArray());
-        else
-            FilteredItems = Items.ToArray();
-
-        await InvokeAsync(StateHasChanged);
-    }
-
-    public async Task ChangePage(int diff) => await SetPage(Page + diff);
-
-    public async Task SetPage(int page)
-    {
-        Page = page;
-
-        if (Page < 0)
-            Page = 0;
-
-        if (ItemsCount > 0)
+        if (fullRefresh)
         {
-            if (Page > LastPage)
-                Page = LastPage;
+            TotalItems = ItemSource.Count();
         }
+
+        var pagesMod = TotalItems % PageSize;
+        
+        if(pagesMod == 0)
+            TotalPages = TotalItems / PageSize;
+        else if(TotalItems > PageSize)
+            TotalPages = (TotalItems - pagesMod) / PageSize + 1;
+        else
+            TotalPages = (TotalItems - pagesMod) / PageSize;
+
+        CurrentItems = ItemSource
+            .Skip(Page * PageSize)
+            .Take(PageSize)
+            .ToArray();
 
         await InvokeAsync(StateHasChanged);
     }
@@ -136,20 +171,7 @@
     {
         if (firstRender)
         {
-            // Configure filter
-            if (Filter != null)
-            {
-                var properties = new List<PropertyInfo>();
-
-                foreach (var column in Columns.Where(x => x.Field != null && x.Filterable))
-                    properties.Add(GetPropertyInfo(column.Field!));
-
-                await Filter.SetFilterProperties(properties.ToArray());
-
-                Filter.OnFilterChanged += async () => await Refresh();
-            }
-
-            await Refresh();
+            await Refresh(fullRefresh: true);
         }
     }
 

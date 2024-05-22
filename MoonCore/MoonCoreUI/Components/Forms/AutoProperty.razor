@@ -9,82 +9,89 @@
 @typeparam TProp
 @inject IServiceProvider ServiceProvider
 
-@if (EnablePropertyName)
-{
-    <label class="form-label">
-        @(Formatter.ConvertCamelCaseToSpaces(Property.Name))
-    </label>
-}
-
 @{
-    var customAttributes = Property.GetCustomAttributes(true);
+    var colCssClass = "";
 
-    bool TryGetCasted<T>(out T result) where T : class
+    if (EnableColumnDetection)
     {
-        if (customAttributes == null)
-        {
-            result = default(T)!;
-            return false;
-        }
+        var columns = 3;
 
-        var attribute = customAttributes!.FirstOrDefault(x => x.GetType() == typeof(T));
+        if (Property.PropertyType == typeof(string))
+            columns = 6;
 
-        if (attribute == null)
-        {
-            result = default(T)!;
-            return false;
-        }
-
-        var castedAttribute = attribute as T;
-
-        if (castedAttribute == null)
-        {
-            result = default(T)!;
-            return false;
-        }
-
-        result = castedAttribute;
-        return true;
+        colCssClass = "col-12 col-md-" + columns;
     }
-
-    var customCss = "form-control ";
-
-    if (TryGetCasted<CustomFormClassAttribute>(out var classAttribute))
-    {
-        customCss += classAttribute.Classes;
-    }
-
-    var formType = "";
-
-    if (Property.PropertyType == typeof(string))
-        formType = "text";
-    else if (Property.PropertyType == typeof(int))
-        formType = "number";
-    else if (Property.PropertyType == typeof(double))
-        formType = "number";
-    else if (Property.PropertyType == typeof(long))
-        formType = "number";
-    else if (Property.PropertyType == typeof(decimal))
-        formType = "number";
-
-    if (TryGetCasted<CustomFormTypeAttribute>(out var formTypeAttribute))
-    {
-        formType = formTypeAttribute.Type;
-    }
-
-    var placeholder = EnablePlaceholderName ? Property.Name : "";
 }
 
-@if (TryGetCasted<DescriptionAttribute>(out var descriptionAttribute))
-{
-    <div class="form-text fs-5 mb-2 mt-0">
-        @(descriptionAttribute.Description)
-    </div>
-}
+<div class="@colCssClass">
+    @if (EnablePropertyName)
+    {
+        <label class="form-label">
+            @(Formatter.ConvertCamelCaseToSpaces(Property.Name))
+        </label>
+    }
 
-@* Actual value binding *@
+    @{
+        var customAttributes = Property.GetCustomAttributes(true);
 
-<div class="mt-auto">
+        bool TryGetCasted<T>(out T result) where T : class
+        {
+            if (customAttributes == null)
+            {
+                result = default(T)!;
+                return false;
+            }
+
+            var attribute = customAttributes!.FirstOrDefault(x => x.GetType() == typeof(T));
+
+            if (attribute == null)
+            {
+                result = default(T)!;
+                return false;
+            }
+
+            var castedAttribute = attribute as T;
+
+            if (castedAttribute == null)
+            {
+                result = default(T)!;
+                return false;
+            }
+
+            result = castedAttribute;
+            return true;
+        }
+
+        var customCss = "form-control ";
+
+        if (TryGetCasted<CustomFormClassAttribute>(out var classAttribute))
+        {
+            customCss += classAttribute.Classes;
+        }
+
+        var formType = "";
+
+        if (Property.PropertyType == typeof(string))
+            formType = "text";
+        else if (Property.PropertyType == typeof(int))
+            formType = "number";
+        else if (Property.PropertyType == typeof(double))
+            formType = "number";
+        else if (Property.PropertyType == typeof(long))
+            formType = "number";
+        else if (Property.PropertyType == typeof(decimal))
+            formType = "number";
+
+        if (TryGetCasted<CustomFormTypeAttribute>(out var formTypeAttribute))
+        {
+            formType = formTypeAttribute.Type;
+        }
+
+        var placeholder = EnablePlaceholderName ? Property.Name : "";
+    }
+
+    @* Actual value binding *@
+
     @if (Property.PropertyType == typeof(string))
     {
         <div class="w-100">
@@ -98,7 +105,7 @@
             <ByteSizeInput @bind-Value="Binder.IntValue"
                            Converter="byteSizeAttribute.Converter"
                            MinimumUnit="byteSizeAttribute.MinimumUnit"
-                           DefaultUnit="byteSizeAttribute.DefaultUnit" />
+                           DefaultUnit="byteSizeAttribute.DefaultUnit"/>
         }
         else
         {
@@ -115,11 +122,22 @@
     }
     else if (Property.PropertyType == typeof(bool))
     {
-        var css = "form-check " + customCss.Replace("form-control", ""); 
-        
-        <div class="form-check @css">
-            <InputCheckbox id="@Property.Name" @bind-Value="Binder.BoolValue" class="form-check-input"/>
-        </div>
+        if (TryGetCasted(out RadioButtonBoolAttribute radioButtonBoolAttribute))
+        {
+            <SmartRadialBooleanButton @bind-Value="Binder.BoolValue"
+                                      FalseIcon="@radioButtonBoolAttribute.FalseIcon"
+                                      TrueIcon="@radioButtonBoolAttribute.TrueIcon"
+                                      FalseText="@radioButtonBoolAttribute.FalseText"
+                                      TrueText="@radioButtonBoolAttribute.TrueText"/>
+        }
+        else
+        {
+            var css = "form-check " + customCss.Replace("form-control", "");
+
+            <div class="form-check @css">
+                <InputCheckbox id="@Property.Name" @bind-Value="Binder.BoolValue" class="form-check-input"/>
+            </div>
+        }
     }
     else if (Property.PropertyType == typeof(DateTime))
     {
@@ -180,6 +198,13 @@
             }
         }
     }
+
+    @if (TryGetCasted<DescriptionAttribute>(out var descriptionAttribute))
+    {
+        <div class="form-text fs-6 text-gray-600">
+            @(descriptionAttribute.Description)
+        </div>
+    }
 </div>
 
 @code
@@ -190,6 +215,8 @@
 
     [Parameter] public bool EnablePropertyName { get; set; } = true;
     [Parameter] public bool EnablePlaceholderName { get; set; } = false;
+
+    [Parameter] public bool EnableColumnDetection { get; set; } = false;
 
     private PropBinder<TProp> Binder;
     private TProp[] Items = Array.Empty<TProp>();

@@ -12,7 +12,7 @@
 
 @if (ShowCreate)
 {
-    <div class="card card-body p-5 mb-5">
+    <div class="card card-body p-5 mb-8">
         <a href="#" @onclick:preventDefault @onclick="GoToView" class="text-muted mb-1">
             <i class="bx bx-sm bx-left-arrow-alt align-middle"></i>
             @if (string.IsNullOrEmpty(Title))
@@ -59,7 +59,7 @@
 }
 else if (ShowUpdate)
 {
-    <div class="card card-body p-5 mb-5">
+    <div class="card card-body p-5 mb-8">
         <a href="#" @onclick:preventDefault @onclick="GoToView" class="text-muted mb-1">
             <i class="bx bx-sm bx-left-arrow-alt align-middle"></i>
             @if (string.IsNullOrEmpty(Title))
@@ -134,45 +134,47 @@ else
     </div>
 
 
-    <div class="card card-body px-5">
-        <LazyLoader @ref="LazyLoader" Load="LoadItems">
-            @if (Items.Length == 0)
-            {
-                if (NoItemsView == null)
+    <div class="card">
+        <div class="card-body pt-3 px-5 pb-4">
+            <LazyLoader @ref="LazyLoader" Load="LoadItems">
+                @if (Items.Length == 0)
                 {
-                    <span class="text-center text-muted fs-5">No items found</span>
+                    if (NoItemsView == null)
+                    {
+                        <span class="text-center text-muted fs-5">No items found</span>
+                    }
+                    else
+                    {
+                        @NoItemsView
+                    }
                 }
                 else
                 {
-                    @NoItemsView
-                }
-            }
-            else
-            {
-                <CrudTable TItem="TItem" Items="Items" Filter="FilterButton" PageSize="@PageSize">
-                    @View
+                    <CrudTable TItem="TItem" ItemSource="@(ItemRepository.Get())" PageSize="@PageSize">
+                        @View
 
-                    <CrudColumn TItem="TItem" CssClasses="py-1 my-0">
-                        <Template>
-                            <div class="text-end">
-                                <div class="btn-group">
-                                    @if (Actions != null)
-                                    {
-                                        @Actions.Invoke(context)
-                                    }
-                                    <button @onclick="() => StartUpdate(context)" type="button" class="btn btn-icon btn-warning">
-                                        <i class="bx bx-sm bx-slider"></i>
-                                    </button>
-                                    <button @onclick="() => StartDelete(context)" type="button" class="btn btn-icon btn-danger">
-                                        <i class="bx bx-sm bx-trash"></i>
-                                    </button>
+                        <CrudColumn TItem="TItem" CssClasses="py-1 my-0">
+                            <Template>
+                                <div class="text-end">
+                                    <div class="btn-group">
+                                        @if (Actions != null)
+                                        {
+                                            @Actions.Invoke(context)
+                                        }
+                                        <button @onclick="() => StartUpdate(context)" type="button" class="btn btn-icon btn-warning">
+                                            <i class="bx bx-sm bx-slider"></i>
+                                        </button>
+                                        <button @onclick="() => StartDelete(context)" type="button" class="btn btn-icon btn-danger">
+                                            <i class="bx bx-sm bx-trash"></i>
+                                        </button>
+                                    </div>
                                 </div>
-                            </div>
-                        </Template>
-                    </CrudColumn>
-                </CrudTable>
-            }
-        </LazyLoader>
+                            </Template>
+                        </CrudColumn>
+                    </CrudTable>
+                }
+            </LazyLoader>
+        </div>
     </div>
 }
 
@@ -226,8 +228,7 @@ else
 
     [Parameter] public int PageSize { get; set; } = 25;
 
-    [Parameter]
-    public string FilterMenuColor { get; set; } = "gray-700";
+    [Parameter] public string FilterMenuColor { get; set; } = "gray-700";
 
     private TItem[] Items;
     private TCreateForm CreateForm;
@@ -243,7 +244,7 @@ else
     private bool ShowUpdate = false;
 
     private LazyLoader LazyLoader;
-    
+
     private string ItemName => Formatter.ConvertCamelCaseToSpaces(typeof(TItem).Name);
 
     protected override void OnInitialized()

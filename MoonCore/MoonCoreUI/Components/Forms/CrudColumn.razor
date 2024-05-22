@@ -5,6 +5,8 @@
 @code
 {
     [Parameter] public RenderFragment<TItem?>? Template { get; set; }
+    
+    [Parameter] public RenderFragment? HeadTemplate { get; set; }
 
     [Parameter] public Expression<Func<TItem, object?>>? Field { get; set; }
 
@@ -13,6 +15,8 @@
     [Parameter] public bool Filterable { get; set; }
 
     [Parameter] public string CssClasses { get; set; } = "";
+
+    [Parameter] public string HeadCssClasses { get; set; } = "fw-bold";
 
     [CascadingParameter] public CrudTable<TItem>? Parent { get; set; }
 

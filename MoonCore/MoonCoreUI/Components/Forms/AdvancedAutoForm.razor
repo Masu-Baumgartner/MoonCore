@@ -4,40 +4,39 @@
 
 @typeparam TForm
 
-<div class="row g-5">
-    @foreach (var kvp in PropertySections)
-    {
-        <div class="col-12">
-            <div class="card">
-                @if (!string.IsNullOrEmpty(kvp.Key))
-                {
-                    <div class="card-header">
-                        <span class="card-title">@kvp.Key</span>
-                    </div>
-                }
-                <div class="card-body">
-                    <div class="row g-5">
-                        @foreach (var prop in kvp.Value)
-                        {
-                            <div class="col-md-@(Columns) col-12 d-flex flex-column">
-                                @{
-                                    var typeToCreate = typeof(AutoProperty<>).MakeGenericType(prop.PropertyType);
-                                    var rf = ComponentHelper.FromType(typeToCreate, parameters =>
-                                    {
-                                        parameters.Add("Data", Model);
-                                        parameters.Add("Property", prop);
-                                    });
-                                }
-
-                                @rf
-                            </div>
-                        }
-                    </div>
+@foreach (var kvp in PropertySections)
+{
+    <div class="card mb-6">
+        @if (!string.IsNullOrEmpty(kvp.Key.Item1))
+        {
+            <div class="card-header">
+                <div class="card-title">
+                    @if (!string.IsNullOrEmpty(kvp.Key.Item2))
+                    {
+                        <i class="bx bx-md @(kvp.Key.Item2) text-primary me-3 align-middle"></i>
+                    }
+                    <span class="h3 align-middle">@(kvp.Key.Item1)</span>
                 </div>
             </div>
+        }
+        <div class="card-body">
+            <div class="row g-8">
+                @foreach (var prop in kvp.Value)
+                {
+                    var typeToCreate = typeof(AutoProperty<>).MakeGenericType(prop.PropertyType);
+                    var rf = ComponentHelper.FromType(typeToCreate, parameters =>
+                    {
+                        parameters.Add("Data", Model);
+                        parameters.Add("Property", prop);
+                        parameters.Add("EnableColumnDetection", true);
+                    });
+
+                    @rf
+                }
+            </div>
         </div>
-    }
-</div>
+    </div>
+}
 
 @code
 {
@@ -45,7 +44,7 @@
 
     [Parameter] public int Columns { get; set; } = 6;
 
-    private Dictionary<string, PropertyInfo[]> PropertySections = new();
+    private Dictionary<(string, string), PropertyInfo[]> PropertySections = new();
 
     protected override void OnInitialized()
     {
@@ -55,18 +54,18 @@
         PropertySections = propertiesGrouped.ToDictionary(x => x.Key, x => x.ToArray());
     }
 
-    private string GetSectionId(PropertyInfo info)
+    private (string, string) GetSectionId(PropertyInfo info)
     {
         var attributes = info.GetCustomAttributes().ToArray();
 
         if (attributes.All(x => x.GetType() != typeof(SectionAttribute)))
-            return string.Empty;
+            return (string.Empty, string.Empty);
 
         var sectionAttribute = attributes.First(x => x.GetType() == typeof(SectionAttribute)) as SectionAttribute;
 
         if (sectionAttribute == null)
-            return string.Empty;
+            return (string.Empty, string.Empty);
 
-        return sectionAttribute.Name;
+        return (sectionAttribute.Name, sectionAttribute.Icon);
     }
 }
