@@ -12,123 +12,68 @@
 
 @if (ShowCreate)
 {
-    <div class="card card-body p-5 mb-8">
-        <a href="#" @onclick:preventDefault @onclick="GoToView" class="text-muted mb-1">
-            <i class="bx bx-sm bx-left-arrow-alt align-middle"></i>
-            @if (string.IsNullOrEmpty(Title))
-            {
-                <span class="align-middle">Back to @ItemName</span>
-            }
-            else
-            {
-                <span class="align-middle">Back to @Title</span>
-            }
-        </a>
-        <div class="fw-semibold fs-2">
-            @if (string.IsNullOrEmpty(CreateText))
-            {
-                <span>Create @ItemName</span>
-            }
-            else
-            {
-                @CreateText
-            }
-        </div>
-    </div>
-
     <SmartForm Model="CreateForm" OnValidSubmit="FinishCreate">
-        <div class="mb-5">
-            <AdvancedAutoForm Columns="@(CreateForm.GetType().GetProperties().Length > 1 ? 6 : 12)" Model="CreateForm"/>
-        </div>
+        <div class="card card-body mb-8">
+            <div class="d-flex justify-content-between align-items-center">
+                <a href="#" class="text-body fs-4">
+                    <i class="bx bx-md bx-chevron-left align-middle"></i>
+                    <span class="align-middle">Back</span>
+                </a>
 
-        <div class="card card-body p-5">
-            <div class="d-flex justify-content-end">
-                <button type="submit" class="btn btn-primary">
-                    @if (string.IsNullOrEmpty(CreateText))
-                    {
-                        <span>Create @ItemName</span>
-                    }
-                    else
-                    {
-                        @CreateText
-                    }
-                </button>
+                <button type="submit" class="btn btn-primary">Create</button>
             </div>
         </div>
+
+        <AdvancedAutoForm Columns="@(CreateForm.GetType().GetProperties().Length > 1 ? 6 : 12)" Model="CreateForm"/>
     </SmartForm>
 }
 else if (ShowUpdate)
 {
-    <div class="card card-body p-5 mb-8">
-        <a href="#" @onclick:preventDefault @onclick="GoToView" class="text-muted mb-1">
-            <i class="bx bx-sm bx-left-arrow-alt align-middle"></i>
-            @if (string.IsNullOrEmpty(Title))
-            {
-                <span class="align-middle">Back to @ItemName</span>
-            }
-            else
-            {
-                <span class="align-middle">Back to @Title</span>
-            }
-        </a>
-        <div class="fw-semibold fs-2">
-            @if (string.IsNullOrEmpty(UpdateText))
-            {
-                <span>Update @ItemName</span>
-            }
-            else
-            {
-                @UpdateText
-            }
-        </div>
-    </div>
-
     <SmartForm Model="UpdateForm" OnValidSubmit="FinishUpdate">
-        <div class="card card-body p-8 mb-5">
-            <div class="row g-5">
-                <AdvancedAutoForm Columns="@(UpdateForm.GetType().GetProperties().Length > 1 ? 6 : 12)" Model="UpdateForm"/>
+        <div class="card card-body mb-8">
+            <div class="d-flex justify-content-between align-items-center">
+                <a href="#" class="text-body fs-4">
+                    <i class="bx bx-md bx-chevron-left align-middle"></i>
+                    <span class="align-middle">Back</span>
+                </a>
+
+                <button type="submit" class="btn btn-primary">Update</button>
             </div>
         </div>
 
-        <div class="card card-body p-5">
-            <div class="d-flex justify-content-end">
-                <button type="submit" class="btn btn-primary">
-                    @if (string.IsNullOrEmpty(UpdateText))
-                    {
-                        <span>Update @ItemName</span>
-                    }
-                    else
-                    {
-                        @UpdateText
-                    }
-                </button>
-            </div>
-        </div>
+        <AdvancedAutoForm Columns="@(UpdateForm.GetType().GetProperties().Length > 1 ? 6 : 12)" Model="UpdateForm"/>
     </SmartForm>
 }
 else
 {
     <div class="card card-body mb-5 p-3">
-        <div class="d-flex justify-content-between align-items-center">
-            <div class="fs-3 fw-semibold ms-3">
-                @Title
+        <div class="row">
+            <div class="col-6 col-md-3">
+                <div class="input-group">
+                    <span class="input-group-text">
+                        <i class="bx bx-sm bx-search-alt"></i>
+                    </span>
+                    <input placeholder="Search" class="form-control"/>
+                </div>
             </div>
-            <div class="text-end">
-                @if (Toolbar != null)
-                {
-                    @Toolbar
-                }
-                <DynamicFilterButton @ref="FilterButton" TItem="TItem" Color="FilterMenuColor"/>
-                <button @onclick="StartCreate" type="button" class="btn btn-primary ms-3">
-                    @if (string.IsNullOrEmpty(CreateText))
+            <div class="col-6 col-md-9">
+                <div class="text-end">
+                    @if (Toolbar != null)
                     {
-                        <span>Create @ItemName</span>
+                        @Toolbar
                     }
-                    else
-                    {
-                        @CreateText
-                    }
-                </button>
+                    <DynamicFilterButton @ref="FilterButton" TItem="TItem" Color="FilterMenuColor"/>
+                    <button @onclick="StartCreate" type="button" class="btn btn-primary ms-3">
+                        @if (string.IsNullOrEmpty(CreateText))
+                        {
+                            <span>Create @ItemName</span>
+                        }
+                        else
+                        {
+                            @CreateText
+                        }
+                    </button>
+                </div>
             </div>
         </div>
     </div>
@@ -151,22 +96,38 @@ else
                 else
                 {
                     <CrudTable TItem="TItem" ItemSource="@(ItemRepository.Get())" PageSize="@PageSize">
+                        <CrudColumn TItem="TItem" HeadCssClasses="w-10px align-middle" CssClasses="w-10px align-middle">
+                            <HeadTemplate>
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" value="0">
+                                </div>
+                            </HeadTemplate>
+                            <Template>
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" value="0">
+                                </div>
+                            </Template>
+                        </CrudColumn>
+
                         @View
 
-                        <CrudColumn TItem="TItem" CssClasses="py-1 my-0">
+                        <CrudColumn TItem="TItem">
                             <Template>
                                 <div class="text-end">
-                                    <div class="btn-group">
-                                        @if (Actions != null)
-                                        {
-                                            @Actions.Invoke(context)
-                                        }
-                                        <button @onclick="() => StartUpdate(context)" type="button" class="btn btn-icon btn-warning">
-                                            <i class="bx bx-sm bx-slider"></i>
-                                        </button>
-                                        <button @onclick="() => StartDelete(context)" type="button" class="btn btn-icon btn-danger">
-                                            <i class="bx bx-sm bx-trash"></i>
-                                        </button>
+                                    @if (Actions != null)
+                                    {
+                                        @Actions.Invoke(context)
+                                    }
+                                </div>
+                            </Template>
+                        </CrudColumn>
+                        <CrudColumn TItem="TItem">
+                            <Template>
+                                <div class="text-center">
+                                    <div class="text-nowrap me-3 fw-semibold">
+                                        <a href="#" @onclick:preventDefault @onclick="() => StartUpdate(context)">
+                                            <i class="bx bx-edit"></i> Edit
+                                        </a>
                                     </div>
                                 </div>
                             </Template>

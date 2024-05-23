@@ -24,13 +24,6 @@
 }
 
 <div class="@colCssClass">
-    @if (EnablePropertyName)
-    {
-        <label class="form-label">
-            @(Formatter.ConvertCamelCaseToSpaces(Property.Name))
-        </label>
-    }
-
     @{
         var customAttributes = Property.GetCustomAttributes(true);
 
@@ -88,6 +81,20 @@
         }
 
         var placeholder = EnablePlaceholderName ? Property.Name : "";
+    }
+
+    @if (EnablePropertyName)
+    {
+        <label class="form-label">
+            @if (TryGetCasted(out DisplayNameAttribute nameAttribute))
+            {
+                @nameAttribute.DisplayName
+            }
+            else
+            {
+                @(Formatter.ConvertCamelCaseToSpaces(Property.Name))
+            }
+        </label>
     }
 
     @* Actual value binding *@
