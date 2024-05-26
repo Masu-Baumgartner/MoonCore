@@ -1,5 +1,6 @@
 @using System.Linq.Expressions
 @using System.Reflection
+@using MoonCore.Helpers
 
 @typeparam TItem
 
@@ -28,25 +29,36 @@
         </thead>
         <tbody>
 
-        @foreach (var item in CurrentItems)
+        @if (IsLoading)
         {
             <tr>
-                @foreach (var column in Columns)
-                {
-                    <td class="@column.CssClasses">
-                        @if (column.Template == null)
-                        {
-                            var val = column.Field!.Compile().Invoke(item);
-
-                            @(val == null ? "-" : val.ToString())
-                        }
-                        else
-                        {
-                            @column.Template.Invoke(item)
-                        }
-                    </td>
-                }
+                <td class="fs-5 text-body fw-semibold">
+                    Loading
+                </td>
             </tr>
+        }
+        else
+        {
+            foreach (var item in CurrentItems)
+            {
+                <tr>
+                    @foreach (var column in Columns)
+                    {
+                        <td class="@column.CssClasses">
+                            @if (column.Template == null)
+                            {
+                                var val = column.Field!.Compile().Invoke(item);
+
+                                @(val == null ? "-" : val.ToString())
+                            }
+                            else
+                            {
+                                @column.Template.Invoke(item)
+                            }
+                        </td>
+                    }
+                </tr>
+            }
         }
         </tbody>
     </table>
@@ -109,6 +121,8 @@
     [Parameter] public RenderFragment ChildContent { get; set; }
 
     [Parameter] public IEnumerable<TItem> ItemSource { get; set; }
+    
+    [Parameter] public Func<Task>? OnItemsChanged { get; set; }
 
     [Parameter] public int PageSize { get; set; } = 25;
 
@@ -118,10 +132,12 @@
 
     private List<CrudColumn<TItem>> Columns = new();
 
-    private TItem[] CurrentItems = Array.Empty<TItem>();
+    public TItem[] CurrentItems { get; private set; } = Array.Empty<TItem>();
     private int TotalItems = 0;
     private int Page = 0;
     private int TotalPages = 0;
+
+    private bool IsLoading = true;
     
     public async Task SetPage(int x)
     {
@@ -133,7 +149,7 @@
         if (Page > TotalPages)
             Page = TotalPages;
 
-        await InvokeAsync(StateHasChanged);
+        await Refresh();
     }
 
     public Task AddColumn(CrudColumn<TItem> column)
@@ -145,6 +161,9 @@
 
     public async Task Refresh(bool fullRefresh = false)
     {
+        IsLoading = true;
+        await InvokeAsync(StateHasChanged);
+        
         if (fullRefresh)
         {
             TotalItems = ItemSource.Count();
@@ -159,11 +178,18 @@
         else
             TotalPages = (TotalItems - pagesMod) / PageSize;
 
+        // Reduce the total pages by one to match the page counter starting with zero
+        TotalPages -= 1;
+        
         CurrentItems = ItemSource
             .Skip(Page * PageSize)
             .Take(PageSize)
             .ToArray();
+        
+        if (OnItemsChanged != null)
+            await OnItemsChanged.Invoke();
 
+        IsLoading = false;
         await InvokeAsync(StateHasChanged);
     }
 

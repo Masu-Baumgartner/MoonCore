@@ -15,7 +15,7 @@
     <SmartForm Model="CreateForm" OnValidSubmit="FinishCreate">
         <div class="card card-body mb-8">
             <div class="d-flex justify-content-between align-items-center">
-                <a href="#" class="text-body fs-4">
+                <a href="#" class="text-body fs-4" @onclick:preventDefault @onclick="GoToView">
                     <i class="bx bx-md bx-chevron-left align-middle"></i>
                     <span class="align-middle">Back</span>
                 </a>
@@ -32,12 +32,15 @@ else if (ShowUpdate)
     <SmartForm Model="UpdateForm" OnValidSubmit="FinishUpdate">
         <div class="card card-body mb-8">
             <div class="d-flex justify-content-between align-items-center">
-                <a href="#" class="text-body fs-4">
+                <a href="#" class="text-body fs-4" @onclick:preventDefault @onclick="GoToView">
                     <i class="bx bx-md bx-chevron-left align-middle"></i>
                     <span class="align-middle">Back</span>
                 </a>
 
-                <button type="submit" class="btn btn-primary">Update</button>
+                <div>
+                    <button type="button" class="btn btn-danger me-2" @onclick="StartDelete">Delete</button>
+                    <button type="submit" class="btn btn-primary">Update</button>
+                </div>
             </div>
         </div>
 
@@ -48,93 +51,113 @@ else
 {
     <div class="card card-body mb-5 p-3">
         <div class="row">
-            <div class="col-6 col-md-3">
-                <div class="input-group">
-                    <span class="input-group-text">
-                        <i class="bx bx-sm bx-search-alt"></i>
-                    </span>
-                    <input placeholder="Search" class="form-control"/>
+            @if (SelectionStatusCache.Count(x => x.Value) > 0)
+            {
+                <div class="col-6 d-flex align-items-center justify-content-start">
+                    <div class="ms-1 fs-4 fw-semibold">@SelectionStatusCache.Count(x => x.Value) item(s) selected</div>
                 </div>
-            </div>
-            <div class="col-6 col-md-9">
-                <div class="text-end">
-                    @if (Toolbar != null)
-                    {
-                        @Toolbar
-                    }
-                    <DynamicFilterButton @ref="FilterButton" TItem="TItem" Color="FilterMenuColor"/>
-                    <button @onclick="StartCreate" type="button" class="btn btn-primary ms-3">
-                        @if (string.IsNullOrEmpty(CreateText))
-                        {
-                            <span>Create @ItemName</span>
-                        }
-                        else
-                        {
-                            @CreateText
-                        }
-                    </button>
+                <div class="col-6 d-flex align-items-center justify-content-end">
+                    <WButton CssClasses="btn-danger">
+                        <i class="bx bx-sm bxs-trash"></i>
+                        <span class="ms-1">Delete</span>
+                    </WButton>
                 </div>
-            </div>
+            }
+            else
+            {
+                <div class="col-6 col-md-3">
+                    <div class="input-group">
+                        <span class="input-group-text">
+                            <i class="bx bx-sm bx-search-alt"></i>
+                        </span>
+                        <input placeholder="Search" class="form-control"/>
+                    </div>
+                </div>
+                <div class="col-6 col-md-9">
+                    <div class="text-end">
+                        @if (Toolbar != null)
+                        {
+                            @Toolbar
+                        }
+                    
+                        <button @onclick="StartCreate" type="button" class="btn btn-primary ms-3">
+                            @if (string.IsNullOrEmpty(CreateText))
+                            {
+                                <span>Create @ItemName</span>
+                            }
+                            else
+                            {
+                                @CreateText
+                            }
+                        </button>
+                    </div>
+                </div>
+            }
         </div>
     </div>
 
 
     <div class="card">
         <div class="card-body pt-3 px-5 pb-4">
-            <LazyLoader @ref="LazyLoader" Load="LoadItems">
-                @if (Items.Length == 0)
-                {
-                    if (NoItemsView == null)
-                    {
-                        <span class="text-center text-muted fs-5">No items found</span>
-                    }
-                    else
-                    {
-                        @NoItemsView
-                    }
-                }
-                else
-                {
-                    <CrudTable TItem="TItem" ItemSource="@(ItemRepository.Get())" PageSize="@PageSize">
-                        <CrudColumn TItem="TItem" HeadCssClasses="w-10px align-middle" CssClasses="w-10px align-middle">
-                            <HeadTemplate>
-                                <div class="form-check">
-                                    <input class="form-check-input" type="checkbox" value="0">
-                                </div>
-                            </HeadTemplate>
-                            <Template>
-                                <div class="form-check">
-                                    <input class="form-check-input" type="checkbox" value="0">
-                                </div>
-                            </Template>
-                        </CrudColumn>
+            <CrudTable @ref="Table" TItem="TItem" ItemSource="ItemSource" PageSize="2" OnItemsChanged="OnTableItemsChanged">
+                <CrudColumn TItem="TItem" HeadCssClasses="w-10px align-middle" CssClasses="w-10px align-middle">
+                    <HeadTemplate>
+                        <div class="form-check">
+                            @if (IsAllSelected)
+                            {
+                                <input class="form-check-input" type="checkbox" checked="checked" @onclick="() => SelectAll(false)">
+                            }
+                            else
+                            {
+                                <input class="form-check-input" type="checkbox" @onclick="() => SelectAll(true)">
+                            }
+                        </div>
+                    </HeadTemplate>
+                    <Template>
+                        <div class="form-check">
+                            @if (SelectionStatusCache.ContainsKey(context))
+                            {
+                                if (SelectionStatusCache[context])
+                                {
+                                    <input class="form-check-input" type="checkbox" checked="checked" @onclick="() => ChangeSelection(context, false)">
+                                }
+                                else
+                                {
+                                    <input class="form-check-input" type="checkbox" @onclick="() => ChangeSelection(context, true)">
+                                }
+                            }
+                            else
+                            {
+                                <input class="form-check-input" type="checkbox" @onclick="() => ChangeSelection(context, true)">
+                            }
+                        </div>
+                    </Template>
+                </CrudColumn>
 
-                        @View
+                @View
 
-                        <CrudColumn TItem="TItem">
-                            <Template>
-                                <div class="text-end">
-                                    @if (Actions != null)
-                                    {
-                                        @Actions.Invoke(context)
-                                    }
-                                </div>
-                            </Template>
-                        </CrudColumn>
-                        <CrudColumn TItem="TItem">
-                            <Template>
-                                <div class="text-center">
-                                    <div class="text-nowrap me-3 fw-semibold">
-                                        <a href="#" @onclick:preventDefault @onclick="() => StartUpdate(context)">
-                                            <i class="bx bx-edit"></i> Edit
-                                        </a>
-                                    </div>
-                                </div>
-                            </Template>
-                        </CrudColumn>
-                    </CrudTable>
-                }
-            </LazyLoader>
+                <CrudColumn TItem="TItem">
+                    <Template>
+                        <div class="text-end">
+                            @if (Actions != null)
+                            {
+                                @Actions.Invoke(context)
+                            }
+                        </div>
+                    </Template>
+                </CrudColumn>
+                <CrudColumn TItem="TItem">
+                    <Template>
+                        <div class="text-center">
+                            <div class="text-nowrap me-3 fw-semibold">
+                                <a href="#" @onclick:preventDefault @onclick="() => StartUpdate(context)">
+                                    <i class="bx bx-edit"></i> Edit
+                                </a>
+                            </div>
+                        </div>
+                    </Template>
+                </CrudColumn>
+            </CrudTable>
         </div>
     </div>
 }
@@ -164,8 +187,8 @@ else
     [Parameter] public string CreateText { get; set; } = "";
 
     [Parameter] public string UpdateText { get; set; } = "";
-
-    [Parameter] public Func<Repository<TItem>, TItem[]> Load { get; set; }
+    
+    [Parameter] public Func<Repository<TItem>, IEnumerable<TItem>> Loader { get; set; }
 
     [Parameter] public RenderFragment View { get; set; }
 
@@ -191,7 +214,6 @@ else
 
     [Parameter] public string FilterMenuColor { get; set; } = "gray-700";
 
-    private TItem[] Items;
     private TCreateForm CreateForm;
     private TUpdateForm UpdateForm;
     private TItem ItemToUpdate;
@@ -204,29 +226,28 @@ else
     private bool ShowCreate = false;
     private bool ShowUpdate = false;
 
-    private LazyLoader LazyLoader;
-
     private string ItemName => Formatter.ConvertCamelCaseToSpaces(typeof(TItem).Name);
 
+    private IEnumerable<TItem> ItemSource;
+    private CrudTable<TItem> Table;
+
+    private Dictionary<TItem, bool> SelectionStatusCache = new();
+    private bool IsAllSelected = false;
+    
     protected override void OnInitialized()
     {
-        if (Load == null)
-            throw new ArgumentNullException(nameof(Load));
-
         if (View == null)
             throw new ArgumentNullException(nameof(View));
 
         CreateForm = Activator.CreateInstance<TCreateForm>()!;
         UpdateForm = Activator.CreateInstance<TUpdateForm>()!;
+
+        ItemSource = Loader.Invoke(ItemRepository);
     }
 
-    public async Task Reload() => await LazyLoader.Reload();
-
-    private Task LoadItems(LazyLoader _)
+    public async Task Reload()
     {
-        Items = Load.Invoke(ItemRepository);
-
-        return Task.CompletedTask;
+        await Table.Refresh();
     }
 
     private async Task StartUpdate(TItem item)
@@ -253,7 +274,6 @@ else
         // Reset
         ShowUpdate = false;
         await InvokeAsync(StateHasChanged);
-        await LazyLoader.Reload();
         await ToastService.Success("Successfully updated item");
     }
 
@@ -280,13 +300,12 @@ else
         // Reset
         ShowCreate = false;
         await InvokeAsync(StateHasChanged);
-        await LazyLoader.Reload();
         await ToastService.Success("Successfully added item");
     }
 
-    private async Task StartDelete(TItem item)
+    private async Task StartDelete()
     {
-        ItemToDelete = item;
+        ItemToDelete = ItemToUpdate;
         await DeleteModal.Show();
     }
 
@@ -302,14 +321,45 @@ else
 
         // Reset
         await DeleteModal.Hide();
-        await LazyLoader.Reload();
         await ToastService.Success("Successfully deleted item");
+
+        await GoToView();
     }
 
     private async Task GoToView()
     {
         ShowCreate = false;
         ShowUpdate = false;
+
+        await InvokeAsync(StateHasChanged);
+    }
+
+    private Task OnTableItemsChanged()
+    {
+        SelectionStatusCache = Table.CurrentItems
+            .ToDictionary(x => x, _ => false);
+
+        IsAllSelected = false;
+        
+        return Task.CompletedTask;
+    }
+
+    private async Task ChangeSelection(TItem item, bool selection)
+    {
+        if (IsAllSelected)
+            IsAllSelected = false;
+        
+        SelectionStatusCache[item] = selection;
+        
+        await InvokeAsync(StateHasChanged);
+    }
+
+    private async Task SelectAll(bool toggle)
+    {
+        IsAllSelected = toggle;
+
+        foreach (var key in SelectionStatusCache.Keys)
+            SelectionStatusCache[key] = toggle;
 
         await InvokeAsync(StateHasChanged);
     }
