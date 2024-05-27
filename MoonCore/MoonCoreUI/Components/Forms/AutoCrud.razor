@@ -27,9 +27,9 @@
         <AdvancedAutoForm Columns="@(CreateForm.GetType().GetProperties().Length > 1 ? 6 : 12)" Model="CreateForm"/>
     </SmartForm>
 }
-else if (ShowUpdate)
+else if (ShowEdit)
 {
-    <SmartForm Model="UpdateForm" OnValidSubmit="FinishUpdate">
+    <SmartForm Model="UpdateForm" OnValidSubmit="FinishEdit">
         <div class="card card-body mb-8">
             <div class="d-flex justify-content-between align-items-center">
                 <a href="#" class="text-body fs-4" @onclick:preventDefault @onclick="GoToView">
@@ -38,27 +38,61 @@ else if (ShowUpdate)
                 </a>
 
                 <div>
-                    <button type="button" class="btn btn-danger me-2" @onclick="StartDelete">Delete</button>
-                    <button type="submit" class="btn btn-primary">Update</button>
+                    @if (UpdateActions != null)
+                    {
+                        @UpdateActions
+                    }
+                    <button type="button" class="btn btn-danger me-2" @onclick="StartDelete">
+                        <i class="bx bx-sm bx-trash"></i>
+                        <span class="ms-1">Delete</span>
+                    </button>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="bx bx-sm bx-save"></i>
+                        <span class="ms-1">Save</span>
+                    </button>
                 </div>
             </div>
         </div>
 
         <AdvancedAutoForm Columns="@(UpdateForm.GetType().GetProperties().Length > 1 ? 6 : 12)" Model="UpdateForm"/>
     </SmartForm>
+    
+    <SmartModal @ref="DeleteModal" CssClasses="modal-dialog-centered">
+        <div class="modal-header">
+            <h5 class="modal-title">Do you want to delete this item?</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+            <p class="text-gray-800 fs-5 fw-semibold">
+                This action cannot be undone. The data will be deleted and cannot be restored
+            </p>
+        </div>
+        <div class="modal-footer p-3">
+            <div class="btn-group w-100">
+                <WButton OnClick="FinishDelete" Text="Delete" CssClasses="btn btn-danger w-50 me-3"/>
+                <button class="btn btn-secondary w-50" data-bs-dismiss="modal">Cancel</button>
+            </div>
+        </div>
+    </SmartModal>
 }
 else
 {
     <div class="card card-body mb-5 p-3">
         <div class="row">
-            @if (SelectionStatusCache.Count(x => x.Value) > 0)
+            @if (SelectedItems.Length > 0)
             {
                 <div class="col-6 d-flex align-items-center justify-content-start">
-                    <div class="ms-1 fs-4 fw-semibold">@SelectionStatusCache.Count(x => x.Value) item(s) selected</div>
+                    <div class="ms-1 fs-4 fw-semibold">@SelectedItems.Length item(s) selected</div>
                 </div>
                 <div class="col-6 d-flex align-items-center justify-content-end">
+                    
+                    @if (SelectionAction != null)
+                    {
+                        @SelectionAction.Invoke(SelectedItems)
+                    }
+                    
                     <WButton CssClasses="btn-danger">
-                        <i class="bx bx-sm bxs-trash"></i>
+                        <i class="bx bx-sm bx-trash"></i>
                         <span class="ms-1">Delete</span>
                     </WButton>
                 </div>
@@ -75,9 +109,9 @@ else
                 </div>
                 <div class="col-6 col-md-9">
                     <div class="text-end">
-                        @if (Toolbar != null)
+                        @if (OverviewToolbar != null)
                         {
-                            @Toolbar
+                            @OverviewToolbar
                         }
                     
                         <button @onclick="StartCreate" type="button" class="btn btn-primary ms-3">
@@ -135,22 +169,12 @@ else
                 </CrudColumn>
 
                 @View
-
-                <CrudColumn TItem="TItem">
-                    <Template>
-                        <div class="text-end">
-                            @if (Actions != null)
-                            {
-                                @Actions.Invoke(context)
-                            }
-                        </div>
-                    </Template>
-                </CrudColumn>
+                
                 <CrudColumn TItem="TItem">
                     <Template>
                         <div class="text-center">
                             <div class="text-nowrap me-3 fw-semibold">
-                                <a href="#" @onclick:preventDefault @onclick="() => StartUpdate(context)">
+                                <a href="#" @onclick:preventDefault @onclick="() => StartEdit(context)">
                                     <i class="bx bx-edit"></i> Edit
                                 </a>
                             </div>
@@ -162,28 +186,8 @@ else
     </div>
 }
 
-<SmartModal @ref="DeleteModal" CssClasses="modal-dialog-centered">
-    <div class="modal-header">
-        <h5 class="modal-title">Do you want to delete this item?</h5>
-        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-    </div>
-    <div class="modal-body">
-        <p class="text-gray-800 fs-5 fw-semibold">
-            This action cannot be undone. The data will be deleted and cannot be restored
-        </p>
-    </div>
-    <div class="modal-footer p-3">
-        <div class="btn-group w-100">
-            <WButton OnClick="FinishDelete" Text="Delete" CssClasses="btn btn-danger w-50 me-3"/>
-            <button class="btn btn-secondary w-50" data-bs-dismiss="modal">Cancel</button>
-        </div>
-    </div>
-</SmartModal>
-
 @code
 {
-    [Parameter] public string Title { get; set; } = "";
-
     [Parameter] public string CreateText { get; set; } = "";
 
     [Parameter] public string UpdateText { get; set; } = "";
@@ -194,9 +198,11 @@ else
 
     [Parameter] public RenderFragment? NoItemsView { get; set; }
 
-    [Parameter] public RenderFragment? Toolbar { get; set; }
+    [Parameter] public RenderFragment? OverviewToolbar { get; set; }
 
-    [Parameter] public RenderFragment<TItem>? Actions { get; set; }
+    [Parameter] public RenderFragment<TItem>? UpdateActions { get; set; }
+    
+    [Parameter] public RenderFragment<TItem[]>? SelectionAction { get; set; }
 
     [Parameter] public Func<TItem, Task>? ValidateAdd { get; set; }
 
@@ -212,19 +218,14 @@ else
 
     [Parameter] public int PageSize { get; set; } = 25;
 
-    [Parameter] public string FilterMenuColor { get; set; } = "gray-700";
-
     private TCreateForm CreateForm;
     private TUpdateForm UpdateForm;
-    private TItem ItemToUpdate;
-    private TItem ItemToDelete;
+    private TItem ItemToEdit;
 
     private SmartModal DeleteModal;
 
-    private DynamicFilterButton<TItem> FilterButton;
-
     private bool ShowCreate = false;
-    private bool ShowUpdate = false;
+    private bool ShowEdit = false;
 
     private string ItemName => Formatter.ConvertCamelCaseToSpaces(typeof(TItem).Name);
 
@@ -232,7 +233,9 @@ else
     private CrudTable<TItem> Table;
 
     private Dictionary<TItem, bool> SelectionStatusCache = new();
+    private TItem[] SelectedItems = Array.Empty<TItem>();
     private bool IsAllSelected = false;
+
     
     protected override void OnInitialized()
     {
@@ -250,18 +253,20 @@ else
         await Table.Refresh();
     }
 
-    private async Task StartUpdate(TItem item)
+    #region Edit
+
+    private async Task StartEdit(TItem item)
     {
         UpdateForm = Mapper.Map<TUpdateForm>(item);
-        ItemToUpdate = item;
+        ItemToEdit = item;
 
-        ShowUpdate = true;
+        ShowEdit = true;
         await InvokeAsync(StateHasChanged);
     }
 
-    private async Task FinishUpdate()
+    private async Task FinishEdit()
     {
-        var item = Mapper.Map(ItemToUpdate, UpdateForm!);
+        var item = Mapper.Map(ItemToEdit, UpdateForm!);
 
         if (ValidateUpdate != null) // Optional additional validation
             await ValidateUpdate.Invoke(item);
@@ -270,12 +275,14 @@ else
             await CustomUpdate.Invoke(item);
         else
             ItemRepository.Update(item);
-
-        // Reset
-        ShowUpdate = false;
-        await InvokeAsync(StateHasChanged);
+        
         await ToastService.Success("Successfully updated item");
+        await GoToView();
     }
+
+    #endregion
+
+    #region Create
 
     private async Task StartCreate()
     {
@@ -297,47 +304,53 @@ else
         else
             ItemRepository.Add(item);
 
-        // Reset
-        ShowCreate = false;
-        await InvokeAsync(StateHasChanged);
         await ToastService.Success("Successfully added item");
+        await GoToView();
     }
+
+    #endregion
+
+    #region Delete
 
     private async Task StartDelete()
     {
-        ItemToDelete = ItemToUpdate;
         await DeleteModal.Show();
     }
 
     private async Task FinishDelete()
     {
         if (ValidateDelete != null) // Optional additional validation
-            await ValidateDelete.Invoke(ItemToDelete);
+            await ValidateDelete.Invoke(ItemToEdit);
 
         if (CustomDelete != null)
-            await CustomDelete.Invoke(ItemToDelete);
+            await CustomDelete.Invoke(ItemToEdit);
         else
-            ItemRepository.Delete(ItemToDelete);
-
-        // Reset
+            ItemRepository.Delete(ItemToEdit);
+        
         await DeleteModal.Hide();
         await ToastService.Success("Successfully deleted item");
 
         await GoToView();
     }
 
+    #endregion
+
     private async Task GoToView()
     {
         ShowCreate = false;
-        ShowUpdate = false;
+        ShowEdit = false;
 
         await InvokeAsync(StateHasChanged);
     }
+
+    #region Selection
 
     private Task OnTableItemsChanged()
     {
         SelectionStatusCache = Table.CurrentItems
             .ToDictionary(x => x, _ => false);
+
+        SelectedItems = Array.Empty<TItem>();
 
         IsAllSelected = false;
         
@@ -351,6 +364,11 @@ else
         
         SelectionStatusCache[item] = selection;
         
+        SelectedItems = SelectionStatusCache
+            .Where(x => x.Value)
+            .Select(x => x.Key)
+            .ToArray();
+        
         await InvokeAsync(StateHasChanged);
     }
 
@@ -361,6 +379,13 @@ else
         foreach (var key in SelectionStatusCache.Keys)
             SelectionStatusCache[key] = toggle;
 
+        if (toggle)
+            SelectedItems = Table.CurrentItems.ToArray();
+        else
+            SelectedItems = Array.Empty<TItem>();
+
         await InvokeAsync(StateHasChanged);
     }
+
+    #endregion
 }

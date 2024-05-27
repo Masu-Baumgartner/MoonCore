@@ -4,33 +4,25 @@
 
 @typeparam TForm
 
-@foreach (var kvp in PropertySections)
+@foreach (var section in Sections)
 {
     <div class="card mb-6">
-        @if (!string.IsNullOrEmpty(kvp.Key.Item1))
+        @if (!string.IsNullOrEmpty(section.Name))
         {
             <div class="card-header">
                 <div class="card-title">
-                    @if (!string.IsNullOrEmpty(kvp.Key.Item2))
+                    @if (!string.IsNullOrEmpty(section.Icon))
                     {
-                        <i class="bx bx-md @(kvp.Key.Item2) text-primary me-3 align-middle"></i>
+                        <i class="bx bx-md @(section.Icon) text-primary me-3 align-middle"></i>
                     }
-                    <span class="h3 align-middle">@(kvp.Key.Item1)</span>
+                    <span class="h3 align-middle">@(section.Name)</span>
                 </div>
             </div>
         }
         <div class="card-body">
             <div class="row g-8">
-                @foreach (var prop in kvp.Value)
+                @foreach (var rf in section.Renders)
                 {
-                    var typeToCreate = typeof(AutoProperty<>).MakeGenericType(prop.PropertyType);
-                    var rf = ComponentHelper.FromType(typeToCreate, parameters =>
-                    {
-                        parameters.Add("Data", Model);
-                        parameters.Add("Property", prop);
-                        parameters.Add("EnableColumnDetection", true);
-                    });
-
                     @rf
                 }
             </div>
@@ -44,28 +36,70 @@
 
     [Parameter] public int Columns { get; set; } = 6;
 
-    private Dictionary<(string, string), PropertyInfo[]> PropertySections = new();
+    private List<Section> Sections = new();
 
     protected override void OnInitialized()
     {
         var properties = typeof(TForm).GetProperties();
-        var propertiesGrouped = properties.GroupBy(x => GetSectionId(x));
+        var propertiesGrouped = properties
+            .Select(x => GetSectionItem(x))
+            .GroupBy(x => x?.Attribute.Name ?? "");
 
-        PropertySections = propertiesGrouped.ToDictionary(x => x.Key, x => x.ToArray());
+        foreach (var group in propertiesGrouped)
+        {
+            if(!group.Any())
+                continue;
+
+            var firstItem = group.First()!;
+
+            var section = new Section()
+            {
+                Name = firstItem.Value.Attribute.Name,
+                Icon = firstItem.Value.Attribute.Icon,
+                Renders = new()
+            };
+
+            foreach (var item in group)
+            {
+                var typeToCreate = typeof(AutoProperty<>).MakeGenericType(item!.Value.Property.PropertyType);
+                var rf = ComponentHelper.FromType(typeToCreate, parameters =>
+                {
+                    parameters.Add("Data", Model);
+                    parameters.Add("Property", item!.Value.Property);
+                    parameters.Add("EnableColumnDetection", true);
+                });
+                
+                section.Renders.Add(rf);
+            }
+        }
     }
 
-    private (string, string) GetSectionId(PropertyInfo info)
+    private SectionItem? GetSectionItem(PropertyInfo info)
     {
         var attributes = info.GetCustomAttributes().ToArray();
 
         if (attributes.All(x => x.GetType() != typeof(SectionAttribute)))
-            return (string.Empty, string.Empty);
+            return null;
 
         var sectionAttribute = attributes.First(x => x.GetType() == typeof(SectionAttribute)) as SectionAttribute;
+        
+        return new()
+        {
+            Attribute = sectionAttribute!,
+            Property = info
+        };
+    }
 
-        if (sectionAttribute == null)
-            return (string.Empty, string.Empty);
+    struct Section
+    {
+        public string Name { get; set; }
+        public string Icon { get; set; }
+        public List<RenderFragment> Renders { get; set; }
+    }
 
-        return (sectionAttribute.Name, sectionAttribute.Icon);
+    struct SectionItem
+    {
+        public PropertyInfo Property { get; set; }
+        public SectionAttribute Attribute { get; set; }
     }
 }
