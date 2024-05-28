@@ -5,11 +5,17 @@
 
 <PageTitle>Index</PageTitle>
 
-<AdvancedSmartDropdown T="WeatherForecast" Items="Forecasts" @bind-Value="Forecast" SearchProp="@(x => x.Summary)" DisplayFunc="@(x => x.Summary)" />
+<MultiItemSelect @bind-Value="SelectedForecasts"
+                 Items="Forecasts"
+                 DisplayFunc="@(x => x.Summary)"
+                 SearchFunc="@(x => x.Summary)"
+                 IconFunc="@(x => "bxs-network-chart")"/>
+
 
 @code
 {
     private List<WeatherForecast> Forecasts = new();
+    private List<WeatherForecast> SelectedForecasts = new();
     private WeatherForecast Forecast;
 
     protected override void OnInitialized()
@@ -23,5 +29,7 @@
                 Summary = faker.Address.City()
             });
         }
+        
+        SelectedForecasts.AddRange(Forecasts.Take(5));
     }
 }

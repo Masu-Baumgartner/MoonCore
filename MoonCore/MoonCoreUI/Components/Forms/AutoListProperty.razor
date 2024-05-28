@@ -1,0 +1,143 @@
+@using System.Reflection
+@using System.ComponentModel
+@using Microsoft.Extensions.DependencyInjection
+@using MoonCore.Abstractions
+@using MoonCore.Helpers
+@using MoonCoreUI.Attributes
+@using MoonCoreUI.Helpers
+
+@typeparam TProp where TProp : List<TItem>
+@typeparam TItem
+
+@inject IServiceProvider ServiceProvider
+
+<div class="@ColCssClass">
+    @if (EnablePropertyName)
+    {
+        <label class="form-label">
+            @if (TryGetCasted(out DisplayNameAttribute nameAttribute))
+            {
+                @nameAttribute.DisplayName
+            }
+            else
+            {
+                @(Formatter.ConvertCamelCaseToSpaces(Property.Name))
+            }
+        </label>
+    }
+
+    @* Actual value binding *@
+
+    @if (TryGetCasted(out MultiSelectionAttribute _))
+    {
+        <MultiItemSelect Value="Binder.Class"
+                         ValueExpression="@(() => Binder.Class)"
+                         Items="Items"
+                         DisplayFunc="DisplayFunc"
+                         SearchFunc="SearchFunc"
+                         IconFunc="IconFunc"/>
+    }
+
+    @if (TryGetCasted<DescriptionAttribute>(out var descriptionAttribute))
+    {
+        <div class="form-text fs-6 text-gray-600">
+            @(descriptionAttribute.Description)
+        </div>
+    }
+</div>
+
+@code
+{
+    [Parameter] public object Data { get; set; }
+
+    [Parameter] public PropertyInfo Property { get; set; }
+
+    [Parameter] public bool EnablePropertyName { get; set; } = true;
+    [Parameter] public bool EnablePlaceholderName { get; set; } = false;
+
+    [Parameter] public bool EnableColumnDetection { get; set; } = false;
+
+    private PropBinder<TProp> Binder;
+    private List<TItem> Items = new();
+
+    private Attribute[] Attributes;
+
+    private string ColCssClass = "";
+
+    private Func<TItem, string> DisplayFunc;
+    private Func<TItem, string> SearchFunc;
+    private Func<TItem, string>? IconFunc = default;
+
+    protected override void OnInitialized()
+    {
+        Binder = new(Property, Data);
+
+        Attributes = Property
+            .GetCustomAttributes()
+            .ToArray();
+
+// ColCssClass
+        if (EnableColumnDetection)
+        {
+            var columns = 3;
+
+            if (TryGetCasted(out MultiSelectionAttribute _))
+                columns = 6;
+
+            ColCssClass = "col-12 col-md-6 col-xl-" + columns;
+        }
+
+// Search and display functions
+        if (TryGetCasted(out MultiSelectionAttribute multiSelectionAttribute))
+        {
+            DisplayFunc = FormHelper.GetPropertyExpression<TItem>(multiSelectionAttribute.DisplayField);
+            SearchFunc = FormHelper.GetPropertyExpression<TItem>(multiSelectionAttribute.SearchProp);
+
+            if (!string.IsNullOrEmpty(multiSelectionAttribute.Icon))
+                IconFunc = _ => multiSelectionAttribute.Icon;
+        }
+    }
+
+    protected override void OnParametersSet()
+    {
+        Binder = new(Property, Data);
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            if (Property.GetCustomAttributes(true)
+                .Any(x =>
+                    x.GetType() == typeof(MultiSelectionAttribute)
+                ))
+            {
+                var typeToGetByDi = typeof(Repository<>).MakeGenericType(typeof(TItem));
+                var repo = ServiceProvider.GetRequiredService(typeToGetByDi);
+                var dbSet = repo.GetType().GetMethods().First(x => x.Name == "Get").Invoke(repo, null) as IEnumerable<TItem>;
+                Items = dbSet!.ToList();
+
+                await InvokeAsync(StateHasChanged);
+            }
+        }
+    }
+
+    private bool TryGetCasted<T>(out T result) where T : class
+    {
+        result = default!;
+
+        if (Attributes.Length < 1)
+            return false;
+
+        var attribute = Attributes.FirstOrDefault(x => x.GetType() == typeof(T));
+
+        if (attribute == null)
+            return false;
+
+        if (attribute is not T castedAttribute)
+            return false;
+
+        result = castedAttribute;
+        return true;
+    }
+}

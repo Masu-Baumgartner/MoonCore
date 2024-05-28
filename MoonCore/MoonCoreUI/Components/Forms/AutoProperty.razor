@@ -5,6 +5,7 @@
 @using MoonCore.Abstractions
 @using MoonCore.Helpers
 @using MoonCoreUI.Attributes
+@using MoonCoreUI.Helpers
 
 @typeparam TProp
 
@@ -148,11 +149,11 @@
     protected override void OnInitialized()
     {
         Binder = new(Property, Data);
-        
-        Attributes = typeof(TProp)
+
+        Attributes = Property
             .GetCustomAttributes()
             .ToArray();
-        
+
         // ColCssClass
         if (EnableColumnDetection)
         {
@@ -163,7 +164,7 @@
 
             ColCssClass = "col-12 col-md-6 col-xl-" + columns;
         }
-        
+
         // Custom css
         CustomCss += "form-control ";
 
@@ -187,24 +188,14 @@
 
         // Placeholder
         Placeholder = EnablePlaceholderName ? Property.Name : "";
-        
+
         // Search and display functions
         if (TryGetCasted(out SelectorAttribute selectorAttribute))
         {
-            DisplayFunc = x =>
-            {
-                var prop = typeof(TProp).GetProperties().First(x => x.Name == selectorAttribute.DisplayProp);
-                return prop.GetValue(x) as string ?? "N/A";
-            };
+            DisplayFunc = FormHelper.GetPropertyExpression<TProp>(selectorAttribute.DisplayProp);
 
             if (selectorAttribute.UseDropdown)
-            {
-                SearchFunc = x =>
-                {
-                    var prop = typeof(TProp).GetProperties().First(x => x.Name == selectorAttribute.SelectorProp);
-                    return prop.GetValue(x) as string ?? "N/A";
-                };
-            }
+                SearchFunc = DisplayFunc = FormHelper.GetPropertyExpression<TProp>(selectorAttribute.SelectorProp);
         }
     }
 
@@ -217,7 +208,10 @@
     {
         if (firstRender)
         {
-            if (Property.GetCustomAttributes(true).Any(x => x.GetType() == typeof(SelectorAttribute)))
+            if (Property.GetCustomAttributes(true)
+                .Any(x =>
+                    x.GetType() == typeof(SelectorAttribute)
+                ))
             {
                 var typeToGetByDi = typeof(Repository<>).MakeGenericType(typeof(TProp));
                 var repo = ServiceProvider.GetRequiredService(typeToGetByDi);
@@ -228,11 +222,11 @@
             }
         }
     }
-    
+
     private bool TryGetCasted<T>(out T result) where T : class
     {
         result = default!;
-        
+
         if (Attributes.Length < 1)
             return false;
 

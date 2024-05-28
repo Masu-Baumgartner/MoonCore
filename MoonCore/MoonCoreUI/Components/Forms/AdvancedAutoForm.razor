@@ -41,36 +41,71 @@
     protected override void OnInitialized()
     {
         var properties = typeof(TForm).GetProperties();
-        var propertiesGrouped = properties
-            .Select(x => GetSectionItem(x))
-            .GroupBy(x => x?.Attribute.Name ?? "");
 
-        foreach (var group in propertiesGrouped)
+        foreach (var property in properties)
         {
-            if(!group.Any())
-                continue;
+            var sectionItem = GetSectionItem(property);
 
-            var firstItem = group.First()!;
+            Section sectionToAddRenderTo;
 
-            var section = new Section()
+            if (sectionItem == null) // => default section
             {
-                Name = firstItem.Value.Attribute.Name,
-                Icon = firstItem.Value.Attribute.Icon,
-                Renders = new()
-            };
+                var defaultSection = Sections.FirstOrDefault(x => x.Name == "");
 
-            foreach (var item in group)
+                if (defaultSection == null)
+                {
+                    defaultSection = new();
+                    
+                    Sections.Add(defaultSection);
+                }
+
+                sectionToAddRenderTo = defaultSection;
+            }
+            else
             {
-                var typeToCreate = typeof(AutoProperty<>).MakeGenericType(item!.Value.Property.PropertyType);
-                var rf = ComponentHelper.FromType(typeToCreate, parameters =>
+                var sectionWithTheSameName = Sections.FirstOrDefault(x => x.Name == sectionItem.Name);
+
+                if (sectionWithTheSameName == null) // missing => need to create the section
+                {
+                    sectionWithTheSameName = new()
+                    {
+                        Name = sectionItem.Name,
+                        Icon = sectionItem.Icon
+                    };
+                    
+                    Sections.Add(sectionWithTheSameName);
+                }
+
+                sectionToAddRenderTo = sectionWithTheSameName;
+            }
+
+            RenderFragment rf;
+            
+            if (FormHelper.IsGenericVersionOf(property.PropertyType, typeof(List<>)))
+            {
+                var listGenericAttribute = property.PropertyType.GetGenericArguments().First();
+                var typeToCreate = typeof(AutoListProperty<,>).MakeGenericType(property.PropertyType, listGenericAttribute);
+                
+                rf = ComponentHelper.FromType(typeToCreate, parameters =>
                 {
                     parameters.Add("Data", Model);
-                    parameters.Add("Property", item!.Value.Property);
+                    parameters.Add("Property", property);
                     parameters.Add("EnableColumnDetection", true);
                 });
-                
-                section.Renders.Add(rf);
             }
+            else
+            {
+                var typeToCreate = typeof(AutoProperty<>).MakeGenericType(property.PropertyType);
+                
+                rf = ComponentHelper.FromType(typeToCreate, parameters =>
+                {
+                    parameters.Add("Data", Model);
+                    parameters.Add("Property", property);
+                    parameters.Add("EnableColumnDetection", true);
+                });
+            }
+
+            sectionToAddRenderTo.Renders.Add(rf);
         }
     }
 
@@ -82,24 +117,27 @@
             return null;
 
         var sectionAttribute = attributes.First(x => x.GetType() == typeof(SectionAttribute)) as SectionAttribute;
-        
+
+        if (sectionAttribute == null)
+            return null;
+
         return new()
         {
-            Attribute = sectionAttribute!,
-            Property = info
+            Name = sectionAttribute.Name,
+            Icon = sectionAttribute.Icon
         };
     }
 
-    struct Section
+    class Section
     {
-        public string Name { get; set; }
-        public string Icon { get; set; }
-        public List<RenderFragment> Renders { get; set; }
+        public string Name { get; set; } = "";
+        public string Icon { get; set; } = "";
+        public List<RenderFragment> Renders { get; set; } = new();
     }
 
-    struct SectionItem
+    class SectionItem
     {
-        public PropertyInfo Property { get; set; }
-        public SectionAttribute Attribute { get; set; }
+        public string Name { get; set; } = "";
+        public string Icon { get; set; } = "";
     }
 }
