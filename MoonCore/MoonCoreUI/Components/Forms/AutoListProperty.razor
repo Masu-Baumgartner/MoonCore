@@ -67,6 +67,8 @@
     private Func<TItem, string> DisplayFunc;
     private Func<TItem, string> SearchFunc;
     private Func<TItem, string>? IconFunc = default;
+    
+    [CascadingParameter] public Dictionary<string, object> CustomItemLoaders { get; set; }
 
     protected override void OnInitialized()
     {
@@ -107,18 +109,41 @@
     {
         if (firstRender)
         {
-            if (Property.GetCustomAttributes(true)
-                .Any(x =>
-                    x.GetType() == typeof(MultiSelectionAttribute)
-                ))
-            {
-                var typeToGetByDi = typeof(Repository<>).MakeGenericType(typeof(TItem));
-                var repo = ServiceProvider.GetRequiredService(typeToGetByDi);
-                var dbSet = repo.GetType().GetMethods().First(x => x.Name == "Get").Invoke(repo, null) as IEnumerable<TItem>;
-                Items = dbSet!.ToList();
+            if(!TryGetCasted(out MultiSelectionAttribute _))
+                return;
+            
+            // Create generic type to resolve from di
+            var typeToGetByDi = typeof(Repository<>).MakeGenericType(typeof(TItem));
+                
+            // Resolve generic repo from di
+            var repo = ServiceProvider.GetRequiredService(typeToGetByDi);
 
-                await InvokeAsync(StateHasChanged);
+            if (TryGetCasted(out CustomItemLoaderAttribute loaderAttribute))
+            {
+                // Check if custom loader exists, if not, skip it
+                if(!CustomItemLoaders.TryGetValue(loaderAttribute.Id, out var customLoader))
+                    return;
+                
+                // Invoke the loader with the repo as an argument and an expected IEnumerable result
+                var iEnumerable = customLoader
+                    .GetType()
+                    .GetMethods()
+                    .First(x => x.Name == "Invoke")
+                    .Invoke(customLoader, new[] { repo }) as IEnumerable<TItem>;
+                
+                // Execute db command (see EF ToArray() )
+                Items = iEnumerable!.ToList();
             }
+            else // Fallback to default loader
+            {
+                // Invoke the repo get function with the no arguments and an expected IEnumerable result
+                var dbSet = repo.GetType().GetMethods().First(x => x.Name == "Get").Invoke(repo, null) as IEnumerable<TItem>;
+                
+                // Execute db command (see EF ToArray() )
+                Items = dbSet!.ToList();
+            }
+            
+            await InvokeAsync(StateHasChanged);
         }
     }
 

@@ -133,6 +133,8 @@
 
     [Parameter] public bool EnableColumnDetection { get; set; } = false;
 
+    [CascadingParameter] public Dictionary<string, object> CustomItemLoaders { get; set; }
+
     private PropBinder<TProp> Binder;
     private TProp[] Items = Array.Empty<TProp>();
 
@@ -208,18 +210,41 @@
     {
         if (firstRender)
         {
-            if (Property.GetCustomAttributes(true)
-                .Any(x =>
-                    x.GetType() == typeof(SelectorAttribute)
-                ))
-            {
-                var typeToGetByDi = typeof(Repository<>).MakeGenericType(typeof(TProp));
-                var repo = ServiceProvider.GetRequiredService(typeToGetByDi);
-                var dbSet = repo.GetType().GetMethods().First(x => x.Name == "Get").Invoke(repo, null) as IEnumerable<TProp>;
-                Items = dbSet!.ToArray();
+            if (!TryGetCasted(out SelectorAttribute _))
+                return;
+            
+            // Create generic type to resolve from di
+            var typeToGetByDi = typeof(Repository<>).MakeGenericType(typeof(TProp));
+                
+            // Resolve generic repo from di
+            var repo = ServiceProvider.GetRequiredService(typeToGetByDi);
 
-                await InvokeAsync(StateHasChanged);
+            if (TryGetCasted(out CustomItemLoaderAttribute loaderAttribute))
+            {
+                // Check if custom loader exists, if not, skip it
+                if(!CustomItemLoaders.TryGetValue(loaderAttribute.Id, out var customLoader))
+                    return;
+                
+                // Invoke the loader with the repo as an argument and an expected IEnumerable result
+                var iEnumerable = customLoader
+                    .GetType()
+                    .GetMethods()
+                    .First(x => x.Name == "Invoke")
+                    .Invoke(customLoader, new[] { repo }) as IEnumerable<TProp>;
+                
+                // Execute db command (see EF ToArray() )
+                Items = iEnumerable!.ToArray();
             }
+            else // Fallback to default loader
+            {
+                // Invoke the repo get function with the no arguments and an expected IEnumerable result
+                var dbSet = repo.GetType().GetMethods().First(x => x.Name == "Get").Invoke(repo, null) as IEnumerable<TProp>;
+                
+                // Execute db command (see EF ToArray() )
+                Items = dbSet!.ToArray();
+            }
+            
+            await InvokeAsync(StateHasChanged);
         }
     }
 
