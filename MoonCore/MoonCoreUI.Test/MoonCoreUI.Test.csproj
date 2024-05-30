@@ -5,14 +5,13 @@
         <Nullable>enable</Nullable>
         <ImplicitUsings>enable</ImplicitUsings>
     </PropertyGroup>
-
-    <ItemGroup>
-      <ProjectReference Include="..\MoonCoreUI\MoonCoreUI.csproj" />
-      <ProjectReference Include="..\MoonCore\MoonCore.csproj" />
-    </ItemGroup>
-
+    
     <ItemGroup>
       <PackageReference Include="Bogus" Version="35.5.0" />
+    </ItemGroup>
+    
+    <ItemGroup>
+      <ProjectReference Include="..\MoonCoreUI\MoonCoreUI.csproj" />
     </ItemGroup>
 
 </Project>

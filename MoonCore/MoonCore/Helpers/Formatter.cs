@@ -397,4 +397,16 @@ public static class Formatter
         var data = Convert.FromBase64String(base64);
         return Encoding.UTF8.GetString(data);
     }
+    
+    public static string ReplaceChars(string input, char[] chars)
+    {
+        var result = input;
+
+        foreach (var c in chars)
+        {
+            result = result.Replace($"{c}", "");
+        }
+        
+        return result;
+    }
 }

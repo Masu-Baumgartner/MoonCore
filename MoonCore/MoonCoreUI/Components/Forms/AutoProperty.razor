@@ -5,90 +5,33 @@
 @using MoonCore.Abstractions
 @using MoonCore.Helpers
 @using MoonCoreUI.Attributes
+@using MoonCoreUI.Helpers
 
 @typeparam TProp
+
 @inject IServiceProvider ServiceProvider
 
-@if (EnablePropertyName)
-{
-    <label class="form-label">
-        @(Formatter.ConvertCamelCaseToSpaces(Property.Name))
-    </label>
-}
-
-@{
-    var customAttributes = Property.GetCustomAttributes(true);
-
-    bool TryGetCasted<T>(out T result) where T : class
+<div class="@ColCssClass">
+    @if (EnablePropertyName)
     {
-        if (customAttributes == null)
-        {
-            result = default(T)!;
-            return false;
-        }
-
-        var attribute = customAttributes!.FirstOrDefault(x => x.GetType() == typeof(T));
-
-        if (attribute == null)
-        {
-            result = default(T)!;
-            return false;
-        }
-
-        var castedAttribute = attribute as T;
-
-        if (castedAttribute == null)
-        {
-            result = default(T)!;
-            return false;
-        }
-
-        result = castedAttribute;
-        return true;
+        <label class="form-label">
+            @if (TryGetCasted(out DisplayNameAttribute nameAttribute))
+            {
+                @nameAttribute.DisplayName
+            }
+            else
+            {
+                @(Formatter.ConvertCamelCaseToSpaces(Property.Name))
+            }
+        </label>
     }
 
-    var customCss = "form-control ";
+    @* Actual value binding *@
 
-    if (TryGetCasted<CustomFormClassAttribute>(out var classAttribute))
-    {
-        customCss += classAttribute.Classes;
-    }
-
-    var formType = "";
-
-    if (Property.PropertyType == typeof(string))
-        formType = "text";
-    else if (Property.PropertyType == typeof(int))
-        formType = "number";
-    else if (Property.PropertyType == typeof(double))
-        formType = "number";
-    else if (Property.PropertyType == typeof(long))
-        formType = "number";
-    else if (Property.PropertyType == typeof(decimal))
-        formType = "number";
-
-    if (TryGetCasted<CustomFormTypeAttribute>(out var formTypeAttribute))
-    {
-        formType = formTypeAttribute.Type;
-    }
-
-    var placeholder = EnablePlaceholderName ? Property.Name : "";
-}
-
-@if (TryGetCasted<DescriptionAttribute>(out var descriptionAttribute))
-{
-    <div class="form-text fs-5 mb-2 mt-0">
-        @(descriptionAttribute.Description)
-    </div>
-}
-
-@* Actual value binding *@
-
-<div class="mt-auto">
     @if (Property.PropertyType == typeof(string))
     {
         <div class="w-100">
-            <input id="@Property.Name" @bind="Binder.StringValue" type="@formType" class="@customCss" placeholder="@placeholder" autocomplete="off" spellcheck="false"/>
+            <input id="@Property.Name" @bind="Binder.StringValue" type="@FormType" class="@CustomCss" placeholder="@Placeholder" autocomplete="off" spellcheck="false"/>
         </div>
     }
     else if (Property.PropertyType == typeof(int))
@@ -98,40 +41,51 @@
             <ByteSizeInput @bind-Value="Binder.IntValue"
                            Converter="byteSizeAttribute.Converter"
                            MinimumUnit="byteSizeAttribute.MinimumUnit"
-                           DefaultUnit="byteSizeAttribute.DefaultUnit" />
+                           DefaultUnit="byteSizeAttribute.DefaultUnit"/>
         }
         else
         {
-            <input id="@Property.Name" @bind="Binder.IntValue" type="@formType" class="@customCss"/>
+            <input id="@Property.Name" @bind="Binder.IntValue" type="@FormType" class="@CustomCss"/>
         }
     }
     else if (Property.PropertyType == typeof(double))
     {
-        <input id="@Property.Name" @bind="Binder.DoubleValue" type="@formType" class="@customCss"/>
+        <input id="@Property.Name" @bind="Binder.DoubleValue" type="@FormType" class="@CustomCss"/>
     }
     else if (Property.PropertyType == typeof(long))
     {
-        <input id="@Property.Name" @bind="Binder.LongValue" type="@formType" class="@customCss"/>
+        <input id="@Property.Name" @bind="Binder.LongValue" type="@FormType" class="@CustomCss"/>
     }
     else if (Property.PropertyType == typeof(bool))
     {
-        var css = "form-check " + customCss.Replace("form-control", ""); 
-        
-        <div class="form-check @css">
-            <InputCheckbox id="@Property.Name" @bind-Value="Binder.BoolValue" class="form-check-input"/>
-        </div>
+        if (TryGetCasted(out RadioButtonBoolAttribute radioButtonBoolAttribute))
+        {
+            <SmartRadialBooleanButton @bind-Value="Binder.BoolValue"
+                                      FalseIcon="@radioButtonBoolAttribute.FalseIcon"
+                                      TrueIcon="@radioButtonBoolAttribute.TrueIcon"
+                                      FalseText="@radioButtonBoolAttribute.FalseText"
+                                      TrueText="@radioButtonBoolAttribute.TrueText"/>
+        }
+        else
+        {
+            var css = "form-check " + CustomCss.Replace("form-control", "");
+
+            <div class="form-check @css">
+                <InputCheckbox id="@Property.Name" @bind-Value="Binder.BoolValue" class="form-check-input"/>
+            </div>
+        }
     }
     else if (Property.PropertyType == typeof(DateTime))
     {
-        <InputDate id="@Property.Name" @bind-Value="Binder.DateTimeValue" class="@customCss"/>
+        <InputDate id="@Property.Name" @bind-Value="Binder.DateTimeValue" class="@CustomCss"/>
     }
     else if (Property.PropertyType == typeof(decimal))
     {
-        <InputNumber id="@Property.Name" step="0.01" @bind-Value="Binder.DoubleValue" class="@customCss"/>
+        <InputNumber id="@Property.Name" step="0.01" @bind-Value="Binder.DoubleValue" class="@CustomCss"/>
     }
     else if (Property.PropertyType.IsEnum)
     {
-        <select @bind="Binder.Class" class="form-select @customCss">
+        <select @bind="Binder.Class" class="form-select @CustomCss">
             @foreach (var status in (TProp[])Enum.GetValues(typeof(TProp)))
             {
                 if (Binder.Class.ToString() == status.ToString())
@@ -147,38 +101,24 @@
     }
     else if (Property.PropertyType.IsClass)
     {
-        var attribute = Property.GetCustomAttributes(true)
-            .FirstOrDefault(x => x.GetType() == typeof(SelectorAttribute)) as SelectorAttribute;
-
-        if (attribute != null)
+        if (TryGetCasted(out SelectorAttribute selectorAttribute))
         {
-            if (attribute.UseDropdown)
+            if (selectorAttribute.UseDropdown)
             {
-                var displayFunc = new Func<TProp, string>(x =>
-                {
-                    var prop = typeof(TProp).GetProperties().First(x => x.Name == attribute.DisplayProp);
-                    return prop.GetValue(x) as string ?? "N/A";
-                });
-
-                var searchFunc = new Func<TProp, string>(x =>
-                {
-                    var prop = typeof(TProp).GetProperties().First(x => x.Name == attribute.SelectorProp);
-                    return prop.GetValue(x) as string ?? "N/A";
-                });
-
-                <AdvancedSmartDropdown @bind-Value="Binder.Class" DisplayFunc="displayFunc" SearchProp="searchFunc" Items="Items"/>
+                <AdvancedSmartDropdown @bind-Value="Binder.Class" DisplayFunc="DisplayFunc" SearchProp="SearchFunc" Items="Items"/>
             }
             else
             {
-                var displayFunc = new Func<TProp, string>(x =>
-                {
-                    var prop = typeof(TProp).GetProperties().First(x => x.Name == attribute.DisplayProp);
-                    return prop.GetValue(x) as string ?? "N/A";
-                });
-
-                <SmartSelect @bind-Value="Binder.Class" DisplayField="displayFunc" Items="Items" CanBeNull="true"/>
+                <SmartSelect @bind-Value="Binder.Class" DisplayField="DisplayFunc" Items="Items" CanBeNull="true"/>
             }
         }
+    }
+
+    @if (TryGetCasted<DescriptionAttribute>(out var descriptionAttribute))
+    {
+        <div class="form-text fs-6 text-gray-600">
+            @(descriptionAttribute.Description)
+        </div>
     }
 </div>
 
@@ -191,12 +131,78 @@
     [Parameter] public bool EnablePropertyName { get; set; } = true;
     [Parameter] public bool EnablePlaceholderName { get; set; } = false;
 
+    [Parameter] public bool EnableColumnDetection { get; set; } = false;
+
+    [CascadingParameter(Name = "CustomItemLoaders")]
+    public Dictionary<string, object>? CustomItemLoaders { get; set; }
+
+    [CascadingParameter(Name = "CustomItemLoaderParameter")]
+    public object? CustomItemLoaderParameter { get; set; }
+
     private PropBinder<TProp> Binder;
     private TProp[] Items = Array.Empty<TProp>();
+
+    private Attribute[] Attributes;
+
+    private string ColCssClass = "";
+    private string Placeholder = "";
+    private string CustomCss = "";
+    private string FormType = "";
+
+    private Func<TProp, string> DisplayFunc;
+    private Func<TProp, string> SearchFunc;
 
     protected override void OnInitialized()
     {
         Binder = new(Property, Data);
+
+        Attributes = Property
+            .GetCustomAttributes()
+            .ToArray();
+
+        // ColCssClass
+        if (EnableColumnDetection)
+        {
+            var columns = 3;
+
+            if (Property.PropertyType == typeof(string))
+                columns = 6;
+
+            ColCssClass = "col-12 col-md-6 col-xl-" + columns;
+        }
+
+        // Custom css
+        CustomCss += "form-control ";
+
+        if (TryGetCasted<CustomFormClassAttribute>(out var classAttribute))
+            CustomCss += classAttribute.Classes;
+
+        // Form type
+        if (Property.PropertyType == typeof(string))
+            FormType = "text";
+        else if (Property.PropertyType == typeof(int))
+            FormType = "number";
+        else if (Property.PropertyType == typeof(double))
+            FormType = "number";
+        else if (Property.PropertyType == typeof(long))
+            FormType = "number";
+        else if (Property.PropertyType == typeof(decimal))
+            FormType = "number";
+
+        if (TryGetCasted<CustomFormTypeAttribute>(out var formTypeAttribute))
+            FormType = formTypeAttribute.Type;
+
+        // Placeholder
+        Placeholder = EnablePlaceholderName ? Property.Name : "";
+
+        // Search and display functions
+        if (TryGetCasted(out SelectorAttribute selectorAttribute))
+        {
+            DisplayFunc = FormHelper.GetPropertyExpression<TProp>(selectorAttribute.DisplayProp);
+
+            if (selectorAttribute.UseDropdown)
+                SearchFunc = DisplayFunc = FormHelper.GetPropertyExpression<TProp>(selectorAttribute.SelectorProp);
+        }
     }
 
     protected override void OnParametersSet()
@@ -208,15 +214,63 @@
     {
         if (firstRender)
         {
-            if (Property.GetCustomAttributes(true).Any(x => x.GetType() == typeof(SelectorAttribute)))
-            {
-                var typeToGetByDi = typeof(Repository<>).MakeGenericType(typeof(TProp));
-                var repo = ServiceProvider.GetRequiredService(typeToGetByDi);
-                var dbSet = repo.GetType().GetMethods().First(x => x.Name == "Get").Invoke(repo, null) as IEnumerable<TProp>;
-                Items = dbSet!.ToArray();
+            if (!TryGetCasted(out SelectorAttribute _))
+                return;
 
-                await InvokeAsync(StateHasChanged);
+            // Create generic type to resolve from di
+            var typeToGetByDi = typeof(Repository<>).MakeGenericType(typeof(TProp));
+
+            // Resolve generic repo from di
+            var repo = ServiceProvider.GetRequiredService(typeToGetByDi);
+
+            if (TryGetCasted(out CustomItemLoaderAttribute loaderAttribute))
+            {
+                if (CustomItemLoaders == null)
+                    return;
+
+                // Check if custom loader exists, if not, skip it
+                if (!CustomItemLoaders.TryGetValue(loaderAttribute.Id, out var customLoader))
+                    return;
+
+                // Invoke the loader with the repo as an argument and an expected IEnumerable result
+                var iEnumerable = customLoader
+                    .GetType()
+                    .GetMethods()
+                    .First(x => x.Name == "Invoke")
+                    .Invoke(customLoader, new[] { repo, CustomItemLoaderParameter }) as IEnumerable<TProp>;
+
+                // Execute db command (see EF ToArray() )
+                Items = iEnumerable!.ToArray();
             }
+            else // Fallback to default loader
+            {
+                // Invoke the repo get function with the no arguments and an expected IEnumerable result
+                var dbSet = repo.GetType().GetMethods().First(x => x.Name == "Get").Invoke(repo, null) as IEnumerable<TProp>;
+
+                // Execute db command (see EF ToArray() )
+                Items = dbSet!.ToArray();
+            }
+
+            await InvokeAsync(StateHasChanged);
         }
+    }
+
+    private bool TryGetCasted<T>(out T result) where T : class
+    {
+        result = default!;
+
+        if (Attributes.Length < 1)
+            return false;
+
+        var attribute = Attributes.FirstOrDefault(x => x.GetType() == typeof(T));
+
+        if (attribute == null)
+            return false;
+
+        if (attribute is not T castedAttribute)
+            return false;
+
+        result = castedAttribute;
+        return true;
     }
 }

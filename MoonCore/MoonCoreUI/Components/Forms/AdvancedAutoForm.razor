@@ -4,40 +4,31 @@
 
 @typeparam TForm
 
-<div class="row g-5">
-    @foreach (var kvp in PropertySections)
-    {
-        <div class="col-12">
-            <div class="card">
-                @if (!string.IsNullOrEmpty(kvp.Key))
-                {
-                    <div class="card-header">
-                        <span class="card-title">@kvp.Key</span>
-                    </div>
-                }
-                <div class="card-body">
-                    <div class="row g-5">
-                        @foreach (var prop in kvp.Value)
-                        {
-                            <div class="col-md-@(Columns) col-12 d-flex flex-column">
-                                @{
-                                    var typeToCreate = typeof(AutoProperty<>).MakeGenericType(prop.PropertyType);
-                                    var rf = ComponentHelper.FromType(typeToCreate, parameters =>
-                                    {
-                                        parameters.Add("Data", Model);
-                                        parameters.Add("Property", prop);
-                                    });
-                                }
-
-                                @rf
-                            </div>
-                        }
-                    </div>
+@foreach (var section in Sections)
+{
+    <div class="card mb-6">
+        @if (!string.IsNullOrEmpty(section.Name))
+        {
+            <div class="card-header">
+                <div class="card-title">
+                    @if (!string.IsNullOrEmpty(section.Icon))
+                    {
+                        <i class="bx bx-md @(section.Icon) text-primary me-3 align-middle"></i>
+                    }
+                    <span class="h3 align-middle">@(section.Name)</span>
                 </div>
             </div>
+        }
+        <div class="card-body">
+            <div class="row g-8">
+                @foreach (var rf in section.Renders)
+                {
+                    @rf
+                }
+            </div>
         </div>
-    }
-</div>
+    </div>
+}
 
 @code
 {
@@ -45,28 +36,108 @@
 
     [Parameter] public int Columns { get; set; } = 6;
 
-    private Dictionary<string, PropertyInfo[]> PropertySections = new();
+    private List<Section> Sections = new();
 
     protected override void OnInitialized()
     {
         var properties = typeof(TForm).GetProperties();
-        var propertiesGrouped = properties.GroupBy(x => GetSectionId(x));
 
-        PropertySections = propertiesGrouped.ToDictionary(x => x.Key, x => x.ToArray());
+        foreach (var property in properties)
+        {
+            var sectionItem = GetSectionItem(property);
+
+            Section sectionToAddRenderTo;
+
+            if (sectionItem == null) // => default section
+            {
+                var defaultSection = Sections.FirstOrDefault(x => x.Name == "");
+
+                if (defaultSection == null)
+                {
+                    defaultSection = new();
+                    
+                    Sections.Add(defaultSection);
+                }
+
+                sectionToAddRenderTo = defaultSection;
+            }
+            else
+            {
+                var sectionWithTheSameName = Sections.FirstOrDefault(x => x.Name == sectionItem.Name);
+
+                if (sectionWithTheSameName == null) // missing => need to create the section
+                {
+                    sectionWithTheSameName = new()
+                    {
+                        Name = sectionItem.Name,
+                        Icon = sectionItem.Icon
+                    };
+                    
+                    Sections.Add(sectionWithTheSameName);
+                }
+
+                sectionToAddRenderTo = sectionWithTheSameName;
+            }
+
+            RenderFragment rf;
+            
+            if (FormHelper.IsGenericVersionOf(property.PropertyType, typeof(List<>)))
+            {
+                var listGenericAttribute = property.PropertyType.GetGenericArguments().First();
+                var typeToCreate = typeof(AutoListProperty<,>).MakeGenericType(property.PropertyType, listGenericAttribute);
+                
+                rf = ComponentHelper.FromType(typeToCreate, parameters =>
+                {
+                    parameters.Add("Data", Model);
+                    parameters.Add("Property", property);
+                    parameters.Add("EnableColumnDetection", true);
+                });
+            }
+            else
+            {
+                var typeToCreate = typeof(AutoProperty<>).MakeGenericType(property.PropertyType);
+                
+                rf = ComponentHelper.FromType(typeToCreate, parameters =>
+                {
+                    parameters.Add("Data", Model);
+                    parameters.Add("Property", property);
+                    parameters.Add("EnableColumnDetection", true);
+                });
+            }
+
+            sectionToAddRenderTo.Renders.Add(rf);
+        }
     }
 
-    private string GetSectionId(PropertyInfo info)
+    private SectionItem? GetSectionItem(PropertyInfo info)
     {
         var attributes = info.GetCustomAttributes().ToArray();
 
         if (attributes.All(x => x.GetType() != typeof(SectionAttribute)))
-            return string.Empty;
+            return null;
 
         var sectionAttribute = attributes.First(x => x.GetType() == typeof(SectionAttribute)) as SectionAttribute;
 
         if (sectionAttribute == null)
-            return string.Empty;
+            return null;
 
-        return sectionAttribute.Name;
+        return new()
+        {
+            Name = sectionAttribute.Name,
+            Icon = sectionAttribute.Icon
+        };
+    }
+
+    class Section
+    {
+        public string Name { get; set; } = "";
+        public string Icon { get; set; } = "";
+        public List<RenderFragment> Renders { get; set; } = new();
+    }
+
+    class SectionItem
+    {
+        public string Name { get; set; } = "";
+        public string Icon { get; set; } = "";
     }
 }

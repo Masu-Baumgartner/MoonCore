@@ -35,23 +35,22 @@
             @if (ItemsCount > MinimumSearchSize)
             {
                 <div class="d-flex justify-content-center mb-2 mx-1">
-                    <input @ref="FilterRef" class="form-control" type="text" placeholder="@SearchPlaceholder" @bind-value="SearchTerm" @bind-value:event="oninput" />
+                    <input @ref="FilterRef" class="form-control" type="text" placeholder="@SearchPlaceholder" @bind-value="SearchTerm" @bind-value:event="oninput"/>
                 </div>
             }
             <div style="max-height: 200px; overflow-y: auto;">
-                @if (anyItems)
-                {
-                    foreach (var item in FilteredItems)
-                    {
-                        <button class="dropdown-item py-2" type="button" @onmousedown:preventDefault @onclick="() => SelectItem(item)">@DisplayFunc(item)</button>
-                    }
+                @{
+                    IEnumerable<T> items;
+
+                    if (anyItems)
+                        items = FilteredItems;
+                    else
+                        items = Items.Take(MaximumSize);
                 }
-                else
+
+                @foreach (var item in items)
                 {
-                    foreach (var item in Items.Take(MaximumSize))
-                    {
-                        <button class="dropdown-item py-2" type="button" @onmousedown:preventDefault @onclick="() => SelectItem(item)">@DisplayFunc(item)</button>
-                    }
+                    <button class="dropdown-item py-2 fs-6" type="button" @onmousedown:preventDefault @onclick="() => SelectItem(item)">@DisplayFunc(item)</button>
                 }
             </div>
         </div>
@@ -94,7 +93,7 @@
 
     private List<T> FilteredItems = new();
     private ElementReference FilterRef;
-    
+
     protected override void OnParametersSet()
     {
         ItemsCount = Items.Count();
@@ -104,7 +103,7 @@
     {
         if (ShowDropdown)
         {
-            if(FilterRef.Context != null)
+            if (FilterRef.Context != null)
                 await FilterRef.FocusAsync();
         }
     }
@@ -171,6 +170,7 @@
                 if (cleanedInput[i + j] != cleanedSearch[j])
                     break;
             }
+
             if (j == searchLength)
                 matches++;
         }
@@ -191,4 +191,5 @@
         ShowDropdown = b;
         await InvokeAsync(StateHasChanged);
     }
+
 }
