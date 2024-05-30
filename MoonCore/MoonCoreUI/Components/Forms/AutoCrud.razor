@@ -41,7 +41,7 @@
                     <div>
                         @if (UpdateActions != null)
                         {
-                            @UpdateActions
+                            @UpdateActions.Invoke(ItemToEdit)
                         }
                         <button type="button" class="btn btn-danger me-2" @onclick="StartDelete">
                             <i class="bx bx-sm bx-trash"></i>
@@ -115,7 +115,7 @@
                                 @OverviewToolbar
                             }
 
-                            <button @onclick="StartCreate" type="button" class="btn btn-primary ms-3">
+                            <button @onclick="StartCreate" type="button" class="btn btn-primary">
                                 @if (string.IsNullOrEmpty(CreateText))
                                 {
                                     <span>Create @ItemName</span>
@@ -134,7 +134,7 @@
 
         <div class="card">
             <div class="card-body pt-3 px-5 pb-4">
-                <CrudTable @ref="Table" TItem="TItem" ItemSource="ItemSource" PageSize="2" OnItemsChanged="OnTableItemsChanged">
+                <CrudTable @ref="Table" TItem="TItem" ItemSource="ItemSource" OnItemsChanged="OnTableItemsChanged">
                     <CrudColumn TItem="TItem" HeadCssClasses="w-10px align-middle" CssClasses="w-10px align-middle">
                         <HeadTemplate>
                             <div class="form-check">

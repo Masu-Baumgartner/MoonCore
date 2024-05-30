@@ -159,10 +159,13 @@
         return Task.CompletedTask;
     }
 
-    public async Task Refresh(bool fullRefresh = false)
+    public async Task Refresh(bool fullRefresh = false, bool isSilent = false)
     {
-        IsLoading = true;
-        await InvokeAsync(StateHasChanged);
+        if (!isSilent) // Ignore line if set to silent
+        {
+            IsLoading = true;
+            await InvokeAsync(StateHasChanged);
+        }
         
         if (fullRefresh)
         {
