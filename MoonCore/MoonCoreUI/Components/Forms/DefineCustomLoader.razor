@@ -1,12 +1,13 @@
 ﻿@using MoonCore.Abstractions
 
 @typeparam T where T : class
+@typeparam TItem
 
 @code
 {
     [Parameter] public string Id { get; set; }
-    [Parameter] public Func<Repository<T>, IEnumerable<T>> Func { get; set; }
-    [CascadingParameter] public Dictionary<string, object> CustomItemLoaders { get; set; }
+    [Parameter] public Func<Repository<T>, TItem?, IEnumerable<T>> Func { get; set; }
+    [CascadingParameter(Name = "CustomItemLoaders")] public Dictionary<string, object> CustomItemLoaders { get; set; }
 
     protected override void OnParametersSet()
     {

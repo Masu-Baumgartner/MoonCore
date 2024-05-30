@@ -10,7 +10,7 @@
 @inject Repository<TItem> ItemRepository
 @inject ToastService ToastService
 
-<CascadingValue Value="CustomItemLoaders" IsFixed="true">
+<CascadingValue Value="CustomItemLoaders" IsFixed="true" Name="CustomItemLoaders">
     @if (ShowCreate)
     {
         <SmartForm Model="CreateForm" OnValidSubmit="FinishCreate">
@@ -55,7 +55,9 @@
                 </div>
             </div>
 
-            <AdvancedAutoForm Columns="@(UpdateForm.GetType().GetProperties().Length > 1 ? 6 : 12)" Model="UpdateForm"/>
+            <CascadingValue TValue="object" Name="CustomItemLoaderParameter" Value="ItemToEdit" IsFixed="true">
+                <AdvancedAutoForm Columns="@(UpdateForm.GetType().GetProperties().Length > 1 ? 6 : 12)" Model="UpdateForm"/>
+            </CascadingValue>
         </SmartForm>
 
         <SmartModal @ref="DeleteModal" CssClasses="modal-dialog-centered">

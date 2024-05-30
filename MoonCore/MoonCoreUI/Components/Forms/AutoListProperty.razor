@@ -68,7 +68,11 @@
     private Func<TItem, string> SearchFunc;
     private Func<TItem, string>? IconFunc = default;
     
-    [CascadingParameter] public Dictionary<string, object> CustomItemLoaders { get; set; }
+    [CascadingParameter(Name = "CustomItemLoaders")]
+    public Dictionary<string, object>? CustomItemLoaders { get; set; }
+
+    [CascadingParameter(Name = "CustomItemLoaderParameter")]
+    public object? CustomItemLoaderParameter { get; set; }
 
     protected override void OnInitialized()
     {
@@ -120,6 +124,9 @@
 
             if (TryGetCasted(out CustomItemLoaderAttribute loaderAttribute))
             {
+                if(CustomItemLoaders == null)
+                    return;
+                
                 // Check if custom loader exists, if not, skip it
                 if(!CustomItemLoaders.TryGetValue(loaderAttribute.Id, out var customLoader))
                     return;
@@ -129,7 +136,7 @@
                     .GetType()
                     .GetMethods()
                     .First(x => x.Name == "Invoke")
-                    .Invoke(customLoader, new[] { repo }) as IEnumerable<TItem>;
+                    .Invoke(customLoader, new[] { repo, CustomItemLoaderParameter }) as IEnumerable<TItem>;
                 
                 // Execute db command (see EF ToArray() )
                 Items = iEnumerable!.ToList();
