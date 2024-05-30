@@ -122,7 +122,6 @@ else
                 {
                     @Toolbar
                 }
-                <DynamicFilterButton @ref="FilterButton" TItem="TItem"/>
                 <button @onclick="StartCreate" type="button" class="btn btn-primary ms-3">
                     @if (string.IsNullOrEmpty(CreateText))
                     {
@@ -153,7 +152,7 @@ else
             }
             else
             {
-                <CrudTable TItem="TItem" Items="Items" Filter="FilterButton" PageSize="@PageSize">
+                <CrudTable TItem="TItem" ItemSource="Items" PageSize="@PageSize">
                     @View
 
                     <CrudColumn TItem="TItem" CssClasses="py-1 my-0">
@@ -233,8 +232,6 @@ else
     private TItem ItemToDelete;
 
     private SmartModal DeleteModal;
-    
-    private DynamicFilterButton<TItem> FilterButton;
 
     private bool ShowCreate = false;
     private bool ShowUpdate = false;
