@@ -5,6 +5,7 @@
 @using MoonCore.Helpers
 @using MoonCoreUI.Attributes
 @using MoonCoreUI.Helpers
+@using MoonCoreUI.Models
 
 @typeparam TProp where TProp : List<TItem>
 @typeparam TItem
@@ -54,8 +55,10 @@
 
     [Parameter] public bool EnablePropertyName { get; set; } = true;
     [Parameter] public bool EnablePlaceholderName { get; set; } = false;
-
     [Parameter] public bool EnableColumnDetection { get; set; } = false;
+
+    [CascadingParameter(Name = "Options")] public AutoCrudOptions? Options { get; set; }
+    [CascadingParameter(Name = "Context")] public AutoCrudContext? Context { get; set; }
 
     private PropBinder<TProp> Binder;
     private List<TItem> Items = new();
@@ -67,15 +70,14 @@
     private Func<TItem, string> DisplayFunc;
     private Func<TItem, string> SearchFunc;
     private Func<TItem, string>? IconFunc = default;
-    
-    [CascadingParameter(Name = "CustomItemLoaders")]
-    public Dictionary<string, object>? CustomItemLoaders { get; set; }
 
-    [CascadingParameter(Name = "CustomItemLoaderParameter")]
-    public object? CustomItemLoaderParameter { get; set; }
+    private bool AutoCrudMode = false;
 
     protected override void OnInitialized()
     {
+        if (Options != null && Context != null)
+            AutoCrudMode = true;
+
         Binder = new(Property, Data);
 
         Attributes = Property
@@ -96,8 +98,31 @@
 // Search and display functions
         if (TryGetCasted(out MultiSelectionAttribute multiSelectionAttribute))
         {
-            DisplayFunc = FormHelper.GetPropertyExpression<TItem>(multiSelectionAttribute.DisplayField);
-            SearchFunc = FormHelper.GetPropertyExpression<TItem>(multiSelectionAttribute.SearchProp);
+            if (TryGetCasted(out CustomDisplayFunctionAttribute displayFunctionAttribute) && AutoCrudMode)
+            {
+                if (Options!.TryGetCastedOption<Func<TItem, string>>(
+                        options => options.CustomDisplayFunctions,
+                        displayFunctionAttribute.Id,
+                        out var val))
+                {
+                    DisplayFunc = val;
+                }
+            }
+            else
+                DisplayFunc = FormHelper.GetPropertyExpression<TItem>(multiSelectionAttribute.DisplayField);
+
+            if (TryGetCasted(out CustomSearchFunctionAttribute searchFunctionAttribute) && AutoCrudMode)
+            {
+                if (Options!.TryGetCastedOption<Func<TItem, string>>(
+                        options => options.CustomSearchFunctions,
+                        searchFunctionAttribute.Id,
+                        out var val))
+                {
+                    SearchFunc = val;
+                }
+            }
+            else
+                SearchFunc = FormHelper.GetPropertyExpression<TItem>(multiSelectionAttribute.SearchProp);
 
             if (!string.IsNullOrEmpty(multiSelectionAttribute.Icon))
                 IconFunc = _ => multiSelectionAttribute.Icon;
@@ -113,31 +138,31 @@
     {
         if (firstRender)
         {
-            if(!TryGetCasted(out MultiSelectionAttribute _))
+            if (!TryGetCasted(out MultiSelectionAttribute _))
                 return;
-            
+
             // Create generic type to resolve from di
             var typeToGetByDi = typeof(Repository<>).MakeGenericType(typeof(TItem));
-                
+
             // Resolve generic repo from di
             var repo = ServiceProvider.GetRequiredService(typeToGetByDi);
 
             if (TryGetCasted(out CustomItemLoaderAttribute loaderAttribute))
             {
-                if(CustomItemLoaders == null)
+                if (!AutoCrudMode)
                     return;
-                
+
                 // Check if custom loader exists, if not, skip it
-                if(!CustomItemLoaders.TryGetValue(loaderAttribute.Id, out var customLoader))
+                if (!Options!.CustomItemLoaders.TryGetValue(loaderAttribute.Id, out var customLoader))
                     return;
-                
+
                 // Invoke the loader with the repo as an argument and an expected IEnumerable result
                 var iEnumerable = customLoader
                     .GetType()
                     .GetMethods()
                     .First(x => x.Name == "Invoke")
-                    .Invoke(customLoader, new[] { repo, CustomItemLoaderParameter }) as IEnumerable<TItem>;
-                
+                    .Invoke(customLoader, new[] { repo, Context!.ItemToEdit }) as IEnumerable<TItem>;
+
                 // Execute db command (see EF ToArray() )
                 Items = iEnumerable!.ToList();
             }
@@ -145,11 +170,11 @@
             {
                 // Invoke the repo get function with the no arguments and an expected IEnumerable result
                 var dbSet = repo.GetType().GetMethods().First(x => x.Name == "Get").Invoke(repo, null) as IEnumerable<TItem>;
-                
+
                 // Execute db command (see EF ToArray() )
                 Items = dbSet!.ToList();
             }
-            
+
             await InvokeAsync(StateHasChanged);
         }
     }

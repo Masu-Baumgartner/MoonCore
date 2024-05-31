@@ -122,7 +122,7 @@
 
     [Parameter] public IEnumerable<TItem> ItemSource { get; set; }
     
-    [Parameter] public Func<Task>? OnItemsChanged { get; set; }
+    [Parameter] public Func<Task>? OnRefreshed { get; set; }
 
     [Parameter] public int PageSize { get; set; } = 25;
 
@@ -189,8 +189,8 @@
             .Take(PageSize)
             .ToArray();
         
-        if (OnItemsChanged != null)
-            await OnItemsChanged.Invoke();
+        if (OnRefreshed != null)
+            await OnRefreshed.Invoke();
 
         IsLoading = false;
         await InvokeAsync(StateHasChanged);

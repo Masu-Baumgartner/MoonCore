@@ -6,6 +6,7 @@
 @using MoonCore.Helpers
 @using MoonCoreUI.Attributes
 @using MoonCoreUI.Helpers
+@using MoonCoreUI.Models
 
 @typeparam TProp
 
@@ -125,19 +126,14 @@
 @code
 {
     [Parameter] public object Data { get; set; }
-
     [Parameter] public PropertyInfo Property { get; set; }
 
     [Parameter] public bool EnablePropertyName { get; set; } = true;
     [Parameter] public bool EnablePlaceholderName { get; set; } = false;
-
     [Parameter] public bool EnableColumnDetection { get; set; } = false;
 
-    [CascadingParameter(Name = "CustomItemLoaders")]
-    public Dictionary<string, object>? CustomItemLoaders { get; set; }
-
-    [CascadingParameter(Name = "CustomItemLoaderParameter")]
-    public object? CustomItemLoaderParameter { get; set; }
+    [CascadingParameter(Name = "Options")] public AutoCrudOptions? Options { get; set; }
+    [CascadingParameter(Name = "Context")] public AutoCrudContext? Context { get; set; }
 
     private PropBinder<TProp> Binder;
     private TProp[] Items = Array.Empty<TProp>();
@@ -152,8 +148,13 @@
     private Func<TProp, string> DisplayFunc;
     private Func<TProp, string> SearchFunc;
 
+    private bool AutoCrudMode = false;
+
     protected override void OnInitialized()
     {
+        if (Options != null && Context != null)
+            AutoCrudMode = true;
+
         Binder = new(Property, Data);
 
         Attributes = Property
@@ -198,10 +199,34 @@
         // Search and display functions
         if (TryGetCasted(out SelectorAttribute selectorAttribute))
         {
-            DisplayFunc = FormHelper.GetPropertyExpression<TProp>(selectorAttribute.DisplayProp);
+            if (TryGetCasted(out CustomDisplayFunctionAttribute displayFunctionAttribute) && AutoCrudMode)
+            {
+                if (Options!.TryGetCastedOption<Func<TProp, string>>(
+                        options => options.CustomDisplayFunctions,
+                        displayFunctionAttribute.Id,
+                        out var val))
+                {
+                    DisplayFunc = val;
+                }
+            }
+            else
+                DisplayFunc = FormHelper.GetPropertyExpression<TProp>(selectorAttribute.DisplayProp);
 
             if (selectorAttribute.UseDropdown)
-                SearchFunc = DisplayFunc = FormHelper.GetPropertyExpression<TProp>(selectorAttribute.SelectorProp);
+            {
+                if (TryGetCasted(out CustomSearchFunctionAttribute searchFunctionAttribute) && AutoCrudMode)
+                {
+                    if (Options!.TryGetCastedOption<Func<TProp, string>>(
+                            options => options.CustomSearchFunctions,
+                            searchFunctionAttribute.Id,
+                            out var val))
+                    {
+                        SearchFunc = val;
+                    }
+                }
+                else
+                    SearchFunc = DisplayFunc = FormHelper.GetPropertyExpression<TProp>(selectorAttribute.SelectorProp);
+            }
         }
     }
 
@@ -225,11 +250,11 @@
 
             if (TryGetCasted(out CustomItemLoaderAttribute loaderAttribute))
             {
-                if (CustomItemLoaders == null)
+                if (!AutoCrudMode)
                     return;
 
                 // Check if custom loader exists, if not, skip it
-                if (!CustomItemLoaders.TryGetValue(loaderAttribute.Id, out var customLoader))
+                if (!Options!.CustomItemLoaders.TryGetValue(loaderAttribute.Id, out var customLoader))
                     return;
 
                 // Invoke the loader with the repo as an argument and an expected IEnumerable result
@@ -237,7 +262,7 @@
                     .GetType()
                     .GetMethods()
                     .First(x => x.Name == "Invoke")
-                    .Invoke(customLoader, new[] { repo, CustomItemLoaderParameter }) as IEnumerable<TProp>;
+                    .Invoke(customLoader, new[] { repo, Context!.ItemToEdit }) as IEnumerable<TProp>;
 
                 // Execute db command (see EF ToArray() )
                 Items = iEnumerable!.ToArray();
