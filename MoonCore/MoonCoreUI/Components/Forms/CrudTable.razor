@@ -1,6 +1,5 @@
 @using System.Linq.Expressions
 @using System.Reflection
-@using MoonCore.Helpers
 
 @typeparam TItem
 
@@ -120,7 +119,10 @@
 {
     [Parameter] public RenderFragment ChildContent { get; set; }
 
-    [Parameter] public IEnumerable<TItem> ItemSource { get; set; }
+    [Parameter] public IEnumerable<TItem>? ItemSource { get; set; }
+    
+    // Use this if you want to change your item source often
+    [Parameter] public Func<IEnumerable<TItem>>? ItemSourceCallback { get; set; }
     
     [Parameter] public Func<Task>? OnRefreshed { get; set; }
 
@@ -168,9 +170,7 @@
         }
         
         if (fullRefresh)
-        {
-            TotalItems = ItemSource.Count();
-        }
+            TotalItems = GetItemSource().Count();
 
         var pagesMod = TotalItems % PageSize;
         
@@ -184,7 +184,7 @@
         // Reduce the total pages by one to match the page counter starting with zero
         TotalPages -= 1;
         
-        CurrentItems = ItemSource
+        CurrentItems = GetItemSource()
             .Skip(Page * PageSize)
             .Take(PageSize)
             .ToArray();
@@ -196,12 +196,24 @@
         await InvokeAsync(StateHasChanged);
     }
 
+    protected override void OnInitialized()
+    {
+        if (ItemSource == null && ItemSourceCallback == null)
+            throw new ArgumentNullException(null, "You need to set either ItemSource or ItemSourceCallback");
+    }
+
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
         if (firstRender)
-        {
             await Refresh(fullRefresh: true);
-        }
+    }
+
+    private IEnumerable<TItem> GetItemSource()
+    {
+        if (ItemSourceCallback != null)
+            return ItemSourceCallback.Invoke();
+
+        return ItemSource!; // Suppressed, because we have a check in OnInitialized
     }
 
     private PropertyInfo GetPropertyInfo(Expression<Func<TItem, object>> expression)

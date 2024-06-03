@@ -1,0 +1,77 @@
+﻿@typeparam TItem where TItem : class
+
+@using MoonCore.Abstractions
+@using MoonCore.Helpers
+@using MoonCoreUI.Components.Forms
+
+@inject Repository<TItem> ItemRepository
+
+@if (State == AutoCrudState.Viewing)
+{
+    <div class="card card-body mb-7">
+        <div class="d-flex justify-content-between">
+            <div>
+                <div class="input-group">
+                    <span class="input-group-text">
+                        <i class="bx bx-sm bx-search-alt"></i>
+                    </span>
+                    <input placeholder="Search" class="form-control" @onchange="OnSearchTermChanged">
+                </div>
+            </div>
+            <div>
+                <button class="btn btn-primary">Create</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="card card-body">
+        <div class="mx-3">
+            <CrudTable @ref="ViewTable" TItem="TItem" ItemSourceCallback="GetViewSource">
+                @View
+            </CrudTable>
+        </div>
+    </div>
+}
+
+@code
+{
+    // Core
+
+    [Parameter] public Func<Repository<TItem>, IEnumerable<TItem>> DataSource { get; set; }
+
+    private AutoCrudState State = AutoCrudState.Viewing;
+    private IEnumerable<TItem> GetSource() => DataSource.Invoke(ItemRepository);
+
+    // View
+
+    [Parameter] public RenderFragment View { get; set; }
+    [Parameter] public Func<IEnumerable<TItem>, string, IEnumerable<TItem>>? SearchFunction { get; set; }
+
+    private CrudTable<TItem> ViewTable;
+
+    private string SearchTerm = "";
+
+    protected override void OnInitialized()
+    {
+        if (DataSource == null)
+            throw new ArgumentNullException(nameof(DataSource));
+
+        if (View == null)
+            throw new ArgumentNullException(nameof(View));
+    }
+
+    private IEnumerable<TItem> GetViewSource()
+    {
+        if (SearchFunction != null && !string.IsNullOrEmpty(SearchTerm))
+            return SearchFunction.Invoke(GetSource(), SearchTerm);
+
+        return GetSource();
+    }
+
+    private async Task OnSearchTermChanged(ChangeEventArgs args)
+    {
+        SearchTerm = args.Value?.ToString() ?? "";
+        
+        await ViewTable.Refresh(fullRefresh: true);
+    }
+}
