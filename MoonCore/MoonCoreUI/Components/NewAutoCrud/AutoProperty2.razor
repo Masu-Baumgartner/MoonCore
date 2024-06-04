@@ -1,0 +1,261 @@
+﻿@typeparam TItem where TItem : class
+@typeparam TForm
+@typeparam TProperty
+
+@using System.ComponentModel
+@using System.Reflection
+@using Microsoft.Extensions.DependencyInjection
+@using Microsoft.AspNetCore.Components.Forms
+@using MoonCoreUI.Components.Forms
+@using MoonCore.Abstractions
+@using MoonCore.Helpers
+@using MoonCoreUI.Attributes
+@using MoonCoreUI.Helpers
+
+@inject IServiceProvider ServiceProvider
+
+<div class="@ColCssClasses">
+    <label class="form-label">
+        @Name
+    </label>
+
+    @if (Property.PropertyType == typeof(string))
+    {
+        <div class="w-100">
+            <input id="@Property.Name" @bind="Binder.StringValue" type="text" class="form-control" autocomplete="off" spellcheck="false"/>
+        </div>
+    }
+    else if (Property.PropertyType == typeof(int))
+    {
+        if (TryGetCasted<ByteSizeAttribute>(out var byteSizeAttribute))
+        {
+            <ByteSizeInput @bind-Value="Binder.IntValue"
+                           Converter="byteSizeAttribute.Converter"
+                           MinimumUnit="byteSizeAttribute.MinimumUnit"
+                           DefaultUnit="byteSizeAttribute.DefaultUnit"/>
+        }
+        else
+        {
+            <input id="@Property.Name" @bind="Binder.IntValue" type="number" class="form-control"/>
+        }
+    }
+    else if (Property.PropertyType == typeof(double))
+    {
+        <input id="@Property.Name" @bind="Binder.DoubleValue" type="number" class="form-control"/>
+    }
+    else if (Property.PropertyType == typeof(long))
+    {
+        <input id="@Property.Name" @bind="Binder.LongValue" type="number" class="form-control"/>
+    }
+    else if (Property.PropertyType == typeof(bool))
+    {
+        if (TryGetCasted(out RadioButtonBoolAttribute radioButtonBoolAttribute))
+        {
+            <SmartRadialBooleanButton @bind-Value="Binder.BoolValue"
+                                      FalseIcon="@radioButtonBoolAttribute.FalseIcon"
+                                      TrueIcon="@radioButtonBoolAttribute.TrueIcon"
+                                      FalseText="@radioButtonBoolAttribute.FalseText"
+                                      TrueText="@radioButtonBoolAttribute.TrueText"/>
+        }
+        else
+        {
+            <div class="form-check">
+                <InputCheckbox id="@Property.Name" @bind-Value="Binder.BoolValue" class="form-check-input"/>
+            </div>
+        }
+    }
+    else if (Property.PropertyType == typeof(DateTime))
+    {
+        <InputDate id="@Property.Name" @bind-Value="Binder.DateTimeValue" class="form-control"/>
+    }
+    else if (Property.PropertyType == typeof(decimal))
+    {
+        <InputNumber id="@Property.Name" step="0.01" @bind-Value="Binder.DoubleValue" class="form-control"/>
+    }
+    else if (Property.PropertyType.IsEnum)
+    {
+        <select @bind="Binder.Class" class="form-select">
+            @foreach (var status in (TProperty[])Enum.GetValues(typeof(TProperty)))
+            {
+                if (Binder.Class.ToString() == status.ToString())
+                {
+                    <option value="@(status)" selected="">@(status)</option>
+                }
+                else
+                {
+                    <option value="@(status)">@(status)</option>
+                }
+            }
+        </select>
+    }
+    else if (Property.PropertyType.IsClass)
+    {
+        if (TryGetCasted(out SelectorAttribute selectorAttribute))
+        {
+            if (selectorAttribute.UseDropdown)
+            {
+                <AdvancedSmartDropdown @bind-Value="Binder.Class" DisplayFunc="DisplayFunc" SearchProp="SearchFunc" Items="Items"/>
+            }
+            else
+            {
+                <SmartSelect @bind-Value="Binder.Class" DisplayField="DisplayFunc" Items="Items" CanBeNull="true"/>
+            }
+        }
+    }
+
+    @if (!string.IsNullOrEmpty(Description))
+    {
+        <div class="form-text fs-6 text-gray-600">
+            @Description
+        </div>
+    }
+</div>
+
+@code
+{
+    [Parameter] public TForm Model { get; set; }
+    [Parameter] public PropertyInfo Property { get; set; }
+    [Parameter] public bool EnableColumns { get; set; } = false;
+
+    [CascadingParameter] public AutoCrud2<TItem>? AutoCrud { get; set; }
+
+    private string ColCssClasses = "";
+    private string Name = "";
+    private string Description = "";
+
+    private PropBinder<TProperty> Binder;
+    private Attribute[] Attributes;
+
+    private Func<TProperty, string> DisplayFunc;
+    private Func<TProperty, string> SearchFunc;
+
+    private TProperty[] Items = Array.Empty<TProperty>();
+
+    protected override void OnInitialized()
+    {
+        Binder = new(Property, Model!);
+
+        Attributes = Property
+            .GetCustomAttributes()
+            .ToArray();
+
+        if (TryGetCasted(out DisplayNameAttribute nameAttribute))
+            Name = nameAttribute.DisplayName;
+        else
+            Name = Formatter.ConvertCamelCaseToSpaces(Property.Name);
+
+        if (TryGetCasted(out DescriptionAttribute descriptionAttribute))
+            Description = descriptionAttribute.Description;
+
+        if (EnableColumns)
+        {
+            var columns = 3;
+
+            if (Property.PropertyType == typeof(string))
+                columns = 6;
+
+            ColCssClasses = "col-12 col-md-6 col-xl-" + columns;
+        }
+
+        if (TryGetCasted(out SelectorAttribute selectorAttribute))
+        {
+            if (TryGetCasted(out CustomDisplayFunctionAttribute displayFunctionAttribute) && AutoCrud != null)
+            {
+                if (AutoCrud.Options.TryGetCastedOption<Func<TProperty, string>>(
+                        options => options.CustomDisplayFunctions,
+                        displayFunctionAttribute.Id,
+                        out var val))
+                {
+                    DisplayFunc = val;
+                }
+            }
+            else
+                DisplayFunc = FormHelper.GetPropertyExpression<TProperty>(selectorAttribute.DisplayProp);
+
+            if (selectorAttribute.UseDropdown)
+            {
+                if (TryGetCasted(out CustomSearchFunctionAttribute searchFunctionAttribute) && AutoCrud != null)
+                {
+                    if (AutoCrud.Options.TryGetCastedOption<Func<TProperty, string>>(
+                            options => options.CustomSearchFunctions,
+                            searchFunctionAttribute.Id,
+                            out var val))
+                    {
+                        SearchFunc = val;
+                    }
+                }
+                else
+                    SearchFunc = DisplayFunc = FormHelper.GetPropertyExpression<TProperty>(selectorAttribute.SelectorProp);
+            }
+        }
+    }
+
+    protected override void OnParametersSet()
+    {
+        Binder = new(Property, Model);
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            if (!TryGetCasted(out SelectorAttribute _))
+                return;
+
+            // Create generic type to resolve from di
+            var typeToGetByDi = typeof(Repository<>).MakeGenericType(typeof(TProperty));
+
+            // Resolve generic repo from di
+            var repo = ServiceProvider.GetRequiredService(typeToGetByDi);
+
+            if (TryGetCasted(out CustomItemLoaderAttribute loaderAttribute))
+            {
+                if (AutoCrud == null)
+                    return;
+
+                // Check if custom loader exists, if not, skip it
+                if (!AutoCrud.Options.CustomItemLoaders.TryGetValue(loaderAttribute.Id, out var customLoader))
+                    return;
+
+                // Invoke the loader with the repo as an argument and an expected IEnumerable result
+                var iEnumerable = customLoader
+                    .GetType()
+                    .GetMethods()
+                    .First(x => x.Name == "Invoke")
+                    .Invoke(customLoader, new[] { repo, AutoCrud.Context.CurrentItem }) as IEnumerable<TProperty>;
+
+                // Execute db command (see EF ToArray() )
+                Items = iEnumerable!.ToArray();
+            }
+            else // Fallback to default loader
+            {
+                // Invoke the repo get function with the no arguments and an expected IEnumerable result
+                var dbSet = repo.GetType().GetMethods().First(x => x.Name == "Get").Invoke(repo, null) as IEnumerable<TProperty>;
+
+                // Execute db command (see EF ToArray() )
+                Items = dbSet!.ToArray();
+            }
+
+            await InvokeAsync(StateHasChanged);
+        }
+    }
+
+    private bool TryGetCasted<T>(out T result) where T : class
+    {
+        result = default!;
+
+        if (Attributes.Length < 1)
+            return false;
+
+        var attribute = Attributes.FirstOrDefault(x => x.GetType() == typeof(T));
+
+        if (attribute == null)
+            return false;
+
+        if (attribute is not T castedAttribute)
+            return false;
+
+        result = castedAttribute;
+        return true;
+    }
+}

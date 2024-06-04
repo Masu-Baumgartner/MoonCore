@@ -1,0 +1,214 @@
+﻿@using MoonCoreUI.Attributes
+@using MoonCoreUI.Components.Forms
+@using MoonCoreUI.Helpers
+
+@typeparam TItem
+@typeparam TForm
+
+@if (CurrentPage != null)
+{
+    if (Pages.Count > 1)
+    {
+        <div class="mb-5">
+            <ul class="nav nav-pills border-0 fs-5">
+                @foreach (var page in Pages)
+                {
+                    <li class="nav-item">
+                        <a class="nav-link text-body border-top-0 border-start-0 border-end-0 border-2 @(CurrentPage == page ? "active" : "bg-light")" href="#" @onclick:preventDefault @onclick="() => SelectPage(page)">
+                            @(string.IsNullOrEmpty(page.Name) ? "Default" : page.Name)
+                        </a>
+                    </li>
+                }
+            </ul>
+        </div>
+    }
+
+    foreach (var section in CurrentPage.Sections)
+    {
+        <div class="card mb-6">
+            @if (!string.IsNullOrEmpty(section.Name))
+            {
+                <div class="card-header">
+                    <div class="card-title">
+                        @if (!string.IsNullOrEmpty(section.Icon))
+                        {
+                            <i class="bx bx-md @(section.Icon) text-primary me-3 align-middle"></i>
+                        }
+                        <span class="fs-3 align-middle">@(section.Name)</span>
+                    </div>
+                </div>
+            }
+            <div class="card-body">
+                <div class="row g-8">
+                    @foreach (var rf in section.Renders)
+                    {
+                        @rf
+                    }
+                </div>
+            </div>
+        </div>
+    }
+}
+
+@code
+{
+    [Parameter] public TForm Model { get; set; }
+
+    private readonly List<Page> Pages = new();
+    private Page? CurrentPage;
+
+    protected override void OnInitialized()
+    {
+        if (Model == null)
+            throw new ArgumentNullException(nameof(Model));
+        
+        foreach (var property in Model.GetType().GetProperties())
+        {
+            var attributes = property.GetCustomAttributes(true);
+            
+            Page page;
+            PageSection section;
+
+            // Page
+            if (TryGetCasted(attributes, out PageAttribute pageAttr))
+            {
+                var foundPage = Pages.FirstOrDefault(x => x.Name == pageAttr.Name);
+
+                if (foundPage == null)
+                {
+                    foundPage = new Page()
+                    {
+                        Name = pageAttr.Name
+                    };
+                    
+                    Pages.Add(foundPage);
+                }
+
+                page = foundPage;
+            }
+            else
+            {
+                var foundPage = Pages.FirstOrDefault(x => x.Name == "");
+
+                if (foundPage == null)
+                {
+                    foundPage = new Page()
+                    {
+                        Name = ""
+                    };
+                    
+                    Pages.Add(foundPage);
+                }
+
+                page = foundPage;
+            }
+            
+            // Section
+            if (TryGetCasted(attributes, out SectionAttribute sectionAttr))
+            {
+                var foundSection = page.Sections.FirstOrDefault(x => x.Name == sectionAttr.Name);
+
+                if (foundSection == null)
+                {
+                    foundSection = new PageSection()
+                    {
+                        Name = sectionAttr.Name,
+                        Icon = sectionAttr.Icon
+                    };
+                    
+                    page.Sections.Add(foundSection);
+                }
+
+                section = foundSection;
+            }
+            else
+            {
+                var foundSection = page.Sections.FirstOrDefault(x => x.Name == "");
+
+                if (foundSection == null)
+                {
+                    foundSection = new PageSection()
+                    {
+                        Name = ""
+                    };
+                    
+                    page.Sections.Add(foundSection);
+                }
+
+                section = foundSection;
+            }
+            
+            // Render property component
+
+            RenderFragment render;
+            
+            if (FormHelper.IsGenericVersionOf(property.PropertyType, typeof(List<>)))
+            {
+                var listType = property.PropertyType.GetGenericArguments().First();
+                var typeToRender = typeof(AutoListProperty2<,,,>).MakeGenericType(typeof(TItem), typeof(TForm), property.PropertyType, listType);
+                
+                render = ComponentHelper.FromType(typeToRender, parameters =>
+                {
+                    parameters.Add("Model", Model);
+                    parameters.Add("Property", property);
+                    parameters.Add("EnableColumns", true);
+                });
+            }
+            else
+            {
+                var typeToRender = typeof(AutoProperty2<,,>).MakeGenericType(typeof(TItem), typeof(TForm), property.PropertyType);
+                
+                render = ComponentHelper.FromType(typeToRender, parameters =>
+                {
+                    parameters.Add("Model", Model);
+                    parameters.Add("Property", property);
+                    parameters.Add("EnableColumns", true);
+                });
+            }
+            
+            section.Renders.Add(render);
+        }
+        
+        // Set current page
+        var defaultPage = Pages.FirstOrDefault(x => x.Name == "");
+
+        if (defaultPage == null)
+            defaultPage = Pages.FirstOrDefault();
+
+        CurrentPage = defaultPage;
+    }
+
+    private async Task SelectPage(Page page)
+    {
+        CurrentPage = page;
+        await InvokeAsync(StateHasChanged);
+    }
+
+    private bool TryGetCasted<T>(object[] input, out T result)
+    {
+        foreach (var o in input)
+        {
+            if (o is T resO)
+            {
+                result = resO;
+                return true;
+            }
+        }
+
+        result = default!;
+        return false;
+    }
+
+    class Page
+    {
+        public string Name { get; set; } = "";
+        public List<PageSection> Sections = new();
+    }
+
+    class PageSection
+    {
+        public string Name { get; set; } = "";
+        public string Icon { get; set; } = "";
+        public List<RenderFragment> Renders { get; set; } = new();
+    }
+}

@@ -3,64 +3,84 @@
 
 @typeparam TItem
 
-<div class="table-responsive mb-3">
-    <table class="table table-row-bordered table-row-gray-200 align-middle gs-0 gy-3 fs-6 table-rounded">
-        <CascadingValue Value="@this">
-            @ChildContent
-        </CascadingValue>
+<CascadingValue Value="@this">
+    @ChildContent
+</CascadingValue>
 
-        <thead class="fw-bold text-muted">
-        <tr>
-            @foreach (var column in Columns)
-            {
-                <th class="@column.HeadCssClasses">
-                    @if (column.HeadTemplate != null)
-                    {
-                        @column.HeadTemplate
-                    }
-                    else
-                    {
-                        @column.Title
-                    }
-                </th>
-            }
-        </tr>
-        </thead>
-        <tbody>
-
-        @if (IsLoading)
+<div class="mb-3">
+    @if (IsLoading)
+    {
+        if (LoadingContent == null)
         {
-            <tr>
-                <td class="fs-5 text-body fw-semibold text-center">
-                    Loading
-                </td>
-            </tr>
+            <div class="text-body fw-semibold text-center fs-4 my-3">
+                Loading
+            </div>
         }
         else
         {
-            foreach (var item in CurrentItems)
-            {
+            @LoadingContent
+        }
+    }
+    else if (TotalItems == 0)
+    {
+        if (NoItemsContent == null)
+        {
+            <div class="text-body fw-semibold text-center fs-4 my-3">
+                No items found
+            </div>
+        }
+        else
+        {
+            @NoItemsContent
+        }
+    }
+    else
+    {
+        <div class="table-responsive">
+            <table class="table table-row-bordered table-row-gray-200 align-middle gs-0 gy-3 fs-6 table-rounded">
+                <thead class="fw-bold text-muted">
                 <tr>
                     @foreach (var column in Columns)
                     {
-                        <td class="@column.CssClasses">
-                            @if (column.Template == null)
+                        <th class="@column.HeadCssClasses">
+                            @if (column.HeadTemplate != null)
                             {
-                                var val = column.Field!.Compile().Invoke(item);
-
-                                @(val == null ? "-" : val.ToString())
+                                @column.HeadTemplate
                             }
                             else
                             {
-                                @column.Template.Invoke(item)
+                                @column.Title
                             }
-                        </td>
+                        </th>
                     }
                 </tr>
-            }
-        }
-        </tbody>
-    </table>
+                </thead>
+                <tbody>
+
+                @foreach (var item in CurrentItems)
+                {
+                    <tr>
+                        @foreach (var column in Columns)
+                        {
+                            <td class="@column.CssClasses">
+                                @if (column.Template == null)
+                                {
+                                    var val = column.Field!.Compile().Invoke(item);
+
+                                    @(val == null ? "-" : val.ToString())
+                                }
+                                else
+                                {
+                                    @column.Template.Invoke(item)
+                                }
+                            </td>
+                        }
+                    </tr>
+                }
+                </tbody>
+            </table>
+        </div>
+    }
 </div>
 
 @if (ShowPagination)
@@ -118,12 +138,14 @@
 @code
 {
     [Parameter] public RenderFragment ChildContent { get; set; }
+    [Parameter] public RenderFragment? NoItemsContent { get; set; }
+    [Parameter] public RenderFragment? LoadingContent { get; set; }
 
     [Parameter] public IEnumerable<TItem>? ItemSource { get; set; }
-    
+
     // Use this if you want to change your item source often
     [Parameter] public Func<IEnumerable<TItem>>? ItemSourceCallback { get; set; }
-    
+
     [Parameter] public Func<Task>? OnRefreshed { get; set; }
 
     [Parameter] public int PageSize { get; set; } = 25;
@@ -140,7 +162,7 @@
     private int TotalPages = 0;
 
     private bool IsLoading = true;
-    
+
     public async Task SetPage(int x)
     {
         Page = x;
@@ -168,27 +190,27 @@
             IsLoading = true;
             await InvokeAsync(StateHasChanged);
         }
-        
+
         if (fullRefresh)
             TotalItems = GetItemSource().Count();
 
         var pagesMod = TotalItems % PageSize;
-        
-        if(pagesMod == 0)
+
+        if (pagesMod == 0)
             TotalPages = TotalItems / PageSize;
-        else if(TotalItems > PageSize)
+        else if (TotalItems > PageSize)
             TotalPages = (TotalItems - pagesMod) / PageSize + 1;
         else
             TotalPages = (TotalItems - pagesMod) / PageSize;
 
         // Reduce the total pages by one to match the page counter starting with zero
         TotalPages -= 1;
-        
+
         CurrentItems = GetItemSource()
             .Skip(Page * PageSize)
             .Take(PageSize)
             .ToArray();
-        
+
         if (OnRefreshed != null)
             await OnRefreshed.Invoke();
 

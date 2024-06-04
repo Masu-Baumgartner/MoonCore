@@ -1,0 +1,58 @@
+﻿@typeparam TItem where TItem : class
+@typeparam TForm
+
+@using Mappy.Net
+@using MoonCore.Abstractions
+@using MoonCoreUI.Components.Forms
+@using MoonCoreUI.Services
+
+@inject Repository<TItem> ItemRepository
+@inject ToastService ToastService
+
+<SmartForm Model="Form" OnValidSubmit="OnSubmit">
+    <div class="card card-body mb-7 px-2 py-2">
+        <div class="d-flex justify-content-between align-items-center">
+            <a href="#" class="text-body fs-4" @onclick:preventDefault @onclick="() => AutoCrud.SwitchToState(AutoCrudState.Viewing)">
+                <i class="bx bx-md bx-chevron-left align-middle"></i>
+                <span class="align-middle">Back</span>
+            </a>
+
+            <button type="submit" class="btn btn-primary">
+                <i class="bx bx-sm bx-check"></i>
+                Create
+            </button>
+        </div>
+    </div>
+
+    <CascadingValue Value="AutoCrud">
+        <AutoCrudForm2 TItem="TItem" TForm="TForm" Model="Form"/>
+    </CascadingValue>
+</SmartForm>
+
+@code
+{
+    [Parameter] public AutoCrud2<TItem> AutoCrud { get; set; }
+
+    private TForm Form;
+
+    protected override void OnInitialized()
+    {
+        Form = Activator.CreateInstance<TForm>();
+    }
+
+    private async Task OnSubmit()
+    {
+        var finalItem = Mapper.Map<TItem>(Form!);
+
+        if (AutoCrud.Options.ValidateCreate != null)
+            await AutoCrud.Options.ValidateCreate.Invoke(finalItem);
+        
+        if (AutoCrud.Options.CustomCreate != null)
+            await AutoCrud.Options.CustomCreate.Invoke(finalItem);
+        else
+            ItemRepository.Add(finalItem);
+
+        await ToastService.Success("Successfully created item");
+        await AutoCrud.SwitchToState(AutoCrudState.Viewing);
+    }
+}
