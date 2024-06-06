@@ -32,12 +32,15 @@
             else
             {
                 <div>
-                    <div class="input-group">
-                        <span class="input-group-text">
-                            <i class="bx bx-sm bx-search-alt"></i>
-                        </span>
-                        <input placeholder="Search" class="form-control" @onchange="OnSearchTermChanged">
-                    </div>
+                    @if (SearchFunction != null)
+                    {
+                        <div class="input-group">
+                            <span class="input-group-text">
+                                <i class="bx bx-sm bx-search-alt"></i>
+                            </span>
+                            <input placeholder="Search" class="form-control" @onchange="OnSearchTermChanged">
+                        </div>
+                    }
                 </div>
                 <div>
                     @if (ViewToolbar != null)

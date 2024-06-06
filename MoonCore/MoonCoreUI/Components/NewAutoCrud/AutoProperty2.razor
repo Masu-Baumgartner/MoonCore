@@ -131,10 +131,60 @@
 
     private TProperty[] Items = Array.Empty<TProperty>();
 
-    protected override void OnInitialized()
+    protected override void OnParametersSet()
+    {
+        Init();
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            if (!TryGetCasted(out SelectorAttribute _))
+                return;
+
+            // Create generic type to resolve from di
+            var typeToGetByDi = typeof(Repository<>).MakeGenericType(typeof(TProperty));
+
+            // Resolve generic repo from di
+            var repo = ServiceProvider.GetRequiredService(typeToGetByDi);
+
+            if (TryGetCasted(out CustomItemLoaderAttribute loaderAttribute))
+            {
+                if (AutoCrud == null)
+                    return;
+
+                // Check if custom loader exists, if not, skip it
+                if (!AutoCrud.Options.CustomItemLoaders.TryGetValue(loaderAttribute.Id, out var customLoader))
+                    return;
+
+                // Invoke the loader with the repo as an argument and an expected IEnumerable result
+                var iEnumerable = customLoader
+                    .GetType()
+                    .GetMethods()
+                    .First(x => x.Name == "Invoke")
+                    .Invoke(customLoader, new[] { repo, AutoCrud.Context.CurrentItem }) as IEnumerable<TProperty>;
+
+                // Execute db command (see EF ToArray() )
+                Items = iEnumerable!.ToArray();
+            }
+            else // Fallback to default loader
+            {
+                // Invoke the repo get function with the no arguments and an expected IEnumerable result
+                var dbSet = repo.GetType().GetMethods().First(x => x.Name == "Get").Invoke(repo, null) as IEnumerable<TProperty>;
+
+                // Execute db command (see EF ToArray() )
+                Items = dbSet!.ToArray();
+            }
+
+            await InvokeAsync(StateHasChanged);
+        }
+    }
+
+    private void Init()
     {
         Binder = new(Property, Model!);
-
+        
         Attributes = Property
             .GetCustomAttributes()
             .ToArray();
@@ -187,56 +237,6 @@
                 else
                     SearchFunc = DisplayFunc = FormHelper.GetPropertyExpression<TProperty>(selectorAttribute.SelectorProp);
             }
-        }
-    }
-
-    protected override void OnParametersSet()
-    {
-        Binder = new(Property, Model);
-    }
-
-    protected override async Task OnAfterRenderAsync(bool firstRender)
-    {
-        if (firstRender)
-        {
-            if (!TryGetCasted(out SelectorAttribute _))
-                return;
-
-            // Create generic type to resolve from di
-            var typeToGetByDi = typeof(Repository<>).MakeGenericType(typeof(TProperty));
-
-            // Resolve generic repo from di
-            var repo = ServiceProvider.GetRequiredService(typeToGetByDi);
-
-            if (TryGetCasted(out CustomItemLoaderAttribute loaderAttribute))
-            {
-                if (AutoCrud == null)
-                    return;
-
-                // Check if custom loader exists, if not, skip it
-                if (!AutoCrud.Options.CustomItemLoaders.TryGetValue(loaderAttribute.Id, out var customLoader))
-                    return;
-
-                // Invoke the loader with the repo as an argument and an expected IEnumerable result
-                var iEnumerable = customLoader
-                    .GetType()
-                    .GetMethods()
-                    .First(x => x.Name == "Invoke")
-                    .Invoke(customLoader, new[] { repo, AutoCrud.Context.CurrentItem }) as IEnumerable<TProperty>;
-
-                // Execute db command (see EF ToArray() )
-                Items = iEnumerable!.ToArray();
-            }
-            else // Fallback to default loader
-            {
-                // Invoke the repo get function with the no arguments and an expected IEnumerable result
-                var dbSet = repo.GetType().GetMethods().First(x => x.Name == "Get").Invoke(repo, null) as IEnumerable<TProperty>;
-
-                // Execute db command (see EF ToArray() )
-                Items = dbSet!.ToArray();
-            }
-
-            await InvokeAsync(StateHasChanged);
         }
     }
 

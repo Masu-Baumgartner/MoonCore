@@ -59,7 +59,57 @@
 
     private List<TSubItem> Items = new();
 
-    protected override void OnInitialized()
+    protected override void OnParametersSet()
+    {
+        Init();
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            if (!TryGetCasted(out MultiSelectionAttribute _))
+                return;
+
+            // Create generic type to resolve from di
+            var typeToGetByDi = typeof(Repository<>).MakeGenericType(typeof(TSubItem));
+
+            // Resolve generic repo from di
+            var repo = ServiceProvider.GetRequiredService(typeToGetByDi);
+
+            if (TryGetCasted(out CustomItemLoaderAttribute loaderAttribute))
+            {
+                if (AutoCrud == null)
+                    return;
+
+                // Check if custom loader exists, if not, skip it
+                if (!AutoCrud.Options.CustomItemLoaders.TryGetValue(loaderAttribute.Id, out var customLoader))
+                    return;
+
+                // Invoke the loader with the repo as an argument and an expected IEnumerable result
+                var iEnumerable = customLoader
+                    .GetType()
+                    .GetMethods()
+                    .First(x => x.Name == "Invoke")
+                    .Invoke(customLoader, new[] { repo, AutoCrud.Context.CurrentItem }) as IEnumerable<TSubItem>;
+
+                // Execute db command (see EF ToArray() )
+                Items = iEnumerable!.ToList();
+            }
+            else // Fallback to default loader
+            {
+                // Invoke the repo get function with the no arguments and an expected IEnumerable result
+                var dbSet = repo.GetType().GetMethods().First(x => x.Name == "Get").Invoke(repo, null) as IEnumerable<TSubItem>;
+
+                // Execute db command (see EF ToArray() )
+                Items = dbSet!.ToList();
+            }
+
+            await InvokeAsync(StateHasChanged);
+        }
+    }
+
+    private void Init()
     {
         Binder = new(Property, Model!);
 
@@ -115,56 +165,6 @@
 
             if (!string.IsNullOrEmpty(multiSelectionAttribute.Icon))
                 IconFunc = _ => multiSelectionAttribute.Icon;
-        }
-    }
-
-    protected override void OnParametersSet()
-    {
-        Binder = new(Property, Model);
-    }
-
-    protected override async Task OnAfterRenderAsync(bool firstRender)
-    {
-        if (firstRender)
-        {
-            if (!TryGetCasted(out MultiSelectionAttribute _))
-                return;
-
-            // Create generic type to resolve from di
-            var typeToGetByDi = typeof(Repository<>).MakeGenericType(typeof(TSubItem));
-
-            // Resolve generic repo from di
-            var repo = ServiceProvider.GetRequiredService(typeToGetByDi);
-
-            if (TryGetCasted(out CustomItemLoaderAttribute loaderAttribute))
-            {
-                if (AutoCrud == null)
-                    return;
-
-                // Check if custom loader exists, if not, skip it
-                if (!AutoCrud.Options.CustomItemLoaders.TryGetValue(loaderAttribute.Id, out var customLoader))
-                    return;
-
-                // Invoke the loader with the repo as an argument and an expected IEnumerable result
-                var iEnumerable = customLoader
-                    .GetType()
-                    .GetMethods()
-                    .First(x => x.Name == "Invoke")
-                    .Invoke(customLoader, new[] { repo, AutoCrud.Context.CurrentItem }) as IEnumerable<TSubItem>;
-
-                // Execute db command (see EF ToArray() )
-                Items = iEnumerable!.ToList();
-            }
-            else // Fallback to default loader
-            {
-                // Invoke the repo get function with the no arguments and an expected IEnumerable result
-                var dbSet = repo.GetType().GetMethods().First(x => x.Name == "Get").Invoke(repo, null) as IEnumerable<TSubItem>;
-
-                // Execute db command (see EF ToArray() )
-                Items = dbSet!.ToList();
-            }
-
-            await InvokeAsync(StateHasChanged);
         }
     }
 
