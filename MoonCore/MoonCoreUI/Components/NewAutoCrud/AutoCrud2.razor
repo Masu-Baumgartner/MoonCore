@@ -8,6 +8,20 @@
 @inject Repository<TItem> ItemRepository
 @inject ToastService ToastService
 
+@if (CustomComponents != null)
+{
+    <CascadingValue TValue="AutoCrud2<TItem>" Name="Crud" Value="this" IsFixed="true">
+        @CustomComponents
+    </CascadingValue>
+}
+
+@if (CustomPages != null)
+{
+<CascadingValue TValue="AutoCrud2<TItem>" Name="Crud" Value="this" IsFixed="true">
+    @CustomPages
+</CascadingValue>
+}
+
 @if (Context.State == AutoCrudState.Viewing)
 {
     <div class="card card-body mb-7 py-2 px-2">
@@ -166,8 +180,13 @@ else if (Context.State == AutoCrudState.Creating)
     public readonly AutoCrudOptions2<TItem> Options = new();
     private IEnumerable<TItem> GetSource() => DataSource.Invoke(ItemRepository);
 
+    public readonly Dictionary<string, object> CustomComponentCache = new();
+    public readonly Dictionary<string, object> CustomPageCache = new();
+
     // View
 
+    [Parameter] public RenderFragment? CustomComponents { get; set; }
+    [Parameter] public RenderFragment? CustomPages { get; set; }
     [Parameter] public RenderFragment View { get; set; }
     [Parameter] public RenderFragment? NoItemsView { get; set; }
     [Parameter] public RenderFragment? LoadingView { get; set; }
@@ -313,5 +332,15 @@ else if (Context.State == AutoCrudState.Creating)
         SelectedItems.Clear();
         await ViewTable.Refresh(fullRefresh: true, isSilent: false);
         await InvokeAsync(StateHasChanged);
+    }
+
+    public void AddCustomComponent(string id, object renderCall)
+    {
+        CustomComponentCache[id] = renderCall;
+    }
+    
+    public void AddCustomPage(string name, object renderCall)
+    {
+        CustomPageCache[name] = renderCall;
     }
 }
