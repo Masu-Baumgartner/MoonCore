@@ -1,0 +1,14 @@
+﻿<div></div>
+<div class="toast-body">
+    <i class="align-middle me-2 bx bx-sm @Icon text-@Color"></i>
+    <span class="fs-5 align-middle text-body">
+        @Text
+    </span>
+</div>
+
+@code
+{
+    [Parameter] public string Text { get; set; } = "";
+    [Parameter] public string Icon { get; set; } = "bx-check";
+    [Parameter] public string Color { get; set; } = "success";
+}
