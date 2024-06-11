@@ -17,9 +17,9 @@
 
 @if (CustomPages != null)
 {
-<CascadingValue TValue="AutoCrud2<TItem>" Name="Crud" Value="this" IsFixed="true">
-    @CustomPages
-</CascadingValue>
+    <CascadingValue TValue="AutoCrud2<TItem>" Name="Crud" Value="this" IsFixed="true">
+        @CustomPages
+    </CascadingValue>
 }
 
 @if (Context.State == AutoCrudState.Viewing)
@@ -36,7 +36,7 @@
                     {
                         @SelectionActions
                     }
-                    
+
                     <WButton OnClick="StartDelete" CssClasses="btn-danger">
                         <i class="bx bx-sm bx-trash"></i>
                         <span class="ms-1">Delete</span>
@@ -61,7 +61,7 @@
                     {
                         @ViewToolbar
                     }
-                    
+
                     <button class="btn btn-primary" @onclick="() => SwitchToState(AutoCrudState.Creating)">Create</button>
                 </div>
             }
@@ -112,7 +112,7 @@
                         </Template>
                     </CrudColumn>
                 </ChildContent>
-                
+
                 <NoItemsContent>
                     @if (NoItemsView != null)
                     {
@@ -125,7 +125,7 @@
                         </div>
                     }
                 </NoItemsContent>
-                
+
                 <LoadingContent>
                     @if (LoadingView != null)
                     {
@@ -141,7 +141,7 @@
             </CrudTable>
         </div>
     </div>
-    
+
     <SmartModal @ref="DeleteModal" CssClasses="modal-dialog-centered">
         <div class="modal-header">
             <h5 class="modal-title">Do you want to delete this item?</h5>
@@ -207,7 +207,7 @@ else if (Context.State == AutoCrudState.Creating)
 
     [Parameter] public Type EditForm { get; set; }
     [Parameter] public RenderFragment<TItem>? EditActions { get; set; }
-    
+
     [Parameter] public Type CreateForm { get; set; }
 
     private RenderFragment EditRender;
@@ -250,7 +250,7 @@ else if (Context.State == AutoCrudState.Creating)
 
     public async Task Reload()
     {
-        if(Context.State != AutoCrudState.Viewing)
+        if (Context.State != AutoCrudState.Viewing)
             return;
 
         await ViewTable.Refresh(isSilent: false, fullRefresh: true);
@@ -319,16 +319,16 @@ else if (Context.State == AutoCrudState.Creating)
         {
             if (Options.ValidateDelete != null)
                 await Options.ValidateDelete.Invoke(item);
-        
+
             if (Options.CustomDelete != null)
                 await Options.CustomDelete.Invoke(item);
             else
                 ItemRepository.Delete(item);
         }
-        
-        
+
+
         await ToastService.Success("Successfully deleted items");
-        
+
         SelectedItems.Clear();
         await ViewTable.Refresh(fullRefresh: true, isSilent: false);
         await InvokeAsync(StateHasChanged);
@@ -338,7 +338,7 @@ else if (Context.State == AutoCrudState.Creating)
     {
         CustomComponentCache[id] = renderCall;
     }
-    
+
     public void AddCustomPage(string name, object renderCall)
     {
         CustomPageCache[name] = renderCall;

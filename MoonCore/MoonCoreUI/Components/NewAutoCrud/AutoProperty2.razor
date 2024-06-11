@@ -196,6 +196,8 @@
 
         if (TryGetCasted(out DescriptionAttribute descriptionAttribute))
             Description = descriptionAttribute.Description;
+        else
+            Description = "";
 
         if (EnableColumns)
         {

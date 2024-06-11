@@ -23,30 +23,37 @@
         </div>
     }
 
-    foreach (var section in CurrentPage.Sections)
+    if (CurrentPage.RenderOverride == null)
     {
-        <div class="card mb-6">
-            @if (!string.IsNullOrEmpty(section.Name))
-            {
-                <div class="card-header">
-                    <div class="card-title">
-                        @if (!string.IsNullOrEmpty(section.Icon))
+        foreach (var section in CurrentPage.Sections)
+        {
+            <div class="card mb-6">
+                @if (!string.IsNullOrEmpty(section.Name))
+                {
+                    <div class="card-header">
+                        <div class="card-title">
+                            @if (!string.IsNullOrEmpty(section.Icon))
+                            {
+                                <i class="bx bx-md @(section.Icon) text-primary me-3 align-middle"></i>
+                            }
+                            <span class="fs-3 align-middle">@(section.Name)</span>
+                        </div>
+                    </div>
+                }
+                <div class="card-body">
+                    <div class="row g-8">
+                        @foreach (var rf in section.Renders)
                         {
-                            <i class="bx bx-md @(section.Icon) text-primary me-3 align-middle"></i>
+                            @rf
                         }
-                        <span class="fs-3 align-middle">@(section.Name)</span>
                     </div>
                 </div>
-            }
-            <div class="card-body">
-                <div class="row g-8">
-                    @foreach (var rf in section.Renders)
-                    {
-                        @rf
-                    }
-                </div>
             </div>
-        </div>
+        }
+    }
+    else
+    {
+        @CurrentPage.RenderOverride
     }
 }
 
