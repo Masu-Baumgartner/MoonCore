@@ -54,8 +54,7 @@ window.mooncore = {
                     textArea.select();
 
                     try {
-                        const successful = document.execCommand('copy');
-                        const msg = successful ? 'successful' : 'unsuccessful';
+                        document.execCommand('copy');
                     } catch (err) {
                         console.error('Fallback: Oops, unable to copy', err);
                     }
@@ -76,7 +75,7 @@ window.mooncore = {
 
                 return content.types;
             },
-            readData: async function(maxSize, contentType) {
+            readData: async function(contentType, maxSize) {
                 const clipboardContents = await navigator.clipboard.read();
                 const content = clipboardContents[0];
                 
@@ -87,8 +86,13 @@ window.mooncore = {
                         reader.readAsDataURL(blob);
                     });
                 }
+                
+                const blob = await content.getType(contentType);
+                
+                if(blob.size > maxSize)
+                    return "ERRSIZE";
 
-                return await blobToBase64(await content.getType(contentType));
+                return await blobToBase64(blob);
             }
         }
     }

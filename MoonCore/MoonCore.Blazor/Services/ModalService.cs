@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Components;
 using Microsoft.JSInterop;
 using MoonCore.Blazor.Components;
+using MoonCore.Blazor.Extensions;
 
 namespace MoonCore.Blazor.Services;
 
@@ -16,12 +17,12 @@ public class ModalService
 
     public async Task Show(string id, bool focus = true) // Focus can be specified to fix issues with other components
     {
-        await JsRuntime.InvokeVoidAsync("mooncore.blazor.modals.show", id, focus);
+        await JsRuntime.InvokeVoidAsyncHandled("mooncore.blazor.modals.show", id, focus);
     }
     
     public async Task Hide(string id)
     {
-        await JsRuntime.InvokeVoidAsync("mooncore.blazor.modals.hide", id);
+        await JsRuntime.InvokeVoidAsyncHandled("mooncore.blazor.modals.hide", id);
     }
 
     public Task SetLaunchPoint(ModalLaunchPoint launchPoint)

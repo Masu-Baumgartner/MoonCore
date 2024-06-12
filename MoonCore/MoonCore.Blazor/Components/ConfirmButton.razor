@@ -1,0 +1,79 @@
+﻿@if (IsWorking)
+{
+    <button class="@CssClasses disabled" type="button">
+        <span class="spinner-border spinner-border-sm align-middle"></span>
+        <span class="ms-2 align-middle">@Text</span>
+    </button>
+}
+else
+{
+    if (ShowConfirm)
+    {
+        <div class="btn-group">
+            <button class="btn btn-success" @onclick="EndConfirm">
+                Confirm
+            </button>
+            <button class="btn btn-danger" @onclick="() => SetConfirm(false)">
+                Cancel
+            </button>
+        </div>
+    }
+    else
+    {
+        <button @onclick="() => SetConfirm(true)" class="@CssClasses" type="button">
+            @ChildContent
+        </button>
+    }
+}
+
+@code
+{
+    [Parameter] public Func<ConfirmButton, Task>? OnClick { get; set; }
+
+    [Parameter] public string CssClasses { get; set; }
+
+    [Parameter] public RenderFragment ChildContent { get; set; }
+
+    private bool IsWorking = false;
+    private bool ShowConfirm = false;
+    private string Text = "Loading";
+
+    protected override void OnParametersSet()
+    {
+        if (!CssClasses.Contains("btn")) // For backwards compatability
+            CssClasses = "btn " + CssClasses;
+    }
+
+    public async Task SetText(string text)
+    {
+        Text = text;
+        await InvokeAsync(StateHasChanged);
+    }
+
+    public async Task SetConfirm(bool b)
+    {
+        ShowConfirm = b;
+        await InvokeAsync(StateHasChanged);
+    }
+
+    public async Task EndConfirm()
+    {
+        if (IsWorking)
+            return;
+
+        IsWorking = true;
+        ShowConfirm = false;
+        await InvokeAsync(StateHasChanged);
+
+        Task.Run(async () =>
+        {
+            if (OnClick != null)
+                await OnClick.Invoke(this);
+
+// Reset states
+            IsWorking = false;
+            Text = "Loading";
+            await InvokeAsync(StateHasChanged);
+        });
+    }
+}

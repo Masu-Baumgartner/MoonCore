@@ -20,5 +20,6 @@ public static class ServiceCollectionExtensions
         collection.AddScoped<AlertService>();
         collection.AddScoped<ToastService>();
         collection.AddScoped<DownloadService>();
+        collection.AddScoped<ClipboardService>();
     }
 }

@@ -1,0 +1,63 @@
+﻿@if (IsWorking)
+{
+    <button class="@CssClasses disabled" type="button">
+        <span class="spinner-border spinner-border-sm align-middle"></span>
+        @if (!IsIconButton)
+        {
+            <span class="ms-2 align-middle">@Text</span>
+        }
+    </button>
+}
+else
+{
+    <button @onclick="Run" class="@CssClasses" type="button">
+        @ChildContent
+    </button>
+}
+
+@code
+{
+    [Parameter] public Func<WButton, Task>? OnClick { get; set; }
+
+    [Parameter] public string CssClasses { get; set; }
+    
+    [Parameter] public RenderFragment ChildContent { get; set; }
+
+    private bool IsWorking = false;
+    private bool IsIconButton = false;
+    private string Text = "Loading";
+
+    protected override void OnParametersSet()
+    {
+        IsIconButton = CssClasses.Contains("btn-icon");
+
+        if (!CssClasses.Contains("btn")) // For backwards compatability
+            CssClasses = "btn " + CssClasses;
+    }
+
+    public async Task SetText(string text)
+    {
+        Text = text;
+        await InvokeAsync(StateHasChanged);
+    }
+
+    public async Task Run()
+    {
+        if(IsWorking)
+            return;
+        
+        IsWorking = true;
+        await InvokeAsync(StateHasChanged);
+
+        Task.Run(async () =>
+        {
+            if (OnClick != null)
+                await OnClick.Invoke(this);
+
+            // Reset states
+            IsWorking = false;
+            Text = "Loading";
+            await InvokeAsync(StateHasChanged);
+        });
+    }
+}

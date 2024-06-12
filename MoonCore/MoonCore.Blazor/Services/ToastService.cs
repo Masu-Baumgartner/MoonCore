@@ -2,6 +2,7 @@
 using Microsoft.JSInterop;
 using MoonCore.Blazor.Components;
 using MoonCore.Blazor.Components.Toasts;
+using MoonCore.Blazor.Extensions;
 
 namespace MoonCore.Blazor.Services;
 
@@ -35,7 +36,7 @@ public class ToastService
 
     public async Task Show(string id)
     {
-        await JsRuntime.InvokeVoidAsync("mooncore.blazor.toasts.initAndShow", id);
+        await JsRuntime.InvokeVoidAsyncHandled("mooncore.blazor.toasts.initAndShow", id);
     }
 
     public async Task Launch<T>(TimeSpan? duration = null, Action<Dictionary<string, object>>? buildAttributes = null)

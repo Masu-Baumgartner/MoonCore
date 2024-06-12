@@ -17,7 +17,6 @@
     </ItemGroup>
 
     <ItemGroup>
-      <Folder Include="Forms\" />
       <Folder Include="wwwroot\" />
     </ItemGroup>
 
