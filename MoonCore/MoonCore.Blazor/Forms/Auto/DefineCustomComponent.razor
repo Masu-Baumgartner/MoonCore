@@ -1,0 +1,18 @@
+﻿@using MoonCore.Blazor.Helpers
+@typeparam T
+
+@code
+{
+    [CascadingParameter(Name = "Generator")]
+    public AutoFormGenerator Generator { get; set; }
+    
+    [Parameter] public RenderFragment<PropRefBinder<T>> ChildContent { get; set; }
+
+    protected override void OnInitialized()
+    {
+        if (Generator == null)
+            throw new ArgumentNullException(nameof(Generator), "Only use this component inside a AutoFormGenerator component");
+        
+        Generator.AddAdditionalReference(typeof(T), ChildContent);
+    }
+}

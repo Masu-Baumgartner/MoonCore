@@ -12,4 +12,5 @@ public class TestForm
     public string Email { get; set; }
 
     public int Ara { get; set; }
+    public bool A { get; set; }
 }

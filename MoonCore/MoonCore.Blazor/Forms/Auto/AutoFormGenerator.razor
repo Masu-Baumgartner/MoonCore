@@ -1,6 +1,13 @@
-﻿@using MoonCore.Blazor.Forms.Auto.Components
+﻿@using Microsoft.Extensions.Logging
+@using MoonCore.Blazor.Forms.Auto.Components
 @using MoonCore.Blazor.Helpers
 @using MoonCore.Blazor.Models.Forms
+
+@inject ILogger<AutoFormGenerator> Logger
+
+<CascadingValue TValue="AutoFormGenerator" Name="Generator" Value="this" IsFixed="true">
+    @ChildContent
+</CascadingValue>
 
 @foreach (var page in Pages)
 {
@@ -16,52 +23,92 @@
 @code
 {
     [Parameter] public object Model { get; set; }
+    [Parameter] public Action<AutoFormGenerator>? OnConfigure { get; set; }
+    [Parameter] public RenderFragment ChildContent { get; set; }
 
     private readonly List<FormPage> Pages = new();
 
     private Dictionary<Type, Type> ComponentReference = new();
+    private Dictionary<Type, object> AdditionalReference = new();
 
     protected override void OnInitialized()
     {
         ComponentReference.Add(typeof(int), typeof(IntegerComponent));
         ComponentReference.Add(typeof(string), typeof(StringComponent));
+
+        if (OnConfigure != null)
+            OnConfigure.Invoke(this);
     }
 
-    protected override async Task OnParametersSetAsync()
+    protected override async Task OnAfterRenderAsync(bool firstRender)
     {
-        var mainPage = new FormPage
+        if (firstRender)
         {
-            Name = "Main"
-        };
-
-        var mainSection = new FormSection()
-        {
-            Name = "Main"
-        };
-        
-        mainPage.Sections.Add(mainSection);
-        Pages.Add(mainPage);
-
-        foreach (var property in Model.GetType().GetProperties())
-        {
-            // TODO: Add overrides for properties to use custom components
-            
-            if(!ComponentReference.TryGetValue(property.PropertyType, out var componentType))
-                continue; // Skip when not able to find the component to use for this type
-            
-            var propRefBinderType = typeof(PropRefBinder<>).MakeGenericType(property.PropertyType);
-            var propRefBinder = Activator.CreateInstance(propRefBinderType, new[]
+            var mainPage = new FormPage
             {
-                Model,
-                property
-            })!;
+                Name = "Main"
+            };
 
-            var render = ComponentHelper.FromType(componentType, parameters =>
+            var mainSection = new FormSection()
             {
-                parameters.Add("Reference", propRefBinder);
-            });
-            
-            mainSection.Components.Add(render);
+                Name = "Main"
+            };
+
+            mainPage.Sections.Add(mainSection);
+            Pages.Add(mainPage);
+
+            foreach (var property in Model.GetType().GetProperties())
+            {
+                // TODO: Add overrides for properties to use custom components
+
+                Logger.LogInformation($"{property.PropertyType} {AdditionalReference.Count}");
+
+                if (AdditionalReference.TryGetValue(property.PropertyType, out var renderCall))
+                {
+                    var propRefBinderType = typeof(PropRefBinder<>).MakeGenericType(property.PropertyType);
+                    var propRefBinder = Activator.CreateInstance(propRefBinderType, new[]
+                    {
+                        Model,
+                        property
+                    })!;
+
+                    var renderCallType = typeof(RenderFragment<>)
+                        .MakeGenericType(typeof(PropRefBinder<>)
+                            .MakeGenericType(property.PropertyType));
+
+                    var render = renderCallType.GetMethod("Invoke")!.Invoke(renderCall, new object[]
+                    {
+                        propRefBinder
+                    }) as RenderFragment;
+
+                    mainSection.Components.Add(render!);
+                }
+                else if (ComponentReference.TryGetValue(property.PropertyType, out var componentType))
+                {
+                    var propRefBinderType = typeof(PropRefBinder<>).MakeGenericType(property.PropertyType);
+                    var propRefBinder = Activator.CreateInstance(propRefBinderType, new[]
+                    {
+                        Model,
+                        property
+                    })!;
+
+                    var render = ComponentHelper.FromType(componentType, parameters => { parameters.Add("Reference", propRefBinder); });
+
+                    mainSection.Components.Add(render);
+                }
+            }
+
+            await InvokeAsync(StateHasChanged);
         }
+    }
+
+    public void AddAdditionalReference(Type type, object render)
+    {
+        AdditionalReference[type] = render;
+    }
+
+    public void AddComponentReference(Type type, Type componentType)
+    {
+        ComponentReference[type] = componentType;
     }
 }
