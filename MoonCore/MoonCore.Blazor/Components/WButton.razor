@@ -19,7 +19,7 @@ else
 {
     [Parameter] public Func<WButton, Task>? OnClick { get; set; }
 
-    [Parameter] public string CssClasses { get; set; }
+    [Parameter] public string CssClasses { get; set; } = "btn-primary";
     
     [Parameter] public RenderFragment ChildContent { get; set; }
 
@@ -27,11 +27,11 @@ else
     private bool IsIconButton = false;
     private string Text = "Loading";
 
-    protected override void OnParametersSet()
+    protected override void OnInitialized()
     {
         IsIconButton = CssClasses.Contains("btn-icon");
 
-        if (!CssClasses.Contains("btn")) // For backwards compatability
+        if (!CssClasses.Contains("btn ")) // For backwards compatability
             CssClasses = "btn " + CssClasses;
     }
 

@@ -1,0 +1,67 @@
+﻿@using MoonCore.Blazor.Forms.Auto.Components
+@using MoonCore.Blazor.Helpers
+@using MoonCore.Blazor.Models.Forms
+
+@foreach (var page in Pages)
+{
+    foreach (var section in page.Sections)
+    {
+        foreach (var component in section.Components)
+        {
+            @component
+        }
+    }
+}
+
+@code
+{
+    [Parameter] public object Model { get; set; }
+
+    private readonly List<FormPage> Pages = new();
+
+    private Dictionary<Type, Type> ComponentReference = new();
+
+    protected override void OnInitialized()
+    {
+        ComponentReference.Add(typeof(int), typeof(IntegerComponent));
+        ComponentReference.Add(typeof(string), typeof(StringComponent));
+    }
+
+    protected override async Task OnParametersSetAsync()
+    {
+        var mainPage = new FormPage
+        {
+            Name = "Main"
+        };
+
+        var mainSection = new FormSection()
+        {
+            Name = "Main"
+        };
+        
+        mainPage.Sections.Add(mainSection);
+        Pages.Add(mainPage);
+
+        foreach (var property in Model.GetType().GetProperties())
+        {
+            // TODO: Add overrides for properties to use custom components
+            
+            if(!ComponentReference.TryGetValue(property.PropertyType, out var componentType))
+                continue; // Skip when not able to find the component to use for this type
+            
+            var propRefBinderType = typeof(PropRefBinder<>).MakeGenericType(property.PropertyType);
+            var propRefBinder = Activator.CreateInstance(propRefBinderType, new[]
+            {
+                Model,
+                property
+            })!;
+
+            var render = ComponentHelper.FromType(componentType, parameters =>
+            {
+                parameters.Add("Reference", propRefBinder);
+            });
+            
+            mainSection.Components.Add(render);
+        }
+    }
+}
