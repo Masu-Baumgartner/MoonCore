@@ -1,18 +1,23 @@
 using System.Net.WebSockets;
 using System.Text;
+using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 
 namespace MoonCore.Helpers;
 
 public class AdvancedWebsocketStream
 {
+    private readonly ILogger<AdvancedWebsocketStream> Logger;
+    
     private readonly WebSocket Socket;
     private readonly int MaxBufferSize;
     
     private readonly Dictionary<int, Type> Packets = new();
 
-    public AdvancedWebsocketStream(WebSocket socket, int maxBufferSize = 500 * 1024)
+    public AdvancedWebsocketStream(ILogger<AdvancedWebsocketStream> logger, WebSocket socket, int maxBufferSize = 500 * 1024)
     {
+        Logger = logger;
+        
         Socket = socket;
         MaxBufferSize = maxBufferSize;
     }
@@ -121,7 +126,7 @@ public class AdvancedWebsocketStream
     {
         if (buffer.Length < 5) // 4 (header) + minimum 1 as body
         {
-            Logger.Warn($"Received buffer is too small ({buffer.Length} bytes)");
+            Logger.LogWarning("Received buffer is too small ({bufferLength} bytes)", buffer.Length);
             return default;
         }
 
@@ -133,7 +138,7 @@ public class AdvancedWebsocketStream
         
         if (packetType == null)
         {
-            Logger.Warn($"Received packet id which has not been registered: {packetId}");
+            Logger.LogWarning("Received packet id which has not been registered: {packetId}", packetId);
             return default;
         }
 
@@ -144,7 +149,7 @@ public class AdvancedWebsocketStream
 
         if (string.IsNullOrEmpty(jsonText))
         {
-            Logger.Warn("Received empty json text");
+            Logger.LogWarning("Received empty json text");
             return default;
         }
 
@@ -156,8 +161,7 @@ public class AdvancedWebsocketStream
         }
         catch (JsonReaderException e)
         {
-            Logger.Warn($"An error occured while deserializating the json text of the packet {packetType.Name}");
-            Logger.Warn(e);
+            Logger.LogWarning("An error occured while deserialization the json text of the packet {name}: {e}", packetType.Name, e);
         }
 
         return result;

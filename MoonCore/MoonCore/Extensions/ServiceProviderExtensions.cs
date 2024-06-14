@@ -1,5 +1,6 @@
 ﻿using System.Reflection;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using MoonCore.Abstractions;
 using MoonCore.Attributes;
 using MoonCore.Helpers;
@@ -10,6 +11,8 @@ public static class ServiceProviderExtensions
 {
     public static void StartBackgroundServices<T>(this IServiceProvider provider)
     {
+        var logger = provider.GetRequiredService<ILogger<BackgroundService>>();
+        
         var assembly = typeof(T).Assembly;
 
         foreach (var backgroundServiceType in GetBackgroundServiceTypes(assembly))
@@ -24,8 +27,7 @@ public static class ServiceProviderExtensions
                 }
                 catch (Exception e)
                 {
-                    Logger.Fatal($"A background service ({backgroundServiceType.Name}) has crashed:");
-                    Logger.Fatal(e);
+                    logger.LogCritical("A background service ({name}) has crashed: {e}", backgroundServiceType.Name, e);
                 }
             });
         }
@@ -33,6 +35,8 @@ public static class ServiceProviderExtensions
     
     public static void StopBackgroundServices<T>(this IServiceProvider provider)
     {
+        var logger = provider.GetRequiredService<ILogger<BackgroundService>>();
+        
         var assembly = typeof(T).Assembly;
 
         foreach (var backgroundServiceType in GetBackgroundServiceTypes(assembly))
@@ -47,8 +51,7 @@ public static class ServiceProviderExtensions
                 }
                 catch (Exception e)
                 {
-                    Logger.Fatal($"A background service ({backgroundServiceType.Name}) has crashed:");
-                    Logger.Fatal(e);
+                    logger.LogCritical("A background service ({name}) has crashed: {e}", backgroundServiceType.Name, e);
                 }
             });
         }

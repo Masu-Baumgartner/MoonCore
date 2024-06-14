@@ -1,21 +1,11 @@
 ﻿using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
-using MoonCore.Helpers.LogMigrator;
+using MoonCore.Logging;
 
 namespace MoonCore.Extensions;
 
 public static class LoggingBuilderExtensions
 {
-    /// <summary>
-    /// This migrates every log message from microsoft's logging system to moon cores logging
-    /// </summary>
-    /// <param name="builder"></param>
-    public static void MigrateToMoonCore(this ILoggingBuilder builder)
-    {
-        builder.ClearProviders();
-        builder.AddProvider(new LogMigrateProvider());
-    }
-
     /// <summary>
     /// Adds a logging configuration similar to the appsettings.json but using a string
     /// </summary>
@@ -26,5 +16,12 @@ public static class LoggingBuilderExtensions
         var config = new ConfigurationBuilder().AddJsonString(configAsJson);
 
         builder.AddConfiguration(config.Build());
+    }
+
+    public static void AddMoonCore(this ILoggingBuilder builder)
+    {
+        builder.ClearProviders();
+        
+        builder.AddProvider(new ConsoleLoggingProvider());
     }
 }
