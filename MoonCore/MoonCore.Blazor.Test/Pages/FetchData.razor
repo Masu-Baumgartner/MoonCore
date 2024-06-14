@@ -5,7 +5,7 @@
 @inject ILogger<FetchData> Logger
 
 <AutoFormGenerator Model="Form">
-    <DefineCustomComponent T="bool">
+    <DefineCustomComponent T="bool" Name="CustomBool">
         <div class="form-check">
             <input class="form-check-input" type="checkbox" @bind="context.Value">
             <label class="form-check-label" for="flexCheckDefault">

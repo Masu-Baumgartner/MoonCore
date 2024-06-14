@@ -1,7 +1,10 @@
-﻿@using Microsoft.Extensions.Logging
+﻿@using System.ComponentModel
+@using Microsoft.Extensions.Logging
+@using MoonCore.Blazor.Attributes.Auto
 @using MoonCore.Blazor.Forms.Auto.Components
 @using MoonCore.Blazor.Helpers
 @using MoonCore.Blazor.Models.Forms
+@using MoonCore.Helpers
 
 @inject ILogger<AutoFormGenerator> Logger
 
@@ -29,7 +32,7 @@
     private readonly List<FormPage> Pages = new();
 
     private Dictionary<Type, Type> ComponentReference = new();
-    private Dictionary<Type, object> AdditionalReference = new();
+    private Dictionary<string, object> AdditionalReference = new();
 
     protected override void OnInitialized()
     {
@@ -59,32 +62,47 @@
 
             foreach (var property in Model.GetType().GetProperties())
             {
+                var attributes = property.GetCustomAttributes(true);
+                
                 // TODO: Add overrides for properties to use custom components
 
-                Logger.LogInformation($"{property.PropertyType} {AdditionalReference.Count}");
-
-                if (AdditionalReference.TryGetValue(property.PropertyType, out var renderCall))
+                if (TryGetAttribute(attributes, out CustomComponentAttribute componentAttribute))
                 {
-                    var propRefBinderType = typeof(PropRefBinder<>).MakeGenericType(property.PropertyType);
-                    var propRefBinder = Activator.CreateInstance(propRefBinderType, new[]
+                    if (AdditionalReference.TryGetValue(componentAttribute.Name, out var renderCall))
                     {
-                        Model,
-                        property
-                    })!;
+                        var propRefBinderType = typeof(PropRefBinder<>).MakeGenericType(property.PropertyType);
+                        var propRefBinder = Activator.CreateInstance(propRefBinderType, new[]
+                        {
+                            Model,
+                            property
+                        })!;
 
-                    var renderCallType = typeof(RenderFragment<>)
-                        .MakeGenericType(typeof(PropRefBinder<>)
-                            .MakeGenericType(property.PropertyType));
+                        var renderCallType = typeof(RenderFragment<>)
+                            .MakeGenericType(typeof(PropRefBinder<>)
+                                .MakeGenericType(property.PropertyType));
 
-                    var render = renderCallType.GetMethod("Invoke")!.Invoke(renderCall, new object[]
-                    {
-                        propRefBinder
-                    }) as RenderFragment;
+                        var render = renderCallType.GetMethod("Invoke")!.Invoke(renderCall, new[]
+                        {
+                            propRefBinder
+                        }) as RenderFragment;
 
-                    mainSection.Components.Add(render!);
+                        mainSection.Components.Add(render!);
+                        
+                        continue;
+                    }
                 }
-                else if (ComponentReference.TryGetValue(property.PropertyType, out var componentType))
+
+                if (ComponentReference.TryGetValue(property.PropertyType, out var componentType))
                 {
+                    var displayName = Formatter.ConvertCamelCaseToSpaces(property.Name);
+                    var description = "";
+
+                    if (TryGetAttribute(attributes, out DisplayNameAttribute nameAttribute))
+                        displayName = nameAttribute.DisplayName;
+
+                    if (TryGetAttribute(attributes, out DescriptionAttribute descriptionAttribute))
+                        description = descriptionAttribute.Description;
+                    
                     var propRefBinderType = typeof(PropRefBinder<>).MakeGenericType(property.PropertyType);
                     var propRefBinder = Activator.CreateInstance(propRefBinderType, new[]
                     {
@@ -92,7 +110,15 @@
                         property
                     })!;
 
-                    var render = ComponentHelper.FromType(componentType, parameters => { parameters.Add("Reference", propRefBinder); });
+                    var render = ComponentHelper.FromType(componentType, parameters =>
+                    {
+                        parameters.Add("Reference", propRefBinder);
+                        
+                        parameters.Add("Name", displayName);
+                        parameters.Add("Description", description);
+                        
+                        parameters.Add("Attributes", attributes);
+                    });
 
                     mainSection.Components.Add(render);
                 }
@@ -102,13 +128,30 @@
         }
     }
 
-    public void AddAdditionalReference(Type type, object render)
+    public void AddAdditionalReference(string name, object render)
     {
-        AdditionalReference[type] = render;
+        AdditionalReference[name] = render;
     }
 
     public void AddComponentReference(Type type, Type componentType)
     {
         ComponentReference[type] = componentType;
+    }
+
+    private bool TryGetAttribute<T>(object[] attributes, out T result) where T : Attribute
+    {
+        var searchType = typeof(T);
+
+        var attr = attributes
+            .FirstOrDefault(x => x.GetType() == searchType);
+
+        if (attr == null)
+        {
+            result = default!;
+            return false;
+        }
+
+        result = (attr as T)!;
+        return true;
     }
 }

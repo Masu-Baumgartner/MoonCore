@@ -5,4 +5,7 @@
 @code
 {
     [Parameter] public PropRefBinder<TProperty> Reference { get; set; }
+    [Parameter] public string Name { get; set; }
+    [Parameter] public string Description { get; set; }
+    [Parameter] public object[] Attributes { get; set; }
 }
