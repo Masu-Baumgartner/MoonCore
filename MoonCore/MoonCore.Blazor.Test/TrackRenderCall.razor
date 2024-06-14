@@ -1,0 +1,17 @@
+﻿@inject DevelopmentConsoleService DevelopmentConsoleService
+
+@code
+{
+    [Parameter] public string Name { get; set; }
+
+    protected override void OnInitialized()
+    {
+        if (string.IsNullOrEmpty(Name))
+            throw new ArgumentNullException(nameof(Name), "You need to provide a name for your render tracker");
+    }
+
+    protected override void OnAfterRender(bool firstRender)
+    {
+        DevelopmentConsoleService.NotifyCounter(Name);
+    }
+}

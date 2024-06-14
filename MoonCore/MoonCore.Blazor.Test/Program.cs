@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Web;
 using MoonCore.Blazor.Extensions;
+using MoonCore.Blazor.Test;
 using MoonCore.Blazor.Test.Data;
 using Serilog;
 
@@ -11,15 +12,12 @@ builder.Services.AddRazorPages();
 builder.Services.AddServerSideBlazor();
 builder.Services.AddSingleton<WeatherForecastService>();
 
-builder.Services.AddMoonCoreBlazor();
+builder.Services.AddScoped<DevelopmentConsoleService>();
 
-builder.Services.AddLogging(logging =>
-    logging.AddSimpleConsole(options =>
-    {
-        options.SingleLine = true;
-        options.TimestampFormat = "yyyy-MM-dd HH:mm:ss ";
-    })
-);
+builder.Logging.ClearProviders();
+builder.Logging.AddProvider(new CustomLoggerProvider());
+
+builder.Services.AddMoonCoreBlazor();
 
 
 var app = builder.Build();
