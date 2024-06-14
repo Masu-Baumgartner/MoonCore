@@ -1,9 +1,19 @@
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Web;
+using Microsoft.EntityFrameworkCore;
 using MoonCore.Blazor.Extensions;
 using MoonCore.Blazor.Test;
 using MoonCore.Blazor.Test.Data;
+using MoonCore.Blazor.Test.Database;
+using MoonCore.Extensions;
+using MoonCore.Helpers;
+using MoonCore.Logging;
 using Serilog;
+
+using ILoggerFactory factory = LoggerFactory.Create(builder => builder.AddMoonCore());
+
+var dc = new SomeContext();
+await DatabaseCheckHelper.Check(factory.CreateLogger<DbContext>(), dc, false);
 
 var builder = WebApplication.CreateBuilder(args);
 
