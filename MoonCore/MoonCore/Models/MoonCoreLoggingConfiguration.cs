@@ -7,8 +7,8 @@ public class MoonCoreLoggingConfiguration
 
     public class ConsoleData
     {
-        public bool Enable { get; set; }
-        public bool EnableAnsiMode { get; set; }
+        public bool Enable { get; set; } = true;
+        public bool EnableAnsiMode { get; set; } = true;
     }
 
     public class FileLoggingData

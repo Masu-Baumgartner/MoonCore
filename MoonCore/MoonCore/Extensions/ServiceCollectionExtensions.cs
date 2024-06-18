@@ -1,6 +1,8 @@
 ﻿using System.Reflection;
 using Microsoft.Extensions.DependencyInjection;
 using MoonCore.Attributes;
+using MoonCore.Models;
+using MoonCore.Services;
 
 namespace MoonCore.Extensions;
 
@@ -10,9 +12,17 @@ public static class ServiceCollectionExtensions
     /// This does nothing at the moment
     /// </summary>
     /// <param name="collection"></param>
-    public static void AddMoonCore(this IServiceCollection collection)
+    /// <param name="configuration">Make changes to the configuration in this action</param>
+    public static void AddMoonCore(this IServiceCollection collection, Action<MoonCoreConfiguration>? configuration)
     {
+        MoonCoreConfiguration config = new();
         
+        if(configuration != null)
+            configuration.Invoke(config);
+
+        collection.AddSingleton(config);
+
+        collection.AddScoped<IdentityService>();
     }
 
     /// <summary>

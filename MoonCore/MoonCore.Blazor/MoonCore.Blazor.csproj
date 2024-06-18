@@ -10,11 +10,7 @@
     <ItemGroup>
         <SupportedPlatform Include="browser"/>
     </ItemGroup>
-
-    <ItemGroup>
-        <PackageReference Include="MoonCore" Version="1.3.6" />
-    </ItemGroup>
-
+    
     <ItemGroup>
       <Folder Include="wwwroot\" />
     </ItemGroup>
@@ -22,6 +18,10 @@
     <ItemGroup>
       <None Include="wwwroot\js\bootstrap.js" />
       <None Include="wwwroot\js\mooncore.blazor.js" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <ProjectReference Include="..\MoonCore\MoonCore.csproj" />
     </ItemGroup>
 
 </Project>

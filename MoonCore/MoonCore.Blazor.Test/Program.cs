@@ -24,9 +24,13 @@ builder.Services.AddSingleton<WeatherForecastService>();
 
 builder.Services.AddScoped<DevelopmentConsoleService>();
 
-builder.Logging.ClearProviders();
-builder.Logging.AddProvider(new CustomLoggerProvider());
+builder.Logging.AddMoonCore();
 
+builder.Services.AddMoonCore(configuration =>
+{
+    configuration.Identity.Token = "30377629119932232086550615143349";
+    configuration.Identity.Provider = new CustomAuthStateProvider();
+});
 builder.Services.AddMoonCoreBlazor();
 
 
