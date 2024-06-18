@@ -21,5 +21,6 @@ public static class ServiceCollectionExtensions
         collection.AddScoped<ToastService>();
         collection.AddScoped<DownloadService>();
         collection.AddScoped<ClipboardService>();
+        collection.AddScoped<CookieService>();
     }
 }

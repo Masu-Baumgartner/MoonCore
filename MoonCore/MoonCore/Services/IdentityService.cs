@@ -6,7 +6,7 @@ using MoonCore.Models;
 
 namespace MoonCore.Services;
 
-public class IdentityService
+public class IdentityService : IDisposable
 {
     public SmartEventHandler OnStateChanged { get; set; }
     public bool IsAuthenticated { get; private set; } = false;
@@ -20,7 +20,6 @@ public class IdentityService
     private readonly MoonCoreConfiguration Configuration;
 
     private readonly Timer ReAuthTimer;
-    private string ReAuthLastToken;
 
     private string CurrentJwt = "";
 
@@ -47,15 +46,9 @@ public class IdentityService
                 Formatter.FormatUptime(configuration.Identity.PeriodicReAuthDelay)
             );
 
-            ReAuthLastToken = CurrentJwt;
-
             ReAuthTimer = new(async _ =>
             {
-                if (CurrentJwt != ReAuthLastToken)
-                    return;
-
                 await Authenticate();
-                ReAuthLastToken = CurrentJwt;
                 
                 Logger.LogTrace("Re-authenticated");
             }, null, TimeSpan.Zero, configuration.Identity.PeriodicReAuthDelay);
@@ -66,8 +59,10 @@ public class IdentityService
     {
         var jwt = await JwtService.Create(parameters =>
         {
-            parameters.Add("Identifier", identifier);
-            parameters.Add("IssuedAt", DateTimeOffset.UtcNow.ToUnixTimeSeconds().ToString());
+            parameters.Add("identifier", identifier);
+            
+            // Not required as the jwt service is handling it already
+            //parameters.Add("iat", DateTimeOffset.UtcNow.ToUnixTimeSeconds().ToString());
         }, AuthEnum.MoonCoreLogin, tokenDuration ?? Configuration.Identity.DefaultTokenDuration);
 
         CurrentJwt = jwt;
@@ -123,14 +118,14 @@ public class IdentityService
         var data = await JwtService.Decode(CurrentJwt);
 
         // Validate content
-        if (!data.ContainsKey("Identifier") || !data.ContainsKey("IssuedAt"))
+        if (!data.ContainsKey("identifier") || !data.ContainsKey("iat"))
         {
-            Logger.LogTrace("The jwt content is missing Identifier and/or IssuedAt field");
+            Logger.LogTrace("The jwt content is missing identifier and/or iat field");
             return;
         }
 
-        var issuedAtString = data["IssuedAt"];
-        var identifier = data["Identifier"];
+        var issuedAtString = data["iat"];
+        var identifier = data["identifier"];
 
         // Check if identifier is valid
         if (!await Provider.IsValidIdentifier(ServiceProvider, identifier))
@@ -161,5 +156,10 @@ public class IdentityService
         Identifier = identifier;
 
         await Provider.LoadFromIdentifier(ServiceProvider, identifier, Storage);
+    }
+
+    public void Dispose()
+    {
+        ReAuthTimer?.Dispose();
     }
 }

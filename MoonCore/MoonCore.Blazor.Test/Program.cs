@@ -30,6 +30,8 @@ builder.Services.AddMoonCore(configuration =>
 {
     configuration.Identity.Token = "30377629119932232086550615143349";
     configuration.Identity.Provider = new CustomAuthStateProvider();
+    configuration.Identity.EnablePeriodicReAuth = true;
+    configuration.Identity.PeriodicReAuthDelay = TimeSpan.FromSeconds(1);
 });
 builder.Services.AddMoonCoreBlazor();
 

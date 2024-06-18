@@ -1,39 +1,43 @@
 @page "/auth"
 
+@using MoonCore.Blazor.Services
 @using MoonCore.Blazor.Test.Data
 @using MoonCore.Services
 
 @inject IdentityService Identity
+@inject CookieService CookieService
 
 @implements IDisposable
 
-@if (Identity.IsAuthenticated)
-{
-    var user = Identity.Storage.Get<User>();
-    
-    <h1>Logged in: @user.Email</h1>
-}
-else
-{
-    <h1>Not logged in</h1>
-}
+<LazyLoader Load="Load">
+    @if (Identity.IsAuthenticated)
+    {
+        var user = Identity.Storage.Get<User>();
 
-<input @bind="Email" type="text" class="form-control" placeholder="Email"/>
-<input @bind="Password" type="password" class="form-control" placeholder="Password"/>
+        <h1>Logged in: @user.Email</h1>
+    }
+    else
+    {
+        <h1>Not logged in</h1>
+    }
 
-<button class="btn btn-primary" @onclick="DoLogin">
-    Login
-</button>
+    <input @bind="Email" type="text" class="form-control" placeholder="Email"/>
+    <input @bind="Password" type="password" class="form-control" placeholder="Password"/>
 
-<button class="btn btn-danger" @onclick="Logout">
-    Logout
-</button>
+    <button class="btn btn-primary" @onclick="DoLogin">
+        Login
+    </button>
+
+    <button class="btn btn-danger" @onclick="Logout">
+        Logout
+    </button>
+</LazyLoader>
 
 @code
 {
     private string Email = "";
     private string Password = "";
-    
+
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
         if (firstRender)
@@ -50,11 +54,12 @@ else
     public async Task DoLogin()
     {
         var user = CustomAuthStateProvider.Users.First(x => x.Email == Email);
-        
-        if(user.Password != Password)
+
+        if (user.Password != Password)
             return;
 
-        await Identity.Login(user.Id.ToString());
+        var token = await Identity.Login(user.Id.ToString(), TimeSpan.FromSeconds(15));
+        await CookieService.SetValue("testyToken", token, 30);
     }
 
     private async Task OnAuthStateChanged()
@@ -65,5 +70,11 @@ else
     public void Dispose()
     {
         Identity.OnStateChanged -= OnAuthStateChanged;
+    }
+
+    private async Task Load(LazyLoader arg)
+    {
+        var token = await CookieService.GetValue("testyToken");
+        await Identity.Authenticate(token);
     }
 }
