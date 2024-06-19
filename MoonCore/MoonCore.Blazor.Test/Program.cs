@@ -2,9 +2,11 @@ using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.EntityFrameworkCore;
 using MoonCore.Blazor.Extensions;
+using MoonCore.Blazor.Helpers;
 using MoonCore.Blazor.Test;
 using MoonCore.Blazor.Test.Data;
 using MoonCore.Blazor.Test.Database;
+using MoonCore.Blazor.Test.Shared;
 using MoonCore.Extensions;
 using MoonCore.Helpers;
 using MoonCore.Logging;
@@ -33,7 +35,17 @@ builder.Services.AddMoonCore(configuration =>
     configuration.Identity.EnablePeriodicReAuth = true;
     configuration.Identity.PeriodicReAuthDelay = TimeSpan.FromSeconds(1);
 });
-builder.Services.AddMoonCoreBlazor();
+
+builder.Services.AddMoonCoreBlazor(configuration =>
+{
+    configuration.ErrorHandler.ErrorMessageComponent = value =>
+        ComponentHelper.FromType<ErrorMsgBox>(parameters => parameters.Add("Message", value));
+
+    configuration.ErrorHandler.StacktraceComponent = value => ComponentHelper.FromType<StackTraceError>(parameters =>
+    {
+        parameters.Add("Content", value);
+    });
+});
 
 
 var app = builder.Build();

@@ -49,15 +49,24 @@ else
         IsWorking = true;
         await InvokeAsync(StateHasChanged);
 
-        Task.Run(async () =>
+        try
         {
             if (OnClick != null)
                 await OnClick.Invoke(this);
-
+            
             // Reset states
             IsWorking = false;
             Text = "Loading";
             await InvokeAsync(StateHasChanged);
-        });
+        }
+        catch (Exception)
+        {
+            // Reset states
+            IsWorking = false;
+            Text = "Loading";
+            await InvokeAsync(StateHasChanged);
+
+            throw;
+        }
     }
 }

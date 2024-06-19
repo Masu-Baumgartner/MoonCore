@@ -1,0 +1,19 @@
+@page "/errortest"
+
+@using MoonCore.Exceptions
+
+<WButton CssClasses="btn-primary" OnClick="Error1">Error 1</WButton>
+<WButton CssClasses="btn-secondary" OnClick="Error2">Error 2</WButton>
+
+@code
+{
+    public async Task Error1(WButton _)
+    {
+        throw new DisplayException("Testy");
+    }
+    
+    public async Task Error2(WButton _)
+    {
+        throw new ArgumentException();
+    }
+}
