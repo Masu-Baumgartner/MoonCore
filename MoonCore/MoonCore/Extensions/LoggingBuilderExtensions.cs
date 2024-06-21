@@ -1,5 +1,6 @@
 ﻿using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
+using MoonCore.Helpers;
 using MoonCore.Logging;
 using MoonCore.Models;
 
@@ -28,41 +29,12 @@ public static class LoggingBuilderExtensions
         if(configureAction != null)
             configureAction.Invoke(configuration);
 
-        if (configuration.Console.Enable)
-            builder.AddProvider(new ConsoleLoggingProvider(configuration.Console.EnableAnsiMode));
+        builder.AddProviders(LoggerBuildHelper.BuildFromConfiguration(configuration));
+    }
 
-        if (configuration.FileLogging.Enable)
-        {
-            string? GetCurrentRotateName()
-            {
-                var counter = 0;
-                string currentName;
-
-                while (true)
-                {
-                    if (string.IsNullOrEmpty(configuration.FileLogging.RotateLogNameTemplate))
-                        currentName = $"{configuration.FileLogging.Path}.{counter}";
-                    else
-                        currentName = string.Format(configuration.FileLogging.RotateLogNameTemplate, counter);
-
-                    if (!File.Exists(currentName))
-                        break;
-
-                    counter++;
-                }
-
-                return currentName;
-            }
-
-            if (File.Exists(configuration.FileLogging.Path))
-            {
-                var currentRotateName = GetCurrentRotateName();
-                    
-                if(currentRotateName != null)
-                    File.Move(configuration.FileLogging.Path, currentRotateName);
-            }
-
-            builder.AddProvider(new FileLoggingProvider(configuration.FileLogging.Path));
-        }
+    public static void AddProviders(this ILoggingBuilder builder, ILoggerProvider[] providers)
+    {
+        foreach (var provider in providers)
+            builder.AddProvider(provider);
     }
 }
