@@ -1,0 +1,19 @@
+@code
+{
+    [CascadingParameter(Name = "Generator")]
+    public AutoFormGenerator Generator { get; set; }
+    
+    [Parameter] public RenderFragment ChildContent { get; set; }
+    [Parameter] public string Name { get; set; }
+
+    protected override void OnInitialized()
+    {
+        if (Generator == null)
+            throw new ArgumentNullException(nameof(Generator), "Only use this component inside a AutoFormGenerator component");
+
+        if (string.IsNullOrEmpty(Name))
+            throw new ArgumentNullException(nameof(Name), "You need to provide a name for the custom page in order to define it");
+        
+        Generator.AddPageReference(Name, ChildContent);
+    }
+}

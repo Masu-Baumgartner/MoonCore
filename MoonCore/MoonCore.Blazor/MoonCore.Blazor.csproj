@@ -1,0 +1,41 @@
+<Project Sdk="Microsoft.NET.Sdk.Razor">
+
+    <PropertyGroup>
+        <TargetFramework>net8.0</TargetFramework>
+        <Nullable>enable</Nullable>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <Title>MoonCore.Blazor</Title>
+        <Authors>Masu Baumgartner</Authors>
+        <Description>A ui library for moonlight like blazor applications</Description>
+        <Copyright>Masu Baumgartner</Copyright>
+        <PackageProjectUrl>https://github.com/Masu-Baumgartner/MoonCore</PackageProjectUrl>
+        <PackageLicenseUrl>https://github.com/Masu-Baumgartner/MoonCore/blob/main/LICENSE</PackageLicenseUrl>
+        <RepositoryUrl>https://github.com/Masu-Baumgartner/MoonCore</RepositoryUrl>
+        <RepositoryType>git</RepositoryType>
+        <PackageTags>moonlight</PackageTags>
+        <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+    </PropertyGroup>
+
+
+    <ItemGroup>
+        <SupportedPlatform Include="browser"/>
+    </ItemGroup>
+    
+    <ItemGroup>
+      <Folder Include="wwwroot\" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <None Include="wwwroot\js\bootstrap.js" />
+      <None Include="wwwroot\js\mooncore.blazor.js" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <ProjectReference Include="..\MoonCore\MoonCore.csproj" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <PackageReference Include="Ben.Demystifier" Version="0.4.1" />
+    </ItemGroup>
+
+</Project>

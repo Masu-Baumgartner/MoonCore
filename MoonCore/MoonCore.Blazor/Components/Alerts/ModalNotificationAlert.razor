@@ -1,0 +1,23 @@
+﻿<div class="modal-content">
+    <div class="modal-header d-flex justify-content-center">
+        <i class="bx bx-lg @Icon text-@Color"></i>
+    </div>
+    <div class="modal-body">
+        <p class="text-gray-800 fs-4 fw-semibold text-center">
+            @Content
+        </p>
+    </div>
+    <div class="modal-footer">
+        <div class="btn-group w-100">
+            <button class="btn btn-primary" data-bs-dismiss="modal">@CloseText</button>
+        </div>
+    </div>
+</div>
+
+@code
+{
+    [Parameter] public string Color { get; set; } = "primary";
+    [Parameter] public string CloseText { get; set; } = "Close";
+    [Parameter] public string Content { get; set; } = "";
+    [Parameter] public string Icon { get; set; } = "error";
+}

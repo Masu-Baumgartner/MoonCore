@@ -1,0 +1,223 @@
+﻿@page "/"
+
+@using MoonCore.Blazor.Services
+@using MoonCore.Blazor.Forms
+@using MoonCore.Blazor.Test.Data
+
+@inject AlertService AlertService
+@inject ToastService ToastService
+@inject ClipboardService ClipboardService
+@inject DownloadService DownloadService
+@inject ILogger<Index> Logger
+
+<PageTitle>Index</PageTitle>
+
+<h1>Hello, world!</h1>
+
+<TrackRenderCall Name="Index Page" />
+
+<button @onclick="Testy" class="btn btn-primary">Test 1</button>
+<button @onclick="Testy2" class="btn btn-primary">Test 2</button>
+<button @onclick="Testy3" class="btn btn-primary">Test 3</button>
+<button @onclick="Testy4" class="btn btn-primary">Test 4</button>
+
+<button @onclick="Toast1" class="btn btn-success">Toast 1</button>
+<button @onclick="Toast2" class="btn btn-success">Toast 2</button>
+<button @onclick="Toast3" class="btn btn-success">Toast 3</button>
+<button @onclick="Toast4" class="btn btn-success">Toast 4</button>
+
+<button @onclick="Copy" class="btn btn-info">Copy</button>
+<button @onclick="GetTypes" class="btn btn-info">Get types</button>
+<button @onclick="GetData" class="btn btn-info">Get data</button>
+
+<button @onclick="Download" class="btn btn-danger">Download</button>
+
+<WButton OnClick="Work1" CssClasses="btn btn-warning">Work 1</WButton>
+<WButton OnClick="Work3" CssClasses="btn btn-warning">Work 3</WButton>
+<WButton OnClick="Work2" CssClasses="btn btn-icon btn-warning">
+    <i class="bx bx-sm bx-server"></i>
+</WButton>
+
+<ConfirmButton CssClasses="btn btn-info" OnClick="Confirm1">
+    owo :3
+</ConfirmButton>
+
+<div class="separator my-10"></div>
+
+<MCBForm Model="Model" OnValidSubmit="OnValidSubmit">
+    <div class="row g-3">
+        <div class="col-md-6">
+            <label for="inputEmail4" class="form-label">Email</label>
+            <input @bind="Model.Email" type="email" class="form-control" id="inputEmail4">
+        </div>
+        <div class="col-md-6">
+            <label for="inputPassword4" class="form-label">Name</label>
+            <input @bind="Model.Name" type="text" class="form-control" id="inputPassword4">
+        </div>
+        <div class="col-12">
+            <button type="submit" class="btn btn-primary">Sign in</button>
+        </div>
+    </div>
+</MCBForm>
+
+<div class="separator my-10"></div>
+
+<WButton OnClick="_ => TestLogging()">Test Logging</WButton>
+
+<div class="separator my-10"></div>
+
+<LazyLoader Load="Load">
+    <h3>I am loaded</h3>
+</LazyLoader>
+
+<LazyLoader Load="Load2">
+    <h3>I am loaded 2</h3>
+</LazyLoader>
+
+<LazyLoader Load="Load3">
+    <TrackRenderCall Name="Third lazy loader" />
+    
+    <h3>I am loaded 3</h3>
+</LazyLoader>
+
+@code
+{
+    private TestForm Model = new();
+
+    private async Task TestLogging()
+    {
+        Logger.LogCritical("ELO");
+        Logger.LogError("ELO");
+        Logger.LogWarning("ELO");
+        Logger.LogInformation("ELO");
+        Logger.LogDebug("ELO");
+        Logger.LogTrace("ELO");
+    }
+
+    private async Task Load(LazyLoader lazyLoader)
+    {
+        await Task.Delay(500);
+    }
+
+    private async Task Load2(LazyLoader arg)
+    {
+        await Task.Delay(3000);
+    }
+
+    private async Task Load3(LazyLoader lazyLoader)
+    {
+        await Task.Delay(3000);
+
+        await lazyLoader.SetText("Doing a thing");
+
+        await Task.Delay(3000);
+
+        await lazyLoader.SetText("Doing another thing");
+
+        await Task.Delay(3000);
+    }
+
+    private async Task Testy()
+    {
+        await AlertService.Success("Task failed");
+    }
+
+    private async Task Testy2()
+    {
+        await AlertService.Info("Task failed");
+    }
+
+    private async Task Testy3()
+    {
+        await AlertService.Warning("Task failed");
+    }
+
+    private async Task Testy4()
+    {
+        await AlertService.Danger("Task failed");
+    }
+
+    private async Task Toast1()
+    {
+        await ToastService.Success("uwu owo ara rawr~");
+    }
+
+    private async Task Toast2()
+    {
+        await ToastService.Info("uwu owo ara rawr~");
+    }
+
+    private async Task Toast3()
+    {
+        await ToastService.Warning("uwu owo ara rawr~");
+    }
+
+    private async Task Toast4()
+    {
+        await ToastService.Danger("uwu owo ara rawr~");
+    }
+
+    private async Task Copy()
+    {
+        await ClipboardService.Copy("uwu owo ara rawr~");
+    }
+
+    private async Task GetTypes()
+    {
+        foreach (var readType in await ClipboardService.ReadTypes())
+        {
+            Console.WriteLine(readType);
+        }
+    }
+
+    private async Task GetData()
+    {
+        Console.WriteLine(await ClipboardService.ReadContentAsString("text/plain"));
+    }
+
+    public async Task Download()
+    {
+        await DownloadService.DownloadString("uwu.txt", "ara ara rawr~");
+    }
+
+    private async Task Work1(WButton arg)
+    {
+        await Task.Delay(3000);
+    }
+
+    private async Task Work2(WButton arg)
+    {
+        await Task.Delay(3000);
+    }
+
+    private async Task Work3(WButton button)
+    {
+        await Task.Delay(3000);
+
+        await button.SetText("Doing something else");
+
+        await Task.Delay(1500);
+
+        await button.SetText("Doing something else");
+
+        await Task.Delay(1500);
+    }
+
+    private async Task Confirm1(ConfirmButton button)
+    {
+        await Task.Delay(3000);
+
+        await button.SetText("Doing something else");
+
+        await Task.Delay(1500);
+
+        await button.SetText("Doing something else");
+
+        await Task.Delay(1500);
+    }
+
+    private async Task OnValidSubmit()
+    {
+        await Task.Delay(5000);
+    }
+}

@@ -1,6 +1,7 @@
 using JWT.Algorithms;
 using JWT.Builder;
 using JWT.Exceptions;
+using Microsoft.Extensions.Logging;
 using MoonCore.Helpers;
 using Newtonsoft.Json;
 
@@ -8,11 +9,14 @@ namespace MoonCore.Services;
 
 public class JwtService<T> where T : struct, Enum
 {
+    private readonly ILogger<JwtService<T>> Logger;
+    
     private readonly string Token;
     
-    public JwtService(string token)
+    public JwtService(string token, ILogger<JwtService<T>> logger)
     {
         Token = token;
+        Logger = logger;
     }
     
     public Task<string> Create(Action<Dictionary<string, string>> data, T type, TimeSpan validDuration)
@@ -40,7 +44,7 @@ public class JwtService<T> where T : struct, Enum
         // Null/empty check
         if (string.IsNullOrEmpty(token))
             return Task.FromResult(false);
-        
+
         try
         {
             // Without the body decode call the jwt validation would not work for some weird reason.
@@ -50,7 +54,7 @@ public class JwtService<T> where T : struct, Enum
                 .WithAlgorithm(new HMACSHA512Algorithm())
                 .MustVerifySignature()
                 .Decode(token);
-            
+
             var headerJson = new JwtBuilder()
                 .WithSecret(Token)
                 .WithAlgorithm(new HMACSHA512Algorithm())
@@ -81,15 +85,23 @@ public class JwtService<T> where T : struct, Enum
             // None found? Invalid type!
             return Task.FromResult(false);
         }
+        catch (TokenExpiredException)
+        {
+            return Task.FromResult(false);
+        }
+        catch (TokenNotYetValidException)
+        {
+            return Task.FromResult(false);
+        }
         catch (SignatureVerificationException)
         {
-            Logger.Warn($"A manipulated jwt has been found. Required jwt types: {string.Join(" ", Enum.GetNames<T>())} Jwt: {token}");
+            Logger.LogWarning("A manipulated jwt has been found. Required jwt types: {jwtTypes} Jwt: {token}", string.Join(" ", Enum.GetNames<T>()), token);
             
             return Task.FromResult(false);
         }
         catch (Exception e)
         {
-            Logger.Warn(e);
+            Logger.LogWarning("An error occured while validating a jwt: {e}", e);
             
             return Task.FromResult(false);
         }
@@ -115,8 +127,7 @@ public class JwtService<T> where T : struct, Enum
         }
         catch (Exception e)
         {
-            Logger.Warn("An unknown error occured while processing token");
-            Logger.Warn(e);
+            Logger.LogWarning("An unknown error occured while processing token: {e}", e);
             
             return Task.FromResult<Dictionary<string, string>>(null!);
         }

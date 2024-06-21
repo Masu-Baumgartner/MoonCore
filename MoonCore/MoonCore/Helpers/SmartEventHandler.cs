@@ -1,11 +1,20 @@
-﻿namespace MoonCore.Helpers;
+﻿using Microsoft.Extensions.Logging;
+
+namespace MoonCore.Helpers;
 
 /// <summary>
 /// This is a async implementation of the event handler which works nearly the same
 /// </summary>
 public class SmartEventHandler
 {
+    private readonly ILogger<SmartEventHandler> Logger;
+    
     private readonly List<Func<Task>> Subscribers = new();
+
+    public SmartEventHandler(ILogger<SmartEventHandler> logger)
+    {
+        Logger = logger;
+    }
 
     public static SmartEventHandler operator +(SmartEventHandler handler, Func<Task> callback)
     {
@@ -44,8 +53,7 @@ public class SmartEventHandler
                 }
                 catch (Exception e)
                 {
-                    Logger.Warn("An unhandled error occured while processing an api callback");
-                    Logger.Warn(e);
+                    Logger.LogWarning("An unhandled error occured while processing an api callback: {e}", e);
                 }
             });
         }
@@ -71,7 +79,14 @@ public class SmartEventHandler
 /// </summary>
 public class SmartEventHandler<T>
 {
+    private readonly ILogger<SmartEventHandler> Logger;
+    
     private readonly List<Func<T, Task>> Subscribers = new();
+
+    public SmartEventHandler(ILogger<SmartEventHandler> logger)
+    {
+        Logger = logger;
+    }
 
     public static SmartEventHandler<T> operator +(SmartEventHandler<T> handler, Func<T, Task> callback)
     {
@@ -111,8 +126,7 @@ public class SmartEventHandler<T>
                 }
                 catch (Exception e)
                 {
-                    Logger.Warn("An unhandled error occured while processing an api callback");
-                    Logger.Warn(e);
+                    Logger.LogWarning("An unhandled error occured while processing an api callback: {e}", e);
                 }
             });
         }
