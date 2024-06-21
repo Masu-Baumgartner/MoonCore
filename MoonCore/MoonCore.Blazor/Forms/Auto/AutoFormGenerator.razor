@@ -30,30 +30,37 @@
         </div>
     }
         
-    foreach (var section in CurrentPage.Sections)
+    if (CurrentPage.CustomContent == null)
     {
-        <div class="card mb-6">
-            @if (!string.IsNullOrEmpty(section.Name))
-            {
-                <div class="card-header">
-                    <div class="card-title">
-                        @if (!string.IsNullOrEmpty(section.Icon))
+        foreach (var section in CurrentPage.Sections)
+        {
+            <div class="card mb-6">
+                @if (!string.IsNullOrEmpty(section.Name))
+                {
+                    <div class="card-header">
+                        <div class="card-title">
+                            @if (!string.IsNullOrEmpty(section.Icon))
+                            {
+                                <i class="bx bx-md @(section.Icon) text-primary me-3 align-middle"></i>
+                            }
+                            <span class="h3 align-middle">@(section.Name)</span>
+                        </div>
+                    </div>
+                }
+                <div class="card-body">
+                    <div class="row g-8">
+                        @foreach (var component in section.Components)
                         {
-                            <i class="bx bx-md @(section.Icon) text-primary me-3 align-middle"></i>
+                            @component
                         }
-                        <span class="h3 align-middle">@(section.Name)</span>
                     </div>
                 </div>
-            }
-            <div class="card-body">
-                <div class="row g-8">
-                    @foreach (var component in section.Components)
-                    {
-                        @component
-                    }
-                </div>
             </div>
-        </div>
+        }
+    }
+    else
+    {
+        @CurrentPage.CustomContent
     }
 }
 
@@ -68,6 +75,7 @@
 
     private Dictionary<Type, Type> ComponentReference = new();
     private Dictionary<string, object> AdditionalReference = new();
+    private Dictionary<string, RenderFragment> PageReference = new();
 
     protected override void OnInitialized()
     {
@@ -151,6 +159,15 @@
 
                     section.Components.Add(render);
                 }
+            }
+
+            foreach (var page in PageReference)
+            {
+                Pages.Add(new()
+                {
+                    Name = page.Key,
+                    CustomContent = page.Value
+                });
             }
 
             CurrentPage = Pages.FirstOrDefault(x => x.Name == "");
@@ -245,6 +262,11 @@
     public void AddComponentReference(Type type, Type componentType)
     {
         ComponentReference[type] = componentType;
+    }
+    
+    public void AddPageReference(string name, RenderFragment content)
+    {
+        PageReference[name] = content;
     }
 
     private bool TryGetAttribute<T>(object[] attributes, out T result) where T : Attribute
