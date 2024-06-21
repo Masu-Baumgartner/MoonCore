@@ -6,6 +6,7 @@ namespace MoonCore.Blazor.Test.Data;
 public class TestForm
 {
     [Required(ErrorMessage = "Idk lmao")]
+    [Section("A very important section", Icon = "bx-data")]
     public string Name { get; set; }
     
     [Required(ErrorMessage = "Idk lmao email")]

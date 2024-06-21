@@ -12,14 +12,48 @@
     @ChildContent
 </CascadingValue>
 
-@foreach (var page in Pages)
+@if (CurrentPage != null)
 {
-    foreach (var section in page.Sections)
+    if (Pages.Count > 1)
     {
-        foreach (var component in section.Components)
-        {
-            @component
-        }
+        <div class="mb-5">
+            <ul class="nav nav-pills border-0 fs-5">
+                @foreach (var page in Pages)
+                {
+                    <li class="nav-item">
+                        <a class="nav-link text-white border-top-0 border-start-0 border-end-0 border-2 @(CurrentPage == page ? "active" : "bg-secondary")" href="#" @onclick:preventDefault @onclick="() => SelectPage(page)">
+                            @(string.IsNullOrEmpty(page.Name) ? "General" : page.Name)
+                        </a>
+                    </li>
+                }
+            </ul>
+        </div>
+    }
+        
+    foreach (var section in CurrentPage.Sections)
+    {
+        <div class="card mb-6">
+            @if (!string.IsNullOrEmpty(section.Name))
+            {
+                <div class="card-header">
+                    <div class="card-title">
+                        @if (!string.IsNullOrEmpty(section.Icon))
+                        {
+                            <i class="bx bx-md @(section.Icon) text-primary me-3 align-middle"></i>
+                        }
+                        <span class="h3 align-middle">@(section.Name)</span>
+                    </div>
+                </div>
+            }
+            <div class="card-body">
+                <div class="row g-8">
+                    @foreach (var component in section.Components)
+                    {
+                        @component
+                    }
+                </div>
+            </div>
+        </div>
     }
 }
 
@@ -30,12 +64,15 @@
     [Parameter] public RenderFragment ChildContent { get; set; }
 
     private readonly List<FormPage> Pages = new();
+    private FormPage? CurrentPage;
 
     private Dictionary<Type, Type> ComponentReference = new();
     private Dictionary<string, object> AdditionalReference = new();
 
     protected override void OnInitialized()
     {
+        ArgumentNullException.ThrowIfNull(Model);
+        
         ComponentReference.Add(typeof(int), typeof(IntegerComponent));
         ComponentReference.Add(typeof(string), typeof(StringComponent));
 
@@ -47,23 +84,15 @@
     {
         if (firstRender)
         {
-            var mainPage = new FormPage
-            {
-                Name = "Main"
-            };
-
-            var mainSection = new FormSection()
-            {
-                Name = "Main"
-            };
-
-            mainPage.Sections.Add(mainSection);
-            Pages.Add(mainPage);
-
             foreach (var property in Model.GetType().GetProperties())
             {
                 var attributes = property.GetCustomAttributes(true);
-                
+
+                var page = GetPage(attributes);
+                var section = GetSection(attributes, page);
+
+                // TODO: Add custom page handling
+
                 // TODO: Add overrides for properties to use custom components
 
                 if (TryGetAttribute(attributes, out CustomComponentAttribute componentAttribute))
@@ -86,8 +115,8 @@
                             propRefBinder
                         }) as RenderFragment;
 
-                        mainSection.Components.Add(render!);
-                        
+                        section.Components.Add(render!);
+
                         continue;
                     }
                 }
@@ -102,7 +131,7 @@
 
                     if (TryGetAttribute(attributes, out DescriptionAttribute descriptionAttribute))
                         description = descriptionAttribute.Description;
-                    
+
                     var propRefBinderType = typeof(PropRefBinder<>).MakeGenericType(property.PropertyType);
                     var propRefBinder = Activator.CreateInstance(propRefBinderType, new[]
                     {
@@ -113,19 +142,99 @@
                     var render = ComponentHelper.FromType(componentType, parameters =>
                     {
                         parameters.Add("Reference", propRefBinder);
-                        
+
                         parameters.Add("Name", displayName);
                         parameters.Add("Description", description);
-                        
+
                         parameters.Add("Attributes", attributes);
                     });
 
-                    mainSection.Components.Add(render);
+                    section.Components.Add(render);
                 }
             }
 
+            CurrentPage = Pages.FirstOrDefault(x => x.Name == "");
+
+            if (CurrentPage == null && Pages.Count > 0)
+                CurrentPage = Pages.First();
+
             await InvokeAsync(StateHasChanged);
         }
+    }
+
+    private async Task SelectPage(FormPage page)
+    {
+        CurrentPage = page;
+        await InvokeAsync(StateHasChanged);
+    }
+
+    private FormPage GetPage(object[] attributes)
+    {
+        if (TryGetAttribute(attributes, out PageAttribute pageAttribute))
+        {
+            var foundPage = Pages.FirstOrDefault(x => x.Name == pageAttribute.Name);
+
+            if (foundPage == null)
+            {
+                foundPage = new FormPage()
+                {
+                    Name = pageAttribute.Name
+                };
+
+                Pages.Add(foundPage);
+            }
+
+            return foundPage;
+        }
+
+        var defaultPage = Pages.FirstOrDefault(x => x.Name == "");
+
+        if (defaultPage == null)
+        {
+            defaultPage = new FormPage()
+            {
+                Name = ""
+            };
+
+            Pages.Add(defaultPage);
+        }
+
+        return defaultPage;
+    }
+
+    private FormSection GetSection(object[] attributes, FormPage page)
+    {
+        if (TryGetAttribute(attributes, out SectionAttribute sectionAttribute))
+        {
+            var foundSection = page.Sections.FirstOrDefault(x => x.Name == sectionAttribute.Name);
+
+            if (foundSection == null)
+            {
+                foundSection = new FormSection()
+                {
+                    Name = sectionAttribute.Name,
+                    Icon = sectionAttribute.Icon
+                };
+
+                page.Sections.Add(foundSection);
+            }
+
+            return foundSection;
+        }
+
+        var defaultSection = page.Sections.FirstOrDefault(x => x.Name == "");
+
+        if (defaultSection == null)
+        {
+            defaultSection = new FormSection()
+            {
+                Name = ""
+            };
+
+            page.Sections.Add(defaultSection);
+        }
+
+        return defaultSection;
     }
 
     public void AddAdditionalReference(string name, object render)

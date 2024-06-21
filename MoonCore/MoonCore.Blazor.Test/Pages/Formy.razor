@@ -1,0 +1,19 @@
+@page "/formy"
+
+@using MoonCore.Blazor.Forms
+@using MoonCore.Blazor.Forms.Auto
+@using MoonCore.Blazor.Test.Data
+
+<MCBForm Model="Form" OnValidSubmit="X">
+    <AutoFormGenerator Model="Form" />
+</MCBForm>
+
+@code
+{
+    private TestForm Form = new();
+    
+    private async Task X()
+    {
+        
+    }
+}

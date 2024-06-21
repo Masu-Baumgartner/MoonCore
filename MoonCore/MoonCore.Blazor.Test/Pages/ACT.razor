@@ -1,0 +1,24 @@
+@page "/act"
+
+@using MoonCore.Blazor.Test.Data
+@using MoonCore.Blazor.Test.Forms
+@using MoonCore.Blazor.Forms.Auto
+@using MoonCore.Blazor.Forms.Table
+
+@code {
+    private IEnumerable<Car> Search(IEnumerable<Car> items, string searchTerm)
+    {
+        return items.Where(x => x.Name.Contains(searchTerm));
+    }
+}
+
+<AutoCrud TItem="Car"
+          TCreateForm="CreateCarForm"
+          TUpdateForm="UpdateCarForm"
+          Search="Search">
+    <View>
+        <MCBColumn TItem="Car" Field="@(x => x.Id)" Title="Id" />
+        <MCBColumn TItem="Car" Field="@(x => x.Name)" Title="Name" />
+        <MCBColumn TItem="Car" Field="@(x => x.Plate)" Title="Plate" />
+    </View>
+</AutoCrud>

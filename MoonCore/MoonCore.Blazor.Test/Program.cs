@@ -1,21 +1,19 @@
-using Microsoft.AspNetCore.Components;
-using Microsoft.AspNetCore.Components.Web;
 using Microsoft.EntityFrameworkCore;
+using MoonCore.Abstractions;
 using MoonCore.Blazor.Extensions;
 using MoonCore.Blazor.Helpers;
 using MoonCore.Blazor.Test;
 using MoonCore.Blazor.Test.Data;
 using MoonCore.Blazor.Test.Database;
+using MoonCore.Blazor.Test.Services;
 using MoonCore.Blazor.Test.Shared;
 using MoonCore.Extensions;
 using MoonCore.Helpers;
-using MoonCore.Logging;
-using Serilog;
 
 using ILoggerFactory factory = LoggerFactory.Create(builder => builder.AddMoonCore());
 
 var dc = new SomeContext();
-await DatabaseCheckHelper.Check(factory.CreateLogger<DbContext>(), dc, false);
+await DatabaseCheckHelper.Check(factory.CreateLogger<DbContext>(), dc);
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -23,6 +21,9 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddRazorPages();
 builder.Services.AddServerSideBlazor();
 builder.Services.AddSingleton<WeatherForecastService>();
+
+builder.Services.AddDbContext<SomeContext>();
+builder.Services.AddScoped(typeof(Repository<>), typeof(GenericRepository<>));
 
 builder.Services.AddScoped<DevelopmentConsoleService>();
 

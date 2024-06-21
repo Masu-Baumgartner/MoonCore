@@ -1,6 +1,5 @@
 ﻿@using System.ComponentModel.DataAnnotations
 @using Microsoft.AspNetCore.Components.Forms
-@using MoonCore.Blazor.Models
 @using MoonCore.Blazor.Models.Forms
 @using MoonCore.Exceptions
 
@@ -51,6 +50,11 @@
     private bool IsProcessing = false;
 
     private readonly List<PropertyValidationData> ValidationData = new();
+
+    protected override void OnInitialized()
+    {
+        ArgumentNullException.ThrowIfNull(Model);
+    }
 
     private async Task OnFormSubmit(EditContext context)
     {

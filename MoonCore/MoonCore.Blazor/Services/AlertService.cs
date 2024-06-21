@@ -30,4 +30,18 @@ public class AlertService
     public async Task Warning(string text) => await NotificationModal("warning", text, "bx-error");
     
     public async Task Danger(string text) => await NotificationModal("danger", text, "bx-error-alt");
+
+    public async Task Confirm(string title, string text, Func<Task> func, string yes = "Confirm", string no = "Cancel")
+    {
+        await ModalService.Launch<ModalConfirmAlert>(cssClasses: "modal-dialog-centered", buildAttributes:
+            attributes =>
+            {
+                attributes.Add("Title", title);
+                attributes.Add("Text", text);
+                attributes.Add("Func", func);
+                attributes.Add("Yes", yes);
+                attributes.Add("No", no);
+            }
+        );
+    }
 }
