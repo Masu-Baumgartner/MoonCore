@@ -1,0 +1,15 @@
+<div></div>
+<div class="toast-body">
+    <span class="fs-5 align-middle text-body">
+        @Text
+    </span>
+
+    <div class="progress mt-2">
+        <div class="progress-bar progress-indeterminate w-75" role="progressbar"></div>
+    </div>
+</div>
+
+@code
+{
+    [Parameter] public string Text { get; set; } = "Working";
+}

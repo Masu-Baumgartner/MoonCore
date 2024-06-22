@@ -44,4 +44,19 @@ public class AlertService
             }
         );
     }
+    
+    public async Task Text(string title, string text, Func<string, Task> func, string placeholder = "", string yes = "Confirm", string no = "Cancel")
+    {
+        await ModalService.Launch<ModalTextAlert>(cssClasses: "modal-dialog-centered", buildAttributes:
+            attributes =>
+            {
+                attributes.Add("Title", title);
+                attributes.Add("Text", text);
+                attributes.Add("Func", func);
+                attributes.Add("Yes", yes);
+                attributes.Add("No", no);
+                attributes.Add("Placeholder", placeholder);
+            }
+        );
+    }
 }

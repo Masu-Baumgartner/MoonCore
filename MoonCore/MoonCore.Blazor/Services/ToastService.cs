@@ -48,6 +48,56 @@ public class ToastService
 
         await LaunchPoint.Launch<T>(duration, buildAttributes);
     }
+
+    public async Task CreateProgress(string id, string text)
+    {
+        await LaunchNamed<ProgressToast>(id, parameters =>
+        {
+            parameters.Add("Text", text);
+        });
+    }
+    
+    public async Task UpdateProgress(string id, string text)
+    {
+        await UpdateNamed<ProgressToast>(id, parameters =>
+        {
+            parameters.Add("Text", text);
+        });
+    }
+
+    public async Task DeleteProgress(string name)
+    {
+        await DeleteNamed(name);
+    }
+
+    public async Task LaunchNamed<T>(string name, Action<Dictionary<string, object>>? buildAttributes = null)
+        where T : ComponentBase
+    {
+        if (LaunchPoint == null)
+            throw new ArgumentNullException(nameof(LaunchPoint),
+                "You need to have a launch point initialized before using the LaunchNamed() function");
+
+        await LaunchPoint.LaunchNamed<T>(name, buildAttributes);
+    }
+
+    public async Task UpdateNamed<T>(string name, Action<Dictionary<string, object>>? buildAttributes = null)
+        where T : ComponentBase
+    {
+        if (LaunchPoint == null)
+            throw new ArgumentNullException(nameof(LaunchPoint),
+                "You need to have a launch point initialized before using the UpdateNamed() function");
+
+        await LaunchPoint.UpdateNamed<T>(name, buildAttributes);
+    }
+
+    public async Task DeleteNamed(string name)
+    {
+        if (LaunchPoint == null)
+            throw new ArgumentNullException(nameof(LaunchPoint),
+                "You need to have a launch point initialized before using the DeleteNamed() function");
+
+        await LaunchPoint.DeleteNamed(name);
+    }
         
 
     public Task SetLaunchPoint(ToastLaunchPoint launchPoint)

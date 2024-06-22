@@ -1,5 +1,6 @@
 ﻿@page "/"
 
+@using MoonCore.Blazor.Components.Toasts
 @using MoonCore.Blazor.Services
 @using MoonCore.Blazor.Forms
 @using MoonCore.Blazor.Test.Data
@@ -20,11 +21,14 @@
 <button @onclick="Testy2" class="btn btn-primary">Test 2</button>
 <button @onclick="Testy3" class="btn btn-primary">Test 3</button>
 <button @onclick="Testy4" class="btn btn-primary">Test 4</button>
+<button @onclick="Testy5" class="btn btn-primary">Test 5</button>
 
 <button @onclick="Toast1" class="btn btn-success">Toast 1</button>
 <button @onclick="Toast2" class="btn btn-success">Toast 2</button>
 <button @onclick="Toast3" class="btn btn-success">Toast 3</button>
 <button @onclick="Toast4" class="btn btn-success">Toast 4</button>
+<button @onclick="Toast5" class="btn btn-success">Toast 5</button>
+<button @onclick="Toast6" class="btn btn-success">Toast 6</button>
 
 <button @onclick="Copy" class="btn btn-info">Copy</button>
 <button @onclick="GetTypes" class="btn btn-info">Get types</button>
@@ -137,6 +141,14 @@
         await AlertService.Danger("Task failed");
     }
 
+    private async Task Testy5()
+    {
+        await AlertService.Text("This is a title", "Enter something", async input =>
+        {
+            await ToastService.Info("Input: " + input);
+        }, placeholder: "I am a placeholder");
+    }
+    
     private async Task Toast1()
     {
         await ToastService.Success("uwu owo ara rawr~");
@@ -155,6 +167,31 @@
     private async Task Toast4()
     {
         await ToastService.Danger("uwu owo ara rawr~");
+    }
+    
+    private async Task Toast5()
+    {
+        await ToastService.Launch<ProgressToast>(TimeSpan.FromMinutes(5));
+    }
+    
+    private async Task Toast6()
+    {
+        await ToastService.CreateProgress("progressTesty", "Getting your ip address");
+
+        await Task.Delay(1500);
+        await ToastService.UpdateProgress("progressTesty", "Finding your home address");
+        
+        await Task.Delay(1500);
+        await ToastService.UpdateProgress("progressTesty", "Driving to your house");
+        
+        await Task.Delay(1500);
+        await ToastService.UpdateProgress("progressTesty", "Deploying pipebomb");
+        
+        await Task.Delay(1500);
+        await ToastService.UpdateProgress("progressTesty", "Have fun ;)");
+        
+        await Task.Delay(1500);
+        await ToastService.DeleteProgress("progressTesty");
     }
 
     private async Task Copy()
