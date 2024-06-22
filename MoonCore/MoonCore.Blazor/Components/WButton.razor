@@ -17,7 +17,8 @@ else
 
 @code
 {
-    [Parameter] public Func<WButton, Task>? OnClick { get; set; }
+    [Parameter] public Func<Task>? OnClick { get; set; }
+    [Parameter] public Func<WButton, Task>? OnClickProgress { get; set; }
 
     [Parameter] public string CssClasses { get; set; } = "btn-primary";
     
@@ -52,7 +53,10 @@ else
         try
         {
             if (OnClick != null)
-                await OnClick.Invoke(this);
+                await OnClick.Invoke();
+
+            if (OnClickProgress != null)
+                await OnClickProgress.Invoke(this);
             
             // Reset states
             IsWorking = false;
