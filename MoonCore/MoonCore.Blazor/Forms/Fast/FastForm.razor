@@ -1,0 +1,167 @@
+@using MoonCore.Blazor.Helpers
+@using MoonCore.Blazor.Models.Fast
+
+@typeparam T where T : class
+
+@if (CurrentPage != null)
+{
+    if (Pages.Count > 1)
+    {
+        <div class="mb-5">
+            <ul class="nav nav-pills border-0 fs-5">
+                @foreach (var page in Pages)
+                {
+                    <li class="nav-item">
+                        <a class="nav-link text-white border-top-0 border-start-0 border-end-0 border-2 @(CurrentPage == page ? "active" : "bg-secondary")" href="#" @onclick:preventDefault @onclick="() => SelectPage(page)">
+                            @(string.IsNullOrEmpty(page.Name) ? "General" : page.Name)
+                        </a>
+                    </li>
+                }
+            </ul>
+        </div>
+    }
+
+    if (CurrentPage.OverrideComponent == null)
+    {
+        foreach (var section in CurrentPage.Sections)
+        {
+            <div class="card mb-6">
+                @if (!string.IsNullOrEmpty(section.Name))
+                {
+                    <div class="card-header">
+                        <div class="card-title">
+                            @if (!string.IsNullOrEmpty(section.Icon))
+                            {
+                                <i class="bx bx-md @(section.Icon) text-primary me-3 align-middle"></i>
+                            }
+                            <span class="h3 align-middle">@(section.Name)</span>
+                        </div>
+                    </div>
+                }
+                <div class="card-body">
+                    <div class="row g-8">
+                        @foreach (var render in section.Renders)
+                        {
+                            @render
+                        }
+                    </div>
+                </div>
+            </div>
+        }
+    }
+    else
+    {
+        @CurrentPage.OverrideComponent
+    }
+}
+
+@code
+{
+    [Parameter] public T Model { get; set; }
+    [Parameter] public Action<FastConfiguration<T>>? OnConfigure { get; set; }
+
+    private FastConfiguration<T> Configuration = new();
+    private List<FastPage> Pages = new();
+
+    private FastPage? CurrentPage = null;
+
+    protected override void OnInitialized()
+    {
+        ArgumentNullException.ThrowIfNull(Model);
+        
+        OnConfigure?.Invoke(Configuration);
+
+        Init();
+    }
+
+    private async Task SelectPage(FastPage page)
+    {
+        CurrentPage = page;
+        await InvokeAsync(StateHasChanged);
+    }
+
+    private void Init()
+    {
+        foreach (var configuration in Configuration.PropertyConfigurations)
+        {
+            var page = GetPage(configuration.PageConfiguration?.Name ?? "");
+            var section = GetSection(page, configuration.SectionConfiguration?.Name ?? "");
+
+            if (configuration.SectionConfiguration != null && configuration.SectionConfiguration.Icon != null)
+                section.Icon = configuration.SectionConfiguration.Icon;
+
+            var propertyInfo = FormHelper.GetPropertyInfo(configuration.Field);
+
+            // Binder
+            var propBinderType = typeof(PropRefBinder<>).MakeGenericType(propertyInfo.PropertyType);
+            var propBinder = Activator.CreateInstance(propBinderType, [
+                Model,
+                propertyInfo
+            ])!;
+
+            var render = ComponentHelper.FromType(configuration.ComponentType, parameters =>
+            {
+                parameters.Add("Binder", propBinder);
+                parameters.Add("Name", propertyInfo.Name);
+                parameters.Add("AdditionalOptions", configuration.AdditionalOptions!);
+                parameters.Add("Description", configuration.Description!);
+            });
+
+            section.Renders.Add(render);
+        }
+
+        foreach (var customPage in Configuration.CustomPages)
+        {
+            Pages.Add(new()
+            {
+                Name = customPage.Name,
+                OverrideComponent = customPage.OverrideComponent
+            });
+        }
+
+        CurrentPage = Pages.FirstOrDefault(x => x.Name == "");
+
+        if (CurrentPage == null && Pages.Count > 0)
+            CurrentPage = Pages.First();
+    }
+
+    private FastPage GetPage(string? name)
+    {
+        var pageName = name ?? "";
+
+        var foundPage = Pages
+            .FirstOrDefault(x => x.Name == pageName);
+
+        if (foundPage == null)
+        {
+            foundPage = new()
+            {
+                Name = pageName
+            };
+
+            Pages.Add(foundPage);
+        }
+
+        return foundPage;
+    }
+
+    private FastSection GetSection(FastPage page, string? name)
+    {
+        var sectionName = name ?? "";
+
+        var foundPage = page.Sections
+            .FirstOrDefault(x => x.Name == sectionName);
+
+        if (foundPage == null)
+        {
+            foundPage = new()
+            {
+                Name = sectionName
+            };
+
+            page.Sections.Add(foundPage);
+        }
+
+        return foundPage;
+    }
+}

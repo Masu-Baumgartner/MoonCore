@@ -1,0 +1,15 @@
+@typeparam T
+
+@using MoonCore.Blazor.Helpers
+@using MoonCore.Helpers
+
+@code
+{
+    [Parameter] public string Name { get; set; }
+
+    [Parameter] public string? Description { get; set; }
+
+    [Parameter] public PropRefBinder<T> Binder { get; set; }
+    
+    [Parameter] public DynamicStorage? AdditionalOptions { get; set; }
+}

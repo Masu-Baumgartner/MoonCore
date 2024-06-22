@@ -1,19 +1,32 @@
 @page "/formy"
-
-@using MoonCore.Blazor.Forms
-@using MoonCore.Blazor.Forms.Auto
+@using MoonCore.Blazor.Forms.Fast
+@using MoonCore.Blazor.Forms.Fast.Components
+@using MoonCore.Blazor.Models.Fast
 @using MoonCore.Blazor.Test.Data
 
-<MCBForm Model="Form" OnValidSubmit="X">
-    <AutoFormGenerator Model="Form" />
-</MCBForm>
+<FastForm Model="Form" OnConfigure="OnConfigure" />
 
 @code
 {
-    private TestForm Form = new();
+    private Car Form = new();
     
-    private async Task X()
+    private void OnConfigure(FastConfiguration<Car> configuration)
     {
+        DefaultComponentSelector.RegisterDefault<string, StringComponent>();
+
+        configuration
+            .AddProperty(x => x.Name)
+            .WithDefaultComponent();
         
+        configuration.AddProperty(x => x.Id)
+            .WithPage("ID Services")
+            .WithComponent<int, MyCoolCustomComponent>();
+        
+        configuration
+            .AddProperty(x => x.Plate)
+            .WithDefaultComponent()
+            .WithPage("ID Services")
+            .WithSection("Plate", icon: "bx-purchase-tag")
+            .WithValidation(FastValidators.Required);
     }
 }

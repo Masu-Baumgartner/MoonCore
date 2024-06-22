@@ -1,0 +1,10 @@
+@using MoonCore.Blazor.Forms.Fast.Components
+
+@inherits BaseFastFormComponent<int>
+
+<div class="col-12 col-md-3">
+    <label class="form-label">
+        @Name
+    </label>
+    <input type="number" class="form-control" @bind="Binder.Value"/>
+</div>
