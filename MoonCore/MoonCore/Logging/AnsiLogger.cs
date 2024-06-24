@@ -19,7 +19,7 @@ public class AnsiLogger : ILogger
     public void Log<TState>(LogLevel logLevel, EventId eventId, TState state, Exception exception, Func<TState, Exception, string> formatter)
     {
         var message = formatter(state, exception);
-
+        
         AnsiConsole.MarkupLine(FormatLogMessage(logLevel, CategoryName, message));
     }
 
@@ -66,6 +66,6 @@ public class AnsiLogger : ILogger
                 break;
         }
         
-        return $"[grey58]{DateTime.Now:HH:mm:ss}[/] [{logLevelColor} bold]{logLevelNameShort}[/] [grey78 italic]{categoryName}[/]: [white]{message}[/]";
+        return $"[grey58]{DateTime.Now:HH:mm:ss}[/] [{logLevelColor} bold]{logLevelNameShort}[/] [grey78 italic]{categoryName.EscapeMarkup()}[/]: [white]{message.EscapeMarkup()}[/]";
     }
 }

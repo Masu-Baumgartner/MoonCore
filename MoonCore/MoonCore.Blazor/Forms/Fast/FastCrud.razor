@@ -4,6 +4,7 @@
 @using MoonCore.Blazor.Forms.Table
 @using MoonCore.Blazor.Components
 @using MoonCore.Blazor.Services
+@using MoonCore.Exceptions
 
 @typeparam TItem where TItem : class
 
@@ -201,17 +202,27 @@ else if (State == FastCrudState.Edit)
 
     private async Task FinishCreate()
     {
+        // Validate form
         if (!await CreateForm.Validate(out CreateErrorMessages))
         {
             await InvokeAsync(StateHasChanged);
             return;
         }
 
+        // Custom validate hook
+        if (!InvokeValidateHandled(Configuration.ValidateCreate, ItemToCreate, out CreateErrorMessages))
+        {
+            await InvokeAsync(StateHasChanged);
+            return;
+        }
+
+        // Choose creation strategy
         if (Configuration.CustomCreate != null)
             await Configuration.CustomCreate.Invoke(ItemToCreate);
         else
             ItemRepository.Add(ItemToCreate);
 
+        // Feedback
         await ToastService.Success("Successfully added item");
         await SetState(FastCrudState.View);
     }
@@ -252,6 +263,7 @@ else if (State == FastCrudState.Edit)
     {
         ItemToEditSrc = item;
 
+        // Configure edit model
         if (Configuration.ExperimentalDisableItemCloning)
             ItemToEdit = item;
         else
@@ -262,24 +274,35 @@ else if (State == FastCrudState.Edit)
 
     private async Task FinishEdit()
     {
+        // Validate form
         if (!await EditForm.Validate(out EditErrorMessages))
         {
             await InvokeAsync(StateHasChanged);
             return;
         }
 
+        // Collect data
         TItem itemToEdit;
 
         if (Configuration.ExperimentalDisableItemCloning)
             itemToEdit = ItemToEdit;
         else
             itemToEdit = Mapper.Map(ItemToEditSrc, ItemToEdit);
+        
+        // Hook for custom validator. We use the itemToEdit variable here as it represents the changes made to the current item
+        if (!InvokeValidateHandled(Configuration.ValidateEdit, itemToEdit, out EditErrorMessages))
+        {
+            await InvokeAsync(StateHasChanged);
+            return;
+        }
 
+        // Choose edit strategy
         if (Configuration.CustomEdit != null)
             await Configuration.CustomEdit.Invoke(itemToEdit);
         else
             ItemRepository.Update(itemToEdit);
 
+        // Feedback
         await ToastService.Success("Successfully updated item");
         await SetState(FastCrudState.View);
     }
@@ -298,11 +321,20 @@ else if (State == FastCrudState.Edit)
             "Do you really want to delete this item? This action cannot be undone",
             async () =>
             {
+                // Hook for custom validator
+                if (!InvokeValidateHandled(Configuration.ValidateDelete, ItemToEditSrc, out EditErrorMessages))
+                {
+                    await InvokeAsync(StateHasChanged);
+                    return;
+                }
+                
+                // Choose deletion strategy
                 if (Configuration.CustomDelete != null)
                     await Configuration.CustomDelete.Invoke(ItemToEditSrc);
                 else
                     ItemRepository.Delete(ItemToEditSrc);
 
+                // Feedback
                 await ToastService.Success("Successfully deleted items");
                 await SetState(FastCrudState.View);
             }
@@ -311,4 +343,25 @@ else if (State == FastCrudState.Edit)
 
     #endregion
 
+    private bool InvokeValidateHandled(Func<TItem, Task>? function, TItem parameter, out string[]? errorMessages)
+    {
+        if (function == null)
+        {
+            errorMessages = null;
+            return true;
+        }
+        
+        try
+        {
+            function.Invoke(parameter).Wait();
+
+            errorMessages = null;
+            return false;
+        }
+        catch (DisplayException e)
+        {
+            errorMessages = [e.Message];
+            return true;
+        }
+    }
 }
