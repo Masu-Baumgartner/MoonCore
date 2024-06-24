@@ -1,8 +1,9 @@
-@inherits BaseFastFormComponent<string>
+@inherits BaseFastFormComponent<int>
 
 <div class="col-12 col-md-3">
     <label class="form-label">@Name</label>
-    <input class="form-control" type="text" @bind="Binder.Value"/>
+    
+    <input class="form-control" type="number" @bind="Binder.Value"/>
     
     @if (Description != null)
     {
@@ -11,4 +12,3 @@
         </div>
     }
 </div>
-

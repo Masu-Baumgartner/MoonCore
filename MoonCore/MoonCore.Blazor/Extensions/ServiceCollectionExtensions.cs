@@ -1,5 +1,7 @@
 using Microsoft.Extensions.DependencyInjection;
+using MoonCore.Blazor.Forms.Fast.Components;
 using MoonCore.Blazor.Models;
+using MoonCore.Blazor.Models.Fast;
 using MoonCore.Blazor.Services;
 
 namespace MoonCore.Blazor.Extensions;
@@ -22,5 +24,10 @@ public static class ServiceCollectionExtensions
         collection.AddScoped<DownloadService>();
         collection.AddScoped<ClipboardService>();
         collection.AddScoped<CookieService>();
+        
+        // Register fast form default components
+        DefaultComponentSelector.RegisterDefault<string, StringComponent>();
+        DefaultComponentSelector.RegisterDefault<int, IntComponent>();
+        DefaultComponentSelector.RegisterDefault<bool, CheckboxComponent>();
     }
 }

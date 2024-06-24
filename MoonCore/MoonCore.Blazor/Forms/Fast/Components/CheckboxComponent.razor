@@ -1,9 +1,14 @@
-@inherits BaseFastFormComponent<string>
+@inherits BaseFastFormComponent<bool>
 
 <div class="col-12 col-md-3">
+
     <label class="form-label">@Name</label>
-    <input class="form-control" type="text" @bind="Binder.Value"/>
     
+    <div class="form-check">
+        <input class="form-check-input" type="checkbox" @bind="Binder.Value" />
+    </div>
+
+
     @if (Description != null)
     {
         <div class="form-text fs-6 text-gray-600">
@@ -11,4 +16,3 @@
         </div>
     }
 </div>
-

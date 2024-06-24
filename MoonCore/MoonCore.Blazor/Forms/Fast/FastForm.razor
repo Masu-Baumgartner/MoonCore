@@ -134,7 +134,7 @@
             var render = ComponentHelper.FromType(configuration.ComponentType, parameters =>
             {
                 parameters.Add("Binder", propBinder);
-                parameters.Add("Name", propertyInfo.Name);
+                parameters.Add("Name", configuration.DisplayName ?? propertyInfo.Name);
                 parameters.Add("AdditionalOptions", configuration.AdditionalOptions!);
                 parameters.Add("Description", configuration.Description!);
             });

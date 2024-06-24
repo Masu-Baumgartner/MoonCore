@@ -1,9 +1,12 @@
-@inherits BaseFastFormComponent<string>
+@typeparam T where T : struct
+
+@inherits BaseFastFormComponent<T>
 
 <div class="col-12 col-md-3">
     <label class="form-label">@Name</label>
-    <input class="form-control" type="text" @bind="Binder.Value"/>
-    
+
+    <MCBEnumSelect TField="T" @bind-Value="Binder.Value"/>
+
     @if (Description != null)
     {
         <div class="form-text fs-6 text-gray-600">
@@ -11,4 +14,3 @@
         </div>
     }
 </div>
-

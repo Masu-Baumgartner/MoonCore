@@ -72,6 +72,14 @@
             .WithValidation(FastValidators.Required)
             .WithDefaultComponent();
 
+        configuration.AddProperty(x => x.IsElectric)
+            .WithName("Is an electric car?")
+            .WithComponent<bool, CheckboxComponent>();
+
+        configuration.AddProperty(x => x.DriverType)
+            .WithName(":c")
+            .WithComponent<CarDriverType, EnumSelectComponent<CarDriverType>>();
+
         configuration.AddCustomPage("Custom page", ComponentHelper.FromType<CoolCustomPage>(parameters =>
         {
             parameters.Add("Car", car);

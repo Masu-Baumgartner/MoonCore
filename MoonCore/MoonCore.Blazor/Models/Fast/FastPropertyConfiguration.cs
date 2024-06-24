@@ -79,4 +79,16 @@ public class FastPropertyConfiguration<T> where T : class
         
         return this;
     }
+
+    public FastPropertyConfiguration<T> WithName(string name)
+    {
+        DisplayName = name;
+        return this;
+    }
+    
+    public FastPropertyConfiguration<T> WithDescription(string description)
+    {
+        Description = description;
+        return this;
+    }
 }
