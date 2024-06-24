@@ -1,0 +1,85 @@
+@page "/fct"
+@using System.ComponentModel.DataAnnotations
+@using MoonCore.Abstractions
+@using MoonCore.Blazor.Forms.Fast
+@using MoonCore.Blazor.Forms.Fast.Components
+@using MoonCore.Blazor.Models.Fast
+@using MoonCore.Blazor.Test.Data
+@using MoonCore.Blazor.Forms.Table
+@using MoonCore.Blazor.Helpers
+@using MoonCore.Blazor.Services
+
+@inject AlertService AlertService
+
+<FastCrud TItem="Car"
+          Loader="Loader"
+          Search="Search"
+          OnConfigure="OnConfigure"
+          OnConfigureCreate="OnConfigureCreate"
+          OnConfigureEdit="OnConfigureEdit">
+    <View>
+        <MCBColumn TItem="Car" Field="@(x => x.Name)" Title="Name" />
+        <MCBColumn TItem="Car" Field="@(x => x.Plate)" Title="Plate" />
+    </View>
+    <EditToolbar>
+        <WButton CssClasses="btn btn-info me-1" OnClick="() => Testy(context)">
+            Tell me the name
+        </WButton>
+    </EditToolbar>
+</FastCrud>
+
+@code
+{
+    private IEnumerable<Car> Loader(Repository<Car> repository)
+    {
+        return repository.Get();
+    }
+
+    private IEnumerable<Car> Search(IEnumerable<Car> dataSource, string term)
+    {
+        return dataSource.Where(x => x.Name.Contains(term));
+    }
+
+    private void OnConfigure(FastCrudConfiguration<Car> configuration)
+    {
+        DefaultComponentSelector.RegisterDefault<string, StringComponent>();
+    }
+
+    private void OnConfigureCreate(FastConfiguration<Car> configuration)
+    {
+        configuration.AddProperty(x => x.Name)
+            .WithValidation(FastValidators.Required)
+            .WithDefaultComponent();
+
+        configuration.AddProperty(x => x.Plate)
+            .WithValidation(FastValidators.Required)
+            .WithDefaultComponent();
+    }
+
+    private void OnConfigureEdit(FastConfiguration<Car> configuration, Car car)
+    {
+        configuration.AddProperty(x => x.Id)
+            .WithValidation<int>(x
+                => x == car.Id ? ValidationResult.Success : new ValidationResult("You are not allowed to change the id"))
+            .WithSection("owo")
+            .WithComponent<int, MyCoolCustomComponent>();
+        
+        configuration.AddProperty(x => x.Name)
+            .WithValidation(FastValidators.Required)
+            .WithDefaultComponent();
+        
+        configuration.AddProperty(x => x.Plate)
+            .WithValidation(FastValidators.Required)
+            .WithDefaultComponent();
+
+        configuration.AddCustomPage("Custom page", ComponentHelper.FromType<CoolCustomPage>(parameters =>
+        {
+            parameters.Add("Car", car);
+        }));
+    }
+
+    private async Task Testy(Car car)
+    {
+        await AlertService.Info("Current car name is: " + car.Name);
+    }
+}

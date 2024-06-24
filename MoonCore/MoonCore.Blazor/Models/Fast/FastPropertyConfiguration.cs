@@ -1,6 +1,5 @@
 using System.ComponentModel.DataAnnotations;
 using System.Linq.Expressions;
-using Microsoft.AspNetCore.Components;
 using MoonCore.Blazor.Forms.Fast.Components;
 using MoonCore.Blazor.Helpers;
 using MoonCore.Helpers;
@@ -48,9 +47,9 @@ public class FastPropertyConfiguration<T> where T : class
         return this;
     }
 
-    public FastPropertyConfiguration<T> WithValidation(Func<T, ValidationResult?> validator)
+    public FastPropertyConfiguration<T> WithValidation<TProperty>(Func<TProperty, ValidationResult?> validator)
     {
-        Validators.Add(new CustomFastValidator<T>(validator));
+        Validators.Add(new CustomFastValidator<TProperty>(validator));
         return this;
     }
 

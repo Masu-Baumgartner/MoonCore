@@ -6,7 +6,7 @@ public class RequiredValidator : IFastValidator
 {
     private string ErrorMessage = "This field is required";
     
-    public ValidationResult? Check<T>(T data)
+    public ValidationResult? Check(object data)
     {
         if (data is string dataAsString)
         {

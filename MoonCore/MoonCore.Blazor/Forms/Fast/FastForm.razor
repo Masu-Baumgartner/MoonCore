@@ -68,10 +68,42 @@
     protected override void OnInitialized()
     {
         ArgumentNullException.ThrowIfNull(Model);
-        
+
         OnConfigure?.Invoke(Configuration);
 
         Init();
+    }
+
+    public Task<bool> Validate(out string[] errorMessages)
+    {
+        List<string> errorMessageResult = new();
+        bool isValid = true;
+
+        foreach (var configuration in Configuration.PropertyConfigurations)
+        {
+            var propertyInfo = FormHelper.GetPropertyInfo(configuration.Field);
+            var propertyValue = propertyInfo.GetValue(Model);
+            
+            foreach (var validator in configuration.Validators)
+            {
+                var validationResult = validator.Check(propertyValue);
+
+                if (validationResult == null)
+                    continue;
+
+                if (isValid)
+                    isValid = false;
+
+                if (validationResult.ErrorMessage != null)
+                {
+                    var formatedMessage = $"{configuration.DisplayName ?? propertyInfo.Name}: " + validationResult.ErrorMessage;
+                    errorMessageResult.Add(formatedMessage);
+                }
+            }
+        }
+
+        errorMessages = errorMessageResult.ToArray();
+        return Task.FromResult(isValid);
     }
 
     private async Task SelectPage(FastPage page)

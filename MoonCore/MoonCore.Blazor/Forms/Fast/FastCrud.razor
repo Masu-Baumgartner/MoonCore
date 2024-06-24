@@ -1,0 +1,314 @@
+@using Mappy.Net
+@using MoonCore.Abstractions
+@using MoonCore.Blazor.Models.Fast
+@using MoonCore.Blazor.Forms.Table
+@using MoonCore.Blazor.Components
+@using MoonCore.Blazor.Services
+
+@typeparam TItem where TItem : class
+
+@inject Repository<TItem> ItemRepository
+@inject ToastService ToastService
+@inject AlertService AlertService
+
+@if (State == FastCrudState.View)
+{
+    <div class="card card-body mb-5 py-2 px-2">
+        <div class="d-flex justify-content-between">
+            <div>
+                @if (Search != null)
+                {
+                    <div class="input-group">
+                        <div class="input-group-text">
+                            <i class="bx bx-sm bx-search-alt"></i>
+                        </div>
+                        <input class="form-control" placeholder="Search" @onchange="OnSearchTermChanged"/>
+                    </div>
+                }
+            </div>
+            <div>
+                @if (ViewToolbar != null)
+                {
+                    @ViewToolbar
+                }
+
+                <div class="btn btn-primary" @onclick="StartCreate">
+                    Create
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="card px-3 py-3">
+        <div class="card-body">
+            <MCBTable @ref="Table" TItem="TItem" ItemSourceCallback="GetTableData">
+                @View
+
+                <MCBColumn TItem="TItem">
+                    <Template>
+                        <div class="text-center">
+                            <div class="text-nowrap me-3 fw-semibold">
+                                @if (ViewContextActions != null)
+                                {
+                                    @ViewContextActions
+                                }
+                                
+                                <a href="#" @onclick:preventDefault @onclick="() => StartUpdate(context!)">
+                                    <i class="bx bx-edit"></i> Edit
+                                </a>
+                            </div>
+                        </div>
+                    </Template>
+                </MCBColumn>
+            </MCBTable>
+        </div>
+    </div>
+}
+else if (State == FastCrudState.Create)
+{
+    <div class="card card-body mb-5 py-2 px-2">
+        <div class="d-flex justify-content-between align-items-center">
+            <div>
+                <a href="#" class="text-body fs-4" @onclick:preventDefault @onclick="() => SetState(FastCrudState.View)">
+                    <i class="bx bx-md bx-chevron-left align-middle"></i>
+                    <span class="ms-1 align-middle">Back</span>
+                </a>
+            </div>
+            <div>
+                @if (CreateToolbar != null)
+                {
+                    @CreateToolbar
+                }
+                
+                <WButton CssClasses="btn btn-primary" OnClick="FinishCreate">
+                    <i class="bx bx-sm bx-check"></i>
+                    Create
+                </WButton>
+            </div>
+        </div>
+    </div>
+
+    if (CreateErrorMessages != null && CreateErrorMessages.Length > 0)
+    {
+        <div class="alert alert-danger bg-danger text-white p-10 mb-5 fs-6">
+            @foreach (var errorMessage in CreateErrorMessages)
+            {
+                @errorMessage
+                <br/>
+            }
+        </div>
+    }
+
+    <FastForm @ref="CreateForm" Model="ItemToCreate" OnConfigure="OnConfigureCreate"/>
+}
+else if (State == FastCrudState.Edit)
+{
+    <div class="card card-body mb-5 py-2 px-2">
+        <div class="d-flex justify-content-between align-items-center">
+            <div>
+                <a href="#" class="text-body fs-4" @onclick:preventDefault @onclick="() => SetState(FastCrudState.View)">
+                    <i class="bx bx-md bx-chevron-left align-middle"></i>
+                    <span class="ms-1 align-middle">Back</span>
+                </a>
+            </div>
+            <div>
+                @if (EditToolbar != null)
+                {
+                    @EditToolbar.Invoke(ItemToEditSrc)
+                }
+                
+                <WButton CssClasses="btn btn-danger me-1" OnClick="OnDelete">
+                    <i class="bx bx-sm bx-trash"></i>
+                    Delete
+                </WButton>
+                <WButton CssClasses="btn btn-primary" OnClick="FinishEdit">
+                    <i class="bx bx-sm bx-check"></i>
+                    Save changes
+                </WButton>
+            </div>
+        </div>
+    </div>
+
+    if (EditErrorMessages != null && EditErrorMessages.Length > 0)
+    {
+        <div class="alert alert-danger bg-danger text-white p-10 mb-5 fs-6">
+            @foreach (var errorMessage in EditErrorMessages)
+            {
+                @errorMessage
+                <br/>
+            }
+        </div>
+    }
+
+    <FastForm @ref="EditForm" Model="ItemToEdit" OnConfigure="OnConfigureEditForm"/>
+}
+
+@code
+{
+    // View
+    [Parameter] public RenderFragment View { get; set; }
+    [Parameter] public Func<Repository<TItem>, IEnumerable<TItem>>? Loader { get; set; }
+    [Parameter] public Func<IEnumerable<TItem>, string, IEnumerable<TItem>>? Search { get; set; }
+    [Parameter] public RenderFragment? ViewToolbar { get; set; }
+    [Parameter] public RenderFragment? ViewContextActions { get; set; }
+
+    // Create
+    [Parameter] public RenderFragment? CreateToolbar { get; set; }
+    
+    private TItem ItemToCreate;
+    private string[]? CreateErrorMessages;
+    private FastForm<TItem> CreateForm;
+
+    // Edit
+    [Parameter] public RenderFragment<TItem>? EditToolbar { get; set; }
+    
+    private TItem ItemToEdit;
+    private TItem ItemToEditSrc; // Used when data cloning is not disabled
+    private string[]? EditErrorMessages;
+    private FastForm<TItem> EditForm;
+
+    // Core
+    [Parameter] public Action<FastCrudConfiguration<TItem>>? OnConfigure { get; set; }
+    [Parameter] public Action<FastConfiguration<TItem>>? OnConfigureCreate { get; set; }
+    [Parameter] public Action<FastConfiguration<TItem>, TItem>? OnConfigureEdit { get; set; }
+
+    private FastCrudState State = FastCrudState.View;
+    private FastCrudConfiguration<TItem> Configuration = new();
+
+    #region Core
+
+    protected override void OnInitialized()
+    {
+        OnConfigure?.Invoke(Configuration);
+    }
+
+    private async Task SetState(FastCrudState state)
+    {
+        State = state;
+
+        await InvokeAsync(StateHasChanged);
+    }
+
+    #endregion
+
+    #region Create
+
+    private async Task StartCreate()
+    {
+        ItemToCreate = Activator.CreateInstance<TItem>();
+        await SetState(FastCrudState.Create);
+    }
+
+    private async Task FinishCreate()
+    {
+        if (!await CreateForm.Validate(out CreateErrorMessages))
+        {
+            await InvokeAsync(StateHasChanged);
+            return;
+        }
+
+        if (Configuration.CustomCreate != null)
+            await Configuration.CustomCreate.Invoke(ItemToCreate);
+        else
+            ItemRepository.Add(ItemToCreate);
+
+        await ToastService.Success("Successfully added item");
+        await SetState(FastCrudState.View);
+    }
+
+    #endregion
+
+    #region View
+
+    private MCBTable<TItem> Table;
+    private string? SearchTerm;
+
+    private IEnumerable<TItem> GetTableData()
+    {
+        IEnumerable<TItem> dataSource;
+
+        if (Loader == null)
+            dataSource = ItemRepository.Get();
+        else
+            dataSource = Loader.Invoke(ItemRepository);
+
+        if (Search == null || string.IsNullOrEmpty(SearchTerm))
+            return dataSource;
+
+        return Search.Invoke(dataSource, SearchTerm);
+    }
+
+    private async Task OnSearchTermChanged(ChangeEventArgs eventArgs)
+    {
+        SearchTerm = eventArgs.Value?.ToString() ?? "";
+        await Table.Refresh(fullRefresh: true);
+    }
+
+    #endregion
+
+    #region Edit
+
+    private async Task StartUpdate(TItem item)
+    {
+        ItemToEditSrc = item;
+
+        if (Configuration.ExperimentalDisableItemCloning)
+            ItemToEdit = item;
+        else
+            ItemToEdit = Mapper.Map<TItem>(item); // Create a clone of the item
+
+        await SetState(FastCrudState.Edit);
+    }
+
+    private async Task FinishEdit()
+    {
+        if (!await EditForm.Validate(out EditErrorMessages))
+        {
+            await InvokeAsync(StateHasChanged);
+            return;
+        }
+
+        TItem itemToEdit;
+
+        if (Configuration.ExperimentalDisableItemCloning)
+            itemToEdit = ItemToEdit;
+        else
+            itemToEdit = Mapper.Map(ItemToEditSrc, ItemToEdit);
+
+        if (Configuration.CustomEdit != null)
+            await Configuration.CustomEdit.Invoke(itemToEdit);
+        else
+            ItemRepository.Update(itemToEdit);
+
+        await ToastService.Success("Successfully updated item");
+        await SetState(FastCrudState.View);
+    }
+
+    private void OnConfigureEditForm(FastConfiguration<TItem> fastConfiguration)
+        => OnConfigureEdit?.Invoke(fastConfiguration, ItemToEditSrc);
+
+    #endregion
+
+    #region Delete
+
+    private async Task OnDelete()
+    {
+        await AlertService.Confirm(
+            "Confirm item deletion",
+            "Do you really want to delete this item? This action cannot be undone",
+            async () =>
+            {
+                if (Configuration.CustomDelete != null)
+                    await Configuration.CustomDelete.Invoke(ItemToEditSrc);
+                else
+                    ItemRepository.Delete(ItemToEditSrc);
+
+                await ToastService.Success("Successfully deleted items");
+                await SetState(FastCrudState.View);
+            }
+        );
+    }
+
+    #endregion
+
+}

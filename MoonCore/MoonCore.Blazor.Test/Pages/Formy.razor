@@ -1,24 +1,30 @@
 @page "/formy"
+@using System.ComponentModel.DataAnnotations
 @using MoonCore.Blazor.Forms.Fast
 @using MoonCore.Blazor.Forms.Fast.Components
 @using MoonCore.Blazor.Models.Fast
+@using MoonCore.Blazor.Services
 @using MoonCore.Blazor.Test.Data
 
-<FastForm Model="Form" OnConfigure="OnConfigure" />
+@inject ToastService ToastService
+
+<FastForm @ref="FastForm" Model="Form" OnConfigure="OnConfigure" />
+
+<WButton OnClick="OnClick" />
 
 @code
 {
+    private FastForm<Car> FastForm;
     private Car Form = new();
     
     private void OnConfigure(FastConfiguration<Car> configuration)
     {
-        DefaultComponentSelector.RegisterDefault<string, StringComponent>();
-
         configuration
             .AddProperty(x => x.Name)
             .WithDefaultComponent();
         
-        configuration.AddProperty(x => x.Id)
+        configuration
+            .AddProperty(x => x.Id)
             .WithPage("ID Services")
             .WithComponent<int, MyCoolCustomComponent>();
         
@@ -28,5 +34,22 @@
             .WithPage("ID Services")
             .WithSection("Plate", icon: "bx-purchase-tag")
             .WithValidation(FastValidators.Required);
+    }
+
+    private async Task OnClick()
+    {
+        if (!await FastForm.Validate(out var errorMessages))
+        {
+            await ToastService.Danger("Form invalid: ");
+
+            foreach (var message in errorMessages)
+            {
+                await ToastService.Danger(message);
+            }
+        }
+        else
+        {
+            await ToastService.Success("Form valid");
+        }
     }
 }
