@@ -61,7 +61,7 @@ else
 
         // Reset the ui
         IsLoading = true;
-        ShowLoading = false;
+        ShowLoading = TimeUntilSpinnerIsShown == TimeSpan.Zero; // If the time is null we can set the show loading here instantly
         IsLoaded = false;
 
         await InvokeAsync(StateHasChanged);
@@ -81,17 +81,20 @@ else
             await InvokeAsync(StateHasChanged);
             
             // Stop wait timer
-            Cancellation.Cancel();
+            await Cancellation.CancelAsync();
         });
 
-        try
+        if (TimeUntilSpinnerIsShown != TimeSpan.Zero)
         {
-            await Task.Delay(TimeUntilSpinnerIsShown, Cancellation.Token);
+            try
+            {
+                await Task.Delay(TimeUntilSpinnerIsShown, Cancellation.Token);
 
-            ShowLoading = true;
-            await InvokeAsync(StateHasChanged);
+                ShowLoading = true;
+                await InvokeAsync(StateHasChanged);
+            }
+            catch (TaskCanceledException) { /* ignored */ }
         }
-        catch (TaskCanceledException) { /* ignored */ }
 
         // Wait for the load task to finish
         await loadTask;
