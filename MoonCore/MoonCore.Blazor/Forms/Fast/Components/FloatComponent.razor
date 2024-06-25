@@ -1,0 +1,14 @@
+@inherits BaseFastFormComponent<float>
+
+<div class="col-12 col-md-3">
+    <label class="form-label">@Name</label>
+    
+    <input class="form-control" type="number" @bind="Binder.Value"/>
+    
+    @if (Description != null)
+    {
+        <div class="form-text fs-6 text-gray-600">
+            @Description
+        </div>
+    }
+</div>

@@ -1,0 +1,16 @@
+@using Microsoft.AspNetCore.Components.Forms
+
+@inherits BaseFastFormComponent<DateTime>
+
+<div class="col-12 col-md-3">
+    <label class="form-label">@Name</label>
+
+    <InputDate @bind-Value="Binder.Value" class="form-control"/>
+    
+    @if (Description != null)
+    {
+        <div class="form-text fs-6 text-gray-600">
+            @Description
+        </div>
+    }
+</div>

@@ -1,0 +1,52 @@
+@inherits BaseFastFormComponent<T> 
+
+@using Microsoft.Extensions.DependencyInjection
+@using MoonCore.Abstractions
+
+@typeparam T where T : class
+
+@inject IServiceProvider ServiceProvider
+
+<div class="col-12 col-md-3">
+    <label class="form-label">@Name</label>
+
+    <MCBDropdown @bind-Value="Binder.Value"
+                 DisplayFunc="DisplayFunc"
+                 SearchProp="SearchFunc"
+                 Items="Items"/>
+    
+    @if (Description != null)
+    {
+        <div class="form-text fs-6 text-gray-600">
+            @Description
+        </div>
+    }
+</div>
+
+@code
+{
+    private Func<T, string> DisplayFunc;
+    private Func<T, string> SearchFunc;
+    private T[] Items;
+    
+    protected override void OnInitialized()
+    {
+        ArgumentNullException.ThrowIfNull(AdditionalOptions);
+
+        DisplayFunc = AdditionalOptions.GetNullable<Func<T, string>>("DisplayFunc")!;
+        SearchFunc = AdditionalOptions.GetNullable<Func<T, string>>("SearchFunc")!;
+        
+        ArgumentNullException.ThrowIfNull(DisplayFunc);
+        ArgumentNullException.ThrowIfNull(SearchFunc);
+
+        if (AdditionalOptions.ContainsKey("Items"))
+            Items = AdditionalOptions.GetNullable<T[]>("Items")!;
+        else
+        {
+            var repo = ServiceProvider.GetRequiredService<Repository<T>>();
+            Items = repo.Get().ToArray();
+        }
+        
+        ArgumentNullException.ThrowIfNull(Items);
+    }
+}

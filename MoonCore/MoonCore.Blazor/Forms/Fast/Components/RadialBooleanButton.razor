@@ -1,0 +1,38 @@
+@inherits BaseFastFormComponent<bool>
+
+<div class="col-12 col-md-3">
+    <label class="form-label">@Name</label>
+
+    <MCBRadialBooleanButton @bind-Value="Binder.Value"
+                            FalseIcon="@FalseIcon"
+                            TrueIcon="@TrueIcon"
+                            FalseText="@FalseText"
+                            TrueText="@TrueText"/>
+    
+    @if (Description != null)
+    {
+        <div class="form-text fs-6 text-gray-600">
+            @Description
+        </div>
+    }
+</div>
+
+@code
+{
+    private string FalseIcon;
+    private string TrueIcon;
+    private string FalseText;
+    private string TrueText;
+    
+    protected override void OnInitialized()
+    {
+        if(AdditionalOptions == null)
+            return;
+
+        TrueText = AdditionalOptions.GetNullable<string>("TrueText") ?? "";
+        FalseText = AdditionalOptions.GetNullable<string>("FalseText") ?? "";
+        
+        TrueIcon = AdditionalOptions.GetNullable<string>("TrueIcon") ?? "";
+        FalseIcon = AdditionalOptions.GetNullable<string>("FalseIcon") ?? "";
+    }
+}

@@ -29,5 +29,10 @@ public static class ServiceCollectionExtensions
         DefaultComponentSelector.RegisterDefault<string, StringComponent>();
         DefaultComponentSelector.RegisterDefault<int, IntComponent>();
         DefaultComponentSelector.RegisterDefault<bool, CheckboxComponent>();
+        DefaultComponentSelector.RegisterDefault<double, DoubleComponent>();
+        DefaultComponentSelector.RegisterDefault<decimal, DecimalComponent>();
+        DefaultComponentSelector.RegisterDefault<float, FloatComponent>();
+        DefaultComponentSelector.RegisterDefault<long, LongComponent>();
+        DefaultComponentSelector.RegisterDefault<DateTime, DateComponent>();
     }
 }

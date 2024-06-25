@@ -14,6 +14,15 @@ public class DynamicStorage
         return (T)Get(id)!;
     }
 
+    public bool ContainsKey(string key) => Data.ContainsKey(key);
+    
+    public T? GetNullable<T>(string id)
+    {
+        var res = Get(id);
+
+        return res == null ? default : (T)res;
+    }
+
     public T Get<T>()
     {
         var searchType = typeof(T);
