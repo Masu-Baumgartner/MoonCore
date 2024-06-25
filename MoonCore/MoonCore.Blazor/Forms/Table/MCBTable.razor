@@ -1,7 +1,10 @@
 @using System.Linq.Expressions
 @using System.Reflection
+@using Microsoft.Extensions.Logging
 
 @typeparam TItem
+
+@inject ILogger<TItem> Logger
 
 <CascadingValue Value="@this">
     @ChildContent
@@ -227,7 +230,10 @@
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
         if (firstRender)
+        {
             await Refresh(fullRefresh: true);
+            Logger.LogTrace("Called Refresh() via render event");
+        }
     }
 
     private IEnumerable<TItem> GetItemSource()

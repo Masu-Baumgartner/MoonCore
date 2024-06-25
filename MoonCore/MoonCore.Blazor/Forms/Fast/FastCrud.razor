@@ -1,4 +1,5 @@
 @using Mappy.Net
+@using Microsoft.Extensions.Logging
 @using MoonCore.Abstractions
 @using MoonCore.Blazor.Models.Fast
 @using MoonCore.Blazor.Forms.Table
@@ -11,6 +12,8 @@
 @inject Repository<TItem> ItemRepository
 @inject ToastService ToastService
 @inject AlertService AlertService
+
+@inject ILogger<FastCrud<TItem>> Logger
 
 @if (State == FastCrudState.View)
 {
@@ -180,6 +183,8 @@ else if (State == FastCrudState.Edit)
 
     protected override void OnInitialized()
     {
+        Logger.LogTrace("OnInitialized() called");
+        
         OnConfigure?.Invoke(Configuration);
     }
 
@@ -210,10 +215,19 @@ else if (State == FastCrudState.Edit)
         }
 
         // Custom validate hook
-        if (!InvokeValidateHandled(Configuration.ValidateCreate, ItemToCreate, out CreateErrorMessages))
+        if (Configuration.ValidateCreate != null)
         {
-            await InvokeAsync(StateHasChanged);
-            return;
+            try
+            {
+                await Configuration.ValidateCreate.Invoke(ItemToCreate);
+            }
+            catch (DisplayException e)
+            {
+                CreateErrorMessages = [e.Message];
+                
+                await InvokeAsync(StateHasChanged);
+                return;
+            }
         }
 
         // Choose creation strategy
@@ -236,6 +250,8 @@ else if (State == FastCrudState.Edit)
 
     private IEnumerable<TItem> GetTableData()
     {
+        Logger.LogTrace("GetTableData() called");
+        
         IEnumerable<TItem> dataSource;
 
         if (Loader == null)
@@ -245,6 +261,7 @@ else if (State == FastCrudState.Edit)
 
         if (Search == null || string.IsNullOrEmpty(SearchTerm))
             return dataSource;
+        
 
         return Search.Invoke(dataSource, SearchTerm);
     }
@@ -290,10 +307,19 @@ else if (State == FastCrudState.Edit)
             itemToEdit = Mapper.Map(ItemToEditSrc, ItemToEdit);
         
         // Hook for custom validator. We use the itemToEdit variable here as it represents the changes made to the current item
-        if (!InvokeValidateHandled(Configuration.ValidateEdit, itemToEdit, out EditErrorMessages))
+        if (Configuration.ValidateEdit != null)
         {
-            await InvokeAsync(StateHasChanged);
-            return;
+            try
+            {
+                await Configuration.ValidateEdit.Invoke(itemToEdit);
+            }
+            catch (DisplayException e)
+            {
+                EditErrorMessages = [e.Message];
+                
+                await InvokeAsync(StateHasChanged);
+                return;
+            }
         }
 
         // Choose edit strategy
@@ -322,10 +348,19 @@ else if (State == FastCrudState.Edit)
             async () =>
             {
                 // Hook for custom validator
-                if (!InvokeValidateHandled(Configuration.ValidateDelete, ItemToEditSrc, out EditErrorMessages))
+                if (Configuration.ValidateDelete != null)
                 {
-                    await InvokeAsync(StateHasChanged);
-                    return;
+                    try
+                    {
+                        await Configuration.ValidateDelete.Invoke(ItemToEditSrc);
+                    }
+                    catch (DisplayException e)
+                    {
+                        EditErrorMessages = [e.Message];
+                
+                        await InvokeAsync(StateHasChanged);
+                        return;
+                    }
                 }
                 
                 // Choose deletion strategy
@@ -342,26 +377,4 @@ else if (State == FastCrudState.Edit)
     }
 
     #endregion
-
-    private bool InvokeValidateHandled(Func<TItem, Task>? function, TItem parameter, out string[]? errorMessages)
-    {
-        if (function == null)
-        {
-            errorMessages = null;
-            return true;
-        }
-        
-        try
-        {
-            function.Invoke(parameter).Wait();
-
-            errorMessages = null;
-            return false;
-        }
-        catch (DisplayException e)
-        {
-            errorMessages = [e.Message];
-            return true;
-        }
-    }
 }
