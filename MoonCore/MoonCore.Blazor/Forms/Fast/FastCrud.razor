@@ -188,6 +188,12 @@ else if (State == FastCrudState.Edit)
         OnConfigure?.Invoke(Configuration);
     }
 
+    public async Task Refresh(bool fullRefresh = false, bool isSilent = false)
+    {
+        if (Table != null)
+            await Table.Refresh(fullRefresh, isSilent);
+    }
+
     private async Task SetState(FastCrudState state)
     {
         State = state;
