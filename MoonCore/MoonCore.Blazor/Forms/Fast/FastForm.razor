@@ -1,5 +1,6 @@
 @using MoonCore.Blazor.Helpers
 @using MoonCore.Blazor.Models.Fast
+@using MoonCore.Helpers
 
 @typeparam T where T : class
 
@@ -134,7 +135,7 @@
             var render = ComponentHelper.FromType(configuration.ComponentType, parameters =>
             {
                 parameters.Add("Binder", propBinder);
-                parameters.Add("Name", configuration.DisplayName ?? propertyInfo.Name);
+                parameters.Add("Name", configuration.DisplayName ?? Formatter.ConvertCamelCaseToSpaces(propertyInfo.Name));
                 parameters.Add("AdditionalOptions", configuration.AdditionalOptions!);
                 parameters.Add("Description", configuration.Description!);
             });
