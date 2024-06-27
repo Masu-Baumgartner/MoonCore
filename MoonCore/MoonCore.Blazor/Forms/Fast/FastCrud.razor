@@ -194,7 +194,7 @@ else if (State == FastCrudState.Edit)
             await Table.Refresh(fullRefresh, isSilent);
     }
 
-    private async Task SetState(FastCrudState state)
+    public async Task SetState(FastCrudState state)
     {
         State = state;
 
