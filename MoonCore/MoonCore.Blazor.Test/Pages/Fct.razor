@@ -45,7 +45,7 @@
         DefaultComponentSelector.RegisterDefault<string, StringComponent>();
     }
 
-    private void OnConfigureCreate(FastConfiguration<Car> configuration)
+    private void OnConfigureCreate(FastConfiguration<Car> configuration, Car _)
     {
         configuration.AddProperty(x => x.Name)
             .WithValidation(FastValidators.Required)

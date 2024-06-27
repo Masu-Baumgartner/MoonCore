@@ -103,7 +103,7 @@ else if (State == FastCrudState.Create)
         </div>
     }
 
-    <FastForm @ref="CreateForm" Model="ItemToCreate" OnConfigure="OnConfigureCreate"/>
+    <FastForm @ref="CreateForm" Model="ItemToCreate" OnConfigure="OnConfigureCreateForm"/>
 }
 else if (State == FastCrudState.Edit)
 {
@@ -173,7 +173,7 @@ else if (State == FastCrudState.Edit)
 
     // Core
     [Parameter] public Action<FastCrudConfiguration<TItem>>? OnConfigure { get; set; }
-    [Parameter] public Action<FastConfiguration<TItem>>? OnConfigureCreate { get; set; }
+    [Parameter] public Action<FastConfiguration<TItem>, TItem>? OnConfigureCreate { get; set; }
     [Parameter] public Action<FastConfiguration<TItem>, TItem>? OnConfigureEdit { get; set; }
 
     private FastCrudState State = FastCrudState.View;
@@ -246,6 +246,9 @@ else if (State == FastCrudState.Edit)
         await ToastService.Success("Successfully added item");
         await SetState(FastCrudState.View);
     }
+    
+    private void OnConfigureCreateForm(FastConfiguration<TItem> configuration)
+        => OnConfigureCreate?.Invoke(configuration, ItemToCreate);
 
     #endregion
 
