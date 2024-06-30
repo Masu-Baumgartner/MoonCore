@@ -1,0 +1,58 @@
+@inherits BaseFastFormComponent<List<T>> 
+
+@using Microsoft.Extensions.DependencyInjection
+@using MoonCore.Abstractions
+
+@typeparam T where T : class
+
+@inject IServiceProvider ServiceProvider
+
+<div class="col-12 col-md-3">
+    <label class="form-label">@Name</label>
+
+    <MCBMultiItemSelect @bind-Value="Binder.Value"
+                        DisplayFunc="DisplayFunc"
+                        SearchFunc="SearchFunc"
+                        IconFunc="IconFunc"
+                        PageSize="PageSize"
+                        Items="Items"/>
+
+    @if (Description != null)
+    {
+        <div class="form-text fs-6 text-gray-600">
+            @Description
+        </div>
+    }
+</div>
+
+@code
+{
+    private Func<T, string> DisplayFunc;
+    private Func<T, string> SearchFunc;
+    private Func<T, string>? IconFunc;
+    private int PageSize = 10;
+    private List<T> Items;
+
+    protected override void OnInitialized()
+    {
+        ArgumentNullException.ThrowIfNull(AdditionalOptions);
+
+        DisplayFunc = AdditionalOptions.GetNullable<Func<T, string>>("DisplayFunc")!;
+        ArgumentNullException.ThrowIfNull(DisplayFunc);
+        
+        SearchFunc = AdditionalOptions.GetNullable<Func<T, string>>("SearchFunc")!;
+        ArgumentNullException.ThrowIfNull(SearchFunc);
+        
+        IconFunc = AdditionalOptions.GetNullable<Func<T, string>>("IconFunc");
+
+        if (AdditionalOptions.ContainsKey("Items"))
+            Items = AdditionalOptions.Get<IEnumerable<T>>("Items").ToList();
+        else
+        {
+            var repo = ServiceProvider.GetRequiredService<Repository<T>>();
+            Items = repo.Get().ToList();
+        }
+
+        ArgumentNullException.ThrowIfNull(Items);
+    }
+}

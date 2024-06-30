@@ -6,7 +6,7 @@ using MoonCore.Helpers;
 
 namespace MoonCore.Blazor.Models.Fast;
 
-public class FastPropertyConfiguration<T> where T : class
+public class FastPropertyConfiguration<T>
 {
     public Expression<Func<T, object?>> Field { get; set; }
     public Type ComponentType { get; set; }
