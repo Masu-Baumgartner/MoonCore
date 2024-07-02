@@ -1,4 +1,4 @@
-@inherits BaseFastFormComponent<T> 
+@inherits FastFormBaseComponent<T> 
 
 @using Microsoft.Extensions.DependencyInjection
 @using MoonCore.Abstractions
@@ -24,20 +24,15 @@
 
 @code
 {
-    private Func<T, string> DisplayField;
-    private T[] Items;
+    [Parameter]
+    public Func<T, string> DisplayField { get; set; }
+    
+    [Parameter]
+    public IEnumerable<T>? Items { get; set; }
 
     protected override void OnInitialized()
     {
-        ArgumentNullException.ThrowIfNull(AdditionalOptions);
-
-        DisplayField = AdditionalOptions.GetNullable<Func<T, string>>("DisplayField")!;
-
-        ArgumentNullException.ThrowIfNull(DisplayField);
-
-        if (AdditionalOptions.ContainsKey("Items"))
-            Items = AdditionalOptions.GetNullable<T[]>("Items")!;
-        else
+        if (Items == null)
         {
             var repo = ServiceProvider.GetRequiredService<Repository<T>>();
             Items = repo.Get().ToArray();

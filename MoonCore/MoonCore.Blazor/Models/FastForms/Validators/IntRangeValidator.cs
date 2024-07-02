@@ -1,8 +1,8 @@
 using System.ComponentModel.DataAnnotations;
 
-namespace MoonCore.Blazor.Models.Fast.Validators;
+namespace MoonCore.Blazor.Models.FastForms.Validators;
 
-public class IntRangeValidator : IFastValidator
+public class IntRangeValidator : IFastFormValidator
 {
     private readonly int Start;
     private readonly int End;

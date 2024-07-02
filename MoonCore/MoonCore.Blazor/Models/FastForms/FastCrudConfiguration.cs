@@ -1,6 +1,4 @@
-using System.ComponentModel.DataAnnotations;
-
-namespace MoonCore.Blazor.Models.Fast;
+namespace MoonCore.Blazor.Models.FastForms;
 
 public class FastCrudConfiguration<TItem>
 {

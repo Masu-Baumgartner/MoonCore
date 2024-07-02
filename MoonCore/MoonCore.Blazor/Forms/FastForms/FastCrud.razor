@@ -1,9 +1,9 @@
 @using Mappy.Net
 @using Microsoft.Extensions.Logging
 @using MoonCore.Abstractions
-@using MoonCore.Blazor.Models.Fast
 @using MoonCore.Blazor.Forms.Table
 @using MoonCore.Blazor.Components
+@using MoonCore.Blazor.Models.FastForms
 @using MoonCore.Blazor.Services
 @using MoonCore.Exceptions
 
@@ -56,7 +56,7 @@
                                 {
                                     @ViewContextActions
                                 }
-                                
+
                                 <a href="#" @onclick:preventDefault @onclick="() => StartUpdate(context!)">
                                     <i class="bx bx-edit"></i> Edit
                                 </a>
@@ -83,7 +83,7 @@ else if (State == FastCrudState.Create)
                 {
                     @CreateToolbar
                 }
-                
+
                 <WButton CssClasses="btn btn-primary" OnClick="FinishCreate">
                     <i class="bx bx-sm bx-check"></i>
                     Create
@@ -120,7 +120,7 @@ else if (State == FastCrudState.Edit)
                 {
                     @EditToolbar.Invoke(ItemToEditSrc)
                 }
-                
+
                 <WButton CssClasses="btn btn-danger me-1" OnClick="OnDelete">
                     <i class="bx bx-sm bx-trash"></i>
                     Delete
@@ -149,32 +149,32 @@ else if (State == FastCrudState.Edit)
 
 @code
 {
-    // View
+// View
     [Parameter] public RenderFragment View { get; set; }
     [Parameter] public Func<Repository<TItem>, IEnumerable<TItem>>? Loader { get; set; }
     [Parameter] public Func<IEnumerable<TItem>, string, IEnumerable<TItem>>? Search { get; set; }
     [Parameter] public RenderFragment? ViewToolbar { get; set; }
     [Parameter] public RenderFragment? ViewContextActions { get; set; }
 
-    // Create
+// Create
     [Parameter] public RenderFragment? CreateToolbar { get; set; }
-    
+
     private TItem ItemToCreate;
     private string[]? CreateErrorMessages;
     private FastForm<TItem> CreateForm;
 
-    // Edit
+// Edit
     [Parameter] public RenderFragment<TItem>? EditToolbar { get; set; }
-    
+
     private TItem ItemToEdit;
     private TItem ItemToEditSrc; // Used when data cloning is not disabled
     private string[]? EditErrorMessages;
     private FastForm<TItem> EditForm;
 
-    // Core
+// Core
     [Parameter] public Action<FastCrudConfiguration<TItem>>? OnConfigure { get; set; }
-    [Parameter] public Action<FastConfiguration<TItem>, TItem>? OnConfigureCreate { get; set; }
-    [Parameter] public Action<FastConfiguration<TItem>, TItem>? OnConfigureEdit { get; set; }
+    [Parameter] public Action<FastFormConfiguration<TItem>, TItem>? OnConfigureCreate { get; set; }
+    [Parameter] public Action<FastFormConfiguration<TItem>, TItem>? OnConfigureEdit { get; set; }
 
     private FastCrudState State = FastCrudState.View;
     private FastCrudConfiguration<TItem> Configuration = new();
@@ -184,7 +184,7 @@ else if (State == FastCrudState.Edit)
     protected override void OnInitialized()
     {
         Logger.LogTrace("OnInitialized() called");
-        
+
         OnConfigure?.Invoke(Configuration);
     }
 
@@ -213,14 +213,14 @@ else if (State == FastCrudState.Edit)
 
     private async Task FinishCreate()
     {
-        // Validate form
+// Validate form
         if (!await CreateForm.Validate(out CreateErrorMessages))
         {
             await InvokeAsync(StateHasChanged);
             return;
         }
 
-        // Custom validate hook
+// Custom validate hook
         if (Configuration.ValidateCreate != null)
         {
             try
@@ -230,24 +230,24 @@ else if (State == FastCrudState.Edit)
             catch (DisplayException e)
             {
                 CreateErrorMessages = [e.Message];
-                
+
                 await InvokeAsync(StateHasChanged);
                 return;
             }
         }
 
-        // Choose creation strategy
+// Choose creation strategy
         if (Configuration.CustomCreate != null)
             await Configuration.CustomCreate.Invoke(ItemToCreate);
         else
             ItemRepository.Add(ItemToCreate);
 
-        // Feedback
+// Feedback
         await ToastService.Success("Successfully added item");
         await SetState(FastCrudState.View);
     }
-    
-    private void OnConfigureCreateForm(FastConfiguration<TItem> configuration)
+
+    private void OnConfigureCreateForm(FastFormConfiguration<TItem> configuration)
         => OnConfigureCreate?.Invoke(configuration, ItemToCreate);
 
     #endregion
@@ -260,7 +260,7 @@ else if (State == FastCrudState.Edit)
     private IEnumerable<TItem> GetTableData()
     {
         Logger.LogTrace("GetTableData() called");
-        
+
         IEnumerable<TItem> dataSource;
 
         if (Loader == null)
@@ -270,7 +270,7 @@ else if (State == FastCrudState.Edit)
 
         if (Search == null || string.IsNullOrEmpty(SearchTerm))
             return dataSource;
-        
+
 
         return Search.Invoke(dataSource, SearchTerm);
     }
@@ -289,7 +289,7 @@ else if (State == FastCrudState.Edit)
     {
         ItemToEditSrc = item;
 
-        // Configure edit model
+// Configure edit model
         if (Configuration.ExperimentalDisableItemCloning)
             ItemToEdit = item;
         else
@@ -300,22 +300,22 @@ else if (State == FastCrudState.Edit)
 
     private async Task FinishEdit()
     {
-        // Validate form
+// Validate form
         if (!await EditForm.Validate(out EditErrorMessages))
         {
             await InvokeAsync(StateHasChanged);
             return;
         }
 
-        // Collect data
+// Collect data
         TItem itemToEdit;
 
         if (Configuration.ExperimentalDisableItemCloning)
             itemToEdit = ItemToEdit;
         else
             itemToEdit = Mapper.Map(ItemToEditSrc, ItemToEdit);
-        
-        // Hook for custom validator. We use the itemToEdit variable here as it represents the changes made to the current item
+
+// Hook for custom validator. We use the itemToEdit variable here as it represents the changes made to the current item
         if (Configuration.ValidateEdit != null)
         {
             try
@@ -325,24 +325,24 @@ else if (State == FastCrudState.Edit)
             catch (DisplayException e)
             {
                 EditErrorMessages = [e.Message];
-                
+
                 await InvokeAsync(StateHasChanged);
                 return;
             }
         }
 
-        // Choose edit strategy
+// Choose edit strategy
         if (Configuration.CustomEdit != null)
             await Configuration.CustomEdit.Invoke(itemToEdit);
         else
             ItemRepository.Update(itemToEdit);
 
-        // Feedback
+// Feedback
         await ToastService.Success("Successfully updated item");
         await SetState(FastCrudState.View);
     }
 
-    private void OnConfigureEditForm(FastConfiguration<TItem> fastConfiguration)
+    private void OnConfigureEditForm(FastFormConfiguration<TItem> fastConfiguration)
         => OnConfigureEdit?.Invoke(fastConfiguration, ItemToEditSrc);
 
     #endregion
@@ -356,7 +356,7 @@ else if (State == FastCrudState.Edit)
             "Do you really want to delete this item? This action cannot be undone",
             async () =>
             {
-                // Hook for custom validator
+// Hook for custom validator
                 if (Configuration.ValidateDelete != null)
                 {
                     try
@@ -366,19 +366,19 @@ else if (State == FastCrudState.Edit)
                     catch (DisplayException e)
                     {
                         EditErrorMessages = [e.Message];
-                
+
                         await InvokeAsync(StateHasChanged);
                         return;
                     }
                 }
-                
-                // Choose deletion strategy
+
+// Choose deletion strategy
                 if (Configuration.CustomDelete != null)
                     await Configuration.CustomDelete.Invoke(ItemToEditSrc);
                 else
                     ItemRepository.Delete(ItemToEditSrc);
 
-                // Feedback
+// Feedback
                 await ToastService.Success("Successfully deleted items");
                 await SetState(FastCrudState.View);
             }
@@ -386,4 +386,5 @@ else if (State == FastCrudState.Edit)
     }
 
     #endregion
+
 }

@@ -1,11 +1,9 @@
-@using Microsoft.AspNetCore.Components.Forms
-
-@inherits BaseFastFormComponent<decimal>
+@inherits FastFormBaseComponent<double>
 
 <div class="col-12 col-md-3">
     <label class="form-label">@Name</label>
-
-    <input class="form-control" step="0.01" type="number" @bind="Binder.Value"/>
+    
+    <input class="form-control" type="number" @bind="Binder.Value"/>
     
     @if (Description != null)
     {

@@ -1,8 +1,8 @@
 using System.ComponentModel.DataAnnotations;
 
-namespace MoonCore.Blazor.Models.Fast.Validators;
+namespace MoonCore.Blazor.Models.FastForms.Validators;
 
-public class RequiredValidator : IFastValidator
+public class RequiredValidator : IFastFormValidator
 {
     private string ErrorMessage = "This field is required";
     

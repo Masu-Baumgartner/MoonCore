@@ -1,9 +1,9 @@
 using System.ComponentModel.DataAnnotations;
 using System.Text.RegularExpressions;
 
-namespace MoonCore.Blazor.Models.Fast.Validators;
+namespace MoonCore.Blazor.Models.FastForms.Validators;
 
-public class RegexValidator : IFastValidator
+public class RegexValidator : IFastFormValidator
 {
     private readonly string RegexExpression;
     private readonly string ErrorMessage;

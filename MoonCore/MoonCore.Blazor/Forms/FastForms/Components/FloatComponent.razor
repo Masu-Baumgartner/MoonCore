@@ -1,14 +1,10 @@
-@inherits BaseFastFormComponent<bool>
+@inherits FastFormBaseComponent<float>
 
 <div class="col-12 col-md-3">
-
     <label class="form-label">@Name</label>
     
-    <div class="form-check">
-        <input class="form-check-input" type="checkbox" @bind="Binder.Value" />
-    </div>
-
-
+    <input class="form-control" type="number" @bind="Binder.Value"/>
+    
     @if (Description != null)
     {
         <div class="form-text fs-6 text-gray-600">

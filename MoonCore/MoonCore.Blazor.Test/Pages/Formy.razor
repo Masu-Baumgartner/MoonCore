@@ -1,8 +1,6 @@
 @page "/formy"
-@using System.ComponentModel.DataAnnotations
-@using MoonCore.Blazor.Forms.Fast
-@using MoonCore.Blazor.Forms.Fast.Components
-@using MoonCore.Blazor.Models.Fast
+@using MoonCore.Blazor.Forms.FastForms
+@using MoonCore.Blazor.Models.FastForms
 @using MoonCore.Blazor.Services
 @using MoonCore.Blazor.Test.Data
 
@@ -17,7 +15,7 @@
     private FastForm<Car> FastForm;
     private Car Form = new();
     
-    private void OnConfigure(FastConfiguration<Car> configuration)
+    private void OnConfigure(FastFormConfiguration<Car> configuration)
     {
         configuration
             .AddProperty(x => x.Name)
@@ -26,14 +24,14 @@
         configuration
             .AddProperty(x => x.Id)
             .WithPage("ID Services")
-            .WithComponent<int, MyCoolCustomComponent>();
+            .WithComponent<MyCoolCustomComponent>();
         
         configuration
             .AddProperty(x => x.Plate)
             .WithDefaultComponent()
             .WithPage("ID Services")
             .WithSection("Plate", icon: "bx-purchase-tag")
-            .WithValidation(FastValidators.Required);
+            .WithValidation(FastFormValidators.Required);
     }
 
     private async Task OnClick()

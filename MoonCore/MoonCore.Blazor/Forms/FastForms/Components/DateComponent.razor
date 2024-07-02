@@ -1,9 +1,11 @@
-@inherits BaseFastFormComponent<long>
+@using Microsoft.AspNetCore.Components.Forms
+
+@inherits FastFormBaseComponent<DateTime>
 
 <div class="col-12 col-md-3">
     <label class="form-label">@Name</label>
-    
-    <input class="form-control" type="number" @bind="Binder.Value"/>
+
+    <InputDate @bind-Value="Binder.Value" class="form-control"/>
     
     @if (Description != null)
     {

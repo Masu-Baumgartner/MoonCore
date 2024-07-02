@@ -1,4 +1,4 @@
-@inherits BaseFastFormComponent<List<T>> 
+@inherits FastFormBaseComponent<List<T>> 
 
 @using Microsoft.Extensions.DependencyInjection
 @using MoonCore.Abstractions
@@ -27,27 +27,24 @@
 
 @code
 {
-    private Func<T, string> DisplayFunc;
-    private Func<T, string> SearchFunc;
-    private Func<T, string>? IconFunc;
-    private int PageSize = 10;
-    private IEnumerable<T> Items;
+    [Parameter]
+    public Func<T, string> DisplayFunc { get; set; }
+    
+    [Parameter]
+    public Func<T, string> SearchFunc { get; set; }
+    
+    [Parameter]
+    public Func<T, string>? IconFunc { get; set; }
+    
+    [Parameter]
+    public int PageSize { get; set; } = 10;
+    
+    [Parameter]
+    public IEnumerable<T>? Items { get; set; }
 
     protected override void OnInitialized()
     {
-        ArgumentNullException.ThrowIfNull(AdditionalOptions);
-
-        DisplayFunc = AdditionalOptions.GetNullable<Func<T, string>>("DisplayFunc")!;
-        ArgumentNullException.ThrowIfNull(DisplayFunc);
-        
-        SearchFunc = AdditionalOptions.GetNullable<Func<T, string>>("SearchFunc")!;
-        ArgumentNullException.ThrowIfNull(SearchFunc);
-        
-        IconFunc = AdditionalOptions.GetNullable<Func<T, string>>("IconFunc");
-
-        if (AdditionalOptions.ContainsKey("Items"))
-            Items = AdditionalOptions.Get<IEnumerable<T>>("Items");
-        else
+        if (Items == null)
         {
             var repo = ServiceProvider.GetRequiredService<Repository<T>>();
             Items = repo.Get().ToList();

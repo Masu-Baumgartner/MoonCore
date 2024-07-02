@@ -1,20 +1,19 @@
 @page "/fct"
 @using System.ComponentModel.DataAnnotations
 @using MoonCore.Abstractions
-@using MoonCore.Blazor.Forms.Fast
-@using MoonCore.Blazor.Forms.Fast.Components
-@using MoonCore.Blazor.Models.Fast
 @using MoonCore.Blazor.Test.Data
 @using MoonCore.Blazor.Forms.Table
 @using MoonCore.Blazor.Helpers
 @using MoonCore.Blazor.Services
+@using MoonCore.Blazor.Forms.FastForms
+@using MoonCore.Blazor.Forms.FastForms.Components
+@using MoonCore.Blazor.Models.FastForms
 
 @inject AlertService AlertService
 
 <FastCrud TItem="Car"
           Loader="Loader"
           Search="Search"
-          OnConfigure="OnConfigure"
           OnConfigureCreate="OnConfigureCreate"
           OnConfigureEdit="OnConfigureEdit">
     <View>
@@ -40,45 +39,40 @@
         return dataSource.Where(x => x.Name.Contains(term));
     }
 
-    private void OnConfigure(FastCrudConfiguration<Car> configuration)
-    {
-        DefaultComponentSelector.RegisterDefault<string, StringComponent>();
-    }
-
-    private void OnConfigureCreate(FastConfiguration<Car> configuration, Car _)
+    private void OnConfigureCreate(FastFormConfiguration<Car> configuration, Car _)
     {
         configuration.AddProperty(x => x.Name)
-            .WithValidation(FastValidators.Required)
+            .WithValidation(FastFormValidators.Required)
             .WithDefaultComponent();
 
         configuration.AddProperty(x => x.Plate)
-            .WithValidation(FastValidators.Required)
+            .WithValidation(FastFormValidators.Required)
             .WithDefaultComponent();
     }
 
-    private void OnConfigureEdit(FastConfiguration<Car> configuration, Car car)
+    private void OnConfigureEdit(FastFormConfiguration<Car> configuration, Car car)
     {
         configuration.AddProperty(x => x.Id)
-            .WithValidation<int>(x
+            .WithValidation(x
                 => x == car.Id ? ValidationResult.Success : new ValidationResult("You are not allowed to change the id"))
             .WithSection("owo")
-            .WithComponent<int, MyCoolCustomComponent>();
+            .WithComponent<MyCoolCustomComponent>();
         
         configuration.AddProperty(x => x.Name)
-            .WithValidation(FastValidators.Required)
+            .WithValidation(FastFormValidators.Required)
             .WithDefaultComponent();
         
         configuration.AddProperty(x => x.Plate)
-            .WithValidation(FastValidators.Required)
+            .WithValidation(FastFormValidators.Required)
             .WithDefaultComponent();
 
         configuration.AddProperty(x => x.IsElectric)
             .WithName("Is an electric car?")
-            .WithComponent<bool, CheckboxComponent>();
+            .WithComponent<CheckboxComponent>();
 
         configuration.AddProperty(x => x.DriverType)
             .WithName(":c")
-            .WithComponent<CarDriverType, EnumSelectComponent<CarDriverType>>();
+            .WithComponent<EnumSelectComponent<CarDriverType>>();
 
         configuration.AddCustomPage("Custom page", ComponentHelper.FromType<CoolCustomPage>(parameters =>
         {

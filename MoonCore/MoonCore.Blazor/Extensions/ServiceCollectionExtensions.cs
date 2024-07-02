@@ -1,7 +1,7 @@
 using Microsoft.Extensions.DependencyInjection;
-using MoonCore.Blazor.Forms.Fast.Components;
+using MoonCore.Blazor.Forms.FastForms.Components;
 using MoonCore.Blazor.Models;
-using MoonCore.Blazor.Models.Fast;
+using MoonCore.Blazor.Models.FastForms;
 using MoonCore.Blazor.Services;
 
 namespace MoonCore.Blazor.Extensions;
@@ -26,13 +26,12 @@ public static class ServiceCollectionExtensions
         collection.AddScoped<CookieService>();
         
         // Register fast form default components
-        DefaultComponentSelector.RegisterDefault<string, StringComponent>();
-        DefaultComponentSelector.RegisterDefault<int, IntComponent>();
-        DefaultComponentSelector.RegisterDefault<bool, CheckboxComponent>();
-        DefaultComponentSelector.RegisterDefault<double, DoubleComponent>();
-        DefaultComponentSelector.RegisterDefault<decimal, DecimalComponent>();
-        DefaultComponentSelector.RegisterDefault<float, FloatComponent>();
-        DefaultComponentSelector.RegisterDefault<long, LongComponent>();
-        DefaultComponentSelector.RegisterDefault<DateTime, DateComponent>();
+        DefaultComponentRegistry.Register<int, IntComponent>();
+        DefaultComponentRegistry.Register<string, StringComponent>();
+        DefaultComponentRegistry.Register<double, DoubleComponent>();
+        DefaultComponentRegistry.Register<decimal, DecimalComponent>();
+        DefaultComponentRegistry.Register<float, FloatComponent>();
+        DefaultComponentRegistry.Register<long, LongComponent>();
+        DefaultComponentRegistry.Register<bool, CheckboxComponent>();
     }
 }

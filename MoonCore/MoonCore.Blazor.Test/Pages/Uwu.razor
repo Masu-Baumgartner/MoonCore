@@ -2,14 +2,16 @@
 @using MoonCore.Blazor.Test.Forms
 @using MoonCore.Blazor.Forms.FastForms
 @using MoonCore.Blazor.Models.FastForms
+@using MoonCore.Blazor.Models.FastForms.Validators
 
-<FastForm Model="Form" OnConfigure="OnConfigure">
-    
-</FastForm>
+<FastForm @ref="FastForm" Model="Form" OnConfigure="OnConfigure" />
+
+<button @onclick="() => FastForm.Submit()" class="btn btn-primary">Do something</button>
 
 @code
 {
     private UwuForm Form = new();
+    private FastForm<UwuForm> FastForm;
 
     private void OnConfigure(FastFormConfiguration<UwuForm> configuration)
     {
@@ -19,6 +21,7 @@
                 component.ShouldShowSomethingSpecial = true;
                 
                 return Task.CompletedTask;
-            });
+            })
+            .WithValidation(new RequiredValidator());
     }
 }

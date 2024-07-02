@@ -6,6 +6,16 @@
 
 @if (CurrentPage != null)
 {
+    if (ErrorMessages != null && ErrorMessages.Length > 0)
+    {
+        <div class="alert alert-danger bg-danger text-white fs-5 fw-semibold mb-5">
+            @foreach (var errorMessage in ErrorMessages)
+            {
+                <div>@errorMessage</div>
+            }
+        </div>
+    }
+    
     if (Pages.Count > 1)
     {
         <div class="mb-5">
@@ -67,6 +77,7 @@
     private List<FastFormPage> Pages = new();
 
     private FastFormPage? CurrentPage;
+    private string[]? ErrorMessages;
 
     protected override void OnInitialized()
     {
@@ -222,6 +233,17 @@
 
         errorMessages = errorMessageResult.ToArray();
         return Task.FromResult(isValid);
+    }
+
+    public async Task<bool> Submit()
+    {
+        var valid = await Validate(out ErrorMessages);
+
+        if (valid)
+            return true;
+
+        await InvokeAsync(StateHasChanged);
+        return false;
     }
 
     private async Task SelectPage(FastFormPage page)

@@ -1,12 +1,12 @@
-@using Microsoft.AspNetCore.Components.Forms
-
-@inherits BaseFastFormComponent<DateTime>
+@inherits FastFormBaseComponent<bool>
 
 <div class="col-12 col-md-3">
     <label class="form-label">@Name</label>
-
-    <InputDate @bind-Value="Binder.Value" class="form-control"/>
     
+    <div class="form-check form-switch">
+        <input class="form-check-input" type="checkbox" role="switch" @bind="Binder.Value">
+    </div>
+
     @if (Description != null)
     {
         <div class="form-text fs-6 text-gray-600">
