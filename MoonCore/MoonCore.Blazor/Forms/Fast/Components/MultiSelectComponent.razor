@@ -31,7 +31,7 @@
     private Func<T, string> SearchFunc;
     private Func<T, string>? IconFunc;
     private int PageSize = 10;
-    private List<T> Items;
+    private IEnumerable<T> Items;
 
     protected override void OnInitialized()
     {
@@ -46,7 +46,7 @@
         IconFunc = AdditionalOptions.GetNullable<Func<T, string>>("IconFunc");
 
         if (AdditionalOptions.ContainsKey("Items"))
-            Items = AdditionalOptions.Get<IEnumerable<T>>("Items").ToList();
+            Items = AdditionalOptions.Get<IEnumerable<T>>("Items");
         else
         {
             var repo = ServiceProvider.GetRequiredService<Repository<T>>();

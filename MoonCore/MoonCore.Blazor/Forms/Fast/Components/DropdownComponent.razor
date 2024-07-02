@@ -27,7 +27,7 @@
 {
     private Func<T, string> DisplayFunc;
     private Func<T, string> SearchFunc;
-    private T[] Items;
+    private IEnumerable<T> Items;
     
     protected override void OnInitialized()
     {
@@ -40,7 +40,7 @@
         ArgumentNullException.ThrowIfNull(SearchFunc);
 
         if (AdditionalOptions.ContainsKey("Items"))
-            Items = AdditionalOptions.GetNullable<T[]>("Items")!;
+            Items = AdditionalOptions.GetNullable<IEnumerable<T>>("Items")!;
         else
         {
             var repo = ServiceProvider.GetRequiredService<Repository<T>>();

@@ -1,0 +1,20 @@
+@typeparam T
+
+@using MoonCore.Blazor.Helpers
+
+@code
+{
+    [Parameter] public string Name { get; set; }
+
+    [Parameter] public string? Description { get; set; }
+
+    [Parameter] public PropRefBinder<T> Binder { get; set; }
+
+    public bool IsConfigured = false;
+
+    public async Task SetConfigured()
+    {
+        IsConfigured = true;
+        await InvokeAsync(StateHasChanged);
+    }
+}

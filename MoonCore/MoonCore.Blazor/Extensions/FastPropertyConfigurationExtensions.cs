@@ -22,7 +22,7 @@ public static class FastPropertyConfigurationExtensions
         return configuration;
     }
     
-    public static FastPropertyConfiguration<T> WithDropdown<T, TProperty>(this FastPropertyConfiguration<T> configuration, Func<TProperty, string> displayFunc, Func<TProperty, string> searchFunc, TProperty[]? items = null) where TProperty : class
+    public static FastPropertyConfiguration<T> WithDropdown<T, TProperty>(this FastPropertyConfiguration<T> configuration, Func<TProperty, string> displayFunc, Func<TProperty, string> searchFunc, IEnumerable<TProperty>[]? items = null) where TProperty : class
     {
         configuration.WithComponent<TProperty, DropdownComponent<TProperty>>();
         configuration.WithAdditionalOption("DisplayFunc", displayFunc);
@@ -54,7 +54,7 @@ public static class FastPropertyConfigurationExtensions
         return configuration;
     }
     
-    public static FastPropertyConfiguration<T> WithSelect<T, TProperty>(this FastPropertyConfiguration<T> configuration, Func<TProperty, string> displayField, TProperty[]? items = null) where TProperty : class
+    public static FastPropertyConfiguration<T> WithSelect<T, TProperty>(this FastPropertyConfiguration<T> configuration, Func<TProperty, string> displayField, IEnumerable<TProperty>? items = null) where TProperty : class
     {
         configuration.WithComponent<TProperty, SelectComponent<TProperty>>();
         configuration.WithAdditionalOption("DisplayField", displayField);

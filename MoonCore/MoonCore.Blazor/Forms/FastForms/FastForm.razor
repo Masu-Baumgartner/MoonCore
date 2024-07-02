@@ -1,0 +1,232 @@
+@using MoonCore.Blazor.Helpers
+@using MoonCore.Blazor.Models.FastForms
+@using MoonCore.Helpers
+
+@typeparam TModel
+
+@if (CurrentPage != null)
+{
+    if (Pages.Count > 1)
+    {
+        <div class="mb-5">
+            <ul class="nav nav-pills border-0 fs-5">
+                @foreach (var page in Pages)
+                {
+                    <li class="nav-item">
+                        <a class="nav-link text-white border-top-0 border-start-0 border-end-0 border-2 @(CurrentPage == page ? "active" : "bg-secondary")" href="#" @onclick:preventDefault @onclick="() => SelectPage(page)">
+                            @(string.IsNullOrEmpty(page.Name) ? "General" : page.Name)
+                        </a>
+                    </li>
+                }
+            </ul>
+        </div>
+    }
+
+    if (CurrentPage.OverrideComponent == null)
+    {
+        foreach (var section in CurrentPage.Sections)
+        {
+            <div class="card mb-6">
+                @if (!string.IsNullOrEmpty(section.Name))
+                {
+                    <div class="card-header">
+                        <div class="card-title">
+                            @if (!string.IsNullOrEmpty(section.Icon))
+                            {
+                                <i class="bx bx-md @(section.Icon) text-primary me-3 align-middle"></i>
+                            }
+                            <span class="h3 align-middle">@(section.Name)</span>
+                        </div>
+                    </div>
+                }
+                <div class="card-body">
+                    <div class="row g-8">
+                        @foreach (var component in section.Components)
+                        {
+                            <DynamicComponent @ref="component.DynamicComponent"
+                                              Type="component.Configuration.ComponentType"
+                                              Parameters="component.Parameters"/>
+                        }
+                    </div>
+                </div>
+            </div>
+        }
+    }
+    else
+    {
+        @CurrentPage.OverrideComponent
+    }
+}
+
+@code
+{
+    [Parameter] public Action<FastFormConfiguration<TModel>>? OnConfigure { get; set; }
+    [Parameter] public TModel Model { get; set; }
+
+    private FastFormConfiguration<TModel> Configuration = new();
+    private List<FastFormPage> Pages = new();
+
+    private FastFormPage? CurrentPage;
+
+    protected override void OnInitialized()
+    {
+        OnConfigure?.Invoke(Configuration);
+
+        Init();
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if(!firstRender)
+            return;
+
+        var components = Pages
+            .Where(x => x.OverrideComponent == null)
+            .SelectMany(x => x.Sections)
+            .SelectMany(x => x.Components)
+            .ToArray();
+
+        foreach (var component in components)
+        {
+            // Call configure if defined
+            if (component.Configuration.OnConfigureFunc != null)
+            {
+                var type = component.Configuration.OnConfigureFunc.GetType();
+                var resultTask = type.GetMethod("Invoke")!.Invoke(component.Configuration.OnConfigureFunc, new []
+                {
+                    component.DynamicComponent.Instance
+                });
+
+                await (Task)(resultTask!);
+            }
+
+            // Set configured as we are done here
+            var method = component.Configuration.ComponentType.GetMethod("SetConfigured")!;
+            var configuredTask = method.Invoke(component.DynamicComponent.Instance, []);
+
+            await (Task)(configuredTask!);
+        }
+    }
+
+    private void Init()
+    {
+        foreach (var configuration in Configuration.PropertyConfigurations)
+        {
+            var page = GetPage(configuration.PageConfiguration?.Name ?? "");
+            var section = GetSection(page, configuration.SectionConfiguration?.Name ?? "");
+
+            if (configuration.SectionConfiguration != null && configuration.SectionConfiguration.Icon != null)
+                section.Icon = configuration.SectionConfiguration.Icon;
+
+            // Binder
+            var propBinderType = typeof(PropRefBinder<>).MakeGenericType(configuration.PropertyInfo.PropertyType);
+            var propBinder = Activator.CreateInstance(propBinderType, [
+                Model,
+                configuration.PropertyInfo
+            ])!;
+
+            var component = new FastFormComponent()
+            {
+                Configuration = configuration
+            };
+            
+            component.Parameters.Add("Name", configuration.Name ?? Formatter.ConvertCamelCaseToSpaces(configuration.PropertyInfo.Name));
+            component.Parameters.Add("Description", configuration.Description!);
+            component.Parameters.Add("Binder", propBinder);
+
+            section.Components.Add(component);
+        }
+
+        foreach (var customPage in Configuration.CustomPages)
+        {
+            Pages.Add(new()
+            {
+                Name = customPage.Name,
+                OverrideComponent = customPage.OverrideComponent
+            });
+        }
+
+        CurrentPage = Pages.FirstOrDefault(x => x.Name == "");
+
+        if (CurrentPage == null && Pages.Count > 0)
+            CurrentPage = Pages.First();
+    }
+
+    private FastFormPage GetPage(string? name)
+    {
+        var pageName = name ?? "";
+
+        var foundPage = Pages
+            .FirstOrDefault(x => x.Name == pageName);
+
+        if (foundPage == null)
+        {
+            foundPage = new()
+            {
+                Name = pageName
+            };
+
+            Pages.Add(foundPage);
+        }
+
+        return foundPage;
+    }
+
+    private FastFormSection GetSection(FastFormPage page, string? name)
+    {
+        var sectionName = name ?? "";
+
+        var foundPage = page.Sections
+            .FirstOrDefault(x => x.Name == sectionName);
+
+        if (foundPage == null)
+        {
+            foundPage = new()
+            {
+                Name = sectionName
+            };
+
+            page.Sections.Add(foundPage);
+        }
+
+        return foundPage;
+    }
+    
+    public Task<bool> Validate(out string[] errorMessages)
+    {
+        List<string> errorMessageResult = new();
+        bool isValid = true;
+
+        foreach (var configuration in Configuration.PropertyConfigurations)
+        {
+            var propertyInfo = configuration.PropertyInfo;
+            var propertyValue = propertyInfo.GetValue(Model);
+            
+            foreach (var validator in configuration.Validators)
+            {
+                var validationResult = validator.Check(propertyValue);
+
+                if (validationResult == null)
+                    continue;
+
+                if (isValid)
+                    isValid = false;
+
+                if (validationResult.ErrorMessage != null)
+                {
+                    var formatedMessage = $"{configuration.Name ?? propertyInfo.Name}: " + validationResult.ErrorMessage;
+                    errorMessageResult.Add(formatedMessage);
+                }
+            }
+        }
+
+        errorMessages = errorMessageResult.ToArray();
+        return Task.FromResult(isValid);
+    }
+
+    private async Task SelectPage(FastFormPage page)
+    {
+        CurrentPage = page;
+        await InvokeAsync(StateHasChanged);
+    }
+}

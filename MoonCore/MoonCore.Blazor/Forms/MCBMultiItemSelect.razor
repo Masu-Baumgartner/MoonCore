@@ -59,7 +59,7 @@
 
 @code
 {
-    [Parameter] public List<T> Items { get; set; }
+    [Parameter] public IEnumerable<T> Items { get; set; }
     [Parameter] public Func<T, string> DisplayFunc { get; set; }
     [Parameter] public Func<T, string> SearchFunc { get; set; }
     [Parameter] public int PageSize { get; set; } = 10;

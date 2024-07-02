@@ -1,0 +1,24 @@
+@page "/uwu"
+@using MoonCore.Blazor.Test.Forms
+@using MoonCore.Blazor.Forms.FastForms
+@using MoonCore.Blazor.Models.FastForms
+
+<FastForm Model="Form" OnConfigure="OnConfigure">
+    
+</FastForm>
+
+@code
+{
+    private UwuForm Form = new();
+
+    private void OnConfigure(FastFormConfiguration<UwuForm> configuration)
+    {
+        configuration.AddProperty(x => x.Input)
+            .WithComponent<MyTestyComponent>(component =>
+            {
+                component.ShouldShowSomethingSpecial = true;
+                
+                return Task.CompletedTask;
+            });
+    }
+}
