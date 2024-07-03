@@ -1,22 +1,19 @@
 @inherits MoonCore.Blazor.Forms.FastForms.FastFormBaseComponent<string>
 
-@if (IsConfigured)
-{
-    <div class="col-12 col-md-3">
-        <label class="form-label">
-            @Name
-        </label>
-        <input type="text" class="form-control" @bind="Binder.Value"/>
-        <div class="form-text fs-6 text-gray-600">
-            @Description
-        </div>
+<div class="col-12 col-md-3">
+    <label class="form-label">
+        @Name
+    </label>
+    <input type="text" class="form-control" @bind="Binder.Value"/>
+    <div class="form-text fs-6 text-gray-600">
+        @Description
     </div>
-    
-    @if (ShouldShowSomethingSpecial)
-    {
-        <div class="fs-1 text-danger">FINALLY</div>
-    }
-}
+</div>
+
+@if (ShouldShowSomethingSpecial)
+{
+<div class="fs-1 text-danger">FINALLY</div>
+}s
 
 @code
 {

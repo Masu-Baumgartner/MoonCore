@@ -19,8 +19,6 @@
             .WithComponent<MyTestyComponent>(component =>
             {
                 component.ShouldShowSomethingSpecial = true;
-                
-                return Task.CompletedTask;
             })
             .WithValidation(new RequiredValidator());
     }

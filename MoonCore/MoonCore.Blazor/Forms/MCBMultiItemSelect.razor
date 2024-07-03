@@ -2,6 +2,7 @@
 @inherits InputBase<List<T>>
 
 @using Microsoft.AspNetCore.Components.Forms
+@using Microsoft.Extensions.Logging
 @using MoonCore.Blazor.Helpers
 
 <div class="dropdown w-100 border rounded" @onclick="OnClick">
@@ -31,7 +32,7 @@
                     IEnumerable<T> items;
 
                     if (string.IsNullOrEmpty(SearchTerm))
-                        items = Items.Take(PageSize);
+                        items = DataSource.Take(PageSize);
                     else
                         items = ItemsFiltered;
                 }
@@ -59,7 +60,8 @@
 
 @code
 {
-    [Parameter] public IEnumerable<T> Items { get; set; }
+    [Parameter] public IEnumerable<T>? Items { get; set; }
+    [Parameter] public Func<IEnumerable<T>>? ItemsCallback { get; set; }
     [Parameter] public Func<T, string> DisplayFunc { get; set; }
     [Parameter] public Func<T, string> SearchFunc { get; set; }
     [Parameter] public int PageSize { get; set; } = 10;
@@ -70,6 +72,7 @@
     private string SearchTerm = "";
 
     private T[] ItemsFiltered = Array.Empty<T>();
+    private IEnumerable<T> DataSource => Items ?? ItemsCallback?.Invoke() ?? Array.Empty<T>();
 
     protected override void OnInitialized()
     {
@@ -122,7 +125,7 @@
     {
         SearchTerm = args.Value?.ToString() ?? "";
 
-        ItemsFiltered = Items
+        ItemsFiltered = DataSource
             .OrderByDescending(x => FormHelper.CalculateMatchScore(SearchFunc.Invoke(x), SearchTerm))
             .Take(PageSize)
             .ToArray();

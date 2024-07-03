@@ -1,0 +1,20 @@
+@page "/owo"
+@using System.Reflection
+
+<InstanceView Instance="c" />
+
+@code
+{
+    Counter c = new Counter();
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            foreach (var method in c.GetType().GetMethods(BindingFlags.NonPublic | BindingFlags.Instance))
+            {
+                Console.WriteLine(method.Name);
+            }
+        }
+    }
+}

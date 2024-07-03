@@ -5,8 +5,6 @@
 
 @typeparam T where T : class
 
-@inject IServiceProvider ServiceProvider
-
 <div class="col-12 col-md-3">
     <label class="form-label">@Name</label>
 
@@ -15,7 +13,8 @@
                         SearchFunc="SearchFunc"
                         IconFunc="IconFunc"
                         PageSize="PageSize"
-                        Items="Items"/>
+                        Items="Items"
+                        ItemsCallback="ItemsCallback"/>
 
     @if (Description != null)
     {
@@ -27,29 +26,24 @@
 
 @code
 {
-    [Parameter]
-    public Func<T, string> DisplayFunc { get; set; }
-    
-    [Parameter]
-    public Func<T, string> SearchFunc { get; set; }
-    
-    [Parameter]
-    public Func<T, string>? IconFunc { get; set; }
-    
-    [Parameter]
-    public int PageSize { get; set; } = 10;
-    
-    [Parameter]
-    public IEnumerable<T>? Items { get; set; }
+    [Parameter] public Func<T, string> DisplayFunc { get; set; }
+
+    [Parameter] public Func<T, string> SearchFunc { get; set; }
+
+    [Parameter] public Func<T, string>? IconFunc { get; set; }
+
+    [Parameter] public int PageSize { get; set; } = 10;
+
+    [Parameter] public IEnumerable<T>? Items { get; set; }
+
+    [Parameter] public Func<IEnumerable<T>>? ItemsCallback { get; set; }
 
     protected override void OnInitialized()
     {
-        if (Items == null)
+        if (Items == null && ItemsCallback == null)
         {
             var repo = ServiceProvider.GetRequiredService<Repository<T>>();
             Items = repo.Get().ToList();
         }
-
-        ArgumentNullException.ThrowIfNull(Items);
     }
 }

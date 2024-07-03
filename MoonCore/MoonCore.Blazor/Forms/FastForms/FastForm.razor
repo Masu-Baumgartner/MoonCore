@@ -1,8 +1,12 @@
+@using System.Reflection
 @using MoonCore.Blazor.Helpers
 @using MoonCore.Blazor.Models.FastForms
 @using MoonCore.Helpers
+@using MoonCore.Blazor.Components
 
 @typeparam TModel
+
+@inject IServiceProvider ServiceProvider
 
 @if (CurrentPage != null)
 {
@@ -53,9 +57,7 @@
                     <div class="row g-8">
                         @foreach (var component in section.Components)
                         {
-                            <DynamicComponent @ref="component.DynamicComponent"
-                                              Type="component.Configuration.ComponentType"
-                                              Parameters="component.Parameters"/>
+                            <InstanceView Instance="component" />
                         }
                     </div>
                 </div>
@@ -79,44 +81,13 @@
     private FastFormPage? CurrentPage;
     private string[]? ErrorMessages;
 
+    private bool RenderFinished = true;
+
     protected override void OnInitialized()
     {
         OnConfigure?.Invoke(Configuration);
 
         Init();
-    }
-
-    protected override async Task OnAfterRenderAsync(bool firstRender)
-    {
-        if(!firstRender)
-            return;
-
-        var components = Pages
-            .Where(x => x.OverrideComponent == null)
-            .SelectMany(x => x.Sections)
-            .SelectMany(x => x.Components)
-            .ToArray();
-
-        foreach (var component in components)
-        {
-            // Call configure if defined
-            if (component.Configuration.OnConfigureFunc != null)
-            {
-                var type = component.Configuration.OnConfigureFunc.GetType();
-                var resultTask = type.GetMethod("Invoke")!.Invoke(component.Configuration.OnConfigureFunc, new []
-                {
-                    component.DynamicComponent.Instance
-                });
-
-                await (Task)(resultTask!);
-            }
-
-            // Set configured as we are done here
-            var method = component.Configuration.ComponentType.GetMethod("SetConfigured")!;
-            var configuredTask = method.Invoke(component.DynamicComponent.Instance, []);
-
-            await (Task)(configuredTask!);
-        }
     }
 
     private void Init()
@@ -136,16 +107,26 @@
                 configuration.PropertyInfo
             ])!;
 
-            var component = new FastFormComponent()
-            {
-                Configuration = configuration
-            };
-            
-            component.Parameters.Add("Name", configuration.Name ?? Formatter.ConvertCamelCaseToSpaces(configuration.PropertyInfo.Name));
-            component.Parameters.Add("Description", configuration.Description!);
-            component.Parameters.Add("Binder", propBinder);
+            var instance = (ComponentBase)Activator.CreateInstance(configuration.ComponentType)!;
 
-            section.Components.Add(component);
+            var name = configuration.Name ?? Formatter.ConvertCamelCaseToSpaces(configuration.PropertyInfo.Name);
+            configuration.ComponentType.GetProperty("Name")!.SetValue(instance, name);
+            configuration.ComponentType.GetProperty("Description")!.SetValue(instance, configuration.Description);
+            configuration.ComponentType.GetProperty("Binder")!.SetValue(instance, propBinder);
+            
+            // We need to pass the service provider here, as injected services wont work in the instance view component :c
+            // this only affects the single component in the instance view, not all components below
+            // TODO: DOCS
+            configuration.ComponentType.GetProperty("ServiceProvider")!.SetValue(instance, ServiceProvider);
+
+            if (configuration.OnConfigureFunc != null)
+            {
+                configuration.OnConfigureFunc.GetType().GetMethod("Invoke")!.Invoke(configuration.OnConfigureFunc, [instance]);
+            }
+
+            instance.GetType().GetMethod("OnInitialized", BindingFlags.NonPublic | BindingFlags.Instance).Invoke(instance, []);
+
+            section.Components.Add(instance);
         }
 
         foreach (var customPage in Configuration.CustomPages)
@@ -248,7 +229,12 @@
 
     private async Task SelectPage(FastFormPage page)
     {
+        RenderFinished = false;
+
+        await InvokeAsync(StateHasChanged);
+        
         CurrentPage = page;
+        
         await InvokeAsync(StateHasChanged);
     }
 }

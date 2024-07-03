@@ -6,5 +6,5 @@ public class FastFormSection
 {
     public string Name { get; set; }
     public string? Icon { get; set; }
-    public List<FastFormComponent> Components { get; set; } = new();
+    public List<ComponentBase> Components { get; set; } = new();
 }

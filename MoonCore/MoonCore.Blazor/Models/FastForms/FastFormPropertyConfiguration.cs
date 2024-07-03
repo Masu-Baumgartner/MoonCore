@@ -19,7 +19,7 @@ public class FastFormPropertyConfiguration<TModel, TProperty> : IFastFormPropert
     public FastFormSectionConfiguration? SectionConfiguration { get; set; }
 
 
-    public FastFormPropertyConfiguration<TModel, TProperty> WithComponent<TComponent>(Func<TComponent, Task>? onConfigure = null) where TComponent : FastFormBaseComponent<TProperty>
+    public FastFormPropertyConfiguration<TModel, TProperty> WithComponent<TComponent>(Action<TComponent>? onConfigure = null) where TComponent : FastFormBaseComponent<TProperty>
     {
         ComponentType = typeof(TComponent);
         OnConfigureFunc = onConfigure;
