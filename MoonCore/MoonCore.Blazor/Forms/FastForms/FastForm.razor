@@ -83,14 +83,14 @@
 
     private bool RenderFinished = true;
 
-    protected override void OnInitialized()
+    protected override async Task OnInitializedAsync()
     {
         OnConfigure?.Invoke(Configuration);
 
-        Init();
+        await Init();
     }
 
-    private void Init()
+    private async Task Init()
     {
         foreach (var configuration in Configuration.PropertyConfigurations)
         {
@@ -107,25 +107,29 @@
                 configuration.PropertyInfo
             ])!;
 
-            var instance = (ComponentBase)Activator.CreateInstance(configuration.ComponentType)!;
+            // Create component instance
+            var type = configuration.ComponentType;
+            var instance = (ComponentBase)Activator.CreateInstance(type)!;
 
             var name = configuration.Name ?? Formatter.ConvertCamelCaseToSpaces(configuration.PropertyInfo.Name);
-            configuration.ComponentType.GetProperty("Name")!.SetValue(instance, name);
-            configuration.ComponentType.GetProperty("Description")!.SetValue(instance, configuration.Description);
-            configuration.ComponentType.GetProperty("Binder")!.SetValue(instance, propBinder);
+            
+            type.GetProperty("Name")!.SetValue(instance, name);
+            type.GetProperty("Description")!.SetValue(instance, configuration.Description);
+            type.GetProperty("Binder")!.SetValue(instance, propBinder);
             
             // We need to pass the service provider here, as injected services wont work in the instance view component :c
             // this only affects the single component in the instance view, not all components below
             // TODO: DOCS
-            configuration.ComponentType.GetProperty("ServiceProvider")!.SetValue(instance, ServiceProvider);
+            type.GetProperty("ServiceProvider")!.SetValue(instance, ServiceProvider);
 
-            if (configuration.OnConfigureFunc != null)
+            if (configuration.OnConfigureFunc != null) // Call manual configure if required
             {
-                configuration.OnConfigureFunc.GetType().GetMethod("Invoke")!.Invoke(configuration.OnConfigureFunc, [instance]);
+                configuration.OnConfigureFunc
+                    .GetType()
+                    .GetMethod("Invoke")!
+                    .Invoke(configuration.OnConfigureFunc, [instance]);
             }
-
-            instance.GetType().GetMethod("OnInitialized", BindingFlags.NonPublic | BindingFlags.Instance).Invoke(instance, []);
-
+            
             section.Components.Add(instance);
         }
 
@@ -151,15 +155,15 @@
         var foundPage = Pages
             .FirstOrDefault(x => x.Name == pageName);
 
-        if (foundPage == null)
+        if (foundPage != null)
+            return foundPage;
+        
+        foundPage = new()
         {
-            foundPage = new()
-            {
-                Name = pageName
-            };
+            Name = pageName
+        };
 
-            Pages.Add(foundPage);
-        }
+        Pages.Add(foundPage);
 
         return foundPage;
     }
@@ -171,15 +175,15 @@
         var foundPage = page.Sections
             .FirstOrDefault(x => x.Name == sectionName);
 
-        if (foundPage == null)
+        if (foundPage != null)
+            return foundPage;
+        
+        foundPage = new()
         {
-            foundPage = new()
-            {
-                Name = sectionName
-            };
+            Name = sectionName
+        };
 
-            page.Sections.Add(foundPage);
-        }
+        page.Sections.Add(foundPage);
 
         return foundPage;
     }
@@ -187,7 +191,7 @@
     public Task<bool> Validate(out string[] errorMessages)
     {
         List<string> errorMessageResult = new();
-        bool isValid = true;
+        var isValid = true;
 
         foreach (var configuration in Configuration.PropertyConfigurations)
         {
@@ -204,11 +208,11 @@
                 if (isValid)
                     isValid = false;
 
-                if (validationResult.ErrorMessage != null)
-                {
-                    var formatedMessage = $"{configuration.Name ?? propertyInfo.Name}: " + validationResult.ErrorMessage;
-                    errorMessageResult.Add(formatedMessage);
-                }
+                if (validationResult.ErrorMessage == null)
+                    continue;
+                
+                var formatedMessage = $"{configuration.Name ?? propertyInfo.Name}: " + validationResult.ErrorMessage;
+                errorMessageResult.Add(formatedMessage);
             }
         }
 
