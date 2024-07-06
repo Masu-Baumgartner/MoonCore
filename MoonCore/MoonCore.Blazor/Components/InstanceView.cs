@@ -9,7 +9,6 @@ public class InstanceView : IComponent
     public ComponentBase Instance { get; set; }
     
     private RenderHandle Handle;
-    private bool FirstParameterSet = true;
     
     public void Attach(RenderHandle renderHandle)
     {
@@ -28,19 +27,15 @@ public class InstanceView : IComponent
         
         Handle.Render(rf);
 
-        if (FirstParameterSet)
-        {
-            FirstParameterSet = false;
-
-            var type = Instance.GetType();
+        // Call initialize methods
+        var type = Instance.GetType();
             
-            // Call OnInitialized
-            type.GetMethod("OnInitialized", BindingFlags.NonPublic | BindingFlags.Instance)!.Invoke(Instance, []);
+        // Call OnInitialized
+        type.GetMethod("OnInitialized", BindingFlags.NonPublic | BindingFlags.Instance)!.Invoke(Instance, []);
             
-            // Call OnInitializedAsync
-            var resTask = type.GetMethod("OnInitializedAsync", BindingFlags.NonPublic | BindingFlags.Instance)!.Invoke(Instance, []);
-            await (Task)resTask!;
-        }
+        // Call OnInitializedAsync
+        var resTask = type.GetMethod("OnInitializedAsync", BindingFlags.NonPublic | BindingFlags.Instance)!.Invoke(Instance, []);
+        await (Task)resTask!;
     }
     
     private static FieldInfo GetPrivateField(Type t, string name)
