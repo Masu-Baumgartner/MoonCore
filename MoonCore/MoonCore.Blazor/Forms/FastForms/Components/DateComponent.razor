@@ -2,7 +2,7 @@
 
 @inherits FastFormBaseComponent<DateTime>
 
-<div class="col-12 col-md-3">
+<div class="col-@Columns col-md-@ColumnsMd">
     <label class="form-label">@Name</label>
 
     <InputDate @bind-Value="Binder.Value" class="form-control"/>

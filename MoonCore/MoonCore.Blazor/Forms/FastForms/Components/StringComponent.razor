@@ -1,8 +1,8 @@
 @inherits FastFormBaseComponent<string>
 
-<div class="col-12 col-md-3">
+<div class="col-@Columns col-md-@ColumnsMd">
     <label class="form-label">@Name</label>
-    <input class="form-control" type="text" @bind="Binder.Value"/>
+    <input class="form-control" type="@Type" @bind="Binder.Value"/>
     
     @if (Description != null)
     {
@@ -11,4 +11,9 @@
         </div>
     }
 </div>
+
+@code
+{
+    [Parameter] public string Type { get; set; } = "text";
+}
 

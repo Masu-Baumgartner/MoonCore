@@ -1,6 +1,6 @@
 @inherits FastFormBaseComponent<long>
 
-<div class="col-12 col-md-3">
+<div class="col-@Columns col-md-@ColumnsMd">
     <label class="form-label">@Name</label>
     
     <input class="form-control" type="number" @bind="Binder.Value"/>

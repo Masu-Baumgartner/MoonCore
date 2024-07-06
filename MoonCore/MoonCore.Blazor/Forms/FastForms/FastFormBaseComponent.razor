@@ -11,4 +11,6 @@
     [Parameter] public PropRefBinder<T> Binder { get; set; }
     
     [Parameter] public IServiceProvider ServiceProvider { get; set; }
+    [Parameter] public int ColumnsMd { get; set; } = 3;
+    [Parameter] public int Columns { get; set; } = 12;
 }

@@ -2,7 +2,7 @@
 
 @inherits FastFormBaseComponent<decimal>
 
-<div class="col-12 col-md-3">
+<div class="col-@Columns col-md-@ColumnsMd">
     <label class="form-label">@Name</label>
 
     <input class="form-control" step="0.01" type="number" @bind="Binder.Value"/>
