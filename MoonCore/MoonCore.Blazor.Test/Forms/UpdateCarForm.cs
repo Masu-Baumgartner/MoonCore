@@ -1,4 +1,4 @@
-using MoonCore.Blazor.Attributes.Auto;
+using MoonCore.Blazor.Bootstrap.Attributes.Auto;
 using MoonCore.Blazor.Test.Data;
 
 namespace MoonCore.Blazor.Test.Forms;

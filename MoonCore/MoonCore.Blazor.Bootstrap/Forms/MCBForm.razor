@@ -1,0 +1,161 @@
+﻿@using System.ComponentModel.DataAnnotations
+@using Microsoft.AspNetCore.Components.Forms
+@using MoonCore.Blazor.Bootstrap.Models.Forms
+@using MoonCore.Exceptions
+
+<EditForm Model="Model" OnSubmit="OnFormSubmit">
+    <div class="@(IsProcessing ? "blockui" : "")">
+
+        @if (ErrorMessages.Count != 0)
+        {
+            <div class="alert alert-danger bg-danger text-white p-10 mb-5 fs-6">
+                @foreach (var msg in ErrorMessages)
+                {
+                    @(msg)
+                    <br/>
+                }
+            </div>
+        }
+
+        <CascadingValue TValue="MCBForm" Name="FormWrapper" Value="this" IsFixed="true">
+            @ChildContent
+        </CascadingValue>
+
+        @if (IsProcessing)
+        {
+            <div class="blockui-overlay card-rounded bg-black bg-opacity-75">
+                <div class="d-flex flex-column">
+                    <div class="d-flex justify-content-center">
+                        <div class="spinner-border spinner-border-lg text-primary" role="status"></div>
+                    </div>
+                    <div class="mt-3 d-flex justify-content-center">
+                        <div class="text-white fs-4 fw-semibold">Loading</div>
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+</EditForm>
+
+@code
+{
+    [Parameter] public object Model { get; set; }
+    [Parameter] public Func<Task>? OnSubmit { get; set; }
+    [Parameter] public Func<Task>? OnValidSubmit { get; set; }
+    [Parameter] public Func<Task>? OnInvalidSubmit { get; set; }
+    [Parameter] public RenderFragment ChildContent { get; set; }
+    [Parameter] public bool EnableValidationSummary { get; set; } = true;
+
+    private readonly List<string> ErrorMessages = new();
+    private bool IsProcessing = false;
+
+    private readonly List<PropertyValidationData> ValidationData = new();
+
+    protected override void OnInitialized()
+    {
+        ArgumentNullException.ThrowIfNull(Model);
+    }
+
+    private async Task OnFormSubmit(EditContext context)
+    {
+        IsProcessing = true;
+        await InvokeAsync(StateHasChanged);
+
+        await Handle();
+
+        IsProcessing = false;
+        await InvokeAsync(StateHasChanged);
+    }
+
+    private async Task Handle()
+    {
+        ErrorMessages.Clear();
+        
+        try
+        {
+            if (OnSubmit != null)
+                await OnSubmit.Invoke();
+            
+            if (!await Validate()) // Validate based on data attributes, if a validation error has been found we can exit now
+            {
+                if(OnInvalidSubmit == null)
+                    return;
+
+                await OnInvalidSubmit.Invoke();
+                return;
+            }
+
+            if(OnValidSubmit == null)
+                return;
+            
+            await OnValidSubmit.Invoke();
+        }
+        catch (DisplayException e)
+        {
+            ErrorMessages.Add(e.Message);
+        }
+    }
+
+    private Task<bool> Validate()
+    {
+        ValidationData.Clear();
+        
+        var context = new ValidationContext(Model, null, null);
+        var results = new List<ValidationResult>();
+
+        var isValid = Validator.TryValidateObject(Model, context, results, true);
+        
+        if(isValid) // Everything is valid, so we can stop here
+            return Task.FromResult(true);
+        
+        // There were validation errors so we need to handle them
+        foreach (var result in results)
+        {
+            if(result.ErrorMessage == null)
+                continue;
+            
+            foreach (var memberName in result.MemberNames)
+            {
+                PropertyValidationData validationData;
+
+                if (ValidationData.Any(x => x.PropertyName == memberName))
+                    validationData = ValidationData.First(x => x.PropertyName == memberName);
+                else
+                {
+                    validationData = new()
+                    {
+                        PropertyName = memberName
+                    };
+                    
+                    ValidationData.Add(validationData);
+                }
+                
+                validationData.ErrorMessage = result.ErrorMessage;
+            }
+        }
+
+        if (EnableValidationSummary)
+        {
+            foreach (var validationData in ValidationData)
+                ErrorMessages.Add(validationData.ErrorMessage);
+        }
+
+        return Task.FromResult(false);
+    }
+
+    // This method is the way for form components to get their own validation status
+    public Task<bool> GetValidationStatus(string propertyName, out string errorMessage)
+    {
+        var dataForProperty = ValidationData
+            .FirstOrDefault(x => x.PropertyName == propertyName);
+
+        if (dataForProperty == null)
+        {
+            errorMessage = "";
+            return Task.FromResult(true);
+        }
+
+        errorMessage = dataForProperty.ErrorMessage;
+        return Task.FromResult(false);
+    }
+}

@@ -1,6 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using MoonCore.Abstractions;
-using MoonCore.Blazor.Extensions;
+using MoonCore.Blazor.Bootstrap.Extensions;
 using MoonCore.Blazor.Helpers;
 using MoonCore.Blazor.Test;
 using MoonCore.Blazor.Test.Data;
@@ -29,15 +29,15 @@ builder.Services.AddScoped<DevelopmentConsoleService>();
 
 builder.Logging.AddMoonCore();
 
-builder.Services.AddMoonCore(configuration =>
+builder.Services.AddMoonCoreIdentity(configuration =>
 {
-    configuration.Identity.Token = "30377629119932232086550615143349";
-    configuration.Identity.Provider = new CustomAuthStateProvider();
-    configuration.Identity.EnablePeriodicReAuth = true;
-    configuration.Identity.PeriodicReAuthDelay = TimeSpan.FromSeconds(1);
+    configuration.Token = "30377629119932232086550615143349";
+    configuration.Provider = new CustomAuthStateProvider();
+    configuration.EnablePeriodicReAuth = true;
+    configuration.PeriodicReAuthDelay = TimeSpan.FromSeconds(1);
 });
 
-builder.Services.AddMoonCoreBlazor(configuration =>
+builder.Services.AddMoonCoreBlazorBootstrap(configuration =>
 {
     configuration.ErrorHandler.ErrorMessageComponent = value =>
         ComponentHelper.FromType<ErrorMsgBox>(parameters => parameters.Add("Message", value));

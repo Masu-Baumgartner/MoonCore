@@ -1,5 +1,5 @@
 ﻿using System.ComponentModel.DataAnnotations;
-using MoonCore.Blazor.Attributes.Auto;
+using MoonCore.Blazor.Bootstrap.Attributes.Auto;
 
 namespace MoonCore.Blazor.Test.Data;
 

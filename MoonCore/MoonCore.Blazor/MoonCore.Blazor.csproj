@@ -23,37 +23,11 @@
     </ItemGroup>
 
     <ItemGroup>
-      <None Include="wwwroot\js\bootstrap.js" />
-      <None Include="wwwroot\js\mooncore.blazor.js" />
-    </ItemGroup>
-
-    <ItemGroup>
       <ProjectReference Include="..\MoonCore.Extended\MoonCore.Extended.csproj" />
       <ProjectReference Include="..\MoonCore\MoonCore.csproj" />
     </ItemGroup>
 
     <ItemGroup>
       <PackageReference Include="Ben.Demystifier" Version="0.4.1" />
-    </ItemGroup>
-
-    <ItemGroup>
-      <UpToDateCheckInput Remove="Forms\Fast\Components\BaseFastFormComponent.razor" />
-      <UpToDateCheckInput Remove="Forms\Fast\Components\ByteSizeComponent.razor" />
-      <UpToDateCheckInput Remove="Forms\Fast\Components\CheckboxComponent.razor" />
-      <UpToDateCheckInput Remove="Forms\Fast\Components\DateComponent.razor" />
-      <UpToDateCheckInput Remove="Forms\Fast\Components\DecimalComponent.razor" />
-      <UpToDateCheckInput Remove="Forms\Fast\Components\DoubleComponent.razor" />
-      <UpToDateCheckInput Remove="Forms\Fast\Components\DropdownComponent.razor" />
-      <UpToDateCheckInput Remove="Forms\Fast\Components\EnumSelectComponent.razor" />
-      <UpToDateCheckInput Remove="Forms\Fast\Components\FloatComponent.razor" />
-      <UpToDateCheckInput Remove="Forms\Fast\Components\IntComponent.razor" />
-      <UpToDateCheckInput Remove="Forms\Fast\Components\LongComponent.razor" />
-      <UpToDateCheckInput Remove="Forms\Fast\Components\MultiSelectComponent.razor" />
-      <UpToDateCheckInput Remove="Forms\Fast\Components\RadialBooleanButton.razor" />
-      <UpToDateCheckInput Remove="Forms\Fast\Components\SelectComponent.razor" />
-      <UpToDateCheckInput Remove="Forms\Fast\Components\StringComponent.razor" />
-      <UpToDateCheckInput Remove="Forms\Fast\Components\SwitchComponent.razor" />
-      <UpToDateCheckInput Remove="Forms\Fast\FastCrud.razor" />
-      <UpToDateCheckInput Remove="Forms\Fast\FastForm.razor" />
     </ItemGroup>
 </Project>

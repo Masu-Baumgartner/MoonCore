@@ -7,7 +7,7 @@
     </PropertyGroup>
 
     <ItemGroup>
-      <ProjectReference Include="..\MoonCore.Blazor\MoonCore.Blazor.csproj" />
+      <ProjectReference Include="..\MoonCore.Blazor.Bootstrap\MoonCore.Blazor.Bootstrap.csproj" />
     </ItemGroup>
 
     <ItemGroup>
