@@ -14,12 +14,11 @@
         <RepositoryUrl>https://github.com/Marcel-Baumgartner/MoonCore</RepositoryUrl>
         <RepositoryType>git</RepositoryType>
         <PackageTags>moonlight</PackageTags>
-        <Version>1.4.2</Version>
+        <Version>1.4.3</Version>
     </PropertyGroup>
 
     <ItemGroup>
-        <PackageReference Include="JWT" Version="10.1.1"/>
-        <PackageReference Include="Mappy.Net" Version="1.0.2"/>
+        <PackageReference Include="Crayon" Version="2.0.69" />
         <PackageReference Include="Microsoft.AspNetCore.Components.Web" Version="8.0.6"/>
         <PackageReference Include="Microsoft.AspNetCore.Hosting.Abstractions" Version="2.2.0"/>
         <PackageReference Include="Microsoft.AspNetCore.Server.Kestrel" Version="2.2.0"/>

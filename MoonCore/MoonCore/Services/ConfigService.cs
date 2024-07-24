@@ -1,9 +1,14 @@
-﻿using Newtonsoft.Json;
+﻿using System.Text.Json;
 
 namespace MoonCore.Services;
 
 public class ConfigService<T>
 {
+    private JsonSerializerOptions SerializerOptions = new()
+    {
+        WriteIndented = true
+    };
+    
     private readonly string Path;
     private T Data;
 
@@ -20,60 +25,19 @@ public class ConfigService<T>
             File.WriteAllText(Path, "{}");
 
         var text = File.ReadAllText(Path);
-        Data = JsonConvert.DeserializeObject<T>(text) ?? Activator.CreateInstance<T>()!;
-        
-        ApplyEnvironmentVariables("Moonlight", Data);
+        Data = JsonSerializer.Deserialize<T>(text, SerializerOptions) ?? Activator.CreateInstance<T>()!;
         
         Save();
     }
 
     public void Save()
     {
-        var text = JsonConvert.SerializeObject(Data, Formatting.Indented);
+        var text = JsonSerializer.Serialize(Data, SerializerOptions);
         File.WriteAllText(Path, text);
     }
 
     public T Get()
     {
         return Data;
-    }
-
-    private void ApplyEnvironmentVariables(string prefix, object objectToLookAt)
-    {
-        foreach (var property in objectToLookAt.GetType().GetProperties())
-        {
-            var envName = $"{prefix}_{property.Name}";
-            
-            if (property.PropertyType.Assembly == GetType().Assembly)
-            {
-                ApplyEnvironmentVariables(envName, property.GetValue(objectToLookAt)!);
-            }
-            else
-            {
-                if(!Environment.GetEnvironmentVariables().Contains(envName))
-                    continue;
-
-                var envValue = Environment.GetEnvironmentVariable(envName)!;
-
-                if (property.PropertyType == typeof(string))
-                {
-                    property.SetValue(objectToLookAt, envValue);
-                }
-                else if (property.PropertyType == typeof(int))
-                {
-                    if(!int.TryParse(envValue, out int envIntValue))
-                        continue;
-                    
-                    property.SetValue(objectToLookAt, envIntValue);
-                }
-                else if (property.PropertyType == typeof(bool))
-                {
-                    if(!bool.TryParse(envValue, out bool envBoolValue))
-                        continue;
-                    
-                    property.SetValue(objectToLookAt, envBoolValue);
-                }
-            }
-        }
     }
 }
