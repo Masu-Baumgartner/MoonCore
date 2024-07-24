@@ -1,5 +1,4 @@
 using Microsoft.EntityFrameworkCore;
-using MoonCore.Abstractions;
 using MoonCore.Blazor.Bootstrap.Extensions;
 using MoonCore.Blazor.Helpers;
 using MoonCore.Blazor.Test;
@@ -7,13 +6,17 @@ using MoonCore.Blazor.Test.Data;
 using MoonCore.Blazor.Test.Database;
 using MoonCore.Blazor.Test.Services;
 using MoonCore.Blazor.Test.Shared;
+using MoonCore.Extended.Abstractions;
+using MoonCore.Extended.Helpers;
 using MoonCore.Extensions;
-using MoonCore.Helpers;
 
 using ILoggerFactory factory = LoggerFactory.Create(builder => builder.AddMoonCore());
 
 var dc = new SomeContext();
-await DatabaseCheckHelper.Check(factory.CreateLogger<DbContext>(), dc);
+var dbHelper = new DatabaseHelper(factory.CreateLogger<DatabaseHelper>());
+
+dbHelper.AddDbContext<SomeContext>();
+dbHelper.GenerateMappings();
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -29,14 +32,6 @@ builder.Services.AddScoped<DevelopmentConsoleService>();
 
 builder.Logging.AddMoonCore();
 
-builder.Services.AddMoonCoreIdentity(configuration =>
-{
-    configuration.Token = "30377629119932232086550615143349";
-    configuration.Provider = new CustomAuthStateProvider();
-    configuration.EnablePeriodicReAuth = true;
-    configuration.PeriodicReAuthDelay = TimeSpan.FromSeconds(1);
-});
-
 builder.Services.AddMoonCoreBlazorBootstrap(configuration =>
 {
     configuration.ErrorHandler.ErrorMessageComponent = value =>
@@ -48,8 +43,12 @@ builder.Services.AddMoonCoreBlazorBootstrap(configuration =>
     });
 });
 
+builder.Services.AutoAddServices<Program>();
+
 
 var app = builder.Build();
+
+await dbHelper.EnsureMigrated(app.Services.CreateScope().ServiceProvider);
 
 // Configure the HTTP request pipeline.
 if (!app.Environment.IsDevelopment())

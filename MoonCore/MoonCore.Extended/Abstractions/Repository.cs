@@ -1,6 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 
-namespace MoonCore.Abstractions;
+namespace MoonCore.Extended.Abstractions;
 
 public abstract class Repository<TEntity> where TEntity : class
 {
