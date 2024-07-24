@@ -7,7 +7,7 @@
         <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
         <Title>MoonCore.Unix</Title>
         <Authors>Masu Baumgartner</Authors>
-        <Description>MoonCore's Utilities for interacting with unix native calls</Description>
+        <Description>MoonCore's utilities for interacting with unix native calls</Description>
         <Copyright>Masu Baumgartner</Copyright>
         <PackageProjectUrl>https://github.com/Masu-Baumgartner/MoonCore</PackageProjectUrl>
         <PackageLicenseUrl>https://github.com/Masu-Baumgartner/MoonCore</PackageLicenseUrl>
