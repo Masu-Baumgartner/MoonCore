@@ -1,5 +1,7 @@
 ﻿using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
+using MoonCore.Configuration;
+using MoonCore.Helpers;
 
 namespace MoonCore.Extensions;
 
@@ -21,5 +23,17 @@ public static class LoggingBuilderExtensions
     {
         foreach (var provider in providers)
             builder.AddProvider(provider);
+    }
+    
+    public static void AddMoonCore(this ILoggingBuilder builder, Action<MoonCoreLoggingConfiguration>? configureAction = null)
+    {
+        builder.ClearProviders();
+
+        var configuration = new MoonCoreLoggingConfiguration();
+        
+        if(configureAction != null)
+            configureAction.Invoke(configuration);
+
+        builder.AddProviders(LoggerBuildHelper.BuildFromConfiguration(configuration));
     }
 }

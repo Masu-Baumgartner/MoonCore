@@ -1,4 +1,4 @@
-﻿namespace MoonCore.Models;
+﻿namespace MoonCore.Configuration;
 
 public class MoonCoreLoggingConfiguration
 {

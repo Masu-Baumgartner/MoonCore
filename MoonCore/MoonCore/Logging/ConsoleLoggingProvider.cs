@@ -14,7 +14,7 @@ public class ConsoleLoggingProvider : ILoggerProvider
     public ILogger CreateLogger(string categoryName)
     {
         if (EnableAnsi)
-            return new AnsiLogger(categoryName);
+            return new AnsiConsoleLogger(categoryName);
         
         return new ConsoleLogger(categoryName);
     }
