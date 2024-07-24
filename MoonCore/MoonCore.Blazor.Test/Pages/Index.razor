@@ -3,12 +3,16 @@
 @using MoonCore.Blazor.Bootstrap.Components.Toasts
 @using MoonCore.Blazor.Bootstrap.Services
 @using MoonCore.Blazor.Test.Data
+@using MoonCore.Blazor.Bootstrap.Forms
+@using MoonCore.Blazor.Test.Services
 
 @inject AlertService AlertService
 @inject ToastService ToastService
 @inject ClipboardService ClipboardService
 @inject DownloadService DownloadService
 @inject ILogger<Index> Logger
+
+@inject HostedServiceThing HostedServiceThing
 
 <PageTitle>Index</PageTitle>
 
@@ -44,6 +48,8 @@
 <ConfirmButton CssClasses="btn btn-info" OnClick="Confirm1">
     owo :3
 </ConfirmButton>
+
+<button @onclick="Testyyyyyyy" class="btn btn-secondary">Testyyyyy</button>
 
 <div class="separator my-10"></div>
 
@@ -118,6 +124,11 @@
         await lazyLoader.SetText("Doing another thing");
 
         await Task.Delay(3000);
+    }
+    
+    private async Task Testyyyyyyy()
+    {
+        HostedServiceThing.DoSmth();
     }
 
     private async Task Testy()
