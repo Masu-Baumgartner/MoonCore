@@ -1,0 +1,75 @@
+﻿@using MoonCore.Blazor.Helpers
+@using MoonCore.Blazor.Tailwind.Models
+@using MoonCore.Blazor.Tailwind.Services
+
+@inject ToastService ToastService
+
+@if (Items.Count > 0)
+{
+    <div class="fixed flex flex-col space-y-2 bottom-5 right-5">
+        @foreach (var toast in Items)
+        {
+            <div id="@(toast.Id)" class="inline-flex min-w-80 px-4 py-2 rounded-lg text-sm bg-white dark:bg-gray-900 shadow-lg border border-gray-200 dark:border-gray-700/60 text-gray-600 dark:text-gray-100" role="alert">
+                @toast.Render
+            </div>
+        }
+    </div>
+}
+
+@code
+{
+    private readonly List<ToastLaunchItem> Items = new();
+    private int Counter = 1;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await ToastService.SetLaunchPoint(this);
+    }
+
+    public async Task Launch<T>(string? id = null, bool enableAutoDisappear = true, Action<Dictionary<string, object>>? buildAttributes = null) where T : BaseToast
+    {
+        var item = new ToastLaunchItem()
+        {
+            Id = id ?? "modal" + Counter
+        };
+
+        item.Render = ComponentHelper.FromType<T>(parameters =>
+        {
+            parameters.Add("Self", item);
+
+            buildAttributes?.Invoke(parameters);
+        });
+
+        Items.Add(item);
+        Counter++;
+
+        await InvokeAsync(StateHasChanged);
+
+        if (enableAutoDisappear)
+        {
+            Task.Run(async () =>
+            {
+                await Task.Delay(TimeSpan.FromSeconds(5));
+                await Hide(item);
+            });
+        }
+    }
+
+    public async Task Hide(string id)
+    {
+        var itemToHide = Items.FirstOrDefault(x => x.Id == id);
+
+        if (itemToHide == null)
+            return;
+
+        await Hide(itemToHide);
+    }
+
+    public async Task Hide(ToastLaunchItem item)
+    {
+        if (Items.Contains(item))
+            Items.Remove(item);
+
+        await InvokeAsync(StateHasChanged);
+    }
+}

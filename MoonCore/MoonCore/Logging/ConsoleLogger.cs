@@ -19,44 +19,8 @@ public class ConsoleLogger : ILogger
     {
         var message = formatter(state, exception);
 
-        Console.WriteLine(FormatLogMessage(logLevel, CategoryName, message));
-    }
-
-    private static string FormatLogMessage(LogLevel logLevel, string categoryName, string message)
-    {
-        string logLevelNameShort;
-
-        switch (logLevel)
-        {
-            case LogLevel.Critical:
-                logLevelNameShort = "CRIT";
-                break;
-            
-            case LogLevel.Error:
-                logLevelNameShort = "ERRO";
-                break;
-            
-            case LogLevel.Warning:
-                logLevelNameShort = "WARN";
-                break;
-            
-            case LogLevel.Information:
-                logLevelNameShort = "INFO";
-                break;
-            
-            case LogLevel.Debug:
-                logLevelNameShort = "DEBG";
-                break;
-            
-            case LogLevel.Trace:
-                logLevelNameShort = "TRCE";
-                break;
-            
-            default:
-                logLevelNameShort = "UNKN";
-                break;
-        }
+        var shortText = LoggingConstants.ShortTextMappings[logLevel];
         
-        return $"{DateTime.Now:HH:mm:ss} {logLevelNameShort} {categoryName}: {message}";
+        Console.WriteLine($"{DateTime.Now:HH:mm:ss} {shortText} {CategoryName}: {message}");
     }
 }

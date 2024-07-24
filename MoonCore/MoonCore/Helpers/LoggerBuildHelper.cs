@@ -1,6 +1,6 @@
 using Microsoft.Extensions.Logging;
+using MoonCore.Configuration;
 using MoonCore.Logging;
-using MoonCore.Models;
 
 namespace MoonCore.Helpers;
 
@@ -15,33 +15,36 @@ public static class LoggerBuildHelper
 
         if (configuration.FileLogging.Enable)
         {
-            string? GetCurrentRotateName()
+            if (configuration.FileLogging.EnableLogRotation)
             {
-                var counter = 0;
-                string currentName;
-
-                while (true)
+                string? GetCurrentRotateName()
                 {
-                    if (string.IsNullOrEmpty(configuration.FileLogging.RotateLogNameTemplate))
-                        currentName = $"{configuration.FileLogging.Path}.{counter}";
-                    else
-                        currentName = string.Format(configuration.FileLogging.RotateLogNameTemplate, counter);
+                    var counter = 0;
+                    string currentName;
 
-                    if (!File.Exists(currentName))
-                        break;
+                    while (true)
+                    {
+                        if (string.IsNullOrEmpty(configuration.FileLogging.RotateLogNameTemplate))
+                            currentName = $"{configuration.FileLogging.Path}.{counter}";
+                        else
+                            currentName = string.Format(configuration.FileLogging.RotateLogNameTemplate, counter);
 
-                    counter++;
+                        if (!File.Exists(currentName))
+                            break;
+
+                        counter++;
+                    }
+
+                    return currentName;
                 }
 
-                return currentName;
-            }
-
-            if (File.Exists(configuration.FileLogging.Path))
-            {
-                var currentRotateName = GetCurrentRotateName();
+                if (File.Exists(configuration.FileLogging.Path))
+                {
+                    var currentRotateName = GetCurrentRotateName();
                     
-                if(currentRotateName != null)
-                    File.Move(configuration.FileLogging.Path, currentRotateName);
+                    if(currentRotateName != null)
+                        File.Move(configuration.FileLogging.Path, currentRotateName);
+                }
             }
 
             result.Add(new FileLoggingProvider(configuration.FileLogging.Path));

@@ -1,10 +1,11 @@
 @page "/act"
 
 @using MoonCore.Blazor.Test.Data
+@using MoonCore.Blazor.Bootstrap.Forms.Auto
+@using MoonCore.Blazor.Bootstrap.Forms
 @using MoonCore.Blazor.Test.Forms
-@using MoonCore.Blazor.Forms.Auto
-@using MoonCore.Blazor.Forms.Table
-@using MoonCore.Blazor.Forms
+@using MoonCore.Blazor.Bootstrap.Forms.Table
+@using MoonCore.Extended.Abstractions
 
 @code {
 
@@ -29,15 +30,4 @@
             <h1>OwO</h1>
         </DefineCustomPage>
     </CreateFormOptions>
-    <UpdateFormOptions Context="editContext">
-        <DefineCustomComponent T="List<User>" Name="OwnersSelect" Context="componentContext">
-            <MCBMultiItemSelect @bind-Value="componentContext.Value"
-                                Items="CustomAuthStateProvider.Users"
-                                DisplayFunc="@(x => x.Email)"
-                                SearchFunc="@(x => x.Email)"/>
-        </DefineCustomComponent>
-        <DefineCustomPage Name="Ara">
-            <h1>You are editing @editContext.Name</h1>
-        </DefineCustomPage>
-    </UpdateFormOptions>
 </AutoCrud>

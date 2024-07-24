@@ -1,6 +1,6 @@
 using Microsoft.EntityFrameworkCore;
-using MoonCore.Abstractions;
 using MoonCore.Blazor.Test.Database;
+using MoonCore.Extended.Abstractions;
 
 namespace MoonCore.Blazor.Test.Services;
 

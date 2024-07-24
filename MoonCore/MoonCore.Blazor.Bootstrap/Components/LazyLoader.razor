@@ -1,0 +1,107 @@
+﻿@using MoonCore.Blazor.Bootstrap.Models
+@inject MoonCoreBlazorBootstrapConfiguration BootstrapConfiguration
+
+@if (IsLoaded)
+{
+    @ChildContent
+}
+else
+{
+    if (ShowLoading)
+    {
+        if (CustomSpinner == null)
+        {
+            <div class="d-flex justify-content-center py-4">
+                <span class="fs-1 spinner-border spinner-border-lg align-middle me-2"></span>
+                <span class="ms-3 fs-5 align-middle fw-semibold">@(Text)</span>
+            </div>
+        }
+        else
+        {
+            @CustomSpinner
+        }
+    }
+}
+
+@code
+{
+    [Parameter] public RenderFragment ChildContent { get; set; }
+    [Parameter] public RenderFragment? CustomSpinner { get; set; }
+    [Parameter] public TimeSpan TimeUntilSpinnerIsShown { get; set; }
+    [Parameter] public bool UseDefaultValues { get; set; } = true;
+    [Parameter] public Func<LazyLoader, Task> Load { get; set; }
+
+    private bool ShowLoading = false;
+    private bool IsLoading = false;
+    private bool IsLoaded = false;
+    private string Text = "";
+
+    private CancellationTokenSource Cancellation;
+    
+    protected override void OnInitialized()
+    {
+        if (UseDefaultValues)
+            TimeUntilSpinnerIsShown = BootstrapConfiguration.LazyLoader.TimeUntilSpinnerIsShown;
+
+        if (Load == null)
+            throw new ArgumentNullException(nameof(Load), "The load parameter of an lazy loader cannot be null");
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+            await Reload();
+    }
+
+    public async Task Reload()
+    {
+        if(IsLoading) // Prevent multiple reloads
+            return;
+
+        // Reset the ui
+        IsLoading = true;
+        ShowLoading = TimeUntilSpinnerIsShown == TimeSpan.Zero; // If the time is null we can set the show loading here instantly
+        IsLoaded = false;
+
+        await InvokeAsync(StateHasChanged);
+        
+        // Prepare cancellation
+        Cancellation = new();
+
+        // Start the load task
+        var loadTask = Task.Run(async () =>
+        {
+            await Load.Invoke(this);
+            
+            // Set loaded state
+            IsLoading = false;
+            IsLoaded = true;
+
+            await InvokeAsync(StateHasChanged);
+            
+            // Stop wait timer
+            await Cancellation.CancelAsync();
+        });
+
+        if (TimeUntilSpinnerIsShown != TimeSpan.Zero)
+        {
+            try
+            {
+                await Task.Delay(TimeUntilSpinnerIsShown, Cancellation.Token);
+
+                ShowLoading = true;
+                await InvokeAsync(StateHasChanged);
+            }
+            catch (TaskCanceledException) { /* ignored */ }
+        }
+
+        // Wait for the load task to finish
+        await loadTask;
+    }
+
+    public async Task SetText(string content)
+    {
+        Text = content;
+        await InvokeAsync(StateHasChanged);
+    }
+}

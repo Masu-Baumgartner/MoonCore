@@ -1,0 +1,27 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <TargetFramework>net8.0</TargetFramework>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <Nullable>enable</Nullable>
+        <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+        <Title>MoonCore.Unix</Title>
+        <Authors>Masu Baumgartner</Authors>
+        <Description>MoonCore's utilities for interacting with unix native calls</Description>
+        <Copyright>Masu Baumgartner</Copyright>
+        <PackageProjectUrl>https://github.com/Masu-Baumgartner/MoonCore</PackageProjectUrl>
+        <PackageLicenseUrl>https://github.com/Masu-Baumgartner/MoonCore</PackageLicenseUrl>
+        <RepositoryUrl>https://github.com/Masu-Baumgartner/MoonCore</RepositoryUrl>
+        <RepositoryType>git</RepositoryType>
+        <PackageTags>mooncore</PackageTags>
+    </PropertyGroup>
+
+    <ItemGroup>
+      <PackageReference Include="Mono.Posix" Version="7.1.0-final.1.21458.1" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <ProjectReference Include="..\MoonCore\MoonCore.csproj" />
+    </ItemGroup>
+
+</Project>

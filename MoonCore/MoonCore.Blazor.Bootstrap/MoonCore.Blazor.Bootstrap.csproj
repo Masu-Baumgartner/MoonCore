@@ -1,0 +1,87 @@
+<Project Sdk="Microsoft.NET.Sdk.Razor">
+
+    <PropertyGroup>
+        <TargetFramework>net8.0</TargetFramework>
+        <Nullable>enable</Nullable>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <Title>MoonCore.Blazor.Bootstrap</Title>
+        <Authors>Masu Baumgartner</Authors>
+        <Description>Contains components for bootstrap blazor ui</Description>
+        <Copyright>Masu Baumgartner</Copyright>
+        <PackageProjectUrl>https://github.com/Masu-Baumgartner/MoonCore</PackageProjectUrl>
+        <PackageLicenseUrl>https://github.com/Masu-Baumgartner/MoonCore</PackageLicenseUrl>
+        <RepositoryUrl>https://github.com/Masu-Baumgartner/MoonCore</RepositoryUrl>
+        <RepositoryType>git</RepositoryType>
+        <PackageTags>mooncore</PackageTags>
+        <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+    </PropertyGroup>
+
+
+    <ItemGroup>
+        <SupportedPlatform Include="browser"/>
+    </ItemGroup>
+
+    <ItemGroup>
+        <PackageReference Include="Microsoft.AspNetCore.Components.Web" Version="8.0.6"/>
+        <PackageReference Include="Ben.Demystifier" Version="0.4.1" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <AdditionalFiles Include="Components\Alerts\ModalConfirmAlert.razor" />
+      <AdditionalFiles Include="Components\Alerts\ModalNotificationAlert.razor" />
+      <AdditionalFiles Include="Components\Alerts\ModalTextAlert.razor" />
+      <AdditionalFiles Include="Components\ConfirmButton.razor" />
+      <AdditionalFiles Include="Components\LazyLoader.razor" />
+      <AdditionalFiles Include="Components\MCBErrorHandler.razor" />
+      <AdditionalFiles Include="Components\ModalLaunchPoint.razor" />
+      <AdditionalFiles Include="Components\ToastLaunchPoint.razor" />
+      <AdditionalFiles Include="Components\Toasts\NotificationToast.razor" />
+      <AdditionalFiles Include="Components\Toasts\ProgressToast.razor" />
+      <AdditionalFiles Include="Components\WButton.razor" />
+      <AdditionalFiles Include="Forms\Auto\AutoCrud.razor" />
+      <AdditionalFiles Include="Forms\Auto\AutoFormGenerator.razor" />
+      <AdditionalFiles Include="Forms\Auto\BaseAutoFormComponent.razor" />
+      <AdditionalFiles Include="Forms\Auto\Components\IntegerComponent.razor" />
+      <AdditionalFiles Include="Forms\Auto\Components\StringComponent.razor" />
+      <AdditionalFiles Include="Forms\Auto\DefineCustomComponent.razor" />
+      <AdditionalFiles Include="Forms\Auto\DefineCustomPage.razor" />
+      <AdditionalFiles Include="Forms\ByteSizeInput.razor" />
+      <AdditionalFiles Include="Forms\FastForms\Components\ByteSizeComponent.razor" />
+      <AdditionalFiles Include="Forms\FastForms\Components\CheckboxComponent.razor" />
+      <AdditionalFiles Include="Forms\FastForms\Components\DateComponent.razor" />
+      <AdditionalFiles Include="Forms\FastForms\Components\DecimalComponent.razor" />
+      <AdditionalFiles Include="Forms\FastForms\Components\DoubleComponent.razor" />
+      <AdditionalFiles Include="Forms\FastForms\Components\DropdownComponent.razor" />
+      <AdditionalFiles Include="Forms\FastForms\Components\EnumSelectComponent.razor" />
+      <AdditionalFiles Include="Forms\FastForms\Components\FloatComponent.razor" />
+      <AdditionalFiles Include="Forms\FastForms\Components\IntComponent.razor" />
+      <AdditionalFiles Include="Forms\FastForms\Components\LongComponent.razor" />
+      <AdditionalFiles Include="Forms\FastForms\Components\MultiSelectComponent.razor" />
+      <AdditionalFiles Include="Forms\FastForms\Components\RadialBooleanButton.razor" />
+      <AdditionalFiles Include="Forms\FastForms\Components\SelectComponent.razor" />
+      <AdditionalFiles Include="Forms\FastForms\Components\StringComponent.razor" />
+      <AdditionalFiles Include="Forms\FastForms\Components\SwitchComponent.razor" />
+      <AdditionalFiles Include="Forms\FastForms\FastCrud.razor" />
+      <AdditionalFiles Include="Forms\FastForms\FastForm.razor" />
+      <AdditionalFiles Include="Forms\FastForms\FastFormBaseComponent.razor" />
+      <AdditionalFiles Include="Forms\MCBCustomFileSelect.razor" />
+      <AdditionalFiles Include="Forms\MCBDropdown.razor" />
+      <AdditionalFiles Include="Forms\MCBEnumSelect.razor" />
+      <AdditionalFiles Include="Forms\MCBFileSelect.razor" />
+      <AdditionalFiles Include="Forms\MCBForm.razor" />
+      <AdditionalFiles Include="Forms\MCBMultiItemSelect.razor" />
+      <AdditionalFiles Include="Forms\MCBRadialBooleanButton.razor" />
+      <AdditionalFiles Include="Forms\MCBSelect.razor" />
+      <AdditionalFiles Include="Forms\Router\MCBRouter.razor" />
+      <AdditionalFiles Include="Forms\Router\Route.razor" />
+      <AdditionalFiles Include="Forms\Table\MCBColumn.razor" />
+      <AdditionalFiles Include="Forms\Table\MCBTable.razor" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <ProjectReference Include="..\MoonCore.Blazor\MoonCore.Blazor.csproj" />
+      <ProjectReference Include="..\MoonCore.Extended\MoonCore.Extended.csproj" />
+      <ProjectReference Include="..\MoonCore\MoonCore.csproj" />
+    </ItemGroup>
+
+</Project>

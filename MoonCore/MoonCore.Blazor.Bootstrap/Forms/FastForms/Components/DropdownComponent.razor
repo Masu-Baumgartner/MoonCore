@@ -1,0 +1,45 @@
+@inherits FastFormBaseComponent<T> 
+
+@using Microsoft.Extensions.DependencyInjection
+@using MoonCore.Extended.Abstractions
+
+@typeparam T where T : class
+
+<div class="col-@Columns col-md-@ColumnsMd">
+    <label class="form-label">@Name</label>
+
+    <MCBDropdown @bind-Value="Binder.Value"
+                 DisplayFunc="DisplayFunc"
+                 SearchProp="SearchFunc"
+                 Items="Items"/>
+    
+    @if (Description != null)
+    {
+        <div class="form-text fs-6 text-gray-600">
+            @Description
+        </div>
+    }
+</div>
+
+@code
+{
+    [Parameter]
+    public Func<T, string> DisplayFunc { get; set; }
+    
+    [Parameter]
+    public Func<T, string> SearchFunc { get; set; }
+    
+    [Parameter]
+    public IEnumerable<T>? Items { get; set; }
+    
+    protected override void OnInitialized()
+    {
+        if (Items == null)
+        {
+            var repo = ServiceProvider.GetRequiredService<Repository<T>>();
+            Items = repo.Get().ToArray();
+        }
+        
+        ArgumentNullException.ThrowIfNull(Items);
+    }
+}
