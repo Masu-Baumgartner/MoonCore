@@ -1,8 +1,8 @@
-﻿using System.Text.Json;
-using JWT.Algorithms;
+﻿using JWT.Algorithms;
 using JWT.Builder;
 using JWT.Exceptions;
 using Microsoft.Extensions.Logging;
+using Newtonsoft.Json;
 
 namespace MoonCore.Extended.Helpers;
 
@@ -60,7 +60,7 @@ public class JwtHelper
             if (headerJson == null)
                 return Task.FromResult(false);
 
-            var headerData = JsonSerializer.Deserialize<Dictionary<string, string>>(headerJson);
+            var headerData = JsonConvert.DeserializeObject<Dictionary<string, string>>(headerJson);
 
             if (headerData == null) // => Invalid header
                 return Task.FromResult(false);
@@ -106,7 +106,7 @@ public class JwtHelper
                 .MustVerifySignature()
                 .Decode(jwt);
 
-            var data = JsonSerializer.Deserialize<Dictionary<string, string>>(json);
+            var data = JsonConvert.DeserializeObject<Dictionary<string, string>>(json);
 
             return Task.FromResult(data)!;
         }
