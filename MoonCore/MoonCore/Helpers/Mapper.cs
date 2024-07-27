@@ -1,58 +1,50 @@
-﻿using System.Reflection;
+using System.Reflection;
 
 namespace MoonCore.Helpers;
 
 public static class Mapper
 {
-    public static T Map<T>(object data)
+    public static object MapRaw(object source, object data, bool ignoreNullValues = false)
     {
-        var type = typeof(T);
-        var result = (T)Activator.CreateInstance(type)!;
+        var sourceProperties = new Dictionary<string, PropertyInfo>();
 
-        Dictionary<string, PropertyInfo> targetProps = new();
-        foreach (var prop in type.GetProperties())
+        foreach (var property in source.GetType().GetProperties())
+            sourceProperties[BuildId(property.Name)] = property;
+
+        var dataProperties = new Dictionary<string, PropertyInfo>();
+
+        foreach (var property in data.GetType().GetProperties())
+            dataProperties[BuildId(property.Name)] = property;
+
+        foreach (var dataProperty in dataProperties)
         {
-            var formattedName = prop.Name.ToLower().Replace("_", "");
+            if(!sourceProperties.TryGetValue(dataProperty.Key, out var sourceProperty))
+                continue;
             
-            targetProps[formattedName] = prop;
+            var value = dataProperty.Value.GetValue(data);
+
+            if (ignoreNullValues && value == null)
+                continue;
+
+            sourceProperty.SetValue(source, value);
         }
 
-        foreach (var dataProp in data.GetType().GetProperties())
-        {
-            var formattedName = dataProp.Name.ToLower().Replace("_", "");
-
-            if (targetProps.ContainsKey(formattedName))
-            {
-                targetProps[formattedName].SetValue(result, dataProp.GetValue(data));
-            }
-        }
-
-        return result;
+        return source;
     }
 
-    public static T Map<T>(T source, object data)
-    {
-        var type = typeof(T);
-        var result = source;
+    #region Object creating mappers
 
-        Dictionary<string, PropertyInfo> targetProps = new();
-        foreach (var prop in type.GetProperties())
-        {
-            var formattedName = prop.Name.ToLower().Replace("_", "");
-            
-            targetProps[formattedName] = prop;
-        }
+    public static object Map(Type type, object data, bool ignoreNullValues = false) => MapRaw(Activator.CreateInstance(type)!, data, ignoreNullValues: ignoreNullValues);
 
-        foreach (var dataProp in data.GetType().GetProperties())
-        {
-            var formattedName = dataProp.Name.ToLower().Replace("_", "");
+    public static T Map<T>(object data, bool ignoreNullValues = false) => (T)Map(typeof(T), data, ignoreNullValues: ignoreNullValues);
 
-            if (targetProps.ContainsKey(formattedName))
-            {
-                targetProps[formattedName].SetValue(result, dataProp.GetValue(data));
-            }
-        }
+    #endregion
 
-        return result;
-    }
+    public static T Map<T>(T source, object data, bool ignoreNullValues = false) => (T)MapRaw(source!, data, ignoreNullValues: ignoreNullValues);
+
+    private static string BuildId(string name) => name
+        .Replace(".", "")
+        .Replace("-", "")
+        .Replace("_", "")
+        .ToLower();
 }
