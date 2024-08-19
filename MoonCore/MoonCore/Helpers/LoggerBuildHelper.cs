@@ -6,8 +6,11 @@ namespace MoonCore.Helpers;
 
 public static class LoggerBuildHelper
 {
-    public static ILoggerProvider[] BuildFromConfiguration(MoonCoreLoggingConfiguration configuration)
+    public static ILoggerProvider[] BuildFromConfiguration(Action<MoonCoreLoggingConfiguration>? config)
     {
+        var configuration = new MoonCoreLoggingConfiguration();
+        config?.Invoke(configuration);
+        
         var result = new List<ILoggerProvider>();
         
         if (configuration.Console.Enable)
@@ -47,7 +50,7 @@ public static class LoggerBuildHelper
                 }
             }
 
-            result.Add(new FileLoggingProvider(configuration.FileLogging.Path));
+            result.Add(new FileLoggingProvider(configuration.FileLogging.Path, configuration.FileLogging.WriteFlushLimit));
         }
 
         return result.ToArray();

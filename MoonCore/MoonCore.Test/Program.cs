@@ -49,19 +49,16 @@ var errorModel = JsonSerializer.Deserialize<HttpApiErrorModel>(responseText, new
 
 Console.WriteLine("owo");*/
 
-using var loggerFactory = new LoggerFactory();
-loggerFactory.AddProviders(LoggerBuildHelper.BuildFromConfiguration(new MoonCoreLoggingConfiguration()
+var loggerFactory = new LoggerFactory();
+loggerFactory.AddProviders(LoggerBuildHelper.BuildFromConfiguration(configuration =>
 {
-    Console = new()
-    {
-        Enable = true,
-        EnableAnsiMode = true
-    },
-    FileLogging = new()
-    {
-        Enable = true,
-        Path = "log.txt"
-    }
+    configuration.Console.Enable = true;
+    configuration.Console.EnableAnsiMode = true;
+
+    configuration.FileLogging.Enable = true;
+    configuration.FileLogging.Path = "log.txt";
+    configuration.FileLogging.EnableLogRotation = true;
+    configuration.FileLogging.RotateLogNameTemplate = "log.{0}.txt";
 }));
 
 var logger = loggerFactory.CreateLogger<Program>();

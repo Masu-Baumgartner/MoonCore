@@ -8,11 +8,13 @@ public class FileLogger : ILogger
     private readonly TextWriter TextWriter;
 
     private int WriteCounter = 0;
+    private int WriteFlushLimit;
 
-    public FileLogger(string categoryName, TextWriter textWriter)
+    public FileLogger(string categoryName, TextWriter textWriter, int writeFlushLimit)
     {
         CategoryName = categoryName;
         TextWriter = textWriter;
+        WriteFlushLimit = writeFlushLimit;
     }
 
     public IDisposable BeginScope<TState>(TState state) => null!;
@@ -28,7 +30,7 @@ public class FileLogger : ILogger
         TextWriter.WriteLine($"{DateTime.Now:HH:mm:ss} {shortName} {CategoryName}: {message}");
         WriteCounter++;
 
-        if (WriteCounter <= 10)
+        if (WriteCounter <= WriteFlushLimit)
             return;
         
         WriteCounter = 0;

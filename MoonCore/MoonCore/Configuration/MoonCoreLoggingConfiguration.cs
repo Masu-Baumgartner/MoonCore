@@ -17,5 +17,6 @@ public class MoonCoreLoggingConfiguration
         public string Path { get; set; } = "";
         public bool EnableLogRotation { get; set; } = false;
         public string RotateLogNameTemplate { get; set; } = "";
+        public int WriteFlushLimit { get; set; } = 0;
     }
 }
