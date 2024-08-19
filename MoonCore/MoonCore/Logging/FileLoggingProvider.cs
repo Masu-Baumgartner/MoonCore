@@ -1,29 +1,30 @@
-﻿using Microsoft.Extensions.Logging;
+﻿using System.Text;
+using Microsoft.Extensions.Logging;
 
 namespace MoonCore.Logging;
 
 public class FileLoggingProvider : ILoggerProvider
 {
-    private readonly StreamWriter StreamWriter;
+    private readonly TextWriter TextWriter;
     private readonly FileStream FileStream;
 
     public FileLoggingProvider(string path)
     {
-        FileStream = File.Open(path, FileMode.OpenOrCreate, FileAccess.ReadWrite, FileShare.Read);
-        StreamWriter = new(FileStream);
+        FileStream = File.Open(path, FileMode.OpenOrCreate, FileAccess.Write, FileShare.Read);
+        TextWriter = new StreamWriter(FileStream, Encoding.UTF8, 1024);
     }
     
     public ILogger CreateLogger(string categoryName)
     {
-        return new FileLogger(categoryName, StreamWriter);
+        return new FileLogger(categoryName, TextWriter);
     }
 
     public void Dispose()
     {
-        StreamWriter.Flush();
+        TextWriter.Flush();
         FileStream.Flush();
         
-        StreamWriter.Close();
+        TextWriter.Close();
         FileStream.Close();
     }
 }

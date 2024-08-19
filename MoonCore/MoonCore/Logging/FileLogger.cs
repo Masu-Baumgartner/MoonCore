@@ -5,12 +5,14 @@ namespace MoonCore.Logging;
 public class FileLogger : ILogger
 {
     private readonly string CategoryName;
-    private readonly StreamWriter StreamWriter;
+    private readonly TextWriter TextWriter;
 
-    public FileLogger(string categoryName, StreamWriter streamWriter)
+    private int WriteCounter = 0;
+
+    public FileLogger(string categoryName, TextWriter textWriter)
     {
         CategoryName = categoryName;
-        StreamWriter = streamWriter;
+        TextWriter = textWriter;
     }
 
     public IDisposable BeginScope<TState>(TState state) => null!;
@@ -23,6 +25,13 @@ public class FileLogger : ILogger
 
         var shortName = LoggingConstants.ShortTextMappings[logLevel];
         
-        StreamWriter.WriteLine($"{DateTime.Now:HH:mm:ss} {shortName} {CategoryName}: {message}");
+        TextWriter.WriteLine($"{DateTime.Now:HH:mm:ss} {shortName} {CategoryName}: {message}");
+        WriteCounter++;
+
+        if (WriteCounter <= 10)
+            return;
+        
+        WriteCounter = 0;
+        TextWriter.Flush();
     }
 }

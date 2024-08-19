@@ -13,6 +13,9 @@ unixFs.RemoveAll("/cache/app").ThrowIfError();
 
 using System.Text;
 using System.Text.Json;
+using Microsoft.Extensions.Logging;
+using MoonCore.Configuration;
+using MoonCore.Extensions;
 using MoonCore.Helpers;
 using MoonCore.Models;
 using MoonCore.Test;
@@ -34,6 +37,7 @@ var class1 = Mapper.Map<Class1>(class2, ignoreNullValues: true);
 Console.WriteLine(class1.Field1 ?? "NULL");
 Console.WriteLine(class1.Field2 ?? "NULL");*/
 
+/*
 var httpClient = new HttpClient();
 
 var response = await httpClient.PostAsync("http://localhost:5165/auth/login", new StringContent("{}",Encoding.UTF8, "application/json"));
@@ -43,4 +47,26 @@ var errorModel = JsonSerializer.Deserialize<HttpApiErrorModel>(responseText, new
     PropertyNameCaseInsensitive = true
 });
 
-Console.WriteLine("owo");
+Console.WriteLine("owo");*/
+
+using var loggerFactory = new LoggerFactory();
+loggerFactory.AddProviders(LoggerBuildHelper.BuildFromConfiguration(new MoonCoreLoggingConfiguration()
+{
+    Console = new()
+    {
+        Enable = true,
+        EnableAnsiMode = true
+    },
+    FileLogging = new()
+    {
+        Enable = true,
+        Path = "log.txt"
+    }
+}));
+
+var logger = loggerFactory.CreateLogger<Program>();
+
+for (int i = 0; i < 125; i++)
+{
+    logger.LogInformation("Owo: " + i);
+}
