@@ -38,21 +38,21 @@ public class HttpApiClient
 
     #region POST
 
-    public Task<HttpResponseMessage> Post(string url, object? data) => SendHandled(HttpMethod.Post, url, ConvertToContent(data));
+    public Task<HttpResponseMessage> Post(string url, object? data = null) => SendHandled(HttpMethod.Post, url, ConvertToContent(data));
     
-    public async Task<Stream> PostStream(string url, object? data)
+    public async Task<Stream> PostStream(string url, object? data = null)
     {
         var response = await SendHandled(HttpMethod.Post, url, ConvertToContent(data));
         return await response.Content.ReadAsStreamAsync();
     }
     
-    public async Task<string> PostString(string url, object? data)
+    public async Task<string> PostString(string url, object? data = null)
     {
         var response =await SendHandled(HttpMethod.Post, url, ConvertToContent(data));
         return await response.Content.ReadAsStringAsync();
     }
     
-    public async Task<T> PostJson<T>(string url, object? data)
+    public async Task<T> PostJson<T>(string url, object? data = null)
     {
         var json = await PostString(url, data);
         return JsonSerializer.Deserialize<T>(json) ?? throw new JsonException($"Unable to parse json: {json}");
@@ -62,21 +62,21 @@ public class HttpApiClient
 
     #region PATCH
 
-    public Task<HttpResponseMessage> Patch(string url, object? data) => SendHandled(HttpMethod.Patch, url, ConvertToContent(data));
+    public Task<HttpResponseMessage> Patch(string url, object? data = null) => SendHandled(HttpMethod.Patch, url, ConvertToContent(data));
     
-    public async Task<Stream> PatchStream(string url, object? data)
+    public async Task<Stream> PatchStream(string url, object? data = null)
     {
         var response = await SendHandled(HttpMethod.Patch, url, ConvertToContent(data));
         return await response.Content.ReadAsStreamAsync();
     }
     
-    public async Task<string> PatchString(string url, object? data)
+    public async Task<string> PatchString(string url, object? data = null)
     {
         var response =await SendHandled(HttpMethod.Patch, url, ConvertToContent(data));
         return await response.Content.ReadAsStringAsync();
     }
     
-    public async Task<T> PatchJson<T>(string url, object? data)
+    public async Task<T> PatchJson<T>(string url, object? data = null)
     {
         var json = await PatchString(url, data);
         return JsonSerializer.Deserialize<T>(json) ?? throw new JsonException($"Unable to parse json: {json}");
@@ -86,21 +86,21 @@ public class HttpApiClient
 
     #region PUT
 
-    public Task<HttpResponseMessage> Put(string url, object? data) => SendHandled(HttpMethod.Put, url, ConvertToContent(data));
+    public Task<HttpResponseMessage> Put(string url, object? data = null) => SendHandled(HttpMethod.Put, url, ConvertToContent(data));
     
-    public async Task<Stream> PutStream(string url, object? data)
+    public async Task<Stream> PutStream(string url, object? data = null)
     {
         var response = await SendHandled(HttpMethod.Put, url, ConvertToContent(data));
         return await response.Content.ReadAsStreamAsync();
     }
     
-    public async Task<string> PutString(string url, object? data)
+    public async Task<string> PutString(string url, object? data = null)
     {
         var response =await SendHandled(HttpMethod.Put, url, ConvertToContent(data));
         return await response.Content.ReadAsStringAsync();
     }
     
-    public async Task<T> PutJson<T>(string url, object? data)
+    public async Task<T> PutJson<T>(string url, object? data = null)
     {
         var json = await PutString(url, data);
         return JsonSerializer.Deserialize<T>(json) ?? throw new JsonException($"Unable to parse json: {json}");
