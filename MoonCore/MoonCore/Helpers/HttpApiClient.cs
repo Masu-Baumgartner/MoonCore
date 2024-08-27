@@ -136,7 +136,16 @@ public class HttpApiClient
     {
         if (data == null)
             return null;
+
+        if (data is byte[] dataBytes)
+            return new ByteArrayContent(dataBytes);
         
+        if (data is Stream stream)
+            return new StreamContent(stream);
+
+        if (data is string dataString)
+            return new StringContent(dataString);
+
         var json = JsonSerializer.Serialize(data);
         return new StringContent(json);
     }
