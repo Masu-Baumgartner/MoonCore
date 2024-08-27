@@ -6,12 +6,16 @@ namespace MoonCore.Helpers;
 
 public class HttpApiClient
 {
+    public Action<HttpRequestMessage>? OnConfigureRequest { get; set; }
+    
     private readonly HttpClient Client;
 
     public HttpApiClient(HttpClient client)
     {
         Client = client;
     }
+
+    public HttpClient GetBaseClient() => Client;
 
     #region GET
 
@@ -157,6 +161,9 @@ public class HttpApiClient
 
         if (body != null)
             request.Content = body;
+        
+        if(OnConfigureRequest != null)
+            OnConfigureRequest.Invoke(request);
 
         var result = await Client.SendAsync(request);
 
