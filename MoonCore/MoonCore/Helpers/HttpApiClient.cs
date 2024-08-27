@@ -1,4 +1,5 @@
-﻿using System.Text.Json;
+﻿using System.Net.Http.Headers;
+using System.Text.Json;
 using MoonCore.Extensions;
 
 namespace MoonCore.Helpers;
@@ -147,7 +148,7 @@ public class HttpApiClient
             return new StringContent(dataString);
 
         var json = JsonSerializer.Serialize(data);
-        return new StringContent(json);
+        return new StringContent(json, new MediaTypeHeaderValue("application/json"));
     }
     
     private async Task<HttpResponseMessage> SendHandled(HttpMethod method, string url, HttpContent? body = null)
