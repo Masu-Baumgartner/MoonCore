@@ -7,6 +7,10 @@ namespace MoonCore.Helpers;
 public class HttpApiClient
 {
     public Action<HttpRequestMessage>? OnConfigureRequest { get; set; }
+    public JsonSerializerOptions JsonSerializerOptions { get; } = new()
+    {
+        PropertyNameCaseInsensitive = true
+    };
     
     private readonly HttpClient Client;
 
@@ -36,7 +40,7 @@ public class HttpApiClient
     public async Task<T> GetJson<T>(string url)
     {
         var json = await GetString(url);
-        return JsonSerializer.Deserialize<T>(json) ?? throw new JsonException($"Unable to parse json: {json}");
+        return JsonSerializer.Deserialize<T>(json, JsonSerializerOptions) ?? throw new JsonException($"Unable to parse json: {json}");
     }
 
     #endregion
@@ -60,7 +64,7 @@ public class HttpApiClient
     public async Task<T> PostJson<T>(string url, object? data = null)
     {
         var json = await PostString(url, data);
-        return JsonSerializer.Deserialize<T>(json) ?? throw new JsonException($"Unable to parse json: {json}");
+        return JsonSerializer.Deserialize<T>(json, JsonSerializerOptions) ?? throw new JsonException($"Unable to parse json: {json}");
     }
 
     #endregion
@@ -84,7 +88,7 @@ public class HttpApiClient
     public async Task<T> PatchJson<T>(string url, object? data = null)
     {
         var json = await PatchString(url, data);
-        return JsonSerializer.Deserialize<T>(json) ?? throw new JsonException($"Unable to parse json: {json}");
+        return JsonSerializer.Deserialize<T>(json, JsonSerializerOptions) ?? throw new JsonException($"Unable to parse json: {json}");
     }
 
     #endregion
@@ -108,7 +112,7 @@ public class HttpApiClient
     public async Task<T> PutJson<T>(string url, object? data = null)
     {
         var json = await PutString(url, data);
-        return JsonSerializer.Deserialize<T>(json) ?? throw new JsonException($"Unable to parse json: {json}");
+        return JsonSerializer.Deserialize<T>(json, JsonSerializerOptions) ?? throw new JsonException($"Unable to parse json: {json}");
     }
 
     #endregion
@@ -132,7 +136,7 @@ public class HttpApiClient
     public async Task<T> DeleteJson<T>(string url)
     {
         var json = await DeleteString(url);
-        return JsonSerializer.Deserialize<T>(json) ?? throw new JsonException($"Unable to parse json: {json}");
+        return JsonSerializer.Deserialize<T>(json, JsonSerializerOptions) ?? throw new JsonException($"Unable to parse json: {json}");
     }
 
     #endregion
@@ -151,7 +155,7 @@ public class HttpApiClient
         if (data is string dataString)
             return new StringContent(dataString);
 
-        var json = JsonSerializer.Serialize(data);
+        var json = JsonSerializer.Serialize(data, JsonSerializerOptions);
         return new StringContent(json, new MediaTypeHeaderValue("application/json"));
     }
     
