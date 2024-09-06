@@ -4,9 +4,10 @@ using MoonCore.Extensions;
 
 namespace MoonCore.Helpers;
 
-public class HttpApiClient
+public class HttpApiClient : IDisposable
 {
     public Action<HttpRequestMessage>? OnConfigureRequest { get; set; }
+    public bool PreventDisposeClient { get; set; } = false;
     public JsonSerializerOptions JsonSerializerOptions { get; } = new()
     {
         PropertyNameCaseInsensitive = true
@@ -174,5 +175,13 @@ public class HttpApiClient
         await result.HandlePossibleApiError();
 
         return result;
+    }
+
+    public void Dispose()
+    {
+        if(PreventDisposeClient)
+            return;
+        
+        Client.Dispose();
     }
 }
