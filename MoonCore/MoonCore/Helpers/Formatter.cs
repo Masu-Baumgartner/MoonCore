@@ -19,7 +19,7 @@ public static class Formatter
         var stringBuilder = new StringBuilder();
         var random = new Random();
 
-        for (int i = 0; i < length; i++)
+        for (var i = 0; i < length; i++)
         {
             stringBuilder.Append(chars[random.Next(chars.Length)]);
         }
@@ -35,10 +35,10 @@ public static class Formatter
     /// <returns></returns>
     public static string IntToStringWithLeadingZeros(int number, int n)
     {
-        string result = number.ToString();
-        int length = result.Length;
+        var result = number.ToString();
+        var length = result.Length;
 
-        for (int i = length; i < n; i++)
+        for (var i = length; i < n; i++)
         {
             result = "0" + result;
         }
@@ -58,8 +58,8 @@ public static class Formatter
             return input;
         }
 
-        char firstChar = char.ToUpper(input[0]);
-        string restOfString = input.Substring(1);
+        var firstChar = char.ToUpper(input[0]);
+        var restOfString = input.Substring(1);
 
         return firstChar + restOfString;
     }
@@ -74,8 +74,8 @@ public static class Formatter
         if (string.IsNullOrEmpty(input))
             return input;
 
-        int length = input.Length;
-        int halfLength = length / 2;
+        var length = input.Length;
+        var halfLength = length / 2;
 
         return input.Substring(0, halfLength);
     }
@@ -88,7 +88,7 @@ public static class Formatter
     /// <returns></returns>
     public static bool EndsInOneOf(string input, IEnumerable<string> strings)
     {
-        foreach (string str in strings)
+        foreach (var str in strings)
         {
             if (input.EndsWith(str))
             {
@@ -108,7 +108,7 @@ public static class Formatter
     /// <returns></returns>
     public static bool ContainsOneOf(string input, IEnumerable<string> strings, out string foundText)
     {
-        foreach (string str in strings)
+        foreach (var str in strings)
         {
             if (input.Contains(str))
             {
@@ -138,25 +138,26 @@ public static class Formatter
     /// <param name="bytes">The input bytes value</param>
     /// <param name="conversionStep">Its 1024, not 1000. If you are a 1000 user you should set conversionStep to 1000</param>
     /// <returns></returns>
-    public static string FormatSize(long bytes, double conversionStep = 1024)
+    public static string FormatSize(ulong bytes, double conversionStep = 1024)
     {
-        var i = Math.Abs(bytes) / conversionStep;
+        var i = Math.Abs((double)bytes) / conversionStep;
+        
         if (i < 1)
         {
             return bytes + " B";
         }
-        else if (i / conversionStep < 1)
+
+        if (i / conversionStep < 1)
         {
             return i.Round(2) + " KB";
         }
-        else if (i / (conversionStep * conversionStep) < 1)
+
+        if (i / (conversionStep * conversionStep) < 1)
         {
             return (i / conversionStep).Round(2) + " MB";
         }
-        else
-        {
-            return (i / (conversionStep * conversionStep)).Round(2) + " GB";
-        }
+
+        return (i / (conversionStep * conversionStep)).Round(2) + " GB";
     }
 
     private static double Round(this double d, int decimals)
@@ -173,7 +174,7 @@ public static class Formatter
     /// <returns></returns>
     public static string ReplaceEnd(string input, string substringToReplace, string newSubstring)
     {
-        int lastIndexOfSubstring = input.LastIndexOf(substringToReplace, StringComparison.Ordinal);
+        var lastIndexOfSubstring = input.LastIndexOf(substringToReplace, StringComparison.Ordinal);
         if (lastIndexOfSubstring >= 0)
         {
             input = input.Remove(lastIndexOfSubstring, substringToReplace.Length)
@@ -205,9 +206,9 @@ public static class Formatter
     /// <returns></returns>
     public static string ConvertCamelCaseToSpaces(string input)
     {
-        StringBuilder output = new StringBuilder();
+        var output = new StringBuilder();
 
-        foreach (char c in input)
+        foreach (var c in input)
         {
             if (char.IsUpper(c))
             {
@@ -227,7 +228,7 @@ public static class Formatter
     /// <returns></returns>
     public static string FormatUptime(double uptime)
     {
-        TimeSpan t = TimeSpan.FromMilliseconds(uptime);
+        var t = TimeSpan.FromMilliseconds(uptime);
 
         return FormatUptime(t);
     }
@@ -289,7 +290,9 @@ public static class Formatter
     /// <param name="bytes">The input bytes value</param>
     /// <param name="conversionStep">Its 1024, not 1000. If you are a 1000 user you should set conversionStep to 1000</param>
     /// <returns></returns>
-    public static string FormatSize(double bytes, double conversionStep) => FormatSize((long)bytes, conversionStep);
+    public static string FormatSize(double bytes, double conversionStep = 1024) => FormatSize((ulong)bytes, conversionStep);
+    public static string FormatSize(long bytes, double conversionStep = 1024) => FormatSize((ulong)bytes, conversionStep);
+    public static string FormatSize(int bytes, double conversionStep = 1024) => FormatSize((ulong)bytes, conversionStep);
 
     /// <summary>
     /// Formats a datetime to a "x days ago" format
@@ -298,7 +301,7 @@ public static class Formatter
     /// <returns></returns>
     public static string FormatAgoFromDateTime(DateTime input)
     {
-        TimeSpan timeSince = DateTime.UtcNow.Subtract(input);
+        var timeSince = DateTime.UtcNow.Subtract(input);
 
         if (timeSince.TotalMilliseconds < 1)
             return "just now";
@@ -362,7 +365,7 @@ public static class Formatter
     {
         return builder =>
         {
-            int i = 0;
+            var i = 0;
             var arr = content.Split("\n");
 
             foreach (var line in arr)

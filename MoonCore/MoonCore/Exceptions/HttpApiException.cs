@@ -7,7 +7,7 @@ public class HttpApiException : Exception
     public string Detail { get; set; } = "";
     public Dictionary<string, List<string>> Errors { get; set; } = new();
     
-    public HttpApiException(string title, int status, string detail, Dictionary<string, List<string>> errors)
+    public HttpApiException(string title, int status, string detail, Dictionary<string, List<string>> errors): base($"[{status}] {title}: {detail}")
     {
         Title = title;
         Status = status;
