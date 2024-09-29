@@ -1,0 +1,198 @@
+@using System.Diagnostics
+@using MoonCore.Blazor.Tailwind.Exceptions
+@using MoonCore.Exceptions
+
+@inherits ErrorBoundaryBase
+
+@inject NavigationManager Navigation
+
+@if (Exception != null)
+{
+    var uri = new Uri(Navigation.Uri);
+    var path = uri.LocalPath;
+    
+    <div class="mt-10 mx-5 flex justify-center items-center">
+        <div class="card lg:max-w-5xl">
+            <div class="card-header">
+                <span class="card-title">A crash occured in this view</span>
+            </div>
+            <div class="card-body">
+                An unhandled exception has been thrown in this view. This may indicate a bug in the application.<br/>
+                <br/>
+                <b>Path:</b><br/>
+                <div class="bg-gray-950 font-scp text-white p-5 rounded-lg">
+                    @path
+                </div>
+                <br/>
+                <b>Stacktrace:</b><br/>
+                <div class="bg-gray-950 font-scp text-white p-5 rounded-lg overflow-x-scroll">
+                    @Exception.ToStringDemystified()
+                </div>
+            </div>
+            <div class="card-footer">
+                <div class="flex justify-center">
+                    <button @onclick="RecoverCrash" class="btn btn-primary">Recover crash</button>
+                </div>
+            </div>
+        </div>
+    </div>
+} 
+else if (ShowMissingPermission)
+{
+    <div class="mt-10">
+        <IconAlert Title="Permission denied" Color="text-danger-500" Icon="bi bi-exclamation-octagon-fill">
+            You are missing the required permission:<br />
+            <b>@MissingPermissionName</b>
+        </IconAlert>
+    </div>
+}
+else
+{
+    if (DisplayMessages.Count > 0)
+    {
+        <div class="flex flex-col space-y-1 my-4 mx-5">
+            @foreach (var message in DisplayMessages)
+            {
+                <div class="rounded-md bg-danger-600 p-4">
+                    <div class="flex items-center">
+                        <div class="flex-shrink-0">
+                            <i class="bi bi-exclamation-triangle-fill text-white"></i>
+                        </div>
+                        <div class="ml-3">
+                            <p class="text-sm font-medium text-white">
+                                @message
+                            </p>
+                        </div>
+                        <div class="ml-auto pl-3">
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+    }
+    
+    @ChildContent
+}
+
+@code
+{
+    // General
+    private Exception? Exception;
+    private Exception? LastException;
+    
+    // Display
+    private List<string> DisplayMessages = new();
+
+    // Missing Permission
+    private bool ShowMissingPermission = false;
+    private string MissingPermissionName;
+    
+    protected override void OnAfterRender(bool firstRender)
+    {
+        if (!firstRender)
+            return;
+
+        Navigation.LocationChanged += async (_, _) =>
+        {
+            if (Exception == null && !ShowMissingPermission)
+                return;
+
+            if (Exception != null)
+            {
+                Exception = null;
+            }
+            else if (ShowMissingPermission)
+            {
+                ShowMissingPermission = false;
+            }
+            
+            await InvokeAsync(StateHasChanged);
+        };
+    }
+
+    protected override async Task OnErrorAsync(Exception exception)
+    {
+        if (exception is DisplayException displayException)
+        {
+            DisplayMessages.Add(displayException.Message);
+
+            Task.Run(async () =>
+            {
+                await Task.Delay(TimeSpan.FromSeconds(5));
+
+                if (DisplayMessages.Contains(displayException.Message))
+                    DisplayMessages.Remove(displayException.Message);
+
+                await InvokeAsync(StateHasChanged);
+            });
+        }
+        else if (exception is HttpApiException httpApiException)
+        {
+            if (httpApiException.Status == 403)
+            {
+                // This checks if the last exception was a 403 with the same details.
+                // This handles missing permission errors on page initialisation
+                // and prevents endless loops
+                if (
+                    !string.IsNullOrEmpty(httpApiException.Detail) &&
+                    LastException != null &&
+                    LastException is HttpApiException lastApiException &&
+                    lastApiException.Status == 403 &&
+                    !string.IsNullOrEmpty(lastApiException.Detail) &&
+                    httpApiException.Detail == lastApiException.Detail)
+                {
+                    ShowMissingPermission = true;
+                    MissingPermissionName = httpApiException.Detail;
+                }
+                else
+                    AddMessage("You are missing the required permissions(s): " + httpApiException.Detail);
+            }
+            else
+            {
+                if(string.IsNullOrEmpty(httpApiException.Detail))
+                    AddMessage($"API Error: {httpApiException.Title}");
+                else
+                    AddMessage($"API Error: {httpApiException.Title}: {httpApiException.Detail}");
+            }
+        }
+        else
+        {
+            Exception = exception;
+        }
+        
+        // Save exception after handling as last error
+        LastException = exception;
+        
+        // Continue error handling
+        Recover();
+
+        // Note:
+        // This fixes a weird behavior when a error in a component render call happens, e.g. missing parameter
+        // Without this, it would not show the error, just nothing
+        Task.Run(async () =>
+        {
+            await InvokeAsync(StateHasChanged);
+        });
+    }
+
+    private void AddMessage(string message)
+    {
+        DisplayMessages.Add(message);
+
+        Task.Run(async () =>
+        {
+            await Task.Delay(TimeSpan.FromSeconds(5));
+
+            if (DisplayMessages.Contains(message))
+                DisplayMessages.Remove(message);
+
+            await InvokeAsync(StateHasChanged);
+        });
+    }
+
+    private async Task RecoverCrash()
+    {
+        Exception = null;
+        await InvokeAsync(StateHasChanged);
+    }
+}

@@ -20,4 +20,16 @@
       <ProjectReference Include="..\MoonCore\MoonCore.csproj" />
     </ItemGroup>
 
+    <ItemGroup>
+      <UpToDateCheckInput Remove="Components\IconAlert.razor" />
+      <UpToDateCheckInput Remove="Components\Modals\BaseModal.razor" />
+      <UpToDateCheckInput Remove="Components\Modals\ModalLaunchPoint.razor" />
+      <UpToDateCheckInput Remove="Components\Modals\TextModal.razor" />
+      <UpToDateCheckInput Remove="Components\Table\ItemTable.razor" />
+      <UpToDateCheckInput Remove="Components\Table\TableColumn.razor" />
+      <UpToDateCheckInput Remove="Components\Toasts\BaseToast.razor" />
+      <UpToDateCheckInput Remove="Components\Toasts\TextToast.razor" />
+      <UpToDateCheckInput Remove="Components\Toasts\ToastLaunchPoint.razor" />
+    </ItemGroup>
+
 </Project>

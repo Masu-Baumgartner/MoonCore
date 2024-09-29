@@ -1,5 +1,9 @@
 <div class="text-center">
-    <i class="@(Icon) text-4xl @(Color)"></i>
+    <div class="flex justify-center">
+        <div class="rounded-full p-5 h-20 w-20 bg-gradient-to-t @(Color)">
+            <i class="@(Icon) text-4xl text-white"></i>
+        </div>
+    </div>
     <h3 class="mt-2 font-semibold text-white text-lg">@(Title)</h3>
     @if (ChildContent != null)
     {
@@ -12,7 +16,7 @@
 @code
 {
     [Parameter] public string Icon { get; set; } = "";
-    [Parameter] public string Color { get; set; } = "";
+    [Parameter] public string Color { get; set; } = "from-gray-700 to-gray-800";
     [Parameter] public string Title { get; set; } = "";
     [Parameter] public RenderFragment? ChildContent { get; set; }
 }

@@ -1,0 +1,23 @@
+@inherits BaseFormComponent<bool>
+
+<div class="flex items-center">
+    <div class="form-switch">
+        <input @bind="Binder.Value" type="checkbox" id="@("switch-" + GetHashCode())" class="sr-only">
+        <label class="bg-gray-700" for="switch-@(GetHashCode())">
+            <span class="bg-white shadow-sm" aria-hidden="true"></span>
+            <span class="sr-only">Switch label</span>
+        </label>
+    </div>
+    <div class="text-sm text-gray-500 italic ml-2">
+        @if (Binder.Value)
+        {
+            <span>On</span>
+        }
+        else
+        {
+            <span>
+                Off
+            </span>
+        }
+    </div>
+</div>

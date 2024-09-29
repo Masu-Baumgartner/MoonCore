@@ -1,0 +1,8 @@
+@inherits BaseFormComponent<string>
+
+<input @bind="Binder.Value" type="@(Type)" autocomplete="off" class="form-input w-full">
+
+@code
+{
+    [Parameter] public string Type { get; set; } = "text";
+}

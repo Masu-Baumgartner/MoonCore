@@ -1,0 +1,61 @@
+@using MoonCore.Blazor.Helpers
+@using MoonCore.Blazor.Tailwind.Modals.Components
+
+@inject ModalService ModalService
+
+@if (CurrentItem != null)
+{
+    <div class="relative z-50" aria-labelledby="modal-title" role="dialog" aria-modal="true">
+        <div class="fixed inset-0 bg-gray-900 bg-opacity-75 transition-opacity" aria-hidden="true"></div>
+
+        <div class="fixed inset-0 z-50 w-screen overflow-y-auto">
+            <div class="flex min-h-full justify-center p-4 text-center items-center sm:p-0">
+                <div class="relative transform overflow-hidden rounded-lg text-left shadow-xl transition-all sm:my-8 sm:w-full sm:max-w-lg">
+                    <div class="bg-gray-750 px-4 pb-4 pt-5 sm:p-6 sm:pb-4">
+                        <div>
+                            @CurrentItem.Component
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
+@code
+{
+    private ModalItem? CurrentItem;
+
+    protected override void OnInitialized()
+    {
+        ModalService.SetLauncher(this);
+    }
+
+    public async Task<ModalItem> Launch<T>(Action<Dictionary<string, object>>? onConfigure = null) where T : BaseModal
+    {
+        var item = new ModalItem();
+
+        item.Component = ComponentHelper.FromType<T>(buildAttr =>
+        {
+            buildAttr.Add("Launcher", this);
+            buildAttr.Add("ModalItem", item);
+
+            onConfigure?.Invoke(buildAttr);
+        });
+
+        if (CurrentItem != null)
+            await Close();
+
+        CurrentItem = item;
+        
+        await InvokeAsync(StateHasChanged);
+
+        return item;
+    }
+
+    public async Task Close()
+    {
+        CurrentItem = null;
+        await InvokeAsync(StateHasChanged);
+    }
+}
