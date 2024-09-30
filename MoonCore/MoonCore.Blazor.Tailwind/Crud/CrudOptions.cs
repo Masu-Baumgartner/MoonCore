@@ -1,5 +1,5 @@
 using MoonCore.Blazor.Tailwind.Forms;
-using MoonCore.Blazor.Tailwind.Models;
+using MoonCore.Models;
 
 namespace MoonCore.Blazor.Tailwind.Crud;
 

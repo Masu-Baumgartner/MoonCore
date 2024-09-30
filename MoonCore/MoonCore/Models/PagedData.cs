@@ -1,4 +1,4 @@
-namespace MoonCore.Blazor.Tailwind.Models;
+namespace MoonCore.Models;
 
 public class PagedData<TItem> : IPagedData<TItem>
 {
