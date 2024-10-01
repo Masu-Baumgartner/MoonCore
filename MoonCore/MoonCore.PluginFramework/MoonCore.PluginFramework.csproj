@@ -1,0 +1,23 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <TargetFramework>net8.0</TargetFramework>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <Nullable>enable</Nullable>
+        <Title>MoonCore.PluginFramework</Title>
+        <Authors>Masu Baumgartner</Authors>
+        <Description>A modular plugin and interface framework to allow third party developers to extend your application</Description>
+        <Copyright>Masu Baumgartner</Copyright>
+        <PackageProjectUrl>https://github.com/Masu-Baumgartner/MoonCore</PackageProjectUrl>
+        <PackageLicenseUrl>https://github.com/Masu-Baumgartner/MoonCore</PackageLicenseUrl>
+        <RepositoryUrl>https://github.com/Masu-Baumgartner/MoonCore</RepositoryUrl>
+        <RepositoryType>git</RepositoryType>
+        <PackageTags>mooncore</PackageTags>
+        <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+    </PropertyGroup>
+
+    <ItemGroup>
+      <ProjectReference Include="..\MoonCore\MoonCore.csproj" />
+    </ItemGroup>
+
+</Project>
