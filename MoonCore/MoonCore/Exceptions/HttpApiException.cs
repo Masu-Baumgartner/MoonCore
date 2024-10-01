@@ -2,28 +2,12 @@
 
 public class HttpApiException : Exception
 {
-    public string Title { get; set; } = "";
-    public int Status { get; set; } = 0;
-    public string Detail { get; set; } = "";
-    public Dictionary<string, List<string>> Errors { get; set; } = new();
+    public string Title { get; set; }
+    public int Status { get; set; } = 500;
+    public string? Detail { get; set; }
+    public Dictionary<string, List<string>>? Errors { get; set; }
     
-    public HttpApiException(string title, int status, string detail, Dictionary<string, List<string>> errors): base($"[{status}] {title}: {detail}")
-    {
-        Title = title;
-        Status = status;
-        Detail = detail;
-        Errors = errors;
-    }
-
-    public HttpApiException(string message, string title, int status, string detail, Dictionary<string, List<string>> errors) : base(message)
-    {
-        Title = title;
-        Status = status;
-        Detail = detail;
-        Errors = errors;
-    }
-
-    public HttpApiException(string message, Exception inner, string title, int status, string detail, Dictionary<string, List<string>> errors) : base(message, inner)
+    public HttpApiException(string title, int status, string? detail = null, Dictionary<string, List<string>>? errors = null): base($"[{status}] {title}: {detail}")
     {
         Title = title;
         Status = status;
