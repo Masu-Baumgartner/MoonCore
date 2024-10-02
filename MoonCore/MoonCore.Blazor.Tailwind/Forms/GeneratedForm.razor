@@ -142,7 +142,7 @@ else
 {
     if (Configuration.Fields.Length > 0)
     {
-        <div class="grid grid-cols-1 gap-x-6 gap-y-8 sm:grid-cols-6">
+        <div class="grid grid-cols-1 @Gap sm:grid-cols-6">
             @foreach (var field in Configuration.Fields)
             {
                 <div class="sm:col-span-@(field.Columns)">
@@ -210,6 +210,7 @@ class="sm:col-span-1 sm:col-span-2 sm:col-span-3 sm:col-span-4 sm:col-span-5 sm:
 {
     [Parameter] public Action<FormConfiguration<TForm>> OnConfigure { get; set; }
     [Parameter] public TForm Model { get; set; }
+    [Parameter] public string Gap { get; set; } = "gap-x-6 gap-y-8";
 
     private CompiledFormConfiguration Configuration = new();
 
