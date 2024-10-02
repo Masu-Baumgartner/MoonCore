@@ -5,21 +5,16 @@
 <div>
     @if (ShowError)
     {
-        <div class="rounded-md bg-red-50 p-4">
-            <div class="flex">
-                <div class="flex-shrink-0">
-                    <i class="text-red-400 text-lg bi bi-exclamation-octagon-fill"></i>
-                </div>
-                <div class="ml-3">
-                    <h3 class="text-sm font-medium text-red-800">An error occured while submitting</h3>
-                    <div class="mt-2 text-sm text-red-700">
-                        <ul role="list" class="list-disc space-y-1 pl-5">
-                            @foreach (var message in ErrorMessages)
-                            {
-                                <li>@message</li>
-                            }
-                        </ul>
-                    </div>
+        <div class="rounded-md bg-danger-600 p-4 mb-5">
+            <div class="text-left px-5">
+                <h3 class="text-sm font-medium text-white">An error occured while submitting</h3>
+                <div class="mt-2 text-sm text-white">
+                    <ul role="list" class="list-disc space-y-1 pl-5">
+                        @foreach (var message in ErrorMessages)
+                        {
+                            <li>@message</li>
+                        }
+                    </ul>
                 </div>
             </div>
         </div>
@@ -41,7 +36,7 @@
     {
         ShowError = false;
         ErrorMessages = [];
-        
+
         // Validate
         Validate();
 
@@ -50,7 +45,7 @@
             await InvokeAsync(StateHasChanged);
             return;
         }
-        
+
         // Handle submit errors
         try
         {
@@ -63,25 +58,44 @@
         }
         catch (HttpApiException e)
         {
+            // We don't want to handle authentication errors in this component
+            if (e.Status == 401)
+                throw;
+
+            if (e.Status == 400)
+            {
+                if (e.Errors != null && e.Errors.Count > 0)
+                {
+                    ErrorMessages = e.Errors
+                        .Select(x => $"{x.Key}: {string.Join(", ", x.Value)}")
+                        .ToArray();
+
+                    ShowError = true;
+                    await InvokeAsync(StateHasChanged);
+                    return;
+                }
+            }
+
             var errorMessage = string.IsNullOrEmpty(e.Detail) ? e.Title : e.Title + ": " + e.Detail;
             ErrorMessages = [errorMessage];
             ShowError = true;
         }
-        
+
         await InvokeAsync(StateHasChanged);
     }
 
     private void Validate()
     {
-        var validationContext = new ValidationContext(Model);
-        Validator.ValidateObject(Model, validationContext);
-        
-        if(validationContext.Items.Count == 0)
+        var context = new ValidationContext(Model, null, null);
+        var results = new List<ValidationResult>();
+
+        var isValid = Validator.TryValidateObject(Model, context, results, true);
+
+        if (isValid)
             return;
 
-        ErrorMessages = validationContext
-            .Items
-            .Select(x => x.Value == null ? x.Key.ToString() ?? "" : $"{x.Key}: {x.Value}")
+        ErrorMessages = results
+            .Select(x => $"{string.Join(", ", x.MemberNames)}: {x.ErrorMessage}")
             .ToArray();
 
         ShowError = true;
