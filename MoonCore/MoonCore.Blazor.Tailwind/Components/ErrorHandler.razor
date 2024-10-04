@@ -37,7 +37,7 @@
         </div>
     </div>
 } 
-else if (ShowMissingPermission)
+else if (MissingPermissionName != null)
 {
     <div class="mt-10">
         <IconAlert Title="Permission denied" Color="text-danger-500" Icon="bi bi-exclamation-octagon-fill">
@@ -84,8 +84,11 @@ else
     private List<string> DisplayMessages = new();
 
     // Missing Permission
-    private bool ShowMissingPermission = false;
-    private string MissingPermissionName;
+    private string? MissingPermissionName;
+    
+    // Custom error screen
+    [Parameter] public Func<Exception, ErrorHandler, Task<bool>>? CustomHandler { get; set; }
+    [Parameter] public RenderFragment? CustomErrorScreen { get; set; }
     
     protected override void OnAfterRender(bool firstRender)
     {
@@ -94,17 +97,12 @@ else
 
         Navigation.LocationChanged += async (_, _) =>
         {
-            if (Exception == null && !ShowMissingPermission)
+            if (Exception == null && MissingPermissionName == null && CustomErrorScreen == null)
                 return;
 
-            if (Exception != null)
-            {
-                Exception = null;
-            }
-            else if (ShowMissingPermission)
-            {
-                ShowMissingPermission = false;
-            }
+            Exception = null;
+            MissingPermissionName = null;
+            CustomErrorScreen = null;
             
             await InvokeAsync(StateHasChanged);
         };
@@ -112,7 +110,11 @@ else
 
     protected override async Task OnErrorAsync(Exception exception)
     {
-        if (exception is DisplayException displayException)
+        if (CustomHandler != null && await CustomHandler.Invoke(exception, this))
+        {
+            // Do no nothing here. Just let it continue to the normal handling
+        }
+        else if (exception is DisplayException displayException)
         {
             DisplayMessages.Add(displayException.Message);
 
@@ -141,7 +143,6 @@ else
                     !string.IsNullOrEmpty(lastApiException.Detail) &&
                     httpApiException.Detail == lastApiException.Detail)
                 {
-                    ShowMissingPermission = true;
                     MissingPermissionName = httpApiException.Detail;
                 }
                 else
