@@ -22,7 +22,7 @@ public class CrudHelper<T> where T : class
     {
         var configuration = GetConfig();
 
-        if (pageSize < configuration.MaxItemLimit)
+        if (pageSize > configuration.MaxItemLimit)
             throw new HttpApiException("The requested page size is too large", 400);
 
         var totalItems = Repository.Get().Count();
@@ -73,6 +73,15 @@ public class CrudHelper<T> where T : class
         Repository.Update(item);
 
         return item;
+    }
+    
+    public Task<T> Update(T item, object data)
+    {
+        item = Mapper.Map(item, data);
+        
+        Repository.Update(item);
+
+        return Task.FromResult(item);
     }
 
     public async Task Delete(int id)
