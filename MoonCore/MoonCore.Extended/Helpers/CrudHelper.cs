@@ -7,7 +7,7 @@ using MoonCore.Models;
 
 namespace MoonCore.Extended.Helpers;
 
-public class CrudHelper<T> where T : class
+public class CrudHelper<T, TResult> where T : class
 {
     private readonly DatabaseRepository<T> Repository;
     private readonly IServiceProvider ServiceProvider;
@@ -18,7 +18,7 @@ public class CrudHelper<T> where T : class
         ServiceProvider = serviceProvider;
     }
 
-    public Task<IPagedData<T>> Get(int page, int pageSize)
+    public Task<IPagedData<TResult>> Get(int page, int pageSize)
     {
         var configuration = GetConfig();
 
@@ -33,9 +33,13 @@ public class CrudHelper<T> where T : class
             .Take(pageSize)
             .ToArray();
 
-        return Task.FromResult<IPagedData<T>>(new PagedData<T>()
+        var castedItems = items
+            .Select(x => Mapper.Map<TResult>(x))
+            .ToArray();
+
+        return Task.FromResult<IPagedData<TResult>>(new PagedData<TResult>()
         {
-            Items = items,
+            Items = castedItems,
             CurrentPage = page,
             PageSize = pageSize,
             TotalItems = totalItems,
@@ -43,7 +47,7 @@ public class CrudHelper<T> where T : class
         });
     }
 
-    public Task<T> GetSingle(int id)
+    public Task<TResult> GetSingle(int id)
     {
         var item = Repository
             .Get()
@@ -52,41 +56,55 @@ public class CrudHelper<T> where T : class
         if (item == null)
             throw new HttpApiException("No item with this id found", 404);
 
+        var castedItem = Mapper.Map<TResult>(item);
+        
+        return Task.FromResult(castedItem);
+    }
+    
+    private Task<T> GetSingleModel(int id)
+    {
+        var item = Repository
+            .Get()
+            .Find(id);
+
+        if (item == null)
+            throw new HttpApiException("No item with this id found", 404);
+        
         return Task.FromResult(item);
     }
 
-    public Task<T> Create(object data)
+    public Task<TResult> Create(object data)
     {
         var item = Mapper.Map<T>(data);
 
         var finalItem = Repository.Add(item);
 
-        return Task.FromResult(finalItem);
+        var castedItem = Mapper.Map<TResult>(finalItem);
+
+        return Task.FromResult(castedItem);
     }
 
-    public async Task<T> Update(int id, object data)
+    public async Task<TResult> Update(int id, object data)
     {
-        var item = await GetSingle(id);
-        
-        item = Mapper.Map(item, data);
-        
-        Repository.Update(item);
+        var item = await GetSingleModel(id);
 
-        return item;
+        return await Update(item, data);
     }
     
-    public Task<T> Update(T item, object data)
+    public Task<TResult> Update(T item, object data)
     {
         item = Mapper.Map(item, data);
         
         Repository.Update(item);
 
-        return Task.FromResult(item);
+        var castedItem = Mapper.Map<TResult>(item);
+
+        return Task.FromResult(castedItem);
     }
 
     public async Task Delete(int id)
     {
-        var item = await GetSingle(id);
+        var item = await GetSingleModel(id);
         
         Repository.Delete(item);
     }
