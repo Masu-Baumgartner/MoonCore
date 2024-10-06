@@ -61,7 +61,7 @@ public class CrudHelper<T, TResult> where T : class
         return Task.FromResult(castedItem);
     }
     
-    private Task<T> GetSingleModel(int id)
+    public Task<T> GetSingleModel(int id)
     {
         var item = Repository
             .Get()
