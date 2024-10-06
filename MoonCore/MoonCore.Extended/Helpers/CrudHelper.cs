@@ -93,7 +93,7 @@ public class CrudHelper<T, TResult> where T : class
     
     public Task<TResult> Update(T item, object data)
     {
-        item = Mapper.Map(item, data);
+        item = Mapper.Map(item, data, ignoreNullValues: true);
         
         Repository.Update(item);
 
