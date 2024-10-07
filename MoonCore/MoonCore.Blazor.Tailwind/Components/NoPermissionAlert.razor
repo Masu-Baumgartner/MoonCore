@@ -1,0 +1,22 @@
+﻿<div class="mt-10">
+    <IconAlert Title="Permission denied" Color="text-danger-500" Icon="bi bi-exclamation-octagon-fill">
+        @if (string.IsNullOrEmpty(PermissionName))
+        {
+            <span>
+                You are missing the required permission(s)
+            </span>
+        }
+        else
+        {
+            <span>
+                You are missing the required permission:<br />
+                <b>@PermissionName</b>
+            </span>
+        }
+    </IconAlert>
+</div>
+
+@code
+{
+    [Parameter] public string PermissionName { get; set; } = "";
+}

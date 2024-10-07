@@ -1,0 +1,54 @@
+﻿@using MoonCore.Blazor.Tailwind.Attributes
+
+@if (RequiredPermission == null)
+{
+    @ChildContent
+}
+else
+{
+    <NoPermissionAlert PermissionName="@RequiredPermission" />
+}
+
+@code
+{
+    [CascadingParameter(Name = "TargetPageType")]
+    public Type? TargetPageType { get; set; }
+
+    [Parameter] public RenderFragment ChildContent { get; set; }
+    [Parameter] public Func<string, bool> CheckFunction { get; set; }
+
+    private string? RequiredPermission;
+
+    protected override Task OnParametersSetAsync()
+    {
+        RequiredPermission = null;
+
+        // If this is missing, the 404 page would not be shown
+        if (TargetPageType == null)
+            return Task.CompletedTask;
+
+        var attributes = TargetPageType.GetCustomAttributes(true);
+
+        var permissionAttributes = attributes
+            .Where(x => x.GetType() == typeof(RequirePermissionAttribute))
+            .Select(x => x as RequirePermissionAttribute)
+            .Where(x => x != null)
+            .ToArray();
+
+        // No permission to check? Then we are done
+        if (permissionAttributes.Length == 0)
+            return Task.CompletedTask;
+
+        foreach (var permissionRequired in permissionAttributes)
+        {
+            if (permissionRequired == null)
+                continue;
+
+            if (!CheckFunction.Invoke(permissionRequired.Permission))
+                RequiredPermission = permissionRequired.Permission;
+                
+        }
+
+        return Task.CompletedTask;
+    }
+}

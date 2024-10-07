@@ -39,12 +39,7 @@
 } 
 else if (MissingPermissionName != null)
 {
-    <div class="mt-10">
-        <IconAlert Title="Permission denied" Color="text-danger-500" Icon="bi bi-exclamation-octagon-fill">
-            You are missing the required permission:<br />
-            <b>@MissingPermissionName</b>
-        </IconAlert>
-    </div>
+    <NoPermissionAlert PermissionName="@MissingPermissionName" />
 }
 else
 {
@@ -79,17 +74,17 @@ else
     // General
     private Exception? Exception;
     private Exception? LastException;
-    
+
     // Display
     private List<string> DisplayMessages = new();
 
     // Missing Permission
     private string? MissingPermissionName;
-    
+
     // Custom error screen
     [Parameter] public Func<Exception, ErrorHandler, Task<bool>>? CustomHandler { get; set; }
     [Parameter] public RenderFragment? CustomErrorScreen { get; set; }
-    
+
     protected override void OnAfterRender(bool firstRender)
     {
         if (!firstRender)
@@ -103,7 +98,7 @@ else
             Exception = null;
             MissingPermissionName = null;
             CustomErrorScreen = null;
-            
+
             await InvokeAsync(StateHasChanged);
         };
     }
@@ -150,7 +145,7 @@ else
             }
             else
             {
-                if(string.IsNullOrEmpty(httpApiException.Detail))
+                if (string.IsNullOrEmpty(httpApiException.Detail))
                     AddMessage($"API Error: {httpApiException.Title}");
                 else
                     AddMessage($"API Error: {httpApiException.Title}: {httpApiException.Detail}");
@@ -160,20 +155,17 @@ else
         {
             Exception = exception;
         }
-        
+
         // Save exception after handling as last error
         LastException = exception;
-        
+
         // Continue error handling
         Recover();
 
         // Note:
         // This fixes a weird behavior when a error in a component render call happens, e.g. missing parameter
         // Without this, it would not show the error, just nothing
-        Task.Run(async () =>
-        {
-            await InvokeAsync(StateHasChanged);
-        });
+        Task.Run(async () => { await InvokeAsync(StateHasChanged); });
     }
 
     private void AddMessage(string message)
