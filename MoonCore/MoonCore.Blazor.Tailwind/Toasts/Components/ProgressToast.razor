@@ -25,18 +25,13 @@
     [Parameter] public string Text { get; set; }
     [Parameter] public Func<ProgressToast, Task> Work { get; set; }
 
-    protected override Task OnAfterRenderAsync(bool firstRender)
+    protected override async Task OnAfterRenderAsync(bool firstRender)
     {
         if (!firstRender)
-            return Task.CompletedTask;
+            return;
 
-        Task.Run(async () =>
-        {
-            await Work.Invoke(this);
-            await Hide();
-        });
-
-        return Task.CompletedTask;
+        await Work.Invoke(this);
+        await Hide();
     }
 
     public async Task UpdateText(string text)
