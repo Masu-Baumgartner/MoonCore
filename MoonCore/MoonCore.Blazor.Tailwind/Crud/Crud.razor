@@ -268,9 +268,9 @@ else if (State == CrudState.Detail)
     public async Task ReloadView()
     {
         SelectedItems.Clear();
-        await InvokeAsync(StateHasChanged);
-        
         await Table.Refresh();
+        
+        await InvokeAsync(StateHasChanged);
     }
 
     #endregion
@@ -295,7 +295,11 @@ else if (State == CrudState.Detail)
     private async Task FinishCreate()
     {
         CreateHandle.OnValidSubmit = () => Options.OnCreate(CreateForm);
-        await CreateHandle.Submit();
+
+        var submissionSuccessful = await CreateHandle.Submit();
+
+        if (!submissionSuccessful)
+            return;
 
         await ToastService.Success($"{Options.ItemName} created successfully", "");
 
@@ -332,7 +336,11 @@ else if (State == CrudState.Detail)
     private async Task FinishUpdate()
     {
         UpdateHandle.OnValidSubmit = () => Options.OnUpdate(CurrentItem, UpdateForm);
-        await UpdateHandle.Submit();
+        
+        var submissionSuccessful = await UpdateHandle.Submit();
+        
+        if(!submissionSuccessful)
+            return;
 
         await ToastService.Success($"{Options.ItemName} updated successfully", "");
 
@@ -356,10 +364,18 @@ else if (State == CrudState.Detail)
 
     private async Task FinishDelete()
     {
-        await Options.OnDelete.Invoke(CurrentItem);
-
-        await ToastService.Success($"{Options.ItemName} deleted successfully");
-        await ReloadView();
+        try
+        {
+            await Options.OnDelete.Invoke(CurrentItem);
+            await ToastService.Success($"{Options.ItemName} deleted successfully");
+            
+            await ReloadView();
+        }
+        catch (Exception)
+        {
+            await ReloadView();
+            throw;
+        }
     }
 
     #endregion
@@ -413,11 +429,10 @@ else if (State == CrudState.Detail)
                 {
                     foreach (var item in items)
                         await Options.OnDelete(item);
+                    
+                    await ToastService.Success($"Successfully deleted {items.Length} items");
+                    await ReloadView();
                 });
-
-            await ToastService.Success($"Successfully deleted {items.Length} items");
-            
-            await ReloadView();
         }
 
         await AlertService.ConfirmDanger(

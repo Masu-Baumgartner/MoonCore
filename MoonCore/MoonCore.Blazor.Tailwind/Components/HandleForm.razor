@@ -32,19 +32,26 @@
     private bool ShowError;
     private string[] ErrorMessages;
 
-    public async Task Submit()
+    public async Task<bool> Submit()
     {
         ShowError = false;
         ErrorMessages = [];
+        
+        var wasSuccessful = await InternalSubmit();
 
+        ShowError = !wasSuccessful;
+        await InvokeAsync(StateHasChanged);
+
+        return wasSuccessful;
+    }
+
+    private async Task<bool> InternalSubmit()
+    {
         // Validate
         Validate();
 
         if (ShowError)
-        {
-            await InvokeAsync(StateHasChanged);
-            return;
-        }
+            return false;
 
         // Handle submit errors
         try
@@ -54,7 +61,7 @@
         catch (DisplayException e)
         {
             ErrorMessages = [e.Message];
-            ShowError = true;
+            return false;
         }
         catch (HttpApiException e)
         {
@@ -69,19 +76,18 @@
                     ErrorMessages = e.Errors
                         .Select(x => $"{x.Key}: {string.Join(", ", x.Value)}")
                         .ToArray();
-
-                    ShowError = true;
-                    await InvokeAsync(StateHasChanged);
-                    return;
+                    
+                    return false;
                 }
             }
 
             var errorMessage = string.IsNullOrEmpty(e.Detail) ? e.Title : e.Title + ": " + e.Detail;
             ErrorMessages = [errorMessage];
-            ShowError = true;
-        }
 
-        await InvokeAsync(StateHasChanged);
+            return false;
+        }
+        
+        return true;
     }
 
     private void Validate()
