@@ -33,8 +33,7 @@
     </ItemGroup>
     
     <ItemGroup>
-      <Folder Include="OAuth2\Client\Http\Requests\" />
-      <Folder Include="OAuth2\Server\" />
+      <Folder Include="OAuth2\Provider\" />
     </ItemGroup>
 
 </Project>

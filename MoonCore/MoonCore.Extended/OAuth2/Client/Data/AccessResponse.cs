@@ -1,18 +1,17 @@
 ﻿using System.Text.Json.Serialization;
 
-namespace MoonCore.Extended.OAuth2.Client.Http.Response;
+namespace MoonCore.Extended.OAuth2.Client.Data;
 
-public class AccessTokenResponse
+public class AccessResponse
 {
     [JsonPropertyName("access_token")]
     public string AccessToken { get; set; }
 
-    [JsonPropertyName("token_type")]
-    public string TokenType { get; set; } = "unset";
-
+    [JsonPropertyName("token_type")] public string TokenType { get; set; } = "unset";
+    
     [JsonPropertyName("expires_in")]
-    public int ExpiresIn { get; set; } = 3600;
-
+    public int ExpiresIn { get; set; }
+    
     [JsonPropertyName("refresh_token")]
     public string RefreshToken { get; set; }
 }
