@@ -31,5 +31,10 @@
         <PackageReference Include="Microsoft.EntityFrameworkCore.Relational" Version="8.0.7" />
         <PackageReference Include="JWT" Version="10.1.1" />
     </ItemGroup>
+    
+    <ItemGroup>
+      <Folder Include="OAuth2\Client\Http\Requests\" />
+      <Folder Include="OAuth2\Server\" />
+    </ItemGroup>
 
 </Project>
