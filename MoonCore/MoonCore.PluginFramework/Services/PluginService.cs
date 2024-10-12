@@ -29,29 +29,39 @@ public class PluginService<T> where T : BasePlugin
 
         await loadFunction.Invoke(context);
 
+        await Load(
+            context.Assemblies.ToArray()
+        );
+    }
+
+    public async Task Load(Assembly[] assemblies)
+    {
+        foreach (var assembly in assemblies)
+            await Load(assembly);
+    }
+
+    public async Task Load(Assembly assembly)
+    {
         // Prepare init
         var typesToInstantiate = new List<Type>();
-        
-        // Check assemblies for plugins
-        foreach (var assembly in context.Assemblies)
-        {
-            var pluginTypes = assembly
-                .ExportedTypes
-                .Where(x => x.IsSubclassOf(PluginType))
-                .ToArray();
 
-            if (pluginTypes.Length == 0)
-            {
-                Logger.LogInformation("Loaded {name} as library", assembly.FullName);
-                LibraryAssemblies.Add(assembly);
-            }
-            else
-            {
-                typesToInstantiate.AddRange(pluginTypes);
-                PluginAssemblies.Add(assembly);
-            }
+        // Check assembly for plugins
+        var pluginTypes = assembly
+            .ExportedTypes
+            .Where(x => x.IsSubclassOf(PluginType))
+            .ToArray();
+
+        if (pluginTypes.Length == 0)
+        {
+            Logger.LogInformation("Loaded {name} as library", assembly.FullName);
+            LibraryAssemblies.Add(assembly);
         }
-        
+        else
+        {
+            typesToInstantiate.AddRange(pluginTypes);
+            PluginAssemblies.Add(assembly);
+        }
+
         // Instantiate plugins
         foreach (var type in typesToInstantiate)
         {
@@ -60,9 +70,9 @@ public class PluginService<T> where T : BasePlugin
                 var plugin = Activator.CreateInstance(type, [
                     LoggerFactory.CreateLogger(type)
                 ]) as T;
-                
+
                 ActivePlugins.Add(plugin!);
-                
+
                 Logger.LogInformation("Instantiated plugin '{name}'", type.FullName);
             }
             catch (Exception e)
