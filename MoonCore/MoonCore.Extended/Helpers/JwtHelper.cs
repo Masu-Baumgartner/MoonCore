@@ -107,7 +107,16 @@ public class JwtHelper
 
     #region Without type specification
 
-    public Task<string> Create(string secret, Action<Dictionary<string, string>> data, TimeSpan validDuration)
+    public Task<string> Create(string secret, Action<Dictionary<string, string>> data, TimeSpan duration)
+    {
+        Dictionary<string, string> dataDic = new();
+
+        data.Invoke(dataDic);
+
+        return Create(secret, dataDic, duration);
+    }
+    
+    public Task<string> Create(string secret, Dictionary<string, string> data, TimeSpan validDuration)
     {
         var builder = new JwtBuilder()
             .WithSecret(secret)
@@ -115,10 +124,7 @@ public class JwtHelper
             .ExpirationTime(DateTime.UtcNow.Add(validDuration))
             .WithAlgorithm(new HMACSHA512Algorithm());
 
-        var dataDic = new Dictionary<string, string>();
-        data.Invoke(dataDic);
-
-        foreach (var entry in dataDic)
+        foreach (var entry in data)
             builder = builder.AddClaim(entry.Key, entry.Value);
 
         var jwt = builder.Encode();
