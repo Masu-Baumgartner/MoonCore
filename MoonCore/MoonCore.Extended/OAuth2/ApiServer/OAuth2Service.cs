@@ -1,4 +1,4 @@
-using MoonCore.Extended.OAuth2.ApiServer.Models;
+using MoonCore.Extended.OAuth2.Models;
 using MoonCore.Extensions;
 
 namespace MoonCore.Extended.OAuth2.ApiServer;

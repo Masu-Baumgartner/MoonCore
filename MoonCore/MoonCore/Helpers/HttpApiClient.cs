@@ -6,7 +6,7 @@ namespace MoonCore.Helpers;
 
 public class HttpApiClient : IDisposable
 {
-    public Action<HttpRequestMessage>? OnConfigureRequest { get; set; }
+    public event Func<HttpRequestMessage, Task>? OnConfigureRequest;
     public bool PreventDisposeClient { get; set; } = false;
     public JsonSerializerOptions JsonSerializerOptions { get; } = new()
     {
@@ -166,9 +166,9 @@ public class HttpApiClient : IDisposable
 
         if (body != null)
             request.Content = body;
-        
+
         if(OnConfigureRequest != null)
-            OnConfigureRequest.Invoke(request);
+            await OnConfigureRequest.Invoke(request);
 
         var result = await Client.SendAsync(request);
 

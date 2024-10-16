@@ -1,6 +1,6 @@
 using System.Text.Json.Serialization;
 
-namespace MoonCore.Extended.OAuth2.AuthServer.Models;
+namespace MoonCore.Extended.OAuth2.Models;
 
 public class AccessData
 {

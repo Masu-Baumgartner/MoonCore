@@ -1,4 +1,4 @@
-namespace MoonCore.Extended.OAuth2.ApiServer.Models;
+namespace MoonCore.Extended.OAuth2.Models;
 
 public class AuthorizationData
 {

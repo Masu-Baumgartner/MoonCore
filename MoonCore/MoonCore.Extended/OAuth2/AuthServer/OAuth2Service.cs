@@ -1,18 +1,20 @@
 using Microsoft.AspNetCore.Http;
 using MoonCore.Extended.Helpers;
-using MoonCore.Extended.OAuth2.AuthServer.Models;
+using MoonCore.Extended.OAuth2.Models;
 
 namespace MoonCore.Extended.OAuth2.AuthServer;
 
 public class OAuth2Service
 {
     private readonly OAuth2Configuration Configuration;
+    private readonly TokenHelper TokenHelper;
     private readonly JwtHelper JwtHelper;
 
-    public OAuth2Service(OAuth2Configuration configuration, JwtHelper jwtHelper)
+    public OAuth2Service(OAuth2Configuration configuration, JwtHelper jwtHelper, TokenHelper tokenHelper)
     {
         Configuration = configuration;
         JwtHelper = jwtHelper;
+        TokenHelper = tokenHelper;
     }
 
     public async Task<string> GenerateCode(Action<Dictionary<string, string>> onConfigureData)
@@ -26,18 +28,16 @@ public class OAuth2Service
         return jwt;
     }
 
-    public async Task<AccessData?> ValidateAccess(HttpRequest request, Func<Dictionary<string, string>, bool> validateData, Action<Dictionary<string, string>> onConfigureAccessToken, Action<Dictionary<string, string>> onConfigureRefreshAccess)
+    public async Task<AccessData?> ValidateAccess(string clientId, string clientSecret, string redirectUri, string code,
+        Func<Dictionary<string, string>, bool> validateData, Action<Dictionary<string, string>> onConfigureTokens)
     {
-        if (!request.Form.TryGetValue("client_id", out var clientId) || clientId != Configuration.ClientId)
+        if (clientId != Configuration.ClientId)
             return null;
-        
-        if (!request.Form.TryGetValue("client_secret", out var clientSecret) || clientSecret != Configuration.ClientSecret)
+
+        if (clientSecret != Configuration.ClientSecret)
             return null;
-        
-        if (!request.Form.TryGetValue("redirect_uri", out var redirectUri) || redirectUri != Configuration.AuthorizationRedirect)
-            return null;
-        
-        if (!request.Form.TryGetValue("code", out var code))
+
+        if (redirectUri != Configuration.AuthorizationRedirect)
             return null;
 
         if (!await JwtHelper.Validate(Configuration.CodeSecret, code!))
@@ -47,7 +47,49 @@ public class OAuth2Service
 
         if (!validateData.Invoke(data))
             return null;
-        
-        
+
+        var tokenPair = await TokenHelper.GeneratePair(
+            Configuration.AccessSecret,
+            Configuration.RefreshSecret,
+            onConfigureTokens,
+            Configuration.AccessTokenDuration,
+            Configuration.RefreshTokenDuration
+        );
+
+        return new()
+        {
+            AccessToken = tokenPair.AccessToken,
+            RefreshToken = tokenPair.RefreshToken,
+            ExpiresIn = Configuration.AccessTokenDuration,
+            TokenType = "unset"
+        };
+    }
+
+    public Task<bool> IsValidAccessToken(string accessToken, Func<Dictionary<string, string>, bool> validateData)
+        => TokenHelper.IsValidAccessToken(accessToken, Configuration.AccessSecret, validateData);
+
+    public async Task<RefreshData?> RefreshAccess(
+        string refreshToken,
+        Func<Dictionary<string, string>, Dictionary<string, string>, bool> onConfigureToken)
+    {
+        var pair = await TokenHelper.RefreshPair(
+            refreshToken,
+            Configuration.AccessSecret,
+            Configuration.RefreshSecret,
+            onConfigureToken,
+            Configuration.AccessTokenDuration,
+            Configuration.RefreshTokenDuration
+        );
+
+        if (!pair.HasValue)
+            return null;
+
+        return new()
+        {
+            AccessToken = pair.Value.AccessToken,
+            RefreshToken = pair.Value.RefreshToken,
+            ExpiresIn = Configuration.AccessTokenDuration,
+            TokenType = "unset"
+        };
     }
 }

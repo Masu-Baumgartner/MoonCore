@@ -12,14 +12,15 @@ public class TokenHelper
     }
 
     public async Task<TokenPair> GeneratePair(
-        string secret,
+        string accessSecret,
+        string refreshSecret,
         Action<Dictionary<string, string>> onConfigure,
         int accessDuration = 60,
         int renewDuration = 3600
     )
     {
-        var accessToken = await JwtHelper.Create(secret, onConfigure, TimeSpan.FromSeconds(accessDuration));
-        var refreshToken = await JwtHelper.Create(secret, onConfigure, TimeSpan.FromSeconds(renewDuration));
+        var accessToken = await JwtHelper.Create(accessSecret, onConfigure, TimeSpan.FromSeconds(accessDuration));
+        var refreshToken = await JwtHelper.Create(refreshSecret, onConfigure, TimeSpan.FromSeconds(renewDuration));
 
         return new TokenPair()
         {
@@ -41,13 +42,14 @@ public class TokenHelper
 
     public async Task<TokenPair?> RefreshPair(
         string refreshToken,
-        string secret,
+        string accessSecret,
+        string refreshSecret,
         Func<Dictionary<string, string>, Dictionary<string, string>, bool> processData,
         int accessDuration = 60,
         int renewDuration = 3600
     )
     {
-        if (!await JwtHelper.Validate(secret, refreshToken))
+        if (!await JwtHelper.Validate(accessSecret, refreshToken))
             return null;
 
         var data = await JwtHelper.Decode(refreshToken);
@@ -56,8 +58,8 @@ public class TokenHelper
         if (!processData.Invoke(data, newData))
             return null;
 
-        var newAccessToken = await JwtHelper.Create(secret, newData, TimeSpan.FromSeconds(accessDuration));
-        var newRefreshToken = await JwtHelper.Create(secret, newData, TimeSpan.FromSeconds(renewDuration));
+        var newAccessToken = await JwtHelper.Create(accessSecret, newData, TimeSpan.FromSeconds(accessDuration));
+        var newRefreshToken = await JwtHelper.Create(refreshSecret, newData, TimeSpan.FromSeconds(renewDuration));
 
         return new TokenPair()
         {
