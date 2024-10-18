@@ -10,14 +10,13 @@ namespace MoonCore.DiscordNet.Module;
 
 public abstract class BaseModule : BasePlugin
 {
-    private DiscordSocketClient Client;
-    private MoonCoreDiscordAppConfiguration Configuration { get; set; }
-    private IServiceProvider Provider;
+    protected DiscordSocketClient Client;
+    protected DiscordBotConfiguration Configuration { get; set; }
+    protected IServiceProvider Provider;
 
-    protected BaseModule(ILogger<BasePlugin> logger) : base(logger)
-    {}
+    public BaseModule(ILogger logger) : base(logger) {}
 
-    public void Init(DiscordSocketClient client, MoonCoreDiscordAppConfiguration configuration, IServiceProvider provider)
+    public void Init(DiscordSocketClient client, DiscordBotConfiguration configuration, IServiceProvider provider)
     {
         Client = client;
         Configuration = configuration;
@@ -25,17 +24,17 @@ public abstract class BaseModule : BasePlugin
     }
 
     /// <summary>
-    /// This is a async implementation to Load EventHandlers
+    /// This is an async implementation to Load EventHandlers
     /// </summary>
     public abstract Task InitializeAsync();
 
     /// <summary>
-    /// This is a async implementation to Unload EventHandlers
+    /// This is an async implementation to Unload EventHandlers
     /// </summary>
     public abstract Task UnloadAsync();
     
     /// <summary>
-    /// This is a async implementation to Registering for Example SlashCommands
+    /// This is an async implementation to Registering for Example SlashCommands
     /// </summary>
     public abstract Task RegisterAsync();
 

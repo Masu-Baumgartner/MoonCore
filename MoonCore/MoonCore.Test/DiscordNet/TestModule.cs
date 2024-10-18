@@ -9,13 +9,10 @@ namespace MoonCore.Test.DiscordNet;
 
 public class TestModule : BaseModule
 {
-    private DiscordSocketClient Client;
-    
-    public TestModule(ILogger<BasePlugin> logger) : base(logger)
+    public TestModule(ILogger logger) : base(logger)
     {
-        
     }
-    
+
     public override Task InitializeAsync()
     {
         Client.MessageReceived += OnMessage;
@@ -29,8 +26,6 @@ public class TestModule : BaseModule
         
         await message.Channel.SendMessageAsync("Pong");
     }
-    
-    
 
     public override Task UnloadAsync()
     {

@@ -4,9 +4,9 @@ namespace MoonCore.PluginFramework.Abstractions;
 
 public abstract class BasePlugin
 {
-    public ILogger<BasePlugin> Logger { get; set; }
+    public ILogger Logger { get; set; }
     
-    protected BasePlugin(ILogger<BasePlugin> logger)
+    protected BasePlugin(ILogger logger)
     {
         Logger = logger;
     }

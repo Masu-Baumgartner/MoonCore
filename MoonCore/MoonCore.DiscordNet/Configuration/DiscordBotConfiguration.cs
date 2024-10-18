@@ -3,7 +3,7 @@ using Discord.WebSocket;
 
 namespace MoonCore.DiscordNet.configuration;
 
-public class MoonCoreDiscordAppConfiguration
+public class DiscordBotConfiguration
 {
     public SettingsData Settings { get; set; } = new();
     public AuthData Auth { get; set; } = new();
