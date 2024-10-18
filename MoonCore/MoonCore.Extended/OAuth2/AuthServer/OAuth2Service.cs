@@ -28,6 +28,17 @@ public class OAuth2Service
         return jwt;
     }
 
+    public Task<bool> IsValidAuthorization(string clientId, string redirectUri)
+    {
+        if (clientId != Configuration.ClientId)
+            return Task.FromResult(false);
+        
+        if (redirectUri != Configuration.AuthorizationRedirect)
+            return Task.FromResult(false);
+        
+        return Task.FromResult(true);
+    }
+
     public async Task<AccessData?> ValidateAccess(string clientId, string clientSecret, string redirectUri, string code,
         Func<Dictionary<string, string>, bool> validateData, Action<Dictionary<string, string>> onConfigureTokens)
     {

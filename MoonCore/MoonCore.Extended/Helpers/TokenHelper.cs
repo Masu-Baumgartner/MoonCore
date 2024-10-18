@@ -1,4 +1,4 @@
-using MoonCore.Extended.Models;
+using MoonCore.Models;
 
 namespace MoonCore.Extended.Helpers;
 

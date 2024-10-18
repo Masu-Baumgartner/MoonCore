@@ -1,6 +1,6 @@
-using MoonCore.Extended.Models;
+using MoonCore.Models;
 
-namespace MoonCore.Extended.Helpers;
+namespace MoonCore.Helpers;
 
 public class TokenConsumer
 {

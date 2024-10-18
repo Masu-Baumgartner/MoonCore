@@ -183,6 +183,7 @@ public class JwtHelper
         {
             var json = new JwtBuilder()
                 .WithAlgorithm(new HMACSHA512Algorithm())
+                .WithVerifySignature(false)
                 .Decode(jwt);
 
             var data = JsonConvert.DeserializeObject<Dictionary<string, string>>(json);

@@ -1,4 +1,4 @@
-namespace MoonCore.Extended.Models;
+namespace MoonCore.Models;
 
 public struct TokenPair
 {

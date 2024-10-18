@@ -1,7 +1,6 @@
-using MoonCore.Extended.Helpers;
 using MoonCore.Helpers;
 
-namespace MoonCore.Extended.Extensions;
+namespace MoonCore.Extensions;
 
 public static class HttpApiClientExtensions
 {

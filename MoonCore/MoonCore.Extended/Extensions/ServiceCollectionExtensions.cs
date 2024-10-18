@@ -1,4 +1,5 @@
 using Microsoft.Extensions.DependencyInjection;
+using MoonCore.Extended.Configuration;
 using MoonCore.Extended.Helpers;
 
 namespace MoonCore.Extended.Extensions;
@@ -43,5 +44,13 @@ public static class ServiceCollectionExtensions
 
             return new OAuth2.ApiServer.OAuth2Service(config, httpClient);
         });
+    }
+
+    public static void AddTokenAuthentication(this IServiceCollection collection, Action<TokenAuthenticationConfiguration> onConfigure)
+    {
+        var configuration = new TokenAuthenticationConfiguration();
+        onConfigure.Invoke(configuration);
+
+        collection.AddSingleton(configuration);
     }
 }
