@@ -146,6 +146,9 @@ public class HttpApiClient : IDisposable
     {
         if (data == null)
             return null;
+        
+        if(data.GetType().IsSubclassOf(typeof(HttpContent)))
+            return data as HttpContent;
 
         if (data is byte[] dataBytes)
             return new ByteArrayContent(dataBytes);

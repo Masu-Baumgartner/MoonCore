@@ -12,4 +12,15 @@ public static class HttpApiClientExtensions
             request.Headers.Add("Authorization", $"Bearer {accessToken}");
         };
     }
+    
+    public static void UseBearerTokenConsumer(this HttpApiClient client, Func<Task<TokenConsumer>> onGetTokenConsumer)
+    {
+        client.OnConfigureRequest += async request =>
+        {
+            var tokenConsumer = await onGetTokenConsumer.Invoke();
+            
+            var accessToken = await tokenConsumer.GetAccessToken();
+            request.Headers.Add("Authorization", $"Bearer {accessToken}");
+        };
+    }
 }
