@@ -2,12 +2,12 @@ using MoonCore.Attributes;
 
 namespace MoonCore.Test;
 
-[RunAfter(typeof(Class1))]
-public class Class2 : IStartupLayer
+[RunBefore(typeof(Class2))]
+public class Class3 : IStartupLayer
 {
     public Task Run()
     {
-        Console.WriteLine("2");
+        Console.WriteLine("3");
         return Task.CompletedTask;
     }
 }
