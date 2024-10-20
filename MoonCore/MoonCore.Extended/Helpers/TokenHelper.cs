@@ -49,7 +49,7 @@ public class TokenHelper
         int renewDuration = 3600
     )
     {
-        if (!await JwtHelper.Validate(accessSecret, refreshToken))
+        if (!await JwtHelper.Validate(refreshSecret, refreshToken))
             return null;
 
         var data = await JwtHelper.Decode(refreshToken);
