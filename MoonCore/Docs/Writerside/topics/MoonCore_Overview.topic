@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE topic
+        SYSTEM "https://resources.jetbrains.com/writerside/1.0/xhtml-entities.dtd">
+<topic xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xsi:noNamespaceSchemaLocation="https://resources.jetbrains.com/writerside/1.0/topic.v2.xsd"
+       title="MoonCore" id="MoonCore_Overview">
+
+    <section-starting-page>
+        <title>MoonCore</title>
+        <description>
+            The MoonCore nuget package is the main part of this entire library and provides
+            platform independent helpers and utilities
+        </description>
+
+        <primary>
+            <title>Helpers</title>
+            <a href="MoonCore_Helpers_ByteConverter.md"/>
+        </primary>
+    </section-starting-page>
+</topic>

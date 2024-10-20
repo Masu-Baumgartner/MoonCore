@@ -399,3 +399,8 @@ FodyWeavers.xsd
 
 # Style builds
 style.min.css
+
+# Docs
+# Default ignored files
+/shelf/
+/workspace.xml
