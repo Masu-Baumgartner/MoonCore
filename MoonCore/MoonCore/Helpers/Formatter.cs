@@ -141,7 +141,7 @@ public static class Formatter
     public static string FormatSize(ulong bytes, double conversionStep = 1024)
     {
         var i = Math.Abs((double)bytes) / conversionStep;
-        
+
         if (i < 1)
         {
             return bytes + " B";
@@ -290,9 +290,14 @@ public static class Formatter
     /// <param name="bytes">The input bytes value</param>
     /// <param name="conversionStep">Its 1024, not 1000. If you are a 1000 user you should set conversionStep to 1000</param>
     /// <returns></returns>
-    public static string FormatSize(double bytes, double conversionStep = 1024) => FormatSize((ulong)bytes, conversionStep);
-    public static string FormatSize(long bytes, double conversionStep = 1024) => FormatSize((ulong)bytes, conversionStep);
-    public static string FormatSize(int bytes, double conversionStep = 1024) => FormatSize((ulong)bytes, conversionStep);
+    public static string FormatSize(double bytes, double conversionStep = 1024) =>
+        FormatSize((ulong)bytes, conversionStep);
+
+    public static string FormatSize(long bytes, double conversionStep = 1024) =>
+        FormatSize((ulong)bytes, conversionStep);
+
+    public static string FormatSize(int bytes, double conversionStep = 1024) =>
+        FormatSize((ulong)bytes, conversionStep);
 
     /// <summary>
     /// Formats a datetime to a "x days ago" format
@@ -387,7 +392,17 @@ public static class Formatter
     public static string FromTextToBase64(string text)
     {
         var data = Encoding.UTF8.GetBytes(text);
-        return Convert.ToBase64String(data);
+        return FromByteToBase64(data);
+    }
+
+    public static string FromByteToBase64(byte[] data)
+    {
+        var base64 = Convert.ToBase64String(data);
+
+        return base64
+            .TrimEnd('=')
+            .Replace('+', '-')
+            .Replace('/', '_');
     }
 
     /// <summary>
@@ -397,10 +412,29 @@ public static class Formatter
     /// <returns>A utf 8 string</returns>
     public static string FromBase64ToText(string base64)
     {
-        var data = Convert.FromBase64String(base64);
+        var data = FromBase64ToByte(base64);
         return Encoding.UTF8.GetString(data);
     }
-    
+
+    public static byte[] FromBase64ToByte(string base64)
+    {
+        base64 = base64
+            .Replace('_', '/')
+            .Replace('-', '+');
+
+        switch (base64.Length % 4)
+        {
+            case 2:
+                base64 += "==";
+                break;
+            case 3:
+                base64 += "=";
+                break;
+        }
+
+        return Convert.FromBase64String(base64);
+    }
+
     public static string ReplaceChars(string input, char[] chars)
     {
         var result = input;
@@ -409,7 +443,7 @@ public static class Formatter
         {
             result = result.Replace($"{c}", "");
         }
-        
+
         return result;
     }
 }

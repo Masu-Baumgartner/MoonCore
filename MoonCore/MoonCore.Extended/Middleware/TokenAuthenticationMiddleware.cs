@@ -1,3 +1,4 @@
+using System.Text.Json;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
 using MoonCore.Extended.Configuration;
@@ -52,10 +53,10 @@ public class TokenAuthenticationMiddleware
         var tokenHelper = context.RequestServices.GetRequiredService<TokenHelper>();
         var configuration = context.RequestServices.GetRequiredService<TokenAuthenticationConfiguration>();
 
-        await tokenHelper.IsValidAccessToken(accessToken, configuration.AccessSecret, Validate);
+        tokenHelper.IsValidAccessToken(accessToken, configuration.AccessSecret, Validate);
         return;
 
-        bool Validate(Dictionary<string, string> data)
+        bool Validate(Dictionary<string, JsonElement> data)
         {
             return configuration.DataLoader.Invoke(
                 data,

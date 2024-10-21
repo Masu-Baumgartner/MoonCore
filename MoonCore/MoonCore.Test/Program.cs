@@ -1,11 +1,18 @@
-﻿using System.Reflection;
-using MoonCore.Attributes;
-using MoonCore.Startup;
-using MoonCore.Test;
+﻿using MoonCore.Extended.Helpers;
+using MoonCore.Extended.Models;
+using MoonCore.Helpers;
 
-var startupService = new StartupService<IStartupLayer>();
+var secret = "sasaasasasasassasaasassssssssssssssssss";
+var jwt =
+    "eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiIxIiwieCI6InkifQ.n2Pl9K3rvTx-BtaljY4LMsrVidOyxKFLncD0GG6Ct_RNiThkqwpAakrstbMbSTsLdUTmidZ3SgDu44xxAOu_pQ";
 
-Console.WriteLine("Preparing");
-startupService.Prepare([Assembly.GetEntryAssembly()!]);
+if (JwtHelper.VerifySignature(secret, jwt))
+    Console.WriteLine("Valid");
+else
+    Console.WriteLine("Not valid");
 
-await startupService.Run(layer => layer.Run());
+var x = JwtHelper.Decode(
+    "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyLCJleHAiOjYxNjIzOTAyMn0.VuEiPzAwyz7RPpejG10djC5FZXnp0i5FdfQCClZ9xZ4"
+);
+
+x.CheckTimestampClaims();

@@ -13,10 +13,9 @@ public static class ServiceCollectionExtensions
             var config = new OAuth2.AuthServer.OAuth2Configuration();
             onConfigure.Invoke(config);
             
-            var jwtHelper = sp.GetRequiredService<JwtHelper>();
             var tokenHelper = sp.GetRequiredService<TokenHelper>();
 
-            return new OAuth2.AuthServer.OAuth2Service(config, jwtHelper, tokenHelper);
+            return new OAuth2.AuthServer.OAuth2Service(config, tokenHelper);
         });
     }
 

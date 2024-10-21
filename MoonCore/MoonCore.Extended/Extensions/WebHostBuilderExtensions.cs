@@ -6,7 +6,7 @@ namespace MoonCore.Extended.Extensions;
 
 public static class WebHostBuilderExtensions
 {
-    public static void UseTokenAuthentication(this IApplicationBuilder application, Action<TokenAuthenticationConfiguration> onConfigure)
+    public static void UseTokenAuthentication(this IApplicationBuilder application)
     {
         application.UseMiddleware<TokenAuthenticationMiddleware>();
     }

@@ -1,26 +1,20 @@
+using System.Text.Json;
 using MoonCore.Models;
 
 namespace MoonCore.Extended.Helpers;
 
 public class TokenHelper
 {
-    private readonly JwtHelper JwtHelper;
-
-    public TokenHelper(JwtHelper jwtHelper)
-    {
-        JwtHelper = jwtHelper;
-    }
-
-    public async Task<TokenPair> GeneratePair(
+    public TokenPair GeneratePair(
         string accessSecret,
         string refreshSecret,
-        Action<Dictionary<string, string>> onConfigure,
+        Action<Dictionary<string, object>> onConfigure,
         int accessDuration = 60,
         int renewDuration = 3600
     )
     {
-        var accessToken = await JwtHelper.Create(accessSecret, onConfigure, TimeSpan.FromSeconds(accessDuration));
-        var refreshToken = await JwtHelper.Create(refreshSecret, onConfigure, TimeSpan.FromSeconds(renewDuration));
+        var accessToken = JwtHelper.Encode(accessSecret, onConfigure, TimeSpan.FromSeconds(accessDuration));
+        var refreshToken = JwtHelper.Encode(refreshSecret, onConfigure, TimeSpan.FromSeconds(renewDuration));
 
         return new TokenPair()
         {
@@ -29,37 +23,36 @@ public class TokenHelper
         };
     }
 
-    public async Task<bool> IsValidAccessToken(string accessToken, string secret,
-        Func<Dictionary<string, string>, bool> validateData)
+    public bool IsValidAccessToken(
+        string accessToken,
+        string secret,
+        Func<Dictionary<string, JsonElement>, bool> validateData)
     {
-        if (!await JwtHelper.Validate(secret, accessToken))
+        if (!JwtHelper.TryVerifyAndDecodePayload(secret, accessToken, out var data))
             return false;
-
-        var data = await JwtHelper.Decode(accessToken);
 
         return validateData.Invoke(data);
     }
 
-    public async Task<TokenPair?> RefreshPair(
+    public TokenPair? RefreshPair(
         string refreshToken,
         string accessSecret,
         string refreshSecret,
-        Func<Dictionary<string, string>, Dictionary<string, string>, bool> processData,
+        Func<Dictionary<string, JsonElement>, Dictionary<string, object>, bool> processData,
         int accessDuration = 60,
         int renewDuration = 3600
     )
     {
-        if (!await JwtHelper.Validate(refreshSecret, refreshToken))
+        if (!JwtHelper.TryVerifyAndDecodePayload(refreshSecret, refreshToken, out var data))
             return null;
 
-        var data = await JwtHelper.Decode(refreshToken);
-        var newData = new Dictionary<string, string>();
+        var newData = new Dictionary<string, object>();
 
         if (!processData.Invoke(data, newData))
             return null;
 
-        var newAccessToken = await JwtHelper.Create(accessSecret, newData, TimeSpan.FromSeconds(accessDuration));
-        var newRefreshToken = await JwtHelper.Create(refreshSecret, newData, TimeSpan.FromSeconds(renewDuration));
+        var newAccessToken = JwtHelper.Encode(accessSecret, newData, TimeSpan.FromSeconds(accessDuration));
+        var newRefreshToken = JwtHelper.Encode(refreshSecret, newData, TimeSpan.FromSeconds(renewDuration));
 
         return new TokenPair()
         {
