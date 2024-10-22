@@ -4,31 +4,40 @@ namespace MoonCore.Helpers;
 
 public class TokenConsumer
 {
-    private string AccessToken;
-    private string RefreshToken;
+    private TokenPair CurrentPair;
     private DateTime ExpireTimestamp;
 
-    private Func<string, Task<TokenPair>> RefreshFunction;
-    
-    public TokenConsumer(string accessToken, string refreshToken, DateTime expireTimestamp, Func<string, Task<TokenPair>> refreshFunc)
-    {
-        AccessToken = accessToken;
-        RefreshToken = refreshToken;
-        ExpireTimestamp = expireTimestamp;
+    private Func<string, Task<(TokenPair, DateTime)>> RefreshFunction;
 
-        RefreshFunction = refreshFunc;
+    public TokenConsumer(Func<string, Task<(TokenPair, DateTime)>> refreshFunction)
+    {
+        RefreshFunction = refreshFunction;
+        CurrentPair = new()
+        {
+            AccessToken = "unset",
+            RefreshToken = "unset"
+        };
+        
+        ExpireTimestamp = DateTime.UtcNow;
+    }
+
+    public TokenConsumer(TokenPair pair, DateTime expireTimestamp, Func<string, Task<(TokenPair, DateTime)>> refreshFunction)
+    {
+        CurrentPair = pair;
+        ExpireTimestamp = expireTimestamp;
+        RefreshFunction = refreshFunction;
     }
 
     public async Task<string> GetAccessToken()
     {
-        if (DateTime.UtcNow > ExpireTimestamp)
+        if (DateTime.UtcNow >= ExpireTimestamp)
         {
-            var pair = await RefreshFunction.Invoke(RefreshToken);
+            var result = await RefreshFunction.Invoke(CurrentPair.RefreshToken);
 
-            AccessToken = pair.AccessToken;
-            RefreshToken = pair.RefreshToken;
+            CurrentPair = result.Item1;
+            ExpireTimestamp = result.Item2;
         }
 
-        return AccessToken;
+        return CurrentPair.AccessToken;
     }
 }
