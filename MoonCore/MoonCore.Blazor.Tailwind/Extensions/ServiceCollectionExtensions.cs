@@ -13,7 +13,6 @@ public static class ServiceCollectionExtensions
         collection.AddScoped<ModalService>();
         collection.AddScoped<ToastService>();
         collection.AddScoped<AlertService>();
-        collection.AddScoped<CookieService>();
         collection.AddScoped<QueryParameterService>();
     }
 }
