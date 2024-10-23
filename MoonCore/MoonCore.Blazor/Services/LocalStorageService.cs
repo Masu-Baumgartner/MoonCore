@@ -13,30 +13,36 @@ public class LocalStorageService
     }
 
     public async Task<bool> ContainsKey(string key)
-        => await JsRuntime.InvokeAsync<string?>("localStorage.getItem", key) != null;
-
-    public async Task<string> Get(string key)
-        => await Get<string>(key);
-    
-    public async Task<string> Get(string key, string defaultValue)
-        => await Get<string?>(key) ?? defaultValue;
-
-    public async Task<T> Get<T>(string key)
-        => JsonSerializer.Deserialize<T>(await Get(key))!;
-
-    public async Task<T> Get<T>(string key, T defaultValue)
     {
-        var val = await Get<string?>(key);
-
-        if (val == null)
-            return defaultValue;
-
-        return JsonSerializer.Deserialize<T>(val) ?? defaultValue;
+        return !string.IsNullOrEmpty(
+            await JsRuntime.InvokeAsync<string?>("localStorage.getItem", key)
+        );
     }
+    public async Task<string> GetString(string key)
+        => await JsRuntime.InvokeAsync<string>("localStorage.getItem", key);
 
     public async Task SetString(string key, string data)
         => await JsRuntime.InvokeVoidAsync("localStorage.setItem", key, data);
 
+    public async Task<T> Get<T>(string key)
+        => JsonSerializer.Deserialize<T>(await GetString(key))!;
+
     public async Task Set(string key, object data)
         => await SetString(key, JsonSerializer.Serialize(data));
+
+    public async Task<string> GetStringDefaulted(string key, string defaultValue)
+    {
+        if(!await ContainsKey(key))
+            return defaultValue;
+
+        return await GetString(key);
+    }
+
+    public async Task<T> GetDefaulted<T>(string key, T defaultValue)
+    {
+        if(!await ContainsKey(key))
+            return defaultValue;
+
+        return await Get<T>(key);
+    }
 }

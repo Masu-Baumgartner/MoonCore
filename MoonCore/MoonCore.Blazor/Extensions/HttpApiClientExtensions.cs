@@ -22,11 +22,11 @@ public static class HttpApiClientExtensions
             {
                 var tokenPair = new TokenPair()
                 {
-                    AccessToken = await localStorageService.Get(accessTokenName, "unset"),
-                    RefreshToken = await localStorageService.Get(refreshTokenName, "unset")
+                    AccessToken = await localStorageService.GetStringDefaulted(accessTokenName, "unset"),
+                    RefreshToken = await localStorageService.GetStringDefaulted(refreshTokenName, "unset")
                 };
                 
-                var expiresAt = await localStorageService.Get(expiresAtName, DateTime.MinValue);
+                var expiresAt = await localStorageService.GetDefaulted(expiresAtName, DateTime.MinValue);
 
                 consumer = new TokenConsumer(tokenPair, expiresAt, async refreshToken =>
                 {
