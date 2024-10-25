@@ -10,6 +10,7 @@
 
     <ItemGroup>
       <ProjectReference Include="..\MoonCore.Extended\MoonCore.Extended.csproj" />
+      <ProjectReference Include="..\MoonCore.PluginFramework\MoonCore.PluginFramework.csproj" />
       <ProjectReference Include="..\MoonCore\MoonCore.csproj" />
     </ItemGroup>
 
