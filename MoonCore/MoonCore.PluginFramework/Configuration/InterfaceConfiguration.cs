@@ -5,17 +5,22 @@ namespace MoonCore.PluginFramework.Configuration;
 
 public class InterfaceConfiguration
 {
-    public Dictionary<Type, ServiceLifetime> Interfaces { get; set; } = new();
+    public List<InterfaceDetails> Interfaces { get; set; } = new();
     public List<Assembly> Assemblies { get; set; } = new();
 
-    public void AddInterface<T>(ServiceLifetime scope = ServiceLifetime.Singleton)
+    public void AddInterface<T>(ServiceLifetime scope = ServiceLifetime.Singleton, bool useDi = true)
     {
         var type = typeof(T);
 
         if (!type.IsInterface)
             throw new ArgumentException("This method only accepts interfaces");
         
-        Interfaces[type] = scope;
+        Interfaces.Add(new InterfaceDetails()
+        {
+            Scope = scope,
+            UseDi = useDi,
+            Type = typeof(T)
+        });
     }
 
     public void AddAssembly(Assembly assembly)
@@ -23,4 +28,11 @@ public class InterfaceConfiguration
     
     public void AddAssemblies(IEnumerable<Assembly> assembly)
         => Assemblies.AddRange(assembly);
+
+    public struct InterfaceDetails
+    {
+        public Type Type { get; set; }
+        public ServiceLifetime Scope { get; set; }
+        public bool UseDi { get; set; }
+    }
 }

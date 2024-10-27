@@ -16,7 +16,7 @@ public class InterfaceService
         Logger = logger;
     }
 
-    public void ConstructInterfaces(IServiceCollection serviceCollection)
+    public void RegisterInterfaces(IServiceCollection serviceCollection)
     {
         // Collect all types
         var types = Configuration.Assemblies
@@ -31,7 +31,7 @@ public class InterfaceService
         {
             // Get all types implementing this interface
             var implementations = types
-                .Where(x => x.IsAssignableTo(interfaceKvp.Key))
+                .Where(x => x.IsAssignableTo(interfaceKvp.Type))
                 .Where(x => !x.IsInterface && !x.IsAbstract)
                 .ToArray();
 
@@ -40,27 +40,27 @@ public class InterfaceService
                 serviceCollection.Add(new ServiceDescriptor(
                     implementation,
                     sp => ActivatorUtilities.CreateInstance(sp, implementation),
-                    interfaceKvp.Value
+                    interfaceKvp.Scope
                 ));
             }
 
             // Build descriptor for those interfaces
             var descriptor = new ServiceDescriptor(
-                interfaceKvp.Key.MakeArrayType(),
+                interfaceKvp.Type.MakeArrayType(),
                 sp => ReflectionHelper.InvokeGenericMethod(
                     null,
                     GetType(),
                     nameof(ResolveTypesFromDi),
-                    [interfaceKvp.Key], [
-                        sp, implementations, interfaceKvp.Key, Logger
+                    [interfaceKvp.Type], [
+                        sp, implementations, interfaceKvp.Type, Logger
                     ])!,
-                interfaceKvp.Value
+                interfaceKvp.Scope
             );
 
             // Add it to the collection
             serviceCollection.Add(descriptor);
 
-            Logger.LogTrace("Registered interface {name} to dependency injection", interfaceKvp.Key.FullName);
+            Logger.LogTrace("Registered interface {name} to dependency injection", interfaceKvp.Type.FullName);
         }
     }
 
