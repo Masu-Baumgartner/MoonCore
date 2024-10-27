@@ -25,7 +25,7 @@
     }
 }
 
-<div class="overflow-x-auto @(tableRounding) border border-gray-700/60 @(BackgroundColor)">
+<div class="overflow-x-auto @(tableRounding) @(ShowBorder ? "border border-gray-700/60" : "") @(BackgroundColor)">
     <table class="table-auto w-full text-gray-300">
         <thead class="text-xs uppercase text-gray-500 bg-gray-700 bg-opacity-50">
         <tr>
@@ -182,6 +182,7 @@
     [Parameter] public bool DisableHeadRounding { get; set; } = false;
     [Parameter] public int PageSize { get; set; } = 15;
     [Parameter] public string BackgroundColor { get; set; } = "";
+    [Parameter] public bool ShowBorder { get; set; } = false;
 
     private readonly List<Column<TItem>> Columns = new();
 

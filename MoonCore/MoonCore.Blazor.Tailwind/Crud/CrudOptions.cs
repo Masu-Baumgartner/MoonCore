@@ -33,4 +33,7 @@ public class CrudOptions<TItem, TCreateForm, TUpdateForm>
     // Design
     public bool UseHeader { get; set; } = true;
     public bool UseBar { get; set; } = false;
+    
+    // View table
+    public bool ShowViewTableBorder { get; set; } = false;
 }
