@@ -18,9 +18,10 @@ public class DatabaseHelper
     }
 
     public void AddDbContext<T>() where T : DbContext
-    {
-        DbContextTypes.Add(typeof(T));
-    }
+        => DbContextTypes.Add(typeof(T));
+    
+    public void AddDbContext(Type type)
+        => DbContextTypes.Add(type);
     
     public Type? GetDbContextForEntity<T>() where T : class
     {
