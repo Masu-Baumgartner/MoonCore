@@ -23,9 +23,6 @@ public class InterfaceService
             .SelectMany(x => x.ExportedTypes)
             .ToArray();
 
-        Logger.LogTrace("Loaded {amount} types from {assemblyAmount} assemblies", types.Length,
-            Configuration.Assemblies.Count);
-
         // Process Interfaces
         foreach (var interfaceKvp in Configuration.Interfaces)
         {
