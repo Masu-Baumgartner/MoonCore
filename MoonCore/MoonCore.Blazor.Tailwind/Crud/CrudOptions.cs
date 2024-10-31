@@ -10,7 +10,7 @@ public class CrudOptions<TItem, TCreateForm, TUpdateForm>
     public Func<string, Task<TItem?>> SingleItemLoader { get; set; }
     
     // Query state sync
-    public Func<TItem, string> QueryIdentifier { get; set; }
+    public Func<TItem, string>? QueryIdentifier { get; set; }
     
     // Form configurations
     public Action<FormConfiguration<TCreateForm>> OnConfigureCreate { get; set; }
@@ -33,4 +33,7 @@ public class CrudOptions<TItem, TCreateForm, TUpdateForm>
     // Design
     public bool UseHeader { get; set; } = true;
     public bool UseBar { get; set; } = false;
+    
+    // View table
+    public bool ShowViewTableBorder { get; set; } = false;
 }

@@ -1,33 +1,63 @@
-﻿using Discord;
+﻿using System.Reflection;
 using Microsoft.Extensions.DependencyInjection;
-using MoonCore.DiscordNet.Extensions;
+using Microsoft.Extensions.Logging;
 using MoonCore.Extensions;
+using MoonCore.Helpers;
+using MoonCore.PluginFramework.Extensions;
+using MoonCore.Test.Interfaces;
 
-// Basic config
+// Logging
+var providers = LoggerBuildHelper.BuildFromConfiguration(configuration =>
+{
+    configuration.Console.Enable = true;
+    configuration.Console.EnableAnsiMode = true;
+    configuration.FileLogging.Enable = false;
+});
+
+var startupLoggerFactory = new LoggerFactory();
+startupLoggerFactory.AddProviders(providers);
+
+var startupLogger = startupLoggerFactory.CreateLogger("Startup");
+
+// Startup DI
+var startupServiceCollection = new ServiceCollection();
+
+startupServiceCollection.AddLogging(builder =>
+{
+    builder.AddProviders(providers);
+});
+
+startupServiceCollection.AddPlugins(configuration =>
+{
+    configuration.AddInterface<IAppStartup>();
+    
+    configuration.AddAssembly(Assembly.GetEntryAssembly()!);
+}, startupLogger);
+
+var startupServiceProvider = startupServiceCollection.BuildServiceProvider();
+
+var startupStuff = startupServiceProvider.GetRequiredService<IAppStartup[]>();
+
+foreach (var appStartup in startupStuff)
+    appStartup.BuildWebApplication();
+
+foreach (var appStartup in startupStuff)
+    appStartup.ConfigureWebApplication();
+
 var serviceCollection = new ServiceCollection();
 
 serviceCollection.AddLogging(builder =>
 {
-    builder.AddMoonCore(configuration =>
-    {
-        configuration.FileLogging.Enable = false;
-        configuration.Console.Enable = true;
-    }); 
+    builder.AddProviders(providers);
 });
 
-serviceCollection.AddDiscordBot(configuration =>
+serviceCollection.AddPlugins(configuration =>
 {
-    configuration.Settings.DevelopMode = true;
-    configuration.Settings.EnableDebug = true;
-    configuration.Settings.Enable = true;
+    
+    
+    configuration.AddAssembly(Assembly.GetEntryAssembly()!);
+}, startupLogger);
 
-    configuration.Auth.Token = "owo";
-    configuration.Auth.TokenType = TokenType.Bot;
-}, socketConfig =>
-{
-    socketConfig.GatewayIntents = GatewayIntents.All;
-});
+var serviceProvider = serviceCollection.BuildServiceProvider();
 
-var provider = serviceCollection.BuildServiceProvider();
-
-await provider.StartDiscordBot();
+await Task.Delay(-1);

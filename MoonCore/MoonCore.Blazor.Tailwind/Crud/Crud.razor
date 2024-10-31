@@ -1,8 +1,11 @@
+@using System.Linq.Expressions
+@using MoonCore.Blazor.Helpers
 @using MoonCore.Blazor.Tailwind.Alerts
 @using MoonCore.Blazor.Tailwind.Forms
 @using MoonCore.Blazor.Tailwind.Services
 @using MoonCore.Blazor.Tailwind.Toasts
 @using MoonCore.Blazor.Tailwind.Components
+@using MoonCore.Blazor.Tailwind.Helpers
 @using MoonCore.Helpers
 @using MoonCore.Models
 
@@ -58,7 +61,11 @@
     }
 
     <div class="mt-5">
-        <ItemTable @ref="Table" TItem="TItem" BackgroundColor="bg-gray-800" ItemsCallback="Options.ItemLoader">
+        <ItemTable @ref="Table"
+                   TItem="TItem"
+                   BackgroundColor="bg-gray-800"
+                   ItemsCallback="Options.ItemLoader"
+                   ShowBorder="Options.ShowViewTableBorder">
 
             <Column TItem="TItem" HeadCssClasses="pl-2 w-5" CssClasses="pl-2 w-5">
                 <HeadTemplate>
@@ -193,6 +200,12 @@ else if (State == CrudState.Detail)
     protected override async Task OnInitializedAsync()
     {
         OnConfigure.Invoke(Options);
+
+        if (Options.QueryIdentifier == null)
+        {
+            // Build a Func<TItem, string> object
+            Options.QueryIdentifier = FuncHelper.FromProperty<TItem, string>("Id");
+        }
 
         // Auto set names
         if (string.IsNullOrEmpty(Options.ItemName))

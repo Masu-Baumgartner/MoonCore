@@ -1,6 +1,6 @@
 using Microsoft.JSInterop;
 
-namespace MoonCore.Blazor.Tailwind.Services;
+namespace MoonCore.Blazor.Services;
 
 public class CookieService
 {
@@ -10,16 +10,16 @@ public class CookieService
     {
         JsRuntime = jsRuntime;
     }
-
-    public async Task SetValue(string key, string value, int days)
+    
+    public async Task Set(string key, string value, int days)
     {
         var utc = DateTime.UtcNow.AddDays(days).ToUniversalTime().ToString("R");
-        await SetCookie($"{key}={value}; expires={utc}; path=/");
+        await SetCookies($"{key}={value}; expires={utc}; path=/");
     }
 
-    public async Task<string> GetValue(string key, string def = "")
+    public async Task<string> Get(string key, string def = "")
     {
-        var cookieString = await GetCookie();
+        var cookieString = await GetCookies();
 
         var cookieParts = cookieString.Split(";");
 
@@ -42,13 +42,17 @@ public class CookieService
         return def;
     }
 
-    private async Task SetCookie(string value)
+    #region Helpers
+
+    private async Task SetCookies(string value)
     {
         await JsRuntime.InvokeVoidAsync("eval", $"document.cookie = \"{value}\"");
     }
 
-    private async Task<string> GetCookie()
+    private async Task<string> GetCookies()
     {
         return await JsRuntime.InvokeAsync<string>("eval", "document.cookie");
     }
+
+    #endregion
 }

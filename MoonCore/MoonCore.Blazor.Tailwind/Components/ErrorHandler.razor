@@ -10,7 +10,7 @@
 {
     var uri = new Uri(Navigation.Uri);
     var path = uri.LocalPath;
-    
+
     <div class="mt-10 mx-5 flex justify-center items-center">
         <div class="card lg:max-w-5xl">
             <div class="card-header">
@@ -36,10 +36,17 @@
             </div>
         </div>
     </div>
-} 
+}
 else if (MissingPermissionName != null)
 {
-    <NoPermissionAlert PermissionName="@MissingPermissionName" />
+    if (CustomMissingPermission != null)
+    {
+        @CustomMissingPermission.Invoke(MissingPermissionName)
+    }
+    else
+    {
+        <NoPermissionAlert PermissionName="@MissingPermissionName"/>
+    }
 }
 else
 {
@@ -65,7 +72,7 @@ else
             }
         </div>
     }
-    
+
     @ChildContent
 }
 
@@ -80,6 +87,7 @@ else
 
     // Missing Permission
     private string? MissingPermissionName;
+    [Parameter] public RenderFragment<string>? CustomMissingPermission { get; set; }
 
     // Custom error screen
     [Parameter] public Func<Exception, ErrorHandler, Task<bool>>? CustomHandler { get; set; }

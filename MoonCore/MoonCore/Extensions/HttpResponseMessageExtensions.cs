@@ -10,7 +10,7 @@ public static class HttpResponseMessageExtensions
     {
         PropertyNameCaseInsensitive = true
     };
-    
+
     public static async Task<T> ParseAsJson<T>(this HttpResponseMessage response)
     {
         var content = await response.Content.ReadAsStringAsync();
@@ -19,11 +19,33 @@ public static class HttpResponseMessageExtensions
 
     public static async Task HandlePossibleApiError(this HttpResponseMessage response)
     {
-        if(response.IsSuccessStatusCode)
+        if (response.IsSuccessStatusCode)
             return;
 
-        var model = await response.ParseAsJson<HttpApiErrorModel>();
+        var responseText = await response.Content.ReadAsStringAsync();
+        
+        try
+        {
+            var model = JsonSerializer.Deserialize<HttpApiErrorModel>(responseText, Options);
 
-        throw new HttpApiException(model.Title, model.Status, model.Detail, model.Errors);
+            if (model == null)
+            {
+                throw new HttpApiException(
+                    "An HTTP API error occured",
+                    (int)response.StatusCode,
+                    responseText
+                );
+            }
+
+            throw new HttpApiException(model.Title, model.Status, model.Detail, model.Errors);
+        }
+        catch (JsonException)
+        {
+            throw new HttpApiException(
+                "An HTTP API error occured",
+                (int)response.StatusCode,
+                responseText
+            );
+        }
     }
 }

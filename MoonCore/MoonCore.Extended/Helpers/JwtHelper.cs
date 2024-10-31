@@ -1,124 +1,273 @@
-﻿using JWT.Algorithms;
-using JWT.Builder;
-using JWT.Exceptions;
-using Microsoft.Extensions.Logging;
-using Newtonsoft.Json;
+using System.Diagnostics.Contracts;
+using System.Security.Cryptography;
+using System.Text;
+using System.Text.Json;
+using MoonCore.Extended.Exceptions;
+using MoonCore.Extended.Models;
+using MoonCore.Helpers;
 
 namespace MoonCore.Extended.Helpers;
 
-public class JwtHelper
+public static class JwtHelper
 {
-    private readonly ILogger<JwtHelper> Logger;
-    
-    public JwtHelper(ILogger<JwtHelper> logger)
+    public static string Encode(string secret, JsonWebToken token)
     {
-        Logger = logger;
+        var key = Encoding.UTF8.GetBytes(secret);
+        var hashAlgo = GetHash(token.Header.Algorithm, key);
+
+        var header = EncodeHeader(token.Header);
+        var payload = EncodePayload(token.Payload);
+
+        var data = $"{header}.{payload}";
+
+        var signature = GenerateSignature(hashAlgo, data);
+
+        return $"{data}.{signature}";
     }
-    
-    public Task<string> Create(string secret, Action<Dictionary<string, string>> data, string typeIdentifier, TimeSpan validDuration)
+
+    public static bool VerifySignature(string secret, string jwt)
     {
-        var builder = new JwtBuilder()
-            .WithSecret(secret)
-            .IssuedAt(DateTime.UtcNow)
-            .AddHeader("type", typeIdentifier)
-            .ExpirationTime(DateTime.UtcNow.Add(validDuration))
-            .WithAlgorithm(new HMACSHA512Algorithm());
+        var parts = jwt.Split(".");
 
-        var dataDic = new Dictionary<string, string>();
-        data.Invoke(dataDic);
+        if (parts.Length != 3)
+            throw new JwtMalformedException("Invalid jwt provided");
 
-        foreach (var entry in dataDic)
-            builder = builder.AddClaim(entry.Key, entry.Value);
+        // Header
+        var header = Internal_DecodeHeader(parts[0]);
 
-        var jwt = builder.Encode();
+        // Find hash algo
+        var key = Encoding.UTF8.GetBytes(secret);
+        var hashAlgo = GetHash(header.Algorithm, key);
+
+        // Verify signature
+        var data = $"{parts[0]}.{parts[1]}";
+        var expectedSignature = GenerateSignature(hashAlgo, data);
+
+        return expectedSignature == parts[2]; // The part[2] is the signature provided by the jwt
+    }
+
+    public static JsonWebToken Decode(string jwt)
+    {
+        var parts = jwt.Split(".");
+
+        if (parts.Length != 3)
+            throw new JwtMalformedException("Invalid jwt provided");
+
+        JsonWebToken jsonWebToken = new()
+        {
+            // Header
+            Header = Internal_DecodeHeader(parts[0]),
+
+            // Payload
+            Payload = Internal_DecodePayload(parts[1])
+        };
+
+        return jsonWebToken;
+    }
+
+    #region Helpers
+
+    private static string GenerateSignature(HMAC hashAlgo, string data)
+    {
+        var dataBytes = Encoding.UTF8.GetBytes(data);
+        var signatureBytes = hashAlgo.ComputeHash(dataBytes);
+
+        return Formatter.FromByteToBase64(signatureBytes);
+    }
+
+    private static HMAC GetHash(string identifier, byte[] key)
+    {
+        switch (identifier)
+        {
+            case "HS512":
+                return new HMACSHA512(key);
+        }
+
+        throw new JwtMalformedException($"Unsupported hash algorithm '{identifier}'");
+    }
+
+    #endregion
+
+    #region Decoding
+
+    private static JsonWebToken.JwtHeader Internal_DecodeHeader(string header)
+    {
+        try
+        {
+            var headerModel = JsonSerializer.Deserialize<JsonWebToken.JwtHeader?>(
+                Formatter.FromBase64ToText(header)
+            );
+
+            if (!headerModel.HasValue)
+                throw new JwtEncodingException("An unknown error occured while decoding header");
+
+            return headerModel.Value;
+        }
+        catch (Exception e)
+        {
+            throw new JwtEncodingException("An error occured while decoding header", e);
+        }
+    }
+
+    private static Dictionary<string, JsonElement> Internal_DecodePayload(string payload)
+    {
+        try
+        {
+            var payloadModel = JsonSerializer.Deserialize<Dictionary<string, JsonElement>>(
+                Formatter.FromBase64ToText(payload)
+            );
+
+            if (payloadModel == null)
+                throw new JwtEncodingException("An unknown error occured while decoding payload");
+
+            return payloadModel;
+        }
+        catch (Exception e)
+        {
+            throw new JwtEncodingException("An error occured while decoding payload", e);
+        }
+    }
+
+    #endregion
+
+    #region Encoding
+
+    private static string EncodeHeader(JsonWebToken.JwtHeader model)
+    {
+        try
+        {
+            return Formatter.FromTextToBase64(JsonSerializer.Serialize(model));
+        }
+        catch (Exception e)
+        {
+            throw new JwtEncodingException("An error occured while encoding header", e);
+        }
+    }
+
+    private static string EncodePayload(Dictionary<string, JsonElement> payload)
+    {
+        try
+        {
+            return Formatter.FromTextToBase64(JsonSerializer.Serialize(payload));
+        }
+        catch (Exception e)
+        {
+            throw new JwtEncodingException("An error occured while encoding payload", e);
+        }
+    }
+
+    #endregion
+
+    #region Overloads
+
+    public static string Encode(string secret, Action<Dictionary<string, object>> onConfigureData)
+    {
+        var data = new Dictionary<string, object>();
+        onConfigureData.Invoke(data);
+
+        var jwt = new JsonWebToken();
+        jwt.ApplyPayload(data);
         
-        return Task.FromResult(jwt);
+        return Encode(secret, jwt);
     }
 
-    public Task<bool> Validate(string secret, string jwt, string allowedType)
+    public static string Encode(string secret, Action<JsonWebToken> onConfigureToken)
     {
-        // Null/empty check
-        if (string.IsNullOrEmpty(jwt))
-            return Task.FromResult(false);
+        var jwt = new JsonWebToken();
+        onConfigureToken.Invoke(jwt);
 
-        try
-        {
-            // Without the body decode call the jwt validation would not work for some weird reason.
-            // It would not throw an error when the signature is invalid
-            _ = new JwtBuilder()
-                .WithSecret(secret)
-                .WithAlgorithm(new HMACSHA512Algorithm())
-                .MustVerifySignature()
-                .Decode(jwt);
-
-            var headerJson = new JwtBuilder()
-                .WithSecret(secret)
-                .WithAlgorithm(new HMACSHA512Algorithm())
-                .MustVerifySignature()
-                .DecodeHeader(jwt);
-
-            if (headerJson == null)
-                return Task.FromResult(false);
-
-            var headerData = JsonConvert.DeserializeObject<Dictionary<string, string>>(headerJson);
-
-            if (headerData == null) // => Invalid header
-                return Task.FromResult(false);
-
-            if (!headerData.ContainsKey("type")) // => Invalid header, Type is missing
-                return Task.FromResult(false);
-
-            if(headerData["type"] == allowedType) // => Correct type found
-                return Task.FromResult(true);
-
-            // None found? Invalid type!
-            return Task.FromResult(false);
-        }
-        catch (TokenExpiredException)
-        {
-            return Task.FromResult(false);
-        }
-        catch (TokenNotYetValidException)
-        {
-            return Task.FromResult(false);
-        }
-        catch (SignatureVerificationException)
-        {
-            Logger.LogWarning("A manipulated jwt has been found.  Jwt: {jwt}", jwt);
-            
-            return Task.FromResult(false);
-        }
-        catch (Exception e)
-        {
-            Logger.LogWarning("An error occured while validating a jwt: {e}", e);
-            
-            return Task.FromResult(false);
-        }
+        return Encode(secret, jwt);
     }
 
-    public Task<Dictionary<string, string>> Decode(string secret, string jwt)
+    public static string Encode(string secret, Action<Dictionary<string, object>> onConfigureData,
+        TimeSpan validDuration)
+    {
+        var data = new Dictionary<string, object>();
+        onConfigureData.Invoke(data);
+        
+        return Encode(secret, data, validDuration);
+    }
+    
+    public static string Encode(string secret, Dictionary<string, object> data,
+        TimeSpan validDuration)
+    {
+        var jwt = new JsonWebToken
+        {
+            IssuedAt = DateTime.UtcNow,
+            NotBefore = DateTime.UtcNow.AddSeconds(-1),
+            ExpireTime = DateTime.UtcNow.Add(validDuration)
+        };
+
+        jwt.ApplyPayload(data);
+        
+        return Encode(secret, jwt);
+    }
+
+    public static bool Verify(string secret, string jwt)
+    {
+        if (!VerifySignature(secret, jwt))
+            return false;
+
+        var decoded = Decode(jwt);
+
+        return decoded.AreTimestampClaimsValid;
+    }
+
+    public static bool TryVerifyAndDecode(string secret, string jwt, out JsonWebToken jsonWebToken)
     {
         try
         {
-            var json = new JwtBuilder()
-                .WithSecret(secret)
-                .WithAlgorithm(new HMACSHA512Algorithm())
-                .MustVerifySignature()
-                .Decode(jwt);
+            if (!VerifySignature(secret, jwt))
+            {
+                jsonWebToken = null!;
+                return false;
+            }
 
-            var data = JsonConvert.DeserializeObject<Dictionary<string, string>>(json);
+            var decoded = Decode(jwt);
 
-            return Task.FromResult(data)!;
+            if (!decoded.AreTimestampClaimsValid)
+            {
+                jsonWebToken = null!;
+                return false;
+            }
+
+            jsonWebToken = decoded;
+            return true;
         }
-        catch (SignatureVerificationException)
+        catch (Exception)
         {
-            return Task.FromResult(new Dictionary<string, string>());
-        }
-        catch (Exception e)
-        {
-            Logger.LogWarning("An unknown error occured while processing token: {e}", e);
-            
-            return Task.FromResult<Dictionary<string, string>>(null!);
+            jsonWebToken = null!;
+            return false;
         }
     }
+
+    public static bool TryVerifyAndDecodePayload(string secret, string jwt, out Dictionary<string, JsonElement> payload)
+    {
+        var isValid = TryVerifyAndDecode(secret, jwt, out var jsonWebToken);
+
+        if (!isValid)
+        {
+            payload = null!;
+            return false;
+        }
+
+        payload = jsonWebToken.Payload;
+        return true;
+    }
+
+    public static bool TryVerify(string secret, string jwt)
+    {
+        try
+        {
+            return Verify(secret, jwt);
+        }
+        catch (Exception)
+        {
+            return false;
+        }
+    }
+
+    public static Dictionary<string, JsonElement> DecodePayload(string jwt) => Decode(jwt).Payload;
+
+    #endregion
 }

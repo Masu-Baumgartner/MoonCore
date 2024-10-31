@@ -1,4 +1,4 @@
-﻿namespace MoonCore.Blazor.Tailwind.Attributes;
+﻿namespace MoonCore.Attributes;
 
 public class RequirePermissionAttribute : Attribute
 {
