@@ -10,8 +10,8 @@
         <Description>A ui library for blazor and tailwindcss</Description>
         <Copyright>Masu Baumgartner</Copyright>
         <PackageProjectUrl>https://github.com/Masu-Baumgartner/MoonCore</PackageProjectUrl>
-        <PackageLicenseUrl>https://github.com/Masu-Baumgartner/MoonCore</PackageLicenseUrl>
         <RepositoryUrl>https://github.com/Masu-Baumgartner/MoonCore</RepositoryUrl>
+        <PackageLicenseExpression>MIT</PackageLicenseExpression>
         <RepositoryType>git</RepositoryType>
         <PackageTags>mooncore</PackageTags>
         <Version>1.1.0</Version>

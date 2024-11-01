@@ -10,7 +10,6 @@
         <Description>A core library for all moonlight panel like applications</Description>
         <Copyright>Marcel (Masu) Baumgartner</Copyright>
         <PackageProjectUrl>https://github.com/Masu-Baumgartner/MoonCore</PackageProjectUrl>
-        <PackageLicenseUrl>https://github.com/Masu-Baumgartner/MoonCore</PackageLicenseUrl>
         <PackageLicenseExpression>MIT</PackageLicenseExpression>
         <RepositoryUrl>https://github.com/Masu-Baumgartner/MoonCore</RepositoryUrl>
         <RepositoryType>git</RepositoryType>
