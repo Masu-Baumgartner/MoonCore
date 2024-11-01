@@ -13,9 +13,9 @@ public static class ServiceCollectionExtensions
         onConfigure.Invoke(configuration);
 
         // Construct service
-        var pluginService = new InterfaceService(configuration, logger);
-        pluginService.RegisterInterfaces(collection);
+        var interfaceService = new InterfaceService(configuration, logger);
+        interfaceService.RegisterInterfaces(collection);
         
-        collection.AddSingleton(pluginService);
+        collection.AddSingleton(interfaceService);
     }
 }

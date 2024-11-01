@@ -1,7 +1,10 @@
 ﻿using System.Reflection;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
 using MoonCore.Attributes;
+using MoonCore.Configuration;
+using MoonCore.Services;
 
 namespace MoonCore.Extensions;
 
@@ -60,5 +63,16 @@ public static class ServiceCollectionExtensions
                 continue;
             }
         }
+    }
+
+    public static void AddConfiguration(this IServiceCollection collection, Action<ConfigurationOptions> onConfigure)
+    {
+        var options = new ConfigurationOptions();
+        onConfigure.Invoke(options);
+
+        var configurationService = new ConfigurationService(options);
+        configurationService.RegisterConfigurations(collection);
+        
+        collection.AddSingleton(configurationService);
     }
 }
