@@ -1,5 +1,6 @@
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using MoonCore.Extensions;
 using MoonCore.PluginFramework.Configuration;
 using MoonCore.PluginFramework.Services;
 
@@ -13,9 +14,15 @@ public static class ServiceCollectionExtensions
         onConfigure.Invoke(configuration);
 
         // Construct service
-        var pluginService = new InterfaceService(configuration, logger);
-        pluginService.RegisterInterfaces(collection);
+
+        var interfaceService = collection.FindRegisteredInstance<InterfaceService>();
+
+        if (interfaceService == null)
+        {
+            interfaceService = new InterfaceService();
+            collection.AddSingleton(interfaceService);
+        }
         
-        collection.AddSingleton(pluginService);
+        interfaceService.RegisterInterfaces(configuration, collection);
     }
 }

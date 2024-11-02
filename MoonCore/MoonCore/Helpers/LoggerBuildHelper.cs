@@ -6,9 +6,9 @@ namespace MoonCore.Helpers;
 
 public static class LoggerBuildHelper
 {
-    public static ILoggerProvider[] BuildFromConfiguration(Action<MoonCoreLoggingConfiguration>? config)
+    public static ILoggerProvider[] BuildFromConfiguration(Action<LoggingConfiguration>? config)
     {
-        var configuration = new MoonCoreLoggingConfiguration();
+        var configuration = new LoggingConfiguration();
         config?.Invoke(configuration);
         
         var result = new List<ILoggerProvider>();

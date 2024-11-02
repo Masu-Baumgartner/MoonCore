@@ -7,24 +7,15 @@ namespace MoonCore.PluginFramework.Services;
 
 public class InterfaceService
 {
-    private readonly InterfaceConfiguration Configuration;
-    private readonly ILogger Logger;
-
-    public InterfaceService(InterfaceConfiguration configuration, ILogger logger)
-    {
-        Configuration = configuration;
-        Logger = logger;
-    }
-
-    public void RegisterInterfaces(IServiceCollection serviceCollection)
+    public void RegisterInterfaces(InterfaceConfiguration configuration, IServiceCollection serviceCollection)
     {
         // Collect all types
-        var types = Configuration.Assemblies
+        var types = configuration.Assemblies
             .SelectMany(x => x.ExportedTypes)
             .ToArray();
 
         // Process Interfaces
-        foreach (var interfaceKvp in Configuration.Interfaces)
+        foreach (var interfaceKvp in configuration.Interfaces)
         {
             // Get all types implementing this interface
             var implementations = types
@@ -44,20 +35,24 @@ public class InterfaceService
             // Build descriptor for those interfaces
             var descriptor = new ServiceDescriptor(
                 interfaceKvp.Type.MakeArrayType(),
-                sp => ReflectionHelper.InvokeGenericMethod(
-                    null,
-                    GetType(),
-                    nameof(ResolveTypesFromDi),
-                    [interfaceKvp.Type], [
-                        sp, implementations, interfaceKvp.Type, Logger
-                    ])!,
+                sp =>
+                {
+                    var loggerFactory = sp.GetRequiredService<ILoggerFactory>();
+                    var logger = loggerFactory.CreateLogger(interfaceKvp.Type);
+
+                    return ReflectionHelper.InvokeGenericMethod(
+                        null,
+                        GetType(),
+                        nameof(ResolveTypesFromDi),
+                        [interfaceKvp.Type], [
+                            sp, implementations, interfaceKvp.Type, logger
+                        ])!;
+                },
                 interfaceKvp.Scope
             );
 
             // Add it to the collection
             serviceCollection.Add(descriptor);
-
-            Logger.LogTrace("Registered interface {name} to dependency injection", interfaceKvp.Type.FullName);
         }
     }
 
