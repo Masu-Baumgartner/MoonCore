@@ -1,6 +1,6 @@
 namespace MoonCore.DiscordNet.Module;
 
-public interface IBaseModule
+public interface IBaseBotModule
 {
     /// <summary>
     /// This is an async implementation to Load EventHandlers

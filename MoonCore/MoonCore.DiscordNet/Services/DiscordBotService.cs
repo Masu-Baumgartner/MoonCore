@@ -13,13 +13,13 @@ public class DiscordBotService
 {
     private readonly ILogger<DiscordBotService> Logger;
     private readonly DiscordSocketClient Client;
-    private readonly IBaseModule[] Modules;
+    private readonly IBaseBotModule[] Modules;
     private readonly DiscordBotConfiguration Configuration;
 
     public DiscordBotService(
         ILogger<DiscordBotService> logger,
         DiscordBotConfiguration configuration,
-        IBaseModule[] modules,
+        IBaseBotModule[] modules,
         DiscordSocketClient client)
     {
         Logger = logger;
@@ -33,8 +33,17 @@ public class DiscordBotService
         Client.Log += Log;
         Client.Ready += OnReady;
 
-        foreach (var module in Modules)
-            await module.InitializeAsync();
+        try
+        {
+            foreach (var module in Modules)
+                await module.InitializeAsync();
+        }
+        catch (NotImplementedException)
+        { }
+        catch (Exception e)
+        {
+            Logger.LogError("An error occurred during Module initialization: {RegisterException}", e);
+        }
 
         await Client.LoginAsync(TokenType.Bot, Configuration.Auth.Token);
         await Client.StartAsync();
@@ -54,8 +63,18 @@ public class DiscordBotService
         Logger.LogInformation("Login as {username}#{id}", Client.CurrentUser.Username,
             Client.CurrentUser.DiscriminatorValue);
 
-        foreach (var module in Modules)
-            await module.RegisterAsync();
+        try
+        {
+            foreach (var module in Modules)
+                await module.RegisterAsync();
+        }
+        catch (NotImplementedException)
+        { }
+        catch (Exception e)
+        {
+            Logger.LogError("An error occurred during Module registration: {RegisterException}", e);
+        }
+        
     }
 
     private Task Log(LogMessage message)

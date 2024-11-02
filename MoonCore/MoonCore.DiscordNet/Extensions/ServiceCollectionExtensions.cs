@@ -37,7 +37,7 @@ public static class ServiceCollectionExtensions
         collection.AddPlugins(interfaceConfiguration =>
         {
             interfaceConfiguration.AddAssemblies(configuration.ModuleAssemblies);
-            interfaceConfiguration.AddInterface<IBaseModule>();
+            interfaceConfiguration.AddInterface<IBaseBotModule>();
         });
     }
 }
