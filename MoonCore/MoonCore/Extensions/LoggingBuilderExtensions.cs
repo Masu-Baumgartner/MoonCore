@@ -25,7 +25,7 @@ public static class LoggingBuilderExtensions
             builder.AddProvider(provider);
     }
     
-    public static void AddMoonCore(this ILoggingBuilder builder, Action<MoonCoreLoggingConfiguration>? configureAction = null)
+    public static void AddMoonCore(this ILoggingBuilder builder, Action<LoggingConfiguration>? configureAction = null)
     {
         builder.ClearProviders();
         builder.AddProviders(LoggerBuildHelper.BuildFromConfiguration(configureAction));

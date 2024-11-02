@@ -1,6 +1,6 @@
 ﻿namespace MoonCore.Configuration;
 
-public class MoonCoreLoggingConfiguration
+public class LoggingConfiguration
 {
     public ConsoleData Console { get; set; } = new();
     public FileLoggingData FileLogging { get; set; } = new();

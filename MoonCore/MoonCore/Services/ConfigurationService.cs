@@ -183,6 +183,9 @@ public class ConfigurationService
                 throw;
             }
         }
+        
+        // Save it to the cache
+        ConfigurationCache.Add(option.Type, deserilizedConfigurtion);
 
         return deserilizedConfigurtion;
     }
