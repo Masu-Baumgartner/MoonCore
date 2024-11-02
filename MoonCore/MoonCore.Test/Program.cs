@@ -1,8 +1,10 @@
-﻿using Microsoft.Extensions.DependencyInjection;
+﻿using System.Reflection;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using MoonCore.DiscordNet.Extensions;
 using MoonCore.Extensions;
 using MoonCore.Helpers;
-using MoonCore.Test.Configuration;
+using MoonCore.Test;
 
 // Logging
 var providers = LoggerBuildHelper.BuildFromConfiguration(configuration =>
@@ -15,13 +17,13 @@ var providers = LoggerBuildHelper.BuildFromConfiguration(configuration =>
 var startupLoggerFactory = new LoggerFactory();
 startupLoggerFactory.AddProviders(providers);
 
-var startupLogger = startupLoggerFactory.CreateLogger("Startup");
-
 var serviceCollection = new ServiceCollection();
 
-serviceCollection.AddConfiguration(options =>
+serviceCollection.AddSingleton<CoolSharedService>();
+
+serviceCollection.AddDiscordBot(configuration =>
 {
-    options.AddConfiguration<AConfig>();
+    configuration.ModuleAssemblies.Add(Assembly.GetEntryAssembly()!);
 });
 
 serviceCollection.AddLogging(builder =>
@@ -30,10 +32,5 @@ serviceCollection.AddLogging(builder =>
 });
 
 var serviceProvider = serviceCollection.BuildServiceProvider();
-
-var configA = serviceProvider.GetRequiredService<AConfig>();
-
-startupLogger.LogInformation("A > Value1: {val}", configA.Value1);
-startupLogger.LogInformation("A > Value2: {val}", configA.Value2);
 
 await Task.Delay(-1);

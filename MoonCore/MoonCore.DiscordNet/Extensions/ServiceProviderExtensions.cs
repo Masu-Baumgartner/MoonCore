@@ -6,15 +6,9 @@ namespace MoonCore.DiscordNet.Extensions;
 
 public static class ServiceProviderExtensions
 {
-    public static async Task StartDiscordBot(this IServiceProvider provider, bool runAsync = false, Assembly[]? moduleAssemblies = null)
+    public static async Task StartDiscordBot(this IServiceProvider provider, bool runAsync = false)
     {
         var discordBotService = provider.GetRequiredService<DiscordBotService>();
-
-        // If no assemblies have been specified we are using the entry assembly
-        if (moduleAssemblies == null)
-            moduleAssemblies = [Assembly.GetEntryAssembly()!];
-        
-        await discordBotService.Configure(moduleAssemblies);
 
         if (runAsync)
             Task.Run(discordBotService.StartAsync);

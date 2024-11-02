@@ -11,44 +11,31 @@ namespace MoonCore.DiscordNet.Services;
 
 public class DiscordBotService
 {
-    private ILogger<DiscordBotService> Logger { get; set; }
+    private readonly ILogger<DiscordBotService> Logger;
     private readonly DiscordSocketClient Client;
-    private readonly IServiceProvider Provider;
-    private readonly PluginService<BaseModule> ModuleService;
-    private DiscordBotConfiguration Configuration;
-    
+    private readonly IBaseModule[] Modules;
+    private readonly DiscordBotConfiguration Configuration;
+
     public DiscordBotService(
         ILogger<DiscordBotService> logger,
-        IServiceProvider provider,
-        PluginService<BaseModule> moduleService,
         DiscordBotConfiguration configuration,
-        DiscordSocketConfig socketConfig)
+        IBaseModule[] modules,
+        DiscordSocketClient client)
     {
         Logger = logger;
-        Provider = provider;
-        ModuleService = moduleService;
+        Modules = modules;
+        Client = client;
         Configuration = configuration;
-
-        Client = new(socketConfig);
-    }
-    
-    public async Task Configure(Assembly[] moduleAssemblies)
-    {
-        // Register modules
-        await ModuleService.Load(moduleAssemblies);
-        
-        // Initialize modules
-        await ModuleService.Call(async x => x.Init(Client, Configuration, Provider));
     }
 
     public async Task StartAsync()
     {
         Client.Log += Log;
         Client.Ready += OnReady;
-        
-        //AddModules modules to the SocketClient
-        await ModuleService.Call(x => x.InitializeAsync());
-        
+
+        foreach (var module in Modules)
+            await module.InitializeAsync();
+
         await Client.LoginAsync(TokenType.Bot, Configuration.Auth.Token);
         await Client.StartAsync();
 
@@ -60,13 +47,15 @@ public class DiscordBotService
         await Client.SetStatusAsync(UserStatus.Online);
         await Client.SetGameAsync("the Universe", "https://spielepapagei.de", ActivityType.Listening);
 
-        if(Configuration.Settings.DevelopMode)
-            Logger.LogInformation("Invite link: {invite}", $"https://discord.com/api/oauth2/authorize?client_id={Client.CurrentUser.Id}&permissions=1099511696391&scope=bot%20applications.commands");
-        
-        Logger.LogInformation("Login as {username}#{id}", Client.CurrentUser.Username, Client.CurrentUser.DiscriminatorValue);
+        if (Configuration.Settings.DevelopMode)
+            Logger.LogInformation("Invite link: {invite}",
+                $"https://discord.com/api/oauth2/authorize?client_id={Client.CurrentUser.Id}&permissions=1099511696391&scope=bot%20applications.commands");
 
-        //Initialize SlashCommands and Stuff
-        await ModuleService.Call(x => x.RegisterAsync());
+        Logger.LogInformation("Login as {username}#{id}", Client.CurrentUser.Username,
+            Client.CurrentUser.DiscriminatorValue);
+
+        foreach (var module in Modules)
+            await module.RegisterAsync();
     }
 
     private Task Log(LogMessage message)
@@ -74,5 +63,4 @@ public class DiscordBotService
         message.ToILogger(Logger);
         return Task.CompletedTask;
     }
-    
 }

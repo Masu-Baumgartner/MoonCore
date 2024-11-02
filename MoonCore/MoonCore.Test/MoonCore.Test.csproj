@@ -9,6 +9,7 @@
     </PropertyGroup>
 
     <ItemGroup>
+      <ProjectReference Include="..\MoonCore.DiscordNet\MoonCore.DiscordNet.csproj" />
       <ProjectReference Include="..\MoonCore.Extended\MoonCore.Extended.csproj" />
       <ProjectReference Include="..\MoonCore.PluginFramework\MoonCore.PluginFramework.csproj" />
       <ProjectReference Include="..\MoonCore\MoonCore.csproj" />

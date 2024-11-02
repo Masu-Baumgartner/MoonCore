@@ -2,7 +2,9 @@ using Discord;
 using Discord.WebSocket;
 using Microsoft.Extensions.DependencyInjection;
 using MoonCore.DiscordNet.configuration;
+using MoonCore.DiscordNet.Module;
 using MoonCore.DiscordNet.Services;
+using MoonCore.PluginFramework.Extensions;
 using MoonCore.PluginFramework.Services;
 
 namespace MoonCore.DiscordNet.Extensions;
@@ -14,7 +16,6 @@ public static class ServiceCollectionExtensions
         // Bot config
         var configuration = new DiscordBotConfiguration();
         onConfigure.Invoke(configuration);
-
         collection.AddSingleton(configuration);
         
         // Socket config
@@ -24,14 +25,19 @@ public static class ServiceCollectionExtensions
         };
         
         onConfigureSocket?.Invoke(socketConfig);
-
-        collection.AddSingleton(socketConfig);
+        
+        // Discord socket client
+        var discordSocketClient = new DiscordSocketClient(socketConfig);
+        collection.AddSingleton(discordSocketClient);
         
         // Main service
         collection.AddSingleton<DiscordBotService>();
 
-        // Register plugin service if none has been registered yet
-        if (collection.All(x => x.ImplementationType != typeof(PluginService<>)))
-            collection.AddSingleton(typeof(PluginService<>));
+        //
+        collection.AddPlugins(interfaceConfiguration =>
+        {
+            interfaceConfiguration.AddAssemblies(configuration.ModuleAssemblies);
+            interfaceConfiguration.AddInterface<IBaseModule>();
+        });
     }
 }
