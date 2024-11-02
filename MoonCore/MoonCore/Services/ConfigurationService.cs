@@ -10,23 +10,19 @@ namespace MoonCore.Services;
 public class ConfigurationService
 {
     private readonly JsonSerializerOptions SerializerOptions;
-    private readonly ConfigurationOptions Options;
-
     private readonly Dictionary<Type, object> ConfigurationCache = new();
 
-    public ConfigurationService(ConfigurationOptions options)
+    public ConfigurationService()
     {
-        Options = options;
-
         SerializerOptions = new()
         {
             WriteIndented = true
         };
     }
 
-    public void RegisterConfigurations(IServiceCollection collection)
+    public void RegisterConfigurations(ConfigurationOptions options, IServiceCollection collection)
     {
-        foreach (var option in Options.ConfigurationTypes)
+        foreach (var option in options.ConfigurationTypes)
         {
             collection.Add(new ServiceDescriptor(
                     option.Type,
@@ -49,14 +45,14 @@ public class ConfigurationService
         }
     }
 
-    public T GetConfiguration<T>(ConfigurationOptions.ConfigurationOption option, ILogger logger)
+    public T GetConfiguration<T>(ConfigurationOptions options, ConfigurationOptions.ConfigurationOption option, ILogger logger)
     {
         // If cached, return the cached object
         if (ConfigurationCache.TryGetValue(option.Type, out var cachedConfig))
             return (T)cachedConfig;
 
         // First, read the config file, create it if it doesn't exist
-        var configPath = PathBuilder.File(Options.Path, option.Name + ".json");
+        var configPath = PathBuilder.File(options.Path, option.Name + ".json");
 
         if (!File.Exists(configPath))
         {
@@ -122,7 +118,7 @@ public class ConfigurationService
         }
 
         // Handle environment variable override
-        var prefix = Options.EnvironmentPrefix + "_" + option.Name.ToUpper() + "_";
+        var prefix = options.EnvironmentPrefix + "_" + option.Name.ToUpper() + "_";
 
         var possibleEnvs = Environment
             .GetEnvironmentVariables()

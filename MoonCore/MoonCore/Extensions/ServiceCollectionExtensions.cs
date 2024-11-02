@@ -70,9 +70,25 @@ public static class ServiceCollectionExtensions
         var options = new ConfigurationOptions();
         onConfigure.Invoke(options);
 
-        var configurationService = new ConfigurationService(options);
-        configurationService.RegisterConfigurations(collection);
+        var configurationService = collection.FindRegisteredInstance<ConfigurationService>();
+
+        if (configurationService == null)
+        {
+            configurationService = new ConfigurationService();
+            collection.AddSingleton(configurationService);
+        }
         
-        collection.AddSingleton(configurationService);
+        configurationService.RegisterConfigurations(options, collection);
+    }
+
+    public static T? FindRegisteredInstance<T>(this IServiceCollection collection) where T : class
+    {
+        var serviceType = typeof(T);
+        var descriptor = collection.FirstOrDefault(x => x.ServiceType == serviceType);
+
+        if (descriptor == null)
+            return default;
+
+        return descriptor.ImplementationInstance as T;
     }
 }
