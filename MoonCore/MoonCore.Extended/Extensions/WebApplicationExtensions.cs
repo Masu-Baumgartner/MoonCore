@@ -14,7 +14,7 @@ public static class WebApplicationExtensions
 {
     public static void UseTokenAuthentication(this WebApplication application)
     {
-        application.MapPost("_auth/refresh", (
+        application.MapPost("api/_auth/refresh", (
                 [FromBody] RefreshRequest request,
                 TokenAuthenticationConfig configuration,
                 IServiceProvider serviceProvider
@@ -31,11 +31,11 @@ public static class WebApplicationExtensions
 
     public static void UseOAuth2Consumer(this WebApplication application)
     {
-        application.MapGet("_auth/oauth2/start", (OAuth2ConsumerService oAuth2Service)
+        application.MapGet("api/_auth/oauth2/start", (OAuth2ConsumerService oAuth2Service)
             => OAuth2ControllerHelper.Start(oAuth2Service).Result
         );
 
-        application.MapPost("_auth/oauth2/complete", (
+        application.MapPost("api/_auth/oauth2/complete", (
                 [FromBody] OAuth2CompleteRequest request,
                 OAuth2ConsumerService oAuth2Service,
                 IServiceProvider serviceProvider,
