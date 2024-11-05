@@ -36,7 +36,7 @@ public class ConfigurationService
                             GetType(),
                             "GetConfiguration",
                             [option.Type],
-                            [option, logger]
+                            [options, option, logger]
                         )!;
                     },
                     ServiceLifetime.Transient
