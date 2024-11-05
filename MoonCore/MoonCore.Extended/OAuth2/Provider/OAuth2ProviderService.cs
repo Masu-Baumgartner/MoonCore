@@ -1,25 +1,22 @@
 using System.Text.Json;
-using Microsoft.AspNetCore.Http;
 using MoonCore.Extended.Helpers;
 using MoonCore.Extended.OAuth2.Models;
 
-namespace MoonCore.Extended.OAuth2.AuthServer;
+namespace MoonCore.Extended.OAuth2.Provider;
 
-public class OAuth2Service
+public class OAuth2ProviderService
 {
-    private readonly OAuth2Configuration Configuration;
-    private readonly TokenHelper TokenHelper;
+    private readonly OAuth2ProviderConfiguration ProviderConfiguration;
 
-    public OAuth2Service(OAuth2Configuration configuration, TokenHelper tokenHelper)
+    public OAuth2ProviderService(OAuth2ProviderConfiguration providerConfiguration)
     {
-        Configuration = configuration;
-        TokenHelper = tokenHelper;
+        ProviderConfiguration = providerConfiguration;
     }
 
     public Task<string> GenerateCode(Action<Dictionary<string, object>> onConfigureData)
     {
         var jwt = JwtHelper.Encode(
-            Configuration.CodeSecret,
+            ProviderConfiguration.CodeSecret,
             onConfigureData,
             TimeSpan.FromMinutes(1)
         );
@@ -29,10 +26,10 @@ public class OAuth2Service
 
     public Task<bool> IsValidAuthorization(string clientId, string redirectUri)
     {
-        if (clientId != Configuration.ClientId)
+        if (clientId != ProviderConfiguration.ClientId)
             return Task.FromResult(false);
 
-        if (redirectUri != Configuration.AuthorizationRedirect)
+        if (redirectUri != ProviderConfiguration.AuthorizationRedirect)
             return Task.FromResult(false);
 
         return Task.FromResult(true);
@@ -47,40 +44,40 @@ public class OAuth2Service
         Action<Dictionary<string, object>> onConfigureTokens
     )
     {
-        if (clientId != Configuration.ClientId)
+        if (clientId != ProviderConfiguration.ClientId)
             return Task.FromResult<AccessData?>(null);
 
-        if (clientSecret != Configuration.ClientSecret)
+        if (clientSecret != ProviderConfiguration.ClientSecret)
             return Task.FromResult<AccessData?>(null);
 
-        if (redirectUri != Configuration.AuthorizationRedirect)
+        if (redirectUri != ProviderConfiguration.AuthorizationRedirect)
             return Task.FromResult<AccessData?>(null);
 
-        if (!JwtHelper.TryVerifyAndDecodePayload(Configuration.CodeSecret, code!, out var data))
+        if (!JwtHelper.TryVerifyAndDecodePayload(ProviderConfiguration.CodeSecret, code!, out var data))
             return Task.FromResult<AccessData?>(null);
 
         if (!validateData.Invoke(data))
             return Task.FromResult<AccessData?>(null);
 
         var tokenPair = TokenHelper.GeneratePair(
-            Configuration.AccessSecret,
-            Configuration.RefreshSecret,
+            ProviderConfiguration.AccessSecret,
+            ProviderConfiguration.RefreshSecret,
             onConfigureTokens,
-            Configuration.AccessTokenDuration,
-            Configuration.RefreshTokenDuration
+            ProviderConfiguration.AccessTokenDuration,
+            ProviderConfiguration.RefreshTokenDuration
         );
 
         return Task.FromResult<AccessData?>(new AccessData()
         {
             AccessToken = tokenPair.AccessToken,
             RefreshToken = tokenPair.RefreshToken,
-            ExpiresIn = Configuration.AccessTokenDuration,
+            ExpiresIn = ProviderConfiguration.AccessTokenDuration,
             TokenType = "unset"
         });
     }
 
     public Task<bool> IsValidAccessToken(string accessToken, Func<Dictionary<string, JsonElement>, bool> validateData)
-        => Task.FromResult(TokenHelper.IsValidAccessToken(accessToken, Configuration.AccessSecret, validateData));
+        => Task.FromResult(TokenHelper.IsValidAccessToken(accessToken, ProviderConfiguration.AccessSecret, validateData));
 
     public Task<RefreshData?> RefreshAccess(
         string refreshToken,
@@ -88,11 +85,11 @@ public class OAuth2Service
     {
         var pair = TokenHelper.RefreshPair(
             refreshToken,
-            Configuration.AccessSecret,
-            Configuration.RefreshSecret,
+            ProviderConfiguration.AccessSecret,
+            ProviderConfiguration.RefreshSecret,
             processData,
-            Configuration.AccessTokenDuration,
-            Configuration.RefreshTokenDuration
+            ProviderConfiguration.AccessTokenDuration,
+            ProviderConfiguration.RefreshTokenDuration
         );
 
         if (!pair.HasValue)
@@ -102,7 +99,7 @@ public class OAuth2Service
         {
             AccessToken = pair.Value.AccessToken,
             RefreshToken = pair.Value.RefreshToken,
-            ExpiresIn = Configuration.AccessTokenDuration,
+            ExpiresIn = ProviderConfiguration.AccessTokenDuration,
             TokenType = "unset"
         });
     }

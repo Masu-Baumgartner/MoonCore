@@ -22,7 +22,7 @@
     </ItemGroup>
 
     <ItemGroup>
-        <PackageReference Include="Microsoft.AspNetCore.Components.Web" Version="8.0.6"/>
+        <PackageReference Include="Microsoft.AspNetCore.Components.Web" Version="8.0.10"/>
         <PackageReference Include="Ben.Demystifier" Version="0.4.1" />
     </ItemGroup>
 

@@ -1,16 +1,16 @@
 using MoonCore.Extended.OAuth2.Models;
 using MoonCore.Extensions;
 
-namespace MoonCore.Extended.OAuth2.ApiServer;
+namespace MoonCore.Extended.OAuth2.Consumer;
 
-public class OAuth2Service
+public class OAuth2ConsumerService
 {
-    private readonly OAuth2Configuration Configuration;
+    private readonly OAuth2ConsumerConfiguration ConsumerConfiguration;
     private readonly HttpClient Client;
 
-    public OAuth2Service(OAuth2Configuration configuration, HttpClient client)
+    public OAuth2ConsumerService(OAuth2ConsumerConfiguration consumerConfiguration, HttpClient client)
     {
-        Configuration = configuration;
+        ConsumerConfiguration = consumerConfiguration;
         Client = client;
     }
 
@@ -18,9 +18,9 @@ public class OAuth2Service
     {
         var result = new AuthorizationData()
         {
-            Endpoint = Configuration.AuthorizationEndpoint,
-            ClientId = Configuration.ClientId,
-            RedirectUri = Configuration.AuthorizationRedirect
+            Endpoint = ConsumerConfiguration.AuthorizationEndpoint,
+            ClientId = ConsumerConfiguration.ClientId,
+            RedirectUri = ConsumerConfiguration.AuthorizationRedirect
         };
 
         return Task.FromResult(result);
@@ -28,13 +28,13 @@ public class OAuth2Service
 
     public async Task<AccessData> RequestAccess(string code)
     {
-        var response = await Client.PostAsync(Configuration.AccessEndpoint, new FormUrlEncodedContent(new []
+        var response = await Client.PostAsync(ConsumerConfiguration.AccessEndpoint, new FormUrlEncodedContent(new []
         {
             new KeyValuePair<string, string>("grant_type", "authorization_code"),
             new KeyValuePair<string, string>("code", code),
-            new KeyValuePair<string, string>("client_id", Configuration.ClientId),
-            new KeyValuePair<string, string>("client_secret", Configuration.ClientSecret),
-            new KeyValuePair<string, string>("redirect_uri", Configuration.AuthorizationRedirect),
+            new KeyValuePair<string, string>("client_id", ConsumerConfiguration.ClientId),
+            new KeyValuePair<string, string>("client_secret", ConsumerConfiguration.ClientSecret),
+            new KeyValuePair<string, string>("redirect_uri", ConsumerConfiguration.AuthorizationRedirect),
         }));
         
         await response.HandlePossibleApiError();
@@ -44,7 +44,7 @@ public class OAuth2Service
 
     public async Task<RefreshData> RefreshAccess(string refreshToken)
     {
-        var response = await Client.PostAsync(Configuration.RefreshEndpoint, new FormUrlEncodedContent(new []
+        var response = await Client.PostAsync(ConsumerConfiguration.RefreshEndpoint, new FormUrlEncodedContent(new []
         {
             new KeyValuePair<string, string>("grant_type", "refresh_token"),
             new KeyValuePair<string, string>("refresh_token", refreshToken)

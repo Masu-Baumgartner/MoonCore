@@ -17,7 +17,6 @@
         <Version>1.2.5</Version>
     </PropertyGroup>
 
-
     <ItemGroup>
         <SupportedPlatform Include="browser"/>
     </ItemGroup>
@@ -28,5 +27,10 @@
 
     <ItemGroup>
       <PackageReference Include="Ben.Demystifier" Version="0.4.1" />
+      <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly" Version="8.0.10" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <Folder Include="Components\" />
     </ItemGroup>
 </Project>

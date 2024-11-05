@@ -1,6 +1,6 @@
-namespace MoonCore.Extended.OAuth2.AuthServer;
+namespace MoonCore.Extended.OAuth2.Provider;
 
-public class OAuth2Configuration
+public class OAuth2ProviderConfiguration
 {
     public string ClientId { get; set; }
     public string ClientSecret { get; set; }
