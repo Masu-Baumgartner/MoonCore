@@ -14,6 +14,11 @@ namespace MoonCore.Extended.Extensions;
 
 public static class WebApplicationExtensions
 {
+    public static void UseApiErrorHandling(this WebApplication application)
+    {
+        application.UseMiddleware<ApiErrorHandleMiddleware>();
+    }
+    
     public static void UseTokenAuthentication(this WebApplication application)
     {
         application.MapPost("api/_auth/refresh", (
