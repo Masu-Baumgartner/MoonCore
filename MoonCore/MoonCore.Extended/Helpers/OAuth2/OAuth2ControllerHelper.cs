@@ -1,10 +1,9 @@
 ﻿using MoonCore.Extended.Configuration;
-using MoonCore.Extended.Interfaces;
 using MoonCore.Extended.OAuth2.Consumer;
 using MoonCore.Http.Requests.OAuth2;
 using MoonCore.Http.Responses.OAuth2;
 
-namespace MoonCore.Extended.Helpers;
+namespace MoonCore.Extended.Helpers.OAuth2;
 
 public static class OAuth2ControllerHelper
 {
@@ -24,22 +23,22 @@ public static class OAuth2ControllerHelper
         OAuth2CompleteRequest request,
         OAuth2ConsumerService oAuth2ConsumerService,
         IServiceProvider serviceProvider,
-        IOAuth2Provider provider,
-        TokenAuthenticationConfig config
+        OAuth2ConsumerConfiguration config,
+        TokenAuthenticationConfig authenticationConfig
     )
     {
         var accessData = await oAuth2ConsumerService.RequestAccess(request.Code);
-        var data = await provider.Sync(serviceProvider, accessData);
+        var data = await config.ProcessComplete.Invoke(serviceProvider, accessData);
         
         // Generate local token-pair for the authentication
         // between client and the api server
 
         var tokenPair = TokenHelper.GeneratePair(
-            config.AccessSecret,
-            config.RefreshSecret,
+            authenticationConfig.AccessSecret,
+            authenticationConfig.RefreshSecret,
             data,
-            config.AccessDuration,
-            config.RefreshDuration
+            authenticationConfig.AccessDuration,
+            authenticationConfig.RefreshDuration
         );
 
         // Authentication finished. Return data to client
@@ -48,7 +47,7 @@ public static class OAuth2ControllerHelper
         {
             AccessToken = tokenPair.AccessToken,
             RefreshToken = tokenPair.RefreshToken,
-            ExpiresAt = DateTime.UtcNow.AddSeconds(config.AccessDuration)
+            ExpiresAt = DateTime.UtcNow.AddSeconds(authenticationConfig.AccessDuration)
         };
     }
 }

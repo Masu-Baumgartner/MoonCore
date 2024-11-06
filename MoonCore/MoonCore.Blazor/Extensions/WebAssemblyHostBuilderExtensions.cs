@@ -21,7 +21,7 @@ public static class WebAssemblyHostBuilderExtensions
             httpApiClient.OnConfigureRequest += async request =>
             {
                 // Don't handle auth when calling an authentication endpoint
-                if(request.RequestUri?.LocalPath.StartsWith("/api/_auth") ?? false)
+                if(request.RequestUri?.ToString().StartsWith("api/_auth") ?? false)
                     return;
                 
                 // Check expire date
@@ -34,7 +34,7 @@ public static class WebAssemblyHostBuilderExtensions
                     var refreshToken = await localStorageService.GetStringDefaulted("RefreshToken", "unset");
 
                     // Call to refresh provider
-                    var refreshData = await httpApiClient.PostJson<RefreshResponse>("/api/_auth/refresh", new RefreshRequest()
+                    var refreshData = await httpApiClient.PostJson<RefreshResponse>("api/_auth/refresh", new RefreshRequest()
                     {
                         RefreshToken = refreshToken
                     });

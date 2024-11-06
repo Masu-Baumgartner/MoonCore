@@ -1,7 +1,7 @@
 @using Microsoft.AspNetCore.WebUtilities
 @using MoonCore.Blazor.Services
 @using MoonCore.Exceptions
-@using MoonCore.Helpers
+
 @inherits ErrorBoundaryBase
 
 @inject NavigationManager Navigation
@@ -9,7 +9,11 @@
 
 @if (IsCompleting)
 {
-    
+    @* TODO: Add view *@
+}
+else if(IsRedirecting)
+{
+    @* TODO: Add view *@
 }
 else
 {
@@ -19,6 +23,7 @@ else
 @code
 {
     private bool IsCompleting = false;
+    private bool IsRedirecting = false;
     private string Code;
 
     protected override void OnInitialized()
@@ -49,6 +54,7 @@ else
             await RedirectToAuth();
 
         IsCompleting = false;
+        Navigation.NavigateTo("/");
         await InvokeAsync(StateHasChanged);
     }
 
@@ -63,7 +69,13 @@ else
 
     private async Task RedirectToAuth()
     {
+        if(IsRedirecting)
+            return;
+        
         var url = await OAuth2FrontendService.Start();
         Navigation.NavigateTo(url, true);
+
+        IsRedirecting = true;
+        await InvokeAsync(StateHasChanged);
     }
 }

@@ -1,5 +1,6 @@
 ﻿using System.Text.Json;
 using Microsoft.AspNetCore.Http;
+using MoonCore.Extended.OAuth2.Models;
 
 namespace MoonCore.Extended.Configuration;
 
