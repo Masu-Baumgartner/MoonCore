@@ -21,48 +21,42 @@ public class TokenAuthenticationMiddleware
         await Next(context);
     }
 
-    private async Task Authenticate(HttpContext context)
+    private Task Authenticate(HttpContext context)
     {
         var request = context.Request;
 
         // Load token from header
         if (!request.Headers.TryGetValue("Authorization", out var authHeaderStrVal))
-            return;
+            return Task.CompletedTask;
 
         if (authHeaderStrVal.Count == 0)
-            return;
+            return Task.CompletedTask;
 
         var authHeader = authHeaderStrVal.First();
 
         // Validate format
         if (string.IsNullOrEmpty(authHeader))
-            return;
+            return Task.CompletedTask;
 
         if (!authHeader.StartsWith("Bearer"))
-            return;
+            return Task.CompletedTask;
 
         var authParts = authHeader.Split(" ");
 
         if (authParts.Length != 2)
-            return;
+            return Task.CompletedTask;
 
         var accessToken = authParts[1];
 
         // Validate access token
+        var configuration = context.RequestServices.GetRequiredService<TokenAuthenticationConfig>();
 
-        var tokenHelper = context.RequestServices.GetRequiredService<TokenHelper>();
-        var configuration = context.RequestServices.GetRequiredService<TokenAuthenticationConfiguration>();
-
-        tokenHelper.IsValidAccessToken(accessToken, configuration.AccessSecret, Validate);
-        return;
-
-        bool Validate(Dictionary<string, JsonElement> data)
-        {
-            return configuration.DataLoader.Invoke(
-                data,
-                context.RequestServices,
-                context
-            ).Result;
-        }
+        TokenHelper.IsValidAccessToken(accessToken, configuration.AccessSecret, data => configuration.ProcessAccess.Invoke(
+            data,
+            context.RequestServices,
+            context
+        ).Result);
+        
+        return Task.CompletedTask;
     }
 }

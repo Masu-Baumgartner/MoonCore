@@ -3,9 +3,9 @@ using MoonCore.Models;
 
 namespace MoonCore.Extended.Helpers;
 
-public class TokenHelper
+public static class TokenHelper
 {
-    public TokenPair GeneratePair(
+    public static TokenPair GeneratePair(
         string accessSecret,
         string refreshSecret,
         Action<Dictionary<string, object>> onConfigure,
@@ -13,8 +13,22 @@ public class TokenHelper
         int renewDuration = 3600
     )
     {
-        var accessToken = JwtHelper.Encode(accessSecret, onConfigure, TimeSpan.FromSeconds(accessDuration));
-        var refreshToken = JwtHelper.Encode(refreshSecret, onConfigure, TimeSpan.FromSeconds(renewDuration));
+        var data = new Dictionary<string, object>();
+        onConfigure.Invoke(data);
+        
+        return GeneratePair(accessSecret, refreshSecret, data, accessDuration, renewDuration);
+    }
+    
+    public static TokenPair GeneratePair(
+        string accessSecret,
+        string refreshSecret,
+        Dictionary<string, object> data,
+        int accessDuration = 60,
+        int renewDuration = 3600
+    )
+    {
+        var accessToken = JwtHelper.Encode(accessSecret, data, TimeSpan.FromSeconds(accessDuration));
+        var refreshToken = JwtHelper.Encode(refreshSecret, data, TimeSpan.FromSeconds(renewDuration));
 
         return new TokenPair()
         {
@@ -23,7 +37,7 @@ public class TokenHelper
         };
     }
 
-    public bool IsValidAccessToken(
+    public static bool IsValidAccessToken(
         string accessToken,
         string secret,
         Func<Dictionary<string, JsonElement>, bool> validateData)
@@ -34,7 +48,7 @@ public class TokenHelper
         return validateData.Invoke(data);
     }
 
-    public TokenPair? RefreshPair(
+    public static TokenPair? RefreshPair(
         string refreshToken,
         string accessSecret,
         string refreshSecret,

@@ -14,7 +14,7 @@
         <PackageLicenseExpression>MIT</PackageLicenseExpression>
         <RepositoryType>git</RepositoryType>
         <PackageTags>mooncore</PackageTags>
-        <Version>1.1.0</Version>
+        <Version>1.1.1</Version>
         <IsPackable>true</IsPackable>
         <StaticWebAssetsEnabled>false</StaticWebAssetsEnabled>
     </PropertyGroup>
@@ -29,7 +29,7 @@
     </ItemGroup>
 
     <ItemGroup>
-        <PackageReference Include="Microsoft.AspNetCore.Components.Web" Version="8.0.6"/>
+        <PackageReference Include="Microsoft.AspNetCore.Components.Web" Version="8.0.10"/>
     </ItemGroup>
 
     <ItemGroup>
