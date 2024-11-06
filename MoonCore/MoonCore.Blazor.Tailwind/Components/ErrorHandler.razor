@@ -133,6 +133,10 @@ else
         }
         else if (exception is HttpApiException httpApiException)
         {
+            // Dont handle unauthenticated errors
+            if (httpApiException.Status == 401)
+                throw exception;
+            
             if (httpApiException.Status == 403)
             {
                 // This checks if the last exception was a 403 with the same details.
