@@ -14,7 +14,7 @@
         <RepositoryType>git</RepositoryType>
         <PackageTags>mooncore</PackageTags>
         <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
-        <Version>1.1.5</Version>
+        <Version>1.1.7</Version>
     </PropertyGroup>
 
     <ItemGroup>
@@ -34,6 +34,11 @@
         <PackageReference Include="Microsoft.EntityFrameworkCore" Version="8.0.7" />
         <PackageReference Include="Microsoft.EntityFrameworkCore.Relational" Version="8.0.7" />
         <PackageReference Include="Ben.Demystifier" Version="0.4.1" />
+    </ItemGroup>
+    
+    <ItemGroup>
+      <UpToDateCheckInput Remove="Helpers\OAuth2\LocalPages\Login.razor" />
+      <UpToDateCheckInput Remove="Helpers\OAuth2\LocalPages\Register.razor" />
     </ItemGroup>
 
 </Project>

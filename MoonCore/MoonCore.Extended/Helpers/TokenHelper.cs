@@ -33,45 +33,21 @@ public static class TokenHelper
         return new TokenPair()
         {
             AccessToken = accessToken,
-            RefreshToken = refreshToken
+            RefreshToken = refreshToken,
+            ExpiresIn = accessDuration
         };
     }
 
-    public static bool IsValidAccessToken(
-        string accessToken,
+    public static bool IsValidToken(
+        string token,
         string secret,
         Func<Dictionary<string, JsonElement>, bool> validateData)
     {
-        if (!JwtHelper.TryVerifyAndDecodePayload(secret, accessToken, out var data))
+        if (!JwtHelper.TryVerifyAndDecodePayload(secret, token, out var data))
             return false;
 
         return validateData.Invoke(data);
     }
 
-    public static TokenPair? RefreshPair(
-        string refreshToken,
-        string accessSecret,
-        string refreshSecret,
-        Func<Dictionary<string, JsonElement>, Dictionary<string, object>, bool> processData,
-        int accessDuration = 60,
-        int renewDuration = 3600
-    )
-    {
-        if (!JwtHelper.TryVerifyAndDecodePayload(refreshSecret, refreshToken, out var data))
-            return null;
-
-        var newData = new Dictionary<string, object>();
-
-        if (!processData.Invoke(data, newData))
-            return null;
-
-        var newAccessToken = JwtHelper.Encode(accessSecret, newData, TimeSpan.FromSeconds(accessDuration));
-        var newRefreshToken = JwtHelper.Encode(refreshSecret, newData, TimeSpan.FromSeconds(renewDuration));
-
-        return new TokenPair()
-        {
-            AccessToken = newAccessToken,
-            RefreshToken = newRefreshToken
-        };
-    }
+    public static Dictionary<string, JsonElement> DecodeToken(string token) => JwtHelper.DecodePayload(token);
 }

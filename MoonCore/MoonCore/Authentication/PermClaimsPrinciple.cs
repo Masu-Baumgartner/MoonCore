@@ -4,11 +4,6 @@ namespace MoonCore.Authentication;
 
 public class PermClaimsPrinciple : ClaimsPrincipal
 {
-    public string[] Permissions { get; private set; }
+    public string[] Permissions { get; set; }
     public object IdentityModel { get; set; }
-    
-    public PermClaimsPrinciple(string[] permissions)
-    {
-        Permissions = permissions;
-    }
 }

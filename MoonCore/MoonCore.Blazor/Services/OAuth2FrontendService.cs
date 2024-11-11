@@ -24,7 +24,7 @@ public class OAuth2FrontendService
 
     public async Task<string> Start()
     {
-        var startResult = await HttpApiClient.GetJson<OAuth2StartResponse>("api/_auth/oauth2/start");
+        var startResult = await HttpApiClient.GetJson<OAuth2StartResponse>("api/_auth/start");
 
         return $"{startResult.Endpoint}?client_id={startResult.ClientId}&redirect_uri={startResult.RedirectUri}&response_type=code";
     }
@@ -33,7 +33,7 @@ public class OAuth2FrontendService
     {
         try
         {
-            var completeResult = await HttpApiClient.PostJson<OAuth2CompleteResponse>("api/_auth/oauth2/complete",
+            var completeResult = await HttpApiClient.PostJson<OAuth2CompleteResponse>("api/_auth/complete",
                 new OAuth2CompleteRequest()
                 {
                     Code = code

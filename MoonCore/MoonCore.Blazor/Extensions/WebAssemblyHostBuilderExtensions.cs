@@ -34,10 +34,20 @@ public static class WebAssemblyHostBuilderExtensions
                     var refreshToken = await localStorageService.GetStringDefaulted("RefreshToken", "unset");
 
                     // Call to refresh provider
-                    var refreshData = await httpApiClient.PostJson<RefreshResponse>("api/_auth/refresh", new RefreshRequest()
+                    RefreshResponse refreshData;
+                    
+                    try
                     {
-                        RefreshToken = refreshToken
-                    });
+                        refreshData = await httpApiClient.PostJson<RefreshResponse>("api/_auth/refresh",
+                            new RefreshRequest()
+                            {
+                                RefreshToken = refreshToken
+                            });
+                    }
+                    catch (Exception)
+                    {
+                        return;
+                    }
 
                     // Save new tokens
                     await localStorageService.SetString("AccessToken", refreshData.AccessToken);
