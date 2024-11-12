@@ -1,7 +1,7 @@
-﻿using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc;
-using MoonCore.Extended.OAuth2.Consumer.Models;
+﻿using Microsoft.AspNetCore.Mvc;
 using MoonCore.Models;
+using MoonCore.OAuth2.Requests;
+using MoonCore.OAuth2.Responses;
 
 namespace MoonCore.Extended.OAuth2.Consumer;
 

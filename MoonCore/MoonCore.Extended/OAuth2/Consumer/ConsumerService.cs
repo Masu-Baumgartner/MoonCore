@@ -2,8 +2,8 @@
 using Microsoft.Extensions.Logging;
 using MoonCore.Exceptions;
 using MoonCore.Extended.Helpers;
-using MoonCore.Extended.OAuth2.Consumer.Models;
 using MoonCore.Models;
+using MoonCore.OAuth2.Responses;
 
 namespace MoonCore.Extended.OAuth2.Consumer;
 

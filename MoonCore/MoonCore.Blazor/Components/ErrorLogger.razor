@@ -1,15 +1,23 @@
-﻿@using Microsoft.Extensions.Logging
+﻿@using System.Diagnostics
+@using Microsoft.Extensions.Logging
 @inherits ErrorBoundaryBase
 
 @inject ILogger<ErrorLogger> Logger
 
-@ChildContent
+@if (CurrentException == null)
+{
+    @ChildContent
+}
+else
+{
+    @CurrentException.ToStringDemystified()
+}
 
 @code
 {
     protected override Task OnErrorAsync(Exception exception)
     {
-        Logger.LogError("An unhandled error occured: {e}", exception);
+        Logger.LogCritical("An unhandled error occured: {e}", exception);
         
         return Task.CompletedTask;
     }

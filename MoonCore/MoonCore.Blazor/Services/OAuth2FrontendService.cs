@@ -1,7 +1,8 @@
 using Microsoft.Extensions.Logging;
 using MoonCore.Helpers;
-using MoonCore.Http.Requests.OAuth2;
-using MoonCore.Http.Responses.OAuth2;
+using MoonCore.Models;
+using MoonCore.OAuth2.Requests;
+using MoonCore.OAuth2.Responses;
 
 namespace MoonCore.Blazor.Services;
 
@@ -24,17 +25,20 @@ public class OAuth2FrontendService
 
     public async Task<string> Start()
     {
-        var startResult = await HttpApiClient.GetJson<OAuth2StartResponse>("api/_auth/start");
+        var startResult = await HttpApiClient.GetJson<StartResponse>("api/_auth/start");
 
-        return $"{startResult.Endpoint}?client_id={startResult.ClientId}&redirect_uri={startResult.RedirectUri}&response_type=code";
+        return $"{startResult.Endpoint}" +
+               $"?client_id={startResult.ClientId}" +
+               $"&redirect_uri={startResult.RedirectUri}" +
+               $"&response_type=code";
     }
 
     public async Task<bool> Complete(string code)
     {
         try
         {
-            var completeResult = await HttpApiClient.PostJson<OAuth2CompleteResponse>("api/_auth/complete",
-                new OAuth2CompleteRequest()
+            var completeResult = await HttpApiClient.PostJson<TokenPair>("api/_auth/complete",
+                new CompleteRequest()
                 {
                     Code = code
                 }
@@ -42,7 +46,7 @@ public class OAuth2FrontendService
 
             await StorageService.SetString("AccessToken", completeResult.AccessToken);
             await StorageService.SetString("RefreshToken", completeResult.RefreshToken);
-            await StorageService.Set("ExpiresAt", completeResult.ExpiresAt);
+            await StorageService.Set("ExpiresAt", DateTime.UtcNow.AddSeconds(completeResult.ExpiresIn));
 
             return true;
         }

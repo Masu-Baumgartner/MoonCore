@@ -1,6 +1,6 @@
-﻿namespace MoonCore.Http.Responses.OAuth2;
+﻿namespace MoonCore.OAuth2.Responses;
 
-public class OAuth2StartResponse
+public class StartResponse
 {
     public string Endpoint { get; set; }
     public string ClientId { get; set; }

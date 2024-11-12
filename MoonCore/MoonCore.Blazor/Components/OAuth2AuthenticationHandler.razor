@@ -32,8 +32,8 @@ else
 
         if (!QueryHelpers.ParseQuery(uri.Query).TryGetValue("code", out var codeSv))
             return;
-        
-        if(codeSv.Count == 0 || string.IsNullOrEmpty(codeSv.First()))
+
+        if (codeSv.Count == 0 || string.IsNullOrEmpty(codeSv.First()))
             return;
 
         var code = codeSv.First();

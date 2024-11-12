@@ -1,4 +1,4 @@
-﻿namespace MoonCore.Extended.OAuth2.Consumer.Models;
+﻿namespace MoonCore.OAuth2.Requests;
 
 public class CompleteRequest
 {

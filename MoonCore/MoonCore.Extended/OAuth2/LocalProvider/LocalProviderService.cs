@@ -145,15 +145,19 @@ public class LocalProviderService<T> where T : IUserModel
     public async Task<TokenPair> HandleAccess(HttpContext context, string code)
     {
         await ValidateClientSecret(context);
-        
-        if (!JwtHelper.TryVerifyAndDecodePayload(Configuration.CodeSecret, code, out var parameters))
-            throw new HttpApiException("Invalid or expired code provided", 400);
 
         var userId = -1;
 
-        if (!parameters.TryGetValue("userId", out var userIdEl) && userIdEl.TryGetInt32(out userId))
-            throw new HttpApiException("Invalid code provided", 400);
+        // Check if the code is valid
+        var isValidCode = TokenHelper.IsValidToken(
+            code,
+            Configuration.CodeSecret,
+            parameters => parameters.TryGetValue("userId", out var userIdEl) && userIdEl.TryGetInt32(out userId)
+        );
 
+        if (!isValidCode)
+            throw new HttpApiException("Invalid or expired code provided", 401);
+        
         var implementation = context.RequestServices.GetRequiredService<ILocalProviderImplementation<T>>();
         var user = await implementation.LoadById(userId);
 
