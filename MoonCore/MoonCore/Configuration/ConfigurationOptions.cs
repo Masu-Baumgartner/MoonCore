@@ -5,7 +5,7 @@ namespace MoonCore.Configuration;
 // A weird name, ik ik
 public class ConfigurationOptions
 {
-    public List<ConfigurationOption> ConfigurationTypes { get; set; } = new();
+    public List<ConfigurationDefinition> Definitions { get; set; } = new();
     public string Path { get; set; } = "configs";
     public string EnvironmentPrefix { get; set; } = "APP";
 
@@ -13,7 +13,7 @@ public class ConfigurationOptions
     {
         var configType = typeof(T);
 
-        ConfigurationTypes.Add(new()
+        Definitions.Add(new()
         {
             Name = name ?? configType.Name,
             Type = configType
@@ -25,10 +25,10 @@ public class ConfigurationOptions
     
     public void UseEnvironmentPrefix(string prefix)
         => EnvironmentPrefix = prefix;
+}
 
-    public class ConfigurationOption
-    {
-        public string Name { get; set; }
-        public Type Type { get; set; }
-    }
+public class ConfigurationDefinition
+{
+    public string Name { get; set; }
+    public Type Type { get; set; }
 }

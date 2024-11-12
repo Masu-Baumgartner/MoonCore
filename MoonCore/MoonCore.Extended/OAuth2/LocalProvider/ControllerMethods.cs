@@ -30,7 +30,7 @@ public class ControllerMethods
         [FromQuery(Name = "client_id")] string clientId,
         [FromQuery(Name = "redirect_uri")] string redirectUri,
         [FromQuery(Name = "response_type")] string responseType,
-        [FromForm(Name = "mail")] string email,
+        [FromForm(Name = "email")] string email,
         [FromForm(Name = "password")] string password,
         [FromForm(Name = "username")] string? username = null,
         [FromQuery(Name = "action")] string action = "login"

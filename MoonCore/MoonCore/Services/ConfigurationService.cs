@@ -20,9 +20,9 @@ public class ConfigurationService
         };
     }
 
-    public void RegisterConfigurations(ConfigurationOptions options, IServiceCollection collection)
+    public void RegisterInDi(ConfigurationOptions options, IServiceCollection collection)
     {
-        foreach (var option in options.ConfigurationTypes)
+        foreach (var option in options.Definitions)
         {
             collection.Add(new ServiceDescriptor(
                     option.Type,
@@ -36,7 +36,7 @@ public class ConfigurationService
                             GetType(),
                             "GetConfiguration",
                             [option.Type],
-                            [options, option, logger]
+                            [options, logger]
                         )!;
                     },
                     ServiceLifetime.Transient
@@ -45,18 +45,26 @@ public class ConfigurationService
         }
     }
 
-    public T GetConfiguration<T>(ConfigurationOptions options, ConfigurationOptions.ConfigurationOption option, ILogger logger)
+    public T GetConfiguration<T>(ConfigurationOptions options, ILogger logger)
     {
+        var configurationType = typeof(T);
+        
         // If cached, return the cached object
-        if (ConfigurationCache.TryGetValue(option.Type, out var cachedConfig))
+        if (ConfigurationCache.TryGetValue(configurationType, out var cachedConfig))
             return (T)cachedConfig;
 
-        // First, read the config file, create it if it doesn't exist
-        var configPath = PathBuilder.File(options.Path, option.Name + ".json");
+        // Find definition
+        var definition = options.Definitions.FirstOrDefault(x => x.Type == configurationType);
 
-        if (!File.Exists(configPath))
+        if (definition == null)
+            throw new ArgumentException($"No definition of {configurationType.FullName} found in the provided options");
+        
+        // First, read the config file, create it if it doesn't exist
+        var configPath = PathBuilder.File(options.Path, definition.Name + ".json");
+        
+        if (!File.Exists(configPath)) // Create config file if not existing
         {
-            logger.LogTrace("Configuration file for '{name}' not found. Creating it", option.Name);
+            logger.LogTrace("Configuration file for '{name}' not found. Creating it", definition.Name);
 
             try
             {
@@ -71,14 +79,15 @@ public class ConfigurationService
             }
         }
 
+        // Read file
         var configurationText = File.ReadAllText(configPath);
 
         // Now we parse the json contents
-        T deserilizedConfigurtion;
+        T deserializedConfiguration;
 
         try
         {
-            deserilizedConfigurtion = JsonSerializer.Deserialize<T>(configurationText, SerializerOptions)!;
+            deserializedConfiguration = JsonSerializer.Deserialize<T>(configurationText, SerializerOptions)!;
         }
         catch (Exception e)
         {
@@ -91,7 +100,7 @@ public class ConfigurationService
         // we serialize the config model right after reading it and save the new version if changes
         // have been detected
 
-        var serializedConfig = JsonSerializer.Serialize(deserilizedConfigurtion, SerializerOptions);
+        var serializedConfig = JsonSerializer.Serialize(deserializedConfiguration, SerializerOptions);
 
         // Detect changes, to trigger backup function
         if (configurationText.Trim() != serializedConfig.Trim())
@@ -118,7 +127,7 @@ public class ConfigurationService
         }
 
         // Handle environment variable override
-        var prefix = options.EnvironmentPrefix + "_" + option.Name.ToUpper() + "_";
+        var prefix = $"{options.EnvironmentPrefix}_{definition.Name.ToUpper()}_";
 
         var possibleEnvs = Environment
             .GetEnvironmentVariables()
@@ -132,15 +141,15 @@ public class ConfigurationService
             var path = Formatter.ReplaceStart(possibleEnv, prefix, "");
 
             var propertyData = ResolveProperty(
-                option.Type,
-                deserilizedConfigurtion,
+                configurationType,
+                deserializedConfiguration,
                 path.Split("_")
             );
 
             if (propertyData == null)
             {
                 logger.LogWarning("Ignoring environment set override '{ignoredEnv}' for configuration '{name}'",
-                    possibleEnv, option.Name);
+                    possibleEnv, definition.Name);
                 continue;
             }
 
@@ -150,7 +159,7 @@ public class ConfigurationService
             {
                 logger.LogWarning(
                     "Ignoring environment set override '{ignoredEnv}' for configuration '{name}' as it was empty/unset",
-                    possibleEnv, option.Name);
+                    possibleEnv, definition.Name);
                 continue;
             }
 
@@ -181,9 +190,9 @@ public class ConfigurationService
         }
         
         // Save it to the cache
-        ConfigurationCache.Add(option.Type, deserilizedConfigurtion);
+        ConfigurationCache.Add(configurationType, deserializedConfiguration);
 
-        return deserilizedConfigurtion;
+        return deserializedConfiguration;
     }
 
     private static (PropertyInfo, object)? ResolveProperty(Type type, object instance, string[] pathParts)

@@ -78,7 +78,7 @@ public static class ServiceCollectionExtensions
             collection.AddSingleton(configurationService);
         }
         
-        configurationService.RegisterConfigurations(options, collection);
+        configurationService.RegisterInDi(options, collection);
     }
 
     public static T? FindRegisteredInstance<T>(this IServiceCollection collection) where T : class

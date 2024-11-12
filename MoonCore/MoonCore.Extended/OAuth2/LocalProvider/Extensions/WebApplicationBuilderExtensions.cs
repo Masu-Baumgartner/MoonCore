@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.DependencyInjection;
 using MoonCore.Extended.OAuth2.Consumer;
+using MoonCore.Extended.OAuth2.LocalProvider.Implementations;
 using MoonCore.Extensions;
 
 namespace MoonCore.Extended.OAuth2.LocalProvider.Extensions;
@@ -30,5 +31,7 @@ public static class WebApplicationBuilderExtensions
         
         builder.Services.AddSingleton(configuration);
         builder.Services.AddSingleton<LocalProviderService<T>>();
+
+        builder.Services.AddScoped<IOAuth2Provider<T>, LocalOAuth2Provider<T>>();
     }
 }
