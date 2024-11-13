@@ -14,7 +14,7 @@
         <PackageLicenseExpression>MIT</PackageLicenseExpression>
         <RepositoryType>git</RepositoryType>
         <PackageTags>mooncore</PackageTags>
-        <Version>1.1.2</Version>
+        <Version>1.1.4</Version>
         <IsPackable>true</IsPackable>
         <StaticWebAssetsEnabled>false</StaticWebAssetsEnabled>
     </PropertyGroup>
