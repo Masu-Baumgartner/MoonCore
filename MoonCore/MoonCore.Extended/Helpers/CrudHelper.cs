@@ -12,6 +12,9 @@ public class CrudHelper<T, TResult> where T : class
     private readonly DatabaseRepository<T> Repository;
     private readonly IServiceProvider ServiceProvider;
 
+    public Func<IQueryable<T>, IQueryable<T>>? QueryModifier { get; set; }
+    public Func<T, TResult, TResult>? LateMapper { get; set; }
+
     public CrudHelper(DatabaseRepository<T> repository, IServiceProvider serviceProvider)
     {
         Repository = repository;
@@ -26,15 +29,19 @@ public class CrudHelper<T, TResult> where T : class
             throw new HttpApiException("The requested page size is too large", 400);
 
         var totalItems = Repository.Get().Count();
-        
+
         var items = Repository
             .Get()
             .Skip(page * pageSize)
-            .Take(pageSize)
-            .ToArray();
+            .Take(pageSize);
 
-        var castedItems = items
-            .Select(x => Mapper.Map<TResult>(x))
+        if (QueryModifier != null)
+            items = QueryModifier.Invoke(items);
+
+        var loadedItems = items.ToArray();
+
+        var castedItems = loadedItems
+            .Select(MapToResult)
             .ToArray();
 
         return Task.FromResult<IPagedData<TResult>>(new PagedData<TResult>()
@@ -56,7 +63,7 @@ public class CrudHelper<T, TResult> where T : class
         if (item == null)
             throw new HttpApiException("No item with this id found", 404);
 
-        var castedItem = Mapper.Map<TResult>(item);
+        var castedItem = MapToResult(item);
         
         return Task.FromResult(castedItem);
     }
@@ -79,7 +86,7 @@ public class CrudHelper<T, TResult> where T : class
 
         var finalItem = Repository.Add(item);
 
-        var castedItem = Mapper.Map<TResult>(finalItem);
+        var castedItem = MapToResult(finalItem);
 
         return Task.FromResult(castedItem);
     }
@@ -97,7 +104,7 @@ public class CrudHelper<T, TResult> where T : class
         
         Repository.Update(item);
 
-        var castedItem = Mapper.Map<TResult>(item);
+        var castedItem = MapToResult(item);
 
         return Task.FromResult(castedItem);
     }
@@ -107,6 +114,16 @@ public class CrudHelper<T, TResult> where T : class
         var item = await GetSingleModel(id);
         
         Repository.Delete(item);
+    }
+
+    public TResult MapToResult(T item)
+    {
+        var mapped = Mapper.Map<TResult>(item);
+
+        if (LateMapper != null)
+            mapped = LateMapper.Invoke(item, mapped);
+
+        return mapped;
     }
 
     private CrudHelperConfiguration GetConfig() =>
