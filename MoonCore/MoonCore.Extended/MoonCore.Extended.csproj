@@ -40,5 +40,9 @@
       <UpToDateCheckInput Remove="Helpers\OAuth2\LocalPages\Login.razor" />
       <UpToDateCheckInput Remove="Helpers\OAuth2\LocalPages\Register.razor" />
     </ItemGroup>
+    
+    <ItemGroup>
+      <Folder Include="Plugins\" />
+    </ItemGroup>
 
 </Project>

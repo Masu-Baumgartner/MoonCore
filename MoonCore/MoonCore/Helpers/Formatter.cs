@@ -446,4 +446,14 @@ public static class Formatter
 
         return result;
     }
+    
+    public static string ToHex(byte[] bytes, bool upperCase = false)
+    {
+        var result = new StringBuilder(bytes.Length*2);
+
+        foreach (var b in bytes)
+            result.Append(b.ToString(upperCase ? "X2" : "x2"));
+
+        return result.ToString();
+    }
 }

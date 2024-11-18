@@ -8,7 +8,7 @@ namespace MoonCore.PluginFramework.Extensions;
 
 public static class ServiceCollectionExtensions
 {
-    public static void AddPlugins(this IServiceCollection collection, Action<InterfaceConfiguration> onConfigure)
+    public static void AddInterfaces(this IServiceCollection collection, Action<InterfaceConfiguration> onConfigure)
     {
         var configuration = new InterfaceConfiguration();
         onConfigure.Invoke(configuration);
