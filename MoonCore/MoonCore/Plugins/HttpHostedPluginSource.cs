@@ -1,4 +1,6 @@
 ﻿using System.Runtime.Loader;
+using MoonCore.Extensions;
+using MoonCore.Models;
 
 namespace MoonCore.Plugins;
 
@@ -13,6 +15,18 @@ public class HttpHostedPluginSource : IPluginSource
 
     public async Task Load(AssemblyLoadContext loadContext, List<string> entrypoints)
     {
+        using var httpClient = new HttpClient();
+        var response = await httpClient.GetAsync(Url);
+        await response.HandlePossibleApiError();
+
+        var manifest = await response.ParseAsJson<HostedPluginsManifest>();
+
+        foreach (var assembly in manifest.Assemblies)
+        {
+            var pluginStream = await httpClient.GetStreamAsync($"{Url}?assembly={assembly}");
+            loadContext.LoadFromStream(pluginStream);
+        }
         
+        entrypoints.AddRange(manifest.Entrypoints);
     }
 }
