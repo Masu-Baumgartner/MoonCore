@@ -1,16 +1,16 @@
-﻿using Microsoft.AspNetCore.Builder;
-using Microsoft.Extensions.DependencyInjection;
+﻿using Microsoft.Extensions.DependencyInjection;
 using MoonCore.Extended.OAuth2.Consumer;
 using MoonCore.Extended.OAuth2.LocalProvider.Implementations;
 using MoonCore.Extensions;
 
 namespace MoonCore.Extended.OAuth2.LocalProvider.Extensions;
 
-public static class WebApplicationBuilderExtensions
+public static class ServiceCollectionExtensions
 {
-    public static void AddLocalOAuth2Provider<T>(this WebApplicationBuilder builder, string publicUrl, Action<LocalProviderConfiguration>? onConfigure = null) where T : IUserModel
+    public static void AddLocalOAuth2Provider<T>(this IServiceCollection collection, string publicUrl,
+        Action<LocalProviderConfiguration>? onConfigure = null) where T : IUserModel
     {
-        var authConfig = builder.Services.FindRegisteredInstance<AuthenticationConfiguration<T>>();
+        var authConfig = collection.FindRegisteredInstance<AuthenticationConfiguration<T>>();
 
         if (authConfig == null)
             throw new ArgumentNullException(nameof(AuthenticationConfiguration<T>), "You need to add oauth2 authentication before trying to add the local provider");
@@ -29,9 +29,9 @@ public static class WebApplicationBuilderExtensions
         
         onConfigure?.Invoke(configuration);
         
-        builder.Services.AddSingleton(configuration);
-        builder.Services.AddSingleton<LocalProviderService<T>>();
+        collection.AddSingleton(configuration);
+        collection.AddSingleton<LocalProviderService<T>>();
 
-        builder.Services.AddScoped<IOAuth2Provider<T>, LocalOAuth2Provider<T>>();
+        collection.AddScoped<IOAuth2Provider<T>, LocalOAuth2Provider<T>>();
     }
 }
