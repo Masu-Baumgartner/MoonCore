@@ -54,25 +54,26 @@ public class CrudHelper<T, TResult> where T : class
         });
     }
 
-    public Task<TResult> GetSingle(int id)
+    public async Task<TResult> GetSingle(int id)
     {
-        var item = Repository
-            .Get()
-            .Find(id);
-
-        if (item == null)
-            throw new HttpApiException("No item with this id found", 404);
+        var item = await GetSingleModel(id);
 
         var castedItem = MapToResult(item);
         
-        return Task.FromResult(castedItem);
+        return castedItem;
     }
     
     public Task<T> GetSingleModel(int id)
     {
-        var item = Repository
-            .Get()
-            .Find(id);
+        var query = Repository
+            .Get();
+
+        T? item;
+
+        if (QueryModifier == null)
+            item = query.FirstOrDefaultById(id);
+        else
+            item = QueryModifier.Invoke(query).FirstOrDefaultById(id);
 
         if (item == null)
             throw new HttpApiException("No item with this id found", 404);
