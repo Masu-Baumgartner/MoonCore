@@ -6,7 +6,11 @@ namespace MoonCore.Plugins;
 
 public class PluginLoaderService
 {
-    public Assembly[] Assemblies { get; private set; }
+    public Assembly[] AllAssemblies { get; private set; }
+    public Assembly[] PluginAssemblies => AllAssemblies
+        .Where(x => Entrypoints.Contains(x.FullName))
+        .ToArray();
+    
     public string[] Entrypoints { get; private set; }
 
     private readonly ILogger<PluginLoaderService> Logger;
@@ -44,9 +48,9 @@ public class PluginLoaderService
             }
 
             Entrypoints = entrypoints.ToArray();
-            Assemblies = loadContext.Assemblies.ToArray();
+            AllAssemblies = loadContext.Assemblies.ToArray();
             
-            Logger.LogTrace("Loaded {assemblyCount} assemblies with {entrypointCount} entrypoints", Assemblies.Length, Entrypoints.Length);
+            Logger.LogTrace("Loaded {assemblyCount} assemblies with {entrypointCount} entrypoints", AllAssemblies.Length, Entrypoints.Length);
         }
         catch (Exception e)
         {

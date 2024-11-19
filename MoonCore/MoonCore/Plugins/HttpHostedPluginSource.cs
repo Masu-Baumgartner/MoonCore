@@ -23,7 +23,7 @@ public class HttpHostedPluginSource : IPluginSource
 
         foreach (var assembly in manifest.Assemblies)
         {
-            var pluginStream = await httpClient.GetStreamAsync($"{Url}?assembly={assembly}");
+            var pluginStream = await httpClient.GetStreamAsync($"{Url}/stream?assembly={assembly}");
             loadContext.LoadFromStream(pluginStream);
         }
         

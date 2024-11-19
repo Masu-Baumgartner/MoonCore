@@ -31,4 +31,9 @@ public static class PluginLoaderServiceExtensions
     {
         service.AddSource(new FolderPluginSource(folder, entrypoints));
     }
+    
+    public static void AddFilesSource(this PluginLoaderService service, string[] files, string[] entrypoints)
+    {
+        service.AddSource(new FilesPluginSource(files, entrypoints));
+    }
 }
