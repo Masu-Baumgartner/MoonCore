@@ -1,4 +1,5 @@
 using MoonCore.Blazor.Tailwind.Alerts.Components;
+using MoonCore.Blazor.Tailwind.Alerts.Interfaces;
 using MoonCore.Blazor.Tailwind.Modals.Components;
 using MoonCore.Blazor.Tailwind.Modals;
 
@@ -34,6 +35,15 @@ public class AlertService
         {
             buildAttr.Add("Title", title);
             buildAttr.Add("Text", text);
+        });
+    }
+    
+    public async Task FormAlert<T, TUi>(string title, Func<T?, Task> confirmAction) where TUi : FormInputUi<T> where T : class
+    {
+        await ModalService.Launch<FormInputAlert<T, TUi>>(buildAttr =>
+        {
+            buildAttr.Add("Title", title);
+            buildAttr.Add("ConfirmAction", confirmAction);
         });
     }
 }
