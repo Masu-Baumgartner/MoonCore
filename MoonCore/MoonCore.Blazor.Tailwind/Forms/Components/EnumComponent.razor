@@ -1,0 +1,16 @@
+@typeparam TProperty where TProperty : struct, Enum
+
+@using MoonCore.Helpers
+
+@inherits BaseFormComponent<TProperty>
+
+<select @bind="Binder.Value" class="form-select w-full">
+    @foreach (var enumValue in Enum.GetValues<TProperty>())
+    {
+        var enumValAsString = enumValue.ToString();
+        
+        <option value="@enumValAsString">
+            @(Formatter.ConvertCamelCaseToSpaces(enumValAsString))
+        </option>
+    }
+</select>

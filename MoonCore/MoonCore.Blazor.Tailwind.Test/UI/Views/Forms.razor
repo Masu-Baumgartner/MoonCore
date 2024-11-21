@@ -1,0 +1,92 @@
+@page "/forms"
+
+@using Bogus
+@using MoonCore.Blazor.Tailwind.Test.Models
+@using MoonCore.Blazor.Tailwind.Forms
+@using MoonCore.Blazor.Tailwind.Forms.Components
+
+<GeneratedForm Model="Model" OnConfigure="OnConfigure"/>
+
+@code
+{
+    private DemoDataModel Model = new();
+
+    private DemoDataModel[] SelectData;
+
+    protected override void OnInitialized()
+    {
+        var faker = new Faker<DemoDataModel>()
+            .RuleFor(x => x.Id, x => x.UniqueIndex)
+            .RuleFor(x => x.Email, x => x.Person.Email)
+            .RuleFor(x => x.Flag, x => x.Random.Bool())
+            .RuleFor(x => x.Name, x => x.Person.UserName);
+
+        SelectData = faker
+            .Generate(20)
+            .ToArray();
+    }
+
+    private void OnConfigure(FormConfiguration<DemoDataModel> configuration)
+    {
+        var page1 = configuration.WithPage("Page 1");
+
+        page1.WithField(x => x.Id);
+        page1.WithField(x => x.Email, fieldConfiguration => { fieldConfiguration.Description = "Boooooooooooop"; });
+
+        var page2 = configuration.WithPage("Page 2");
+
+        page2.WithField(x => x.Name)
+            .WithComponent<StringComponent>(component => { component.Type = "password"; });
+        page2.WithField(x => x.Flag);
+
+        configuration
+            .WithField(x => x.RelationalDataId)
+            .WithComponent<IdSearchSelectComponent<int, DemoDataModel>>(component =>
+            {
+                component.Loader = async searchTerm =>
+                {
+                    await Task.Delay(TimeSpan.FromSeconds(1));
+
+                    if (string.IsNullOrEmpty(searchTerm))
+                        return SelectData;
+                    else
+                        return SelectData.Where(x => x
+                                .Name
+                                .ToLower()
+                                .Contains(searchTerm.ToLower())
+                            )
+                            .ToArray();
+                };
+
+                component.ValueProperty = model => model?.Id ?? 0;
+                
+                component.DisplayProperty = model =>
+                {
+                    if (model == null)
+                        return "hmm?";
+
+                    return model.Name;
+                };
+                component.AllowNone = true;
+            });
+
+        configuration
+            .WithField(x => x.RelationalDataId)
+            .WithComponent<IdSelectComponent<int, DemoDataModel>>(component =>
+            {
+                component.ItemLoader = async () =>
+                {
+                    await Task.Delay(3000);
+                    return SelectData;
+                };
+
+                component.ValueProperty = model => model?.Id ?? 0;
+                
+                component.AllowNone = true;
+                component.DisplayProperty = model => model.Name;
+            });
+        
+        configuration.WithField(x => x.CoolEnum)
+            .WithComponent<EnumComponent<SomeCoolEnum>>();
+    }
+}

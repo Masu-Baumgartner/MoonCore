@@ -1,0 +1,90 @@
+@page "/crud"
+
+@using Bogus
+@using MoonCore.Helpers
+@using MoonCore.Blazor.Tailwind.Crud
+@using MoonCore.Blazor.Tailwind.Components
+@using MoonCore.Blazor.Tailwind.Test.Models
+@using MoonCore.Models
+
+<Crud @ref="Crud" OnConfigure="OnConfigure" TItem="DemoDataModel" TCreateForm="DemoFormModel" TUpdateForm="DemoFormModel">
+    <View>
+        <Column TItem="DemoDataModel" Field="@(x => x.Id)" Title="Id"/>
+        <Column TItem="DemoDataModel" Field="@(x => x.Email)" Title="Email"/>
+        <Column TItem="DemoDataModel" Field="@(x => x.Name)" Title="Username"/>
+        <Column TItem="DemoDataModel" Title="Flag" Field="@(x => x.Flag)">
+            <Template>
+                @if (context.Flag)
+                {
+                    <span>
+                        ✅
+                    </span>
+                }
+                else
+                {
+                    <span>
+                        ❌
+                    </span>
+                }
+            </Template>
+        </Column>
+    </View>
+</Crud>
+
+@code
+{
+    private static List<DemoDataModel> Data;
+    private Crud<DemoDataModel, DemoFormModel, DemoFormModel> Crud;
+
+    protected override void OnInitialized()
+    {
+        if (Data == null)
+        {
+            var faker = new Faker<DemoDataModel>()
+                .RuleFor(x => x.Id, x => x.UniqueIndex)
+                .RuleFor(x => x.Email, x => x.Person.Email)
+                .RuleFor(x => x.Flag, x => x.Random.Bool())
+                .RuleFor(x => x.Name, x => x.Person.UserName);
+
+            Data = faker
+                .Generate(100);
+        }
+    }
+
+    private void OnConfigure(CrudOptions<DemoDataModel, DemoFormModel, DemoFormModel> options)
+    {
+        options.ItemName = "Item";
+
+        options.ItemLoader = async (page, pageSize)
+            => PagedData<DemoDataModel>.Create(Data.ToArray(), page, pageSize);
+        
+        options.SingleItemLoader = async v =>
+        {
+            var id = int.Parse(v);
+            return Data.FirstOrDefault(x => x.Id == id);
+        };
+
+        options.QueryIdentifier = model => model.Id.ToString();
+        
+        options.OnConfigureCreate = configuration =>
+        {
+            configuration.WithField(x => x.Name);
+            configuration.WithField(x => x.Email);
+            configuration.WithField(x => x.Flag);
+        };
+
+        options.OnConfigureUpdate = (model, configuration) =>
+        {
+            configuration.WithField(x => x.Name);
+            configuration.WithField(x => x.Email);
+            configuration.WithField(x => x.Flag);
+        };
+
+        options.OnCreate = async model => Data.Add(Mapper.Map<DemoDataModel>(model));
+        options.OnUpdate = async (item, model) => Mapper.Map(item, model);
+        options.OnDelete = async item => Data.Remove(item);
+
+        options.UseHeader = true;
+        options.UseBar = false;
+    }
+}

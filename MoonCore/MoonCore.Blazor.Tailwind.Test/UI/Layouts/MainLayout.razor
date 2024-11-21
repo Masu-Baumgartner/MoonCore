@@ -1,0 +1,31 @@
+﻿@using MoonCore.Blazor.Tailwind.Test.UI.Partials
+@using MoonCore.Blazor.Tailwind.Components
+@using MoonCore.Blazor.Tailwind.Toasts
+@using MoonCore.Blazor.Tailwind.Modals
+
+@inherits LayoutComponentBase
+
+<div>
+    <AppSidebar />
+
+    <div class="lg:pl-72">
+        <AppHeader/>
+
+        <ErrorHandler>
+            <main class="py-10">
+                <div class="px-4 sm:px-6 lg:px-8">
+                    @Body
+                </div>
+            </main>
+        </ErrorHandler>
+
+        <ToastLauncher />
+        <ModalLauncher />
+    </div>
+</div>
+
+<div id="blazor-error-ui">
+    An unhandled error has occurred.
+    <a href="" class="reload">Reload</a>
+    <a class="dismiss">🗙</a>
+</div>
