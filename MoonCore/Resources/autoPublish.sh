@@ -33,10 +33,10 @@ for project in $project_files; do
 
         pwd=$(pwd)
         project_path=$(dirname $project)
-        (cd $project_path; dotnet pack --configuration Release --output $pwd/nupkgs)
+        (cd $project_path; dotnet build --configuration Release; dotnet pack --configuration Release --output $pwd/nupkgs)
     fi
 done
 
 dotnet nuget push ./nupkgs/*.nupkg -k ${{ secrets.NUGET_API_KEY }} -s https://api.nuget.org/v3/index.json
 
-rm ./nupkgs/*.nupkg
+rm -f ./nupkgs/*.nupkg
