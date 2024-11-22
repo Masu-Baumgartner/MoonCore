@@ -1,0 +1,37 @@
+@page "/toasts"
+@using MoonCore.Blazor.Tailwind.Toasts
+
+@inject ToastService ToastService
+
+<div class="space-x-2">
+    <button @onclick="SuccessClick" class="btn btn-success">Success</button>
+    <button @onclick="InfoClick" class="btn btn-info">Info</button>
+    <button @onclick="WarningClick" class="btn btn-warning">Warning</button>
+    <button @onclick="DangerClick" class="btn btn-danger">Danger</button>
+    <button @onclick="WorkClick" class="btn btn-secondary">Work</button>
+</div>
+
+@code
+{
+
+    private Task SuccessClick() => ToastService.Success("Title example", "Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua.");
+    private Task InfoClick() => ToastService.Info("Title example", "Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua.");
+    private Task WarningClick() => ToastService.Warning("Title example", "Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua.");
+    private Task DangerClick() => ToastService.Danger("Title example", "Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua.");
+    
+    private async Task WorkClick()
+    {
+        await ToastService.Progress(
+            "Doing a long task",
+            "Doing thing 1",
+            async toast =>
+            {
+                await Task.Delay(TimeSpan.FromSeconds(3));
+
+                await toast.UpdateText("Doing another long task");
+                
+                await Task.Delay(TimeSpan.FromSeconds(3));
+            }
+        );
+    }
+}

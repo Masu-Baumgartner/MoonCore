@@ -1,0 +1,34 @@
+﻿name: Auto-Publish Multiple Projects to NuGet
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+  pull_request:
+    types:
+      - closed
+    branches:
+      - main
+
+jobs:
+  check-and-publish:
+    runs-on: ubuntu-latest
+
+    steps:
+      # Step 1: Checkout the code
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      # Step 2: Setup .NET environment
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v3
+        with:
+          dotnet-version: 8.0 # Use the .NET version your projects require
+
+      # Step 3: Execute setup script
+      - name: Process and Publish Projects
+        working-directory: ./MoonCore
+        run: bash Resources/autoPublish.sh
+        env:
+          NUGET_API_KEY: ${{ secrets.NUGET_API_KEY }}

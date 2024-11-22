@@ -1,0 +1,1 @@
+﻿A modular plugin and interface framework to allow third party developers to extend your application

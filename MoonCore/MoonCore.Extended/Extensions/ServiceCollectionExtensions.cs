@@ -7,6 +7,7 @@ public static class ServiceCollectionExtensions
 {
     public static void AddApiExceptionHandler(this IServiceCollection collection)
     {
+        collection.AddProblemDetails();
         collection.AddExceptionHandler<ApiExceptionHandler>();
     }
 }

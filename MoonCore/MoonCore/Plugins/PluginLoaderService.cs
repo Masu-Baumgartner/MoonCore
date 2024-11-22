@@ -8,7 +8,7 @@ public class PluginLoaderService
 {
     public Assembly[] AllAssemblies { get; private set; }
     public Assembly[] PluginAssemblies => AllAssemblies
-        .Where(x => Entrypoints.Contains(x.FullName))
+        .Where(x => Entrypoints.Contains(x.FullName?.Split(",")[0] ?? "N/A"))
         .ToArray();
     
     public string[] Entrypoints { get; private set; }

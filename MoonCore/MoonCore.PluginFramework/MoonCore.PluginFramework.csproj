@@ -15,7 +15,12 @@
         <PackageTags>mooncore</PackageTags>
         <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
         <Version>1.0.5</Version>
+        <PackageReadmeFile>README.md</PackageReadmeFile>
     </PropertyGroup>
+
+    <ItemGroup>
+        <None Include="README.md" Pack="true" PackagePath="\"/>
+    </ItemGroup>
 
     <ItemGroup>
       <ProjectReference Include="..\MoonCore\MoonCore.csproj" />

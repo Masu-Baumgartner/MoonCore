@@ -12,14 +12,16 @@
         <PackageProjectUrl>https://github.com/Masu-Baumgartner/MoonCore</PackageProjectUrl>
         <RepositoryUrl>https://github.com/Masu-Baumgartner/MoonCore</RepositoryUrl>
         <PackageLicenseExpression>MIT</PackageLicenseExpression>
+        <PackageReadmeFile>README.md</PackageReadmeFile>
         <RepositoryType>git</RepositoryType>
         <PackageTags>mooncore</PackageTags>
-        <Version>1.1.4</Version>
+        <Version>1.1.5</Version>
         <IsPackable>true</IsPackable>
         <StaticWebAssetsEnabled>false</StaticWebAssetsEnabled>
     </PropertyGroup>
 
     <ItemGroup>
+        <None Include="README.md" Pack="true" PackagePath="\"/>
         <None Include="Styles/mappings/*" Pack="true" PackagePath="Styles/mappings/" />
         <None Include="MoonCore.Blazor.Tailwind.targets" Pack="true" PackagePath="build\MoonCore.Blazor.Tailwind.targets" />
     </ItemGroup>
@@ -47,6 +49,10 @@
       <UpToDateCheckInput Remove="Components\Toasts\BaseToast.razor" />
       <UpToDateCheckInput Remove="Components\Toasts\TextToast.razor" />
       <UpToDateCheckInput Remove="Components\Toasts\ToastLaunchPoint.razor" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <Folder Include="Styles\mappings\" />
     </ItemGroup>
 
 </Project>
