@@ -37,6 +37,6 @@ for project in $project_files; do
     fi
 done
 
-dotnet nuget push ./nupkgs/*.nupkg -k ${{ secrets.NUGET_API_KEY }} -s https://api.nuget.org/v3/index.json
+dotnet nuget push ./nupkgs/*.nupkg -k $NUGET_API_KEY -s https://api.nuget.org/v3/index.json
 
 rm -f ./nupkgs/*.nupkg
