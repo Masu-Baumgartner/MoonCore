@@ -20,4 +20,5 @@ jobs:
 
       # Step 3: Execute setup script
       - name: Process and Publish Projects
-        run: bash MoonCore/Resources/autoPublish.sh
+        working-directory: ./MoonCore
+        run: bash Resources/autoPublish.sh
