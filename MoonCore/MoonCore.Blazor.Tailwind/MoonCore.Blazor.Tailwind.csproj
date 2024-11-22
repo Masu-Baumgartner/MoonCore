@@ -21,6 +21,7 @@
     </PropertyGroup>
 
     <ItemGroup>
+        <None Include="README.md" Pack="true" PackagePath="\"/>
         <None Include="Styles/mappings/*" Pack="true" PackagePath="Styles/mappings/" />
         <None Include="MoonCore.Blazor.Tailwind.targets" Pack="true" PackagePath="build\MoonCore.Blazor.Tailwind.targets" />
     </ItemGroup>

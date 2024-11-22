@@ -1,0 +1,1 @@
+﻿A core library for all moonlight panel like applications
