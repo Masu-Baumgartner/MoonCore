@@ -1,0 +1,48 @@
+﻿@using MoonCore.Blazor.Tailwind.Components
+@using MoonCore.Blazor.Tailwind.Forms
+@using MoonCore.Blazor.Tailwind.Modals.Components
+
+@inherits BaseModal
+
+@typeparam T where T : class
+
+<div class="text-center sm:mt-5">
+    <h3 class="text-lg font-semibold leading-6 text-gray-100" id="modal-title">
+        @Title
+    </h3>
+
+    <div class="mt-4">
+        <HandleForm @ref="Form" Model="FormModel" OnValidSubmit="OnValidSubmit">
+            <GeneratedForm TForm="T" Model="FormModel" OnConfigure="OnConfigureForm" />
+        </HandleForm>
+    </div>
+</div>
+<div class="mt-5 sm:mt-6 flex justify-stretch space-x-1">
+    <button @onclick="Hide" type="button" class="btn btn-secondary w-full">
+        Cancel
+    </button>
+    <WButton CssClasses="btn btn-primary w-full" OnClick="_ => Form.Submit()">
+        Submit
+    </WButton>
+</div>
+
+@code
+{
+    [Parameter] public string Title { get; set; }
+    [Parameter] public Func<T, Task> OnSubmit { get; set; }
+    [Parameter] public Action<FormConfiguration<T>> OnConfigureForm { get; set; }
+
+    private T FormModel;
+    private HandleForm Form;
+
+    protected override void OnInitialized()
+    {
+        FormModel = Activator.CreateInstance<T>();
+    }
+
+    private async Task OnValidSubmit()
+    {
+        await OnSubmit.Invoke(FormModel);
+        await Hide();
+    }
+}
