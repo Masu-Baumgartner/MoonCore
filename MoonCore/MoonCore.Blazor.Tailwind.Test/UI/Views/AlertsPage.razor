@@ -1,6 +1,7 @@
 @page "/alerts"
 
 @using MoonCore.Blazor.Tailwind.Alerts
+@using MoonCore.Blazor.Tailwind.Test.UI.Components.Alerts
 
 @inject AlertService AlertService
 
@@ -9,6 +10,7 @@
     <button @onclick="InfoClick" class="btn btn-info">Info</button>
     <button @onclick="WarningClick" class="btn btn-warning">Warning</button>
     <button @onclick="DangerClick" class="btn btn-danger">Danger</button>
+    <button @onclick="FormClick" class="btn btn-danger">Launch Form</button>
 </div>
 
 @code
@@ -18,4 +20,8 @@
     private Task InfoClick() => AlertService.Info("Title example", "Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua.");
     private Task WarningClick() => AlertService.Warning("Title example", "Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua.");
     private Task DangerClick() => AlertService.Danger("Title example", "Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua.");
+    private Task FormClick() => AlertService.FormAlert<string, TestFormAlert>("Title example", async (item) =>
+    {
+        if (item != null) Console.WriteLine(item);
+    });
 }
