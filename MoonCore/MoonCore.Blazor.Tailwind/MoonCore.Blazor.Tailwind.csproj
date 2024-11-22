@@ -49,4 +49,8 @@
       <UpToDateCheckInput Remove="Components\Toasts\ToastLaunchPoint.razor" />
     </ItemGroup>
 
+    <ItemGroup>
+      <Folder Include="Styles\mappings\" />
+    </ItemGroup>
+
 </Project>
