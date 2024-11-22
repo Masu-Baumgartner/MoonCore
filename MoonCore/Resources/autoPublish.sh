@@ -33,7 +33,7 @@ for project in $project_files; do
 
         pwd=$(pwd)
         project_path=$(dirname $project)
-        (cd $project_path; dotnet pack --output $pwd/nupkgs)
+        (cd $project_path; dotnet pack --configuration Release --output $pwd/nupkgs)
     fi
 done
 
