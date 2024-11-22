@@ -1,9 +1,11 @@
 @page "/alerts"
 
 @using MoonCore.Blazor.Tailwind.Alerts
-@using MoonCore.Blazor.Tailwind.Test.UI.Components.Alerts
+@using MoonCore.Blazor.Tailwind.Test.Models
+@using MoonCore.Blazor.Tailwind.Toasts
 
 @inject AlertService AlertService
+@inject ToastService ToastService
 
 <div class="space-x-2">
     <button @onclick="SuccessClick" class="btn btn-success">Success</button>
@@ -20,8 +22,30 @@
     private Task InfoClick() => AlertService.Info("Title example", "Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua.");
     private Task WarningClick() => AlertService.Warning("Title example", "Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua.");
     private Task DangerClick() => AlertService.Danger("Title example", "Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua.");
-    private Task FormClick() => AlertService.FormAlert<string, TestFormAlert>("Title example", async (item) =>
+    
+    private Task FormClick() => AlertService.FormAlert<AlertModel>("Title example", configuration =>
     {
-        if (item != null) Console.WriteLine(item);
+        configuration.WithField(x => x.Type1, fieldConfiguration =>
+        {
+            fieldConfiguration.Columns = 6;
+        });
+        
+        configuration.WithField(x => x.Type2, fieldConfiguration =>
+        {
+            fieldConfiguration.Columns = 6;
+        });
+        
+        configuration.WithField(x => x.Type3, fieldConfiguration =>
+        {
+            fieldConfiguration.Columns = 6;
+        });
+        
+        configuration.WithField(x => x.Type4, fieldConfiguration =>
+        {
+            fieldConfiguration.Columns = 6;
+        });
+    }, async model =>
+    {
+        await ToastService.Success(":)", $"Value: {model.Type1}");
     });
 }

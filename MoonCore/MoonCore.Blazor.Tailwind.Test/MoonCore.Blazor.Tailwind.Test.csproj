@@ -12,6 +12,7 @@
 
     <ItemGroup>
         <Folder Include="Styles\mappings\" />
+        <Folder Include="UI\Components\" />
         <Folder Include="wwwroot\"/>
     </ItemGroup>
 
