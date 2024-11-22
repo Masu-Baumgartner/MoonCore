@@ -1,0 +1,9 @@
+{
+  "devDependencies": {
+    "tailwindcss": "^3.4.11",
+    "tailwindcss-patch": "^5.0.2"
+  },
+  "dependencies": {
+    "@tailwindcss/forms": "^0.5.9"
+  }
+}
