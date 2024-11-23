@@ -38,15 +38,12 @@
 
     protected override void OnInitialized()
     {
-        if (FormModel == null)
-        {
-            FormModel = Activator.CreateInstance<T>();
-        }
+        FormModel ??= Activator.CreateInstance<T>();
     }
 
     private async Task OnValidSubmit()
     {
-        await OnSubmit.Invoke(FormModel);
+        await OnSubmit.Invoke(FormModel!);
         await Hide();
     }
 }
