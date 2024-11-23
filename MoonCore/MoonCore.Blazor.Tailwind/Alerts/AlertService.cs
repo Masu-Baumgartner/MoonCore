@@ -38,7 +38,7 @@ public class AlertService
         });
     }
 
-    public async Task FormAlert<T>(string title, Action<FormConfiguration<T>> onConfigure, Func<T, Task> onSubmit)
+    public async Task FormAlert<T>(string title, Action<FormConfiguration<T>> onConfigure, Func<T, Task> onSubmit, T? initialModel = null)
         where T : class
     {
         await ModalService.Launch<FormAlert<T>>(buildAttr =>
@@ -46,6 +46,7 @@ public class AlertService
             buildAttr.Add("Title", title);
             buildAttr.Add("OnConfigureForm", onConfigure);
             buildAttr.Add("OnSubmit", onSubmit);
+            buildAttr.Add("FormModel", initialModel);
         });
     }
 }
