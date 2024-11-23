@@ -32,12 +32,16 @@
     [Parameter] public Func<T, Task> OnSubmit { get; set; }
     [Parameter] public Action<FormConfiguration<T>> OnConfigureForm { get; set; }
 
-    private T FormModel;
+    [Parameter]
+    public T? FormModel {get; set;}
     private HandleForm Form;
 
     protected override void OnInitialized()
     {
-        FormModel = Activator.CreateInstance<T>();
+        if (FormModel == null)
+        {
+            FormModel = Activator.CreateInstance<T>();
+        }
     }
 
     private async Task OnValidSubmit()
