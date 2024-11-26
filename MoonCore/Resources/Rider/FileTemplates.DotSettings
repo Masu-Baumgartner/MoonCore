@@ -1,0 +1,137 @@
+﻿<wpf:ResourceDictionary xml:space="preserve" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:s="clr-namespace:System;assembly=mscorlib" xmlns:ss="urn:shemas-jetbrains-com:settings-storage-xaml" xmlns:wpf="http://schemas.microsoft.com/winfx/2006/xaml/presentation">
+	<s:Int64 x:Key="/Default/PatternsAndTemplates/LiveTemplates/QuickList/=D7EC079A413E934BB1D3FC50986A8B50/Entry/=0A438713A013D04EB45E7E152CABF417/Position/@EntryValue">11</s:Int64>
+	<s:Int64 x:Key="/Default/PatternsAndTemplates/LiveTemplates/QuickList/=D7EC079A413E934BB1D3FC50986A8B50/Entry/=13941D0239FA44408839839201D48B75/Position/@EntryValue">9</s:Int64>
+	<s:Boolean x:Key="/Default/PatternsAndTemplates/LiveTemplates/QuickList/=D7EC079A413E934BB1D3FC50986A8B50/Entry/=244B98FE3D16184C8E0983A134365157/@KeyIndexDefined">True</s:Boolean>
+	<s:String x:Key="/Default/PatternsAndTemplates/LiveTemplates/QuickList/=D7EC079A413E934BB1D3FC50986A8B50/Entry/=244B98FE3D16184C8E0983A134365157/EntryName/@EntryValue">Controller</s:String>
+	<s:Int64 x:Key="/Default/PatternsAndTemplates/LiveTemplates/QuickList/=D7EC079A413E934BB1D3FC50986A8B50/Entry/=244B98FE3D16184C8E0983A134365157/Position/@EntryValue">12</s:Int64>
+	<s:Int64 x:Key="/Default/PatternsAndTemplates/LiveTemplates/QuickList/=D7EC079A413E934BB1D3FC50986A8B50/Entry/=351BA6153E92284286130D81387D6C78/Position/@EntryValue">8</s:Int64>
+	<s:Int64 x:Key="/Default/PatternsAndTemplates/LiveTemplates/QuickList/=D7EC079A413E934BB1D3FC50986A8B50/Entry/=6C7E59EBC599B446ADC9EEF651393098/Position/@EntryValue">6</s:Int64>
+	<s:Int64 x:Key="/Default/PatternsAndTemplates/LiveTemplates/QuickList/=D7EC079A413E934BB1D3FC50986A8B50/Entry/=8D47A3AE0A67E346A5AF06E4C62D9FDF/Position/@EntryValue">10</s:Int64>
+	<s:Int64 x:Key="/Default/PatternsAndTemplates/LiveTemplates/QuickList/=D7EC079A413E934BB1D3FC50986A8B50/Entry/=A53B089D0C73F84D86B0861923F5B1AC/Position/@EntryValue">7</s:Int64>
+	<s:Int64 x:Key="/Default/PatternsAndTemplates/LiveTemplates/QuickList/=D7EC079A413E934BB1D3FC50986A8B50/Entry/=B79E002F8A764400A95062D202834A17/Position/@EntryValue">5</s:Int64>
+	<s:Boolean x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=244B98FE3D16184C8E0983A134365157/@KeyIndexDefined">True</s:Boolean>
+	<s:Boolean x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=244B98FE3D16184C8E0983A134365157/Applicability/=File/@EntryIndexedValue">True</s:Boolean>
+	<s:String x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=244B98FE3D16184C8E0983A134365157/CustomProperties/=Extension/@EntryIndexedValue">cs</s:String>
+	<s:String x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=244B98FE3D16184C8E0983A134365157/CustomProperties/=FileName/@EntryIndexedValue">Controller</s:String>
+	<s:String x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=244B98FE3D16184C8E0983A134365157/CustomProperties/=ValidateFileName/@EntryIndexedValue">True</s:String>
+	<s:String x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=244B98FE3D16184C8E0983A134365157/Description/@EntryValue">CrudController</s:String>
+	<s:Boolean x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=244B98FE3D16184C8E0983A134365157/Field/=CLASS/@KeyIndexDefined">True</s:Boolean>
+	<s:String x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=244B98FE3D16184C8E0983A134365157/Field/=CLASS/Expression/@EntryValue">getAlphaNumericFileNameWithoutExtension()</s:String>
+	<s:Int64 x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=244B98FE3D16184C8E0983A134365157/Field/=CLASS/InitialRange/@EntryValue">-1</s:Int64>
+	<s:Int64 x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=244B98FE3D16184C8E0983A134365157/Field/=CLASS/Order/@EntryValue">1</s:Int64>
+	<s:Boolean x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=244B98FE3D16184C8E0983A134365157/Field/=MODEL/@KeyIndexDefined">True</s:Boolean>
+	<s:Int64 x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=244B98FE3D16184C8E0983A134365157/Field/=MODEL/Order/@EntryValue">2</s:Int64>
+	<s:Boolean x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=244B98FE3D16184C8E0983A134365157/Field/=NAMESPACE/@KeyIndexDefined">True</s:Boolean>
+	<s:String x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=244B98FE3D16184C8E0983A134365157/Field/=NAMESPACE/Expression/@EntryValue">fileDefaultNamespace()</s:String>
+	<s:Int64 x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=244B98FE3D16184C8E0983A134365157/Field/=NAMESPACE/InitialRange/@EntryValue">-1</s:Int64>
+	<s:Int64 x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=244B98FE3D16184C8E0983A134365157/Field/=NAMESPACE/Order/@EntryValue">0</s:Int64>
+	<s:Boolean x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=244B98FE3D16184C8E0983A134365157/Field/=ROUTE/@KeyIndexDefined">True</s:Boolean>
+	<s:String x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=244B98FE3D16184C8E0983A134365157/Field/=ROUTE/Expression/@EntryValue">decapitalize(MODEL)</s:String>
+	<s:Int64 x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=244B98FE3D16184C8E0983A134365157/Field/=ROUTE/InitialRange/@EntryValue">-1</s:Int64>
+	<s:Int64 x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=244B98FE3D16184C8E0983A134365157/Field/=ROUTE/Order/@EntryValue">3</s:Int64>
+	<s:String x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=244B98FE3D16184C8E0983A134365157/Image/@EntryValue">Razor</s:String>
+	<s:Boolean x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=244B98FE3D16184C8E0983A134365157/Reformat/@EntryValue">True</s:Boolean>
+	<s:Boolean x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=244B98FE3D16184C8E0983A134365157/Scope/=9DE3B2E4359F5A46BFB8606C892DC05D/@KeyIndexDefined">True</s:Boolean>
+	<s:String x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=244B98FE3D16184C8E0983A134365157/Scope/=9DE3B2E4359F5A46BFB8606C892DC05D/Type/@EntryValue">InRazorCSharpCoreProject</s:String>
+	<s:Boolean x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=244B98FE3D16184C8E0983A134365157/ShortenQualifiedReferences/@EntryValue">True</s:Boolean>
+	<s:String x:Key="/Default/PatternsAndTemplates/LiveTemplates/Template/=244B98FE3D16184C8E0983A134365157/Text/@EntryValue">using Microsoft.AspNetCore.Mvc;
+using MoonCore.Extended.Helpers;
+using MoonCore.Models;
+
+namespace $NAMESPACE$;
+
+[ApiController]
+[Route("api/$ROUTE$s")]
+public class $CLASS$ : Controller
+{
+    private readonly CrudHelper&lt;$MODEL$, $MODEL$DetailResponse&gt; CrudHelper;
+
+    public $CLASS$(CrudHelper&lt;$MODEL$, $MODEL$DetailResponse&gt; crudHelper)
+    {
+        CrudHelper = crudHelper;
+        
+        $END$
+    }
+
+    [HttpGet]
+    public async Task&lt;IPagedData&lt;$MODEL$DetailResponse&gt;&gt; Get([FromQuery] int page, [FromQuery] int pageSize)
+    {
+        return await CrudHelper.Get(page, pageSize);
+    }
+
+    [HttpGet("{id:int}")]
+    public async Task&lt;$MODEL$DetailResponse&gt; GetSingle([FromRoute] int id)
+    {
+        return await CrudHelper.GetSingle(id);
+    }
+
+    [HttpPost]
+    public async Task&lt;$MODEL$DetailResponse&gt; Create([FromBody] Create$MODEL$Request request)
+    {
+        return await CrudHelper.Create(request);
+    }
+
+    [HttpPatch("{id:int}")]
+    public async Task&lt;$MODEL$DetailResponse&gt; Update([FromRoute] int id, [FromBody] Update$MODEL$Request request)
+    {
+        return await CrudHelper.Update(id, request);
+    }
+
+    [HttpDelete("{id:int}")]
+    public async Task Delete([FromRoute] int id)
+    {
+        await CrudHelper.Delete(id);
+    }
+}</s:String>
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	</wpf:ResourceDictionary>
