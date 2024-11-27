@@ -31,14 +31,14 @@ public class CrudHelper<T, TResult> where T : class
         var totalItems = Repository.Get().Count();
 
         var items = Repository
-            .Get()
-            .Skip(page * pageSize)
-            .Take(pageSize);
+            .Get() as IQueryable<T>;
 
         if (QueryModifier != null)
             items = QueryModifier.Invoke(items);
 
-        var loadedItems = items.ToArray();
+        var loadedItems = items
+            .Skip(page * pageSize)
+            .Take(pageSize).ToArray();
 
         var castedItems = loadedItems
             .Select(MapToResult)
