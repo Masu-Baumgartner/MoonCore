@@ -4,7 +4,7 @@ using MoonCore.DiscordNet.Module;
 
 namespace MoonCore.Test.Modules;
 
-public class MyCoolModule : IBaseModule
+public class MyCoolModule : IBaseBotModule
 {
     private readonly DiscordSocketClient Client;
     private readonly CoolSharedService CoolSharedService;

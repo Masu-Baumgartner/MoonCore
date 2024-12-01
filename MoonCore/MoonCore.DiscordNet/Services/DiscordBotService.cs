@@ -39,7 +39,9 @@ public class DiscordBotService
                 await module.InitializeAsync();
         }
         catch (NotImplementedException)
-        { }
+        {
+            Logger.LogDebug("not implemented yet.");
+        }
         catch (Exception e)
         {
             Logger.LogError("An error occurred during Module initialization: {RegisterException}", e);
@@ -68,13 +70,22 @@ public class DiscordBotService
             foreach (var module in Modules)
                 await module.RegisterAsync();
         }
-        catch (NotImplementedException)
-        { }
+        catch (NotImplementedException) {}
         catch (Exception e)
         {
             Logger.LogError("An error occurred during Module registration: {RegisterException}", e);
         }
         
+    }
+
+    public IBaseBotModule[] GetBaseBotModules()
+    {
+        return Modules;
+    }
+
+    public async Task UnregisterAsync(IBaseBotModule module)
+    {
+        await module.UnregisterAsync();
     }
 
     private Task Log(LogMessage message)
