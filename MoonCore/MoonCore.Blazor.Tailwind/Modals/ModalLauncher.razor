@@ -5,17 +5,19 @@
 
 @inject ModalService ModalService
 
-@if (CurrentItem != null)
+@if (Modals.Count > 0)
 {
+    var modal = Modals.Last();
+    
     <div class="relative z-50" aria-labelledby="modal-title" role="dialog" aria-modal="true">
         <div class="fixed inset-0 bg-gray-900 bg-opacity-75 transition-opacity" aria-hidden="true"></div>
 
         <div class="fixed inset-0 z-50 w-screen overflow-y-auto">
             <div class="flex min-h-full justify-center p-4 text-center items-center sm:p-0">
-                <div class="relative transform overflow-hidden rounded-lg text-left shadow-xl transition-all my-8 w-full max-w-lg sm:@(CurrentItem.Size)">
+                <div class="relative transform overflow-hidden rounded-lg text-left shadow-xl transition-all my-8 w-full max-w-lg sm:@(modal.Size)">
                     <div class="bg-gray-750 px-4 pb-4 pt-5 sm:p-6 sm:pb-4">
                         <div>
-                            @CurrentItem.Component
+                            @modal.Component
                         </div>
                     </div>
                 </div>
@@ -28,7 +30,7 @@
 
 @code
 {
-    private ModalItem? CurrentItem;
+    private List<ModalItem> Modals = new();
 
     protected override void OnInitialized()
     {
@@ -50,19 +52,16 @@
             onConfigure?.Invoke(buildAttr);
         });
 
-        if (CurrentItem != null)
-            await Close();
-
-        CurrentItem = item;
+        Modals.Add(item);
         
         await InvokeAsync(StateHasChanged);
 
         return item;
     }
 
-    public async Task Close()
+    public async Task Close(ModalItem item)
     {
-        CurrentItem = null;
+        Modals.Remove(item);
         await InvokeAsync(StateHasChanged);
     }
 }

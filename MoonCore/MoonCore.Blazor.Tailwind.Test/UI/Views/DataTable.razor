@@ -1,0 +1,109 @@
+﻿@page "/datatable"
+@using MoonCore.Blazor.Tailwind.Modals
+@using MoonCore.Blazor.Tailwind.Test.UI.Components
+
+@inject ModalService ModalService
+
+<div>
+    <div class="mb-3">
+        <div class="flex justify-end">
+            <div>
+                <button @onclick="ShowFilter" class="btn btn-secondary">
+                    <i class="icon-filter"></i>
+                </button>
+                <button class="btn btn-secondary">
+                    <i class="icon-table-2 me-2"></i>
+                    Export
+                </button>
+            </div>
+        </div>
+    </div>
+    
+    <div class="overflow-x-auto rounded-lg  bg-gray-800">
+        <table class="table-auto w-full text-gray-300">
+            <thead class="text-xs uppercase text-gray-500 bg-gray-700 bg-opacity-50">
+            <tr>
+                <th scope="col" class="pl-2 w-8">
+                    <input type="checkbox"class="h-4 w-4 form-checkbox">
+                </th>
+                <th scope="col" class="p-2 font-semibold text-left">
+                    <div class="flex items-center">
+                        Id
+                        <i class="icon-arrow-down-up ml-2"></i>
+                    </div>
+                </th>
+                <th scope="col" class="p-2 font-semibold text-left">
+                    <div class="flex items-center">Email</div>
+                </th>
+                <th scope="col" class="p-2 font-semibold text-left">
+                    <div class="flex items-center">Username</div>
+                </th>
+                <th scope="col" class="p-2 font-semibold text-left">
+                    <div class="flex items-center">Flag</div>
+                </th>
+                @*
+                <th scope="col" class="p-2 font-semibold text-left">
+                    <div class="flex items-center"></div>
+                </th>
+                *@
+            </tr>
+            </thead>
+            <tbody class="text-sm divide-y divide-gray-700/60">
+
+            @for (var i = 0; i < 15; i++)
+            {
+                <tr>
+                    <th scope="row" class="pl-2 w-8">
+                        <input type="checkbox"class="h-4 w-4 form-checkbox">
+                    </th>
+                    <th scope="row" class="p-2 text-left font-normal">@i</th>
+                    <th scope="row" class="p-2 text-left font-normal">Lillian68@hotmail.com</th>
+                    <th scope="row" class="p-2 text-left font-normal">Lillian_Dooley</th>
+                    <th scope="row" class="p-2 text-left font-normal">
+                        <span>
+                            ❌
+                        </span></th>
+
+                    @*
+                <th scope="row" class="p-2 text-left font-normal">
+                        <div class="flex justify-end italic"><a href="#" class="text-primary-500 mr-3">
+                                Update
+                            </a>
+                            <a href="#" class="text-danger-500">
+                                Delete
+                            </a></div>
+                    </th>
+                *@
+
+                </tr>
+            }
+
+            </tbody>
+        </table>
+    </div>
+    <nav class="flex flex-col md:flex-row justify-between items-start md:items-center space-y-3 md:space-y-0 p-4"
+         aria-label="Table navigation">
+        <span class="text-sm font-normal text-gray-400">
+            Showing
+            <span class="font-semibold text-white">1-15</span>
+            of
+            <span class="font-semibold text-white">100</span></span>
+        <div class="flex">
+            <button
+                class="flex items-center justify-center px-3 h-8 text-sm font-medium border rounded-lg bg-gray-800 border-gray-700 text-gray-400 hover:bg-gray-700 hover:text-white disabled:border-gray-700 disabled:bg-gray-800 disabled:text-gray-600 disabled:cursor-not-allowed"
+                disabled="disabled">
+                Previous
+            </button>
+            <button
+                class="ms-3 flex items-center justify-center px-3 h-8 text-sm font-medium   border  rounded-lg   bg-gray-800 border-gray-700 text-gray-400 hover:bg-gray-700 hover:text-white">
+                Next
+            </button>
+        </div>
+    </nav>
+</div>
+
+@code
+{
+    private async Task ShowFilter()
+        => await ModalService.Launch<FilterModal>();
+}
