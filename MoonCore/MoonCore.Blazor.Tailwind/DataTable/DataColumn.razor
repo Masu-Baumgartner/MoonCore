@@ -1,0 +1,10 @@
+@using System.Linq.Expressions
+@typeparam TItem
+
+@code
+{
+    [Parameter] public Expression<Func<TItem, object>>? Field { get; set; }
+    [Parameter] public string? Title { get; set; }
+    [Parameter] public bool IsSortable { get; set; }
+    [Parameter] public bool IsFilterable { get; set; }
+}

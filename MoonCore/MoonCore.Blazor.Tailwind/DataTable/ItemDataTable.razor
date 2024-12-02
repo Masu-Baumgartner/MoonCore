@@ -1,0 +1,15 @@
+@using MoonCore.Models
+
+@typeparam TItem
+
+
+
+@code
+{
+    [Parameter] public Func<int, int, FiltersState, Task<TItem>> ItemLoader { get; set; }
+
+    protected override void OnInitialized()
+    {
+        
+    }
+}

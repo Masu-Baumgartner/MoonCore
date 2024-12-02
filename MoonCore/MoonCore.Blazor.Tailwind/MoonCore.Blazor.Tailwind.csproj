@@ -52,7 +52,6 @@
     </ItemGroup>
 
     <ItemGroup>
-      <Folder Include="DataTable\" />
       <Folder Include="Styles\mappings\" />
     </ItemGroup>
 
