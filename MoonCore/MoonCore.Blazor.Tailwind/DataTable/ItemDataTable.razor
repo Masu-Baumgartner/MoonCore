@@ -1,15 +1,274 @@
+@using MoonCore.Blazor.Tailwind.Modals
 @using MoonCore.Models
 
 @typeparam TItem
 
+@inject ModalService ModalService
 
+<CascadingValue Name="ItemDataTable" Value="this" IsFixed="true">
+    @ChildContent
+</CascadingValue>
+
+<div>
+    <div class="mb-3">
+        <div class="flex justify-end">
+            <div>
+                @if (!IsLoading)
+                {
+                    if (ColumnsWithFilter.Length > 0)
+                    {
+                        <button @onclick="OpenFilterModal" class="btn btn-secondary">
+                            <i class="icon-filter"></i>
+                        </button>
+                    }
+
+                    <button class="btn btn-secondary">
+                        <i class="icon-table-2 me-2"></i>
+                        Export
+                    </button>
+                }
+            </div>
+        </div>
+    </div>
+
+    <div class="overflow-x-auto rounded-lg  bg-gray-800">
+        <table class="table-auto w-full text-gray-300">
+            @if (IsLoading)
+            {
+                <thead class="text-xs uppercase text-gray-500 bg-gray-700 bg-opacity-50">
+                <tr>
+                    <th scope="col" class="p-2 font-semibold">
+                        <div class="flex items-center justify-center">Loading</div>
+                    </th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr>
+                    <td>
+                        <div class="flex justify-center p-5">
+                            <div class="loader"></div>
+                        </div>
+                    </td>
+                </tr>
+                </tbody>
+            } @* TODO: Error handling (maybe) here *@
+            else if (PagedData.TotalItems == 0)
+            {
+                <thead class="text-xs uppercase text-gray-500 bg-gray-700 bg-opacity-50">
+                <tr>
+                    <th scope="col" class="p-2 font-semibold">
+                        <div class="flex items-center justify-center">No items found</div>
+                    </th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr>
+                    <td>
+                        <div class="flex justify-center p-5">
+                            <div class="text-center">
+                                <i class="icon-hexagon mx-auto text-3xl text-primary-500"></i>
+                                <h3 class="mt-2 font-semibold text-gray-300">
+                                    No items found
+                                </h3>
+                                <p class="mt-1 text-gray-500">
+                                    We were unable to find any items. Try changing filter options if you set any.
+                                </p>
+                            </div>
+                        </div>
+                    </td>
+                </tr>
+                </tbody>
+            }
+            else
+            {
+                <thead class="text-xs uppercase text-gray-500 bg-gray-700 bg-opacity-50">
+                <tr>
+                    @foreach (var column in Columns)
+                    {
+                        <th scope="col" class="@(column.HeadCssClasses ?? "p-2 font-semibold text-left")">
+                            @if (column.HeadTemplate == null)
+                            {
+                                <div class="flex items-center">
+                                    @(column.Title ?? "")
+                                    @if (column.IsSortable)
+                                    {
+                                        <i class="icon-arrow-down-up ml-2"></i>
+                                    }
+                                </div>
+                            }
+                            else
+                            @column.HeadTemplate
+                        </th>
+                    }
+                </tr>
+                </thead>
+                <tbody class="text-sm divide-y divide-gray-700/60">
+
+                @foreach (var item in PagedData.Items)
+                {
+                    <tr>
+                        @foreach (var column in Columns)
+                        {
+                            <th scope="row" class="@(column.CssClasses ?? "p-2 text-left font-normal")">
+                                @if (column.Template == null) @* Default handling *@
+                                {
+                                    if (column.FieldFunc != null) @* Check if we actually defined a field to display *@
+                                    {
+                                        var val = column.FieldFunc.Invoke(item);
+
+                                        if (val == null)
+                                        {
+                                            <span class="italic">null</span>
+                                        }
+                                        else
+                                        {
+                                            <span>@val.ToString()</span>
+                                        }
+                                    }
+                                }
+                                else
+                                {
+                                    @column.Template.Invoke(item)
+                                }
+                            </th>
+                        }
+                    </tr>
+                }
+                </tbody>
+            }
+        </table>
+    </div>
+
+    @if (!IsLoading)
+    {
+        <nav class="flex flex-col md:flex-row justify-between items-start md:items-center space-y-3 md:space-y-0 p-4"
+             aria-label="Table navigation">
+    <span class="text-sm font-normal text-gray-400">
+        @{
+            var start = 0;
+            var end = 0;
+
+            if (PagedData.TotalItems != 0)
+            {
+                start = PagedData.CurrentPage * PagedData.PageSize + 1;
+
+                var fullEnd = Page * PageSize + PageSize;
+
+                if (PagedData.TotalItems < fullEnd)
+                    end = PagedData.CurrentPage * PagedData.PageSize + (PagedData.TotalItems - start + 1);
+                else
+                    end = fullEnd;
+            }
+        }
+
+        Showing
+        <span class="font-semibold text-white">@(start)-@(end)</span>
+        of
+        <span class="font-semibold text-white">
+            @PagedData.TotalItems
+        </span>
+    </span>
+            <div class="flex">
+                @if (PagedData.CurrentPage == 0)
+                {
+                    <button
+                        class="flex items-center justify-center px-3 h-8 text-sm font-medium border rounded-lg bg-gray-800 border-gray-700 text-gray-400 hover:bg-gray-700 hover:text-white disabled:border-gray-700 disabled:bg-gray-800 disabled:text-gray-600 disabled:cursor-not-allowed"
+                        disabled="disabled">
+                        Previous
+                    </button>
+                }
+                else
+                {
+                    <button @onclick="() => NavigatePage(-1)"
+                            class="flex items-center justify-center px-3 h-8 text-sm font-medium   border  rounded-lg   bg-gray-800 border-gray-700 text-gray-400 hover:bg-gray-700 hover:text-white">
+                        Previous
+                    </button>
+                }
+
+                @if (PagedData.CurrentPage == PagedData.TotalPages || PagedData.TotalItems == 0)
+                {
+                    <button
+                        class="ms-3 lex items-center justify-center px-3 h-8 text-sm font-medium   border  rounded-lg   bg-gray-800 border-gray-700 text-gray-400 hover:bg-gray-700 hover:text-white disabled:border-gray-700 disabled:bg-gray-800 disabled:text-gray-600 disabled:cursor-not-allowed"
+                        disabled="disabled">
+                        Next
+                    </button>
+                }
+                else
+                {
+                    <button @onclick="() => NavigatePage(1)"
+                            class="ms-3 flex items-center justify-center px-3 h-8 text-sm font-medium   border  rounded-lg   bg-gray-800 border-gray-700 text-gray-400 hover:bg-gray-700 hover:text-white">
+                        Next
+                    </button>
+                }
+            </div>
+        </nav>
+    }
+</div>
 
 @code
-{
-    [Parameter] public Func<int, int, FiltersState, Task<TItem>> ItemLoader { get; set; }
 
-    protected override void OnInitialized()
+
+
+
+
+
+
+{
+    [Parameter] public RenderFragment ChildContent { get; set; }
+
+    [Parameter] public Func<int, int, QueryOptions, Task<IPagedData<TItem>>> ItemLoader { get; set; }
+    [Parameter] public int PageSize { get; set; } = 15;
+
+    private List<DataColumn<TItem>> Columns = new();
+    private DataColumn<TItem>[] ColumnsWithFilter;
+
+    private IPagedData<TItem> PagedData;
+    private int Page = 0;
+    private bool IsLoading = true;
+    private QueryOptions QueryOptions = new();
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
     {
-        
+        if (!firstRender)
+            return;
+
+        ColumnsWithFilter = Columns
+            .Where(x => x.IsFilterable)
+            .ToArray();
+
+        await Refresh();
+    }
+
+    public void AddColumn(DataColumn<TItem> column)
+        => Columns.Add(column);
+
+    private async Task Refresh(bool isSilent = false)
+    {
+        if (!isSilent)
+        {
+            IsLoading = true;
+            await InvokeAsync(StateHasChanged);
+        }
+
+        PagedData = await ItemLoader.Invoke(Page, PageSize, QueryOptions);
+
+        IsLoading = false;
+        await InvokeAsync(StateHasChanged);
+    }
+
+    private async Task OpenFilterModal()
+    {
+        await ModalService.Launch<FilterModal<TItem>>(parameters =>
+        {
+            parameters.Add("Columns", ColumnsWithFilter);
+            parameters.Add("Options", QueryOptions);
+            parameters.Add("OnApplied", () => Refresh());
+        });
+    }
+
+    private async Task NavigatePage(int diff)
+    {
+        Page += diff;
+        await Refresh();
     }
 }
