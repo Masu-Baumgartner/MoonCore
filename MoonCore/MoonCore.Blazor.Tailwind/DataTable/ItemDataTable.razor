@@ -241,14 +241,17 @@
 
     [Parameter] public bool UseCache { get; set; } = true;
     [Parameter] public int MaxCacheRetrievalPageSize { get; set; } = 50;
+    
+    [Parameter] public Func<Task>? OnRefreshed { get; set; }
 
+    public IPagedData<TItem> PagedData { get; private set; }
+    
     private readonly Dictionary<DataColumn<TItem>, bool> SortStates = new();
     private readonly List<DataColumn<TItem>> Columns = new();
 
     private TItem[]? ItemCache;
     private DataColumn<TItem>[] ExportColumns;
 
-    private IPagedData<TItem> PagedData;
     private int Page = 0;
     private bool IsLoading = true;
 
@@ -267,7 +270,7 @@
     public void AddColumn(DataColumn<TItem> column)
         => Columns.Add(column);
 
-    private async Task Refresh(bool isSilent = false)
+    public async Task Refresh(bool isSilent = false, bool bypassCache = false)
     {
         if (!isSilent)
         {
@@ -275,10 +278,13 @@
             await InvokeAsync(StateHasChanged);
         }
 
-        PagedData = await QueryData();
+        PagedData = await QueryData(bypassCache: bypassCache); // Pass bypass cache to query function
 
         IsLoading = false;
         await InvokeAsync(StateHasChanged);
+
+        if (OnRefreshed != null)
+            await OnRefreshed.Invoke();
     }
 
     private async Task NavigatePage(int diff)
@@ -300,12 +306,12 @@
         await Refresh();
     }
 
-    private async Task<IPagedData<TItem>> QueryData()
+    private async Task<IPagedData<TItem>> QueryData(bool bypassCache = false)
     {
         // Determine if we are currently filtering or sorting
         var needToModifyOrder = SortStates.Count > 0;
 
-        if (!needToModifyOrder)
+        if (!needToModifyOrder) // no sorting? use live data
         {
             // Clear cache if no longer sorting/filtering
             if (UseCache && ItemCache != null)
@@ -320,9 +326,9 @@
 
         if (UseCache)
         {
-            if (ItemCache == null)
+            if (ItemCache == null || bypassCache) // when cache is empty or we want to bypass it, we want to query live data
                 ItemCache = await QueryAll();
-
+            
             items = ItemCache;
         }
         else

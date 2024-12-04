@@ -39,5 +39,6 @@
         
         options.CreateUrl = ComponentHelper.GetRouteOfComponent<Index>();
         options.UpdateUrl = item => ComponentHelper.GetRouteOfComponent<CrudItemPage>(item.Id)!;
+        options.DeleteFunction = async model => Data!.Remove(model);
     }
 }
