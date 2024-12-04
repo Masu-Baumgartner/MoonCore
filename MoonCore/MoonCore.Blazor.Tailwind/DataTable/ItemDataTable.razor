@@ -17,10 +17,15 @@
 <div>
     <div class="mb-3">
         <div class="flex justify-end">
-            <div>
+            <div class="flex items-center">
                 @if (!IsLoading)
                 {
-                    @if (ExportColumns.Length > 0)
+                    if (ActionBarTemplate != null)
+                    {
+                        @ActionBarTemplate
+                    }
+
+                    if (ExportColumns.Length > 0)
                     {
                         <WButton OnClick="_ => ExportAndDownloadCsv()" CssClasses="btn btn-secondary">
                             <i class="icon-table-2 me-2"></i>
@@ -96,7 +101,7 @@
                                         {
                                             <i class="icon-arrow-down-up font-normal text-sm ml-2"></i>
                                         }
-                                        else if(SortStates[column])
+                                        else if (SortStates[column])
                                         {
                                             <i class="icon-arrow-up-a-z ml-2 font-normal text-primary-500 text-sm"></i>
                                         }
@@ -163,8 +168,7 @@
 
     @if (!IsLoading)
     {
-        <nav class="flex flex-col md:flex-row justify-between items-start md:items-center space-y-3 md:space-y-0 p-4"
-             aria-label="Table navigation">
+        <nav class="flex flex-row justify-between items-start px-4 py-3">
     <span class="text-sm font-normal text-gray-400">
         @{
             var start = 0;
@@ -230,10 +234,11 @@
 @code
 {
     [Parameter] public RenderFragment ChildContent { get; set; }
+    [Parameter] public RenderFragment? ActionBarTemplate { get; set; }
 
     [Parameter] public Func<int, int, Task<IPagedData<TItem>>> ItemLoader { get; set; }
     [Parameter] public int PageSize { get; set; } = 15;
-    
+
     [Parameter] public bool UseCache { get; set; } = true;
     [Parameter] public int MaxCacheRetrievalPageSize { get; set; } = 50;
 
@@ -275,7 +280,7 @@
         IsLoading = false;
         await InvokeAsync(StateHasChanged);
     }
-    
+
     private async Task NavigatePage(int diff)
     {
         Page += diff;
@@ -305,12 +310,12 @@
             // Clear cache if no longer sorting/filtering
             if (UseCache && ItemCache != null)
                 ItemCache = null;
-            
+
             return await ItemLoader.Invoke(Page, PageSize);
         }
 
         // Load items
-        
+
         TItem[] items;
 
         if (UseCache)
@@ -322,7 +327,7 @@
         }
         else
             items = await QueryAll();
-        
+
         // Perform query
         IEnumerable<TItem> query = items;
 
@@ -333,12 +338,12 @@
             else
                 query = query.OrderByDescending(sortState.Key.FieldFunc!);
         }
-        
+
         var modifiedItems = query
             .Skip(Page * PageSize)
             .Take(PageSize)
             .ToArray();
-        
+
         return new PagedData<TItem>()
         {
             Items = modifiedItems,
@@ -357,7 +362,7 @@
             return initialData.Items;
 
         var result = new List<TItem>();
-        
+
         // Save already loaded data
         result.AddRange(initialData.Items);
 
@@ -375,7 +380,7 @@
     {
         var csvContent = await ExportCsv();
         var dataContent = "data:text/csv;base64," + Formatter.FromTextToBase64(csvContent);
-        
+
         Navigation.NavigateTo(dataContent, true);
         await ToastService.Success("Successfully exported data");
     }
@@ -383,20 +388,20 @@
     private async Task<string> ExportCsv()
     {
         var output = "";
-        
+
         // Head
         output += string.Join(",", ExportColumns.Select(x => x.Title)) + "\n";
-        
+
         // Content
 
         var items = await QueryAll();
-        
+
         foreach (var item in items)
         {
             var values = ExportColumns
                 .Select(x => x.ExportFunc!.Invoke(item)?.ToString() ?? "null");
-            
-            output += string.Join(",", values)  + "\n";
+
+            output += string.Join(",", values) + "\n";
         }
 
         return output;

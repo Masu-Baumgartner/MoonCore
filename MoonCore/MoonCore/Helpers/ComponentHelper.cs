@@ -41,4 +41,47 @@ public static class ComponentHelper
 
         return html;
     }
+
+    public static string? GetRouteOfComponent<T>(params object[] parameters) where T : ComponentBase
+    {
+        var routeAttrUrl = GetRouteOfComponent<T>();
+
+        if (routeAttrUrl == null)
+            return null;
+
+        var lastIndex = 0;
+
+        for (var i = 0; i < parameters.Length; i++)
+        {
+            var start = routeAttrUrl.IndexOf('{', lastIndex);
+            
+            if(start == -1)
+                break;
+            
+            var end = routeAttrUrl.IndexOf('}', start);
+            lastIndex = end;
+            
+            if(end == -1)
+                break;
+
+            var placeholder = routeAttrUrl.Substring(start, end - start + 1);
+            routeAttrUrl = routeAttrUrl.Replace(placeholder, parameters[i].ToString());
+        }
+
+        return routeAttrUrl;
+    }
+    
+    public static string? GetRouteOfComponent<T>() where T : ComponentBase
+    {
+        var componentType = typeof(T);
+        var routeAttrType = typeof(RouteAttribute);
+
+        var attributes = componentType.GetCustomAttributes(false);
+        var routeAttr = attributes.FirstOrDefault(x => x.GetType() == routeAttrType);
+
+        if (routeAttr is not RouteAttribute castedRouteAttr)
+            return null;
+        
+        return castedRouteAttr.Template;
+    }
 }

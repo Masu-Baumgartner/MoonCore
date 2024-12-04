@@ -1,0 +1,43 @@
+﻿@page "/minimalcrud"
+
+@using Bogus
+@using MoonCore.Blazor.Tailwind.MinimalCrud
+@using MoonCore.Blazor.Tailwind.Test.Models
+@using MoonCore.Helpers
+@using MoonCore.Models
+@using MoonCore.Blazor.Tailwind.DataTable
+
+<MinimalCrud TItem="DemoDataModel" OnConfigure="OnConfigure">
+    <DataColumn TItem="DemoDataModel" Field="@(x => x.Id)" Title="Id" ExportField="@(x => x.Id)" />
+    <DataColumn TItem="DemoDataModel" Field="@(x => x.Email)" Title="Email" IsSortable="true" />
+    <DataColumn TItem="DemoDataModel" Field="@(x => x.Name)" Title="Username" IsSortable="true" ExportField="@(x => x.Name)" />
+</MinimalCrud>
+
+@code
+{
+    private static List<DemoDataModel>? Data;
+    
+    protected override void OnInitialized()
+    {
+        if (Data == null)
+        {
+            var faker = new Faker<DemoDataModel>()
+                .RuleFor(x => x.Id, x => x.UniqueIndex)
+                .RuleFor(x => x.Email, x => x.Person.Email)
+                .RuleFor(x => x.Flag, x => x.Random.Bool())
+                .RuleFor(x => x.Name, x => x.Person.UserName);
+
+            Data = faker
+                .Generate(25);
+        }
+    }
+
+    private void OnConfigure(MinimalCrudOptions<DemoDataModel> options)
+    {
+        options.ItemLoader = async (page, pageSize) => 
+            PagedData<DemoDataModel>.Create(Data!, page, pageSize);
+        
+        options.CreateUrl = ComponentHelper.GetRouteOfComponent<Index>();
+        options.UpdateUrl = item => ComponentHelper.GetRouteOfComponent<CrudItemPage>(item.Id)!;
+    }
+}
