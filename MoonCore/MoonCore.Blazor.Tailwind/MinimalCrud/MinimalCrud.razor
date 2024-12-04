@@ -59,6 +59,11 @@
             </HeadTemplate>
             <Template>
                 <div class="flex justify-end mr-2">
+                    @if (ItemActions != null)
+                    {
+                        @ItemActions.Invoke(context)
+                    }
+                    
                     @if (CrudOptions.UpdateUrl != null)
                     {
                         <a href="#" @onclick="() => StartUpdate(context)" @onclick:preventDefault
@@ -81,6 +86,11 @@
     <ActionBarTemplate>
         @if (SelectedItems.Count > 0)
         {
+            if (SelectionActions != null)
+            {
+                @SelectionActions.Invoke(SelectedItems)
+            }
+            
             if (CrudOptions.DeleteFunction != null)
             {
                 <button @onclick="StartDeleteSelection" class="btn btn-danger mr-2">
@@ -90,6 +100,11 @@
         }
         else
         {
+            if (Actions != null)
+            {
+                @Actions
+            }
+            
             if (!string.IsNullOrEmpty(CrudOptions.CreateUrl))
             {
                 <a href="@CrudOptions.CreateUrl" class="btn btn-primary mr-2">
@@ -103,6 +118,9 @@
 @code
 {
     [Parameter] public RenderFragment ChildContent { get; set; }
+    [Parameter] public RenderFragment<TItem>? ItemActions { get; set; }
+    [Parameter] public RenderFragment<List<TItem>>? SelectionActions { get; set; }
+    [Parameter] public RenderFragment? Actions { get; set; }
     [Parameter] public Action<MinimalCrudOptions<TItem>> OnConfigure { get; set; }
 
     private readonly MinimalCrudOptions<TItem> CrudOptions = new();
@@ -116,11 +134,17 @@
         OnConfigure.Invoke(CrudOptions);
     }
 
+    // Proxy method so other components can implement actions properly
+    public Task Refresh(bool isSilent = false, bool bypassCache = false)
+        => Table.Refresh(isSilent, bypassCache);
+
     private void StartUpdate(TItem item)
     {
         var url = CrudOptions.UpdateUrl!.Invoke(item);
         Navigation.NavigateTo(url);
     }
+
+    #region Delete
 
     private async Task StartDelete(TItem item)
     {
@@ -165,6 +189,8 @@
         
         await Table.Refresh(bypassCache: true);
     }
+
+    #endregion
 
     #region Selection
 
