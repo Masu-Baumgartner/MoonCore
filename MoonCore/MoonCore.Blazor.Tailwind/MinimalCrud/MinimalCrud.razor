@@ -1,0 +1,225 @@
+﻿@using MoonCore.Blazor.Tailwind.Alerts
+@using MoonCore.Blazor.Tailwind.DataTable
+@using MoonCore.Blazor.Tailwind.Toasts
+
+@typeparam TItem
+
+@inject NavigationManager Navigation
+@inject AlertService AlertService
+@inject ToastService ToastService
+
+<ItemDataTable @ref="Table"
+               TItem="TItem"
+               ItemLoader="CrudOptions.ItemLoader"
+               PageSize="CrudOptions.PageSize"
+               OnRefreshed="OnTableRefreshed">
+    <ChildContent>
+        <DataColumn TItem="TItem" CssClasses="pl-2 w-5" HeadCssClasses="pl-2 w-5">
+            <HeadTemplate>
+                <div class="pr-1">
+                    @if (Table.PagedData.Items.Length == 0 || SelectedItems.Count != Table.PagedData.Items.Length)
+                    {
+                        <input @onclick="() => ToggleSelection(true)"
+                               type="checkbox"
+                               class="h-4 w-4 rounded bg-slate-900 border-slate-700 text-indigo-600 focus:ring-0 focus:ring-offset-0">
+                    }
+                    else
+                    {
+                        <input @onclick="() => ToggleSelection(false)"
+                               type="checkbox"
+                               checked="checked"
+                               class="h-4 w-4 rounded bg-slate-900 border-slate-700 text-indigo-600 focus:ring-0 focus:ring-offset-0">
+                    }
+                </div>
+            </HeadTemplate>
+            <Template>
+                <div class="pr-1">
+                    @if (SelectedItems.Contains(context))
+                    {
+                        <input @onclick="() => ToggleItemSelection(context)"
+                               type="checkbox"
+                               checked="checked"
+                               class="h-4 w-4 rounded bg-slate-900 border-slate-700 text-indigo-600 focus:ring-0 focus:ring-offset-0">
+                    }
+                    else
+                    {
+                        <input @onclick="() => ToggleItemSelection(context)"
+                               type="checkbox"
+                               class="h-4 w-4 rounded bg-slate-900 border-slate-700 text-indigo-600 focus:ring-0 focus:ring-offset-0">
+                    }
+                </div>
+            </Template>
+        </DataColumn>
+
+        @ChildContent
+
+        <DataColumn TItem="TItem" Title="Actions" CssClasses="p-1">
+            <HeadTemplate>
+                <div class="flex items-center justify-end mr-2">Actions</div>
+            </HeadTemplate>
+            <Template>
+                <div class="flex justify-end mr-2">
+                    @if (ItemActions != null)
+                    {
+                        @ItemActions.Invoke(context)
+                    }
+                    
+                    @if (CrudOptions.UpdateUrl != null)
+                    {
+                        <a href="#" @onclick="() => StartUpdate(context)" @onclick:preventDefault
+                           class="text-primary-500 mr-2 sm:mr-3">
+                            <i class="icon-pencil text-base"></i>
+                        </a>
+                    }
+
+                    @if (CrudOptions.DeleteUrl != null || CrudOptions.DeleteFunction != null)
+                    {
+                        <a href="#" @onclick="() => StartDelete(context)" @onclick:preventDefault
+                           class="text-danger-500">
+                            <i class="icon-trash text-base"></i>
+                        </a>
+                    }
+                </div>
+            </Template>
+        </DataColumn>
+    </ChildContent>
+    <ActionBarTemplate>
+        @if (SelectedItems.Count > 0)
+        {
+            if (SelectionActions != null)
+            {
+                @SelectionActions.Invoke(SelectedItems)
+            }
+            
+            if (CrudOptions.DeleteFunction != null)
+            {
+                <button @onclick="StartDeleteSelection" class="btn btn-danger mr-2">
+                    Delete selection
+                </button>
+            }
+        }
+        else
+        {
+            if (Actions != null)
+            {
+                @Actions
+            }
+            
+            if (!string.IsNullOrEmpty(CrudOptions.CreateUrl))
+            {
+                <a href="@CrudOptions.CreateUrl" class="btn btn-primary mr-2">
+                    Create
+                </a>
+            }
+        }
+    </ActionBarTemplate>
+</ItemDataTable>
+
+@code
+{
+    [Parameter] public RenderFragment ChildContent { get; set; }
+    [Parameter] public RenderFragment<TItem>? ItemActions { get; set; }
+    [Parameter] public RenderFragment<List<TItem>>? SelectionActions { get; set; }
+    [Parameter] public RenderFragment? Actions { get; set; }
+    [Parameter] public Action<MinimalCrudOptions<TItem>> OnConfigure { get; set; }
+
+    private readonly MinimalCrudOptions<TItem> CrudOptions = new();
+    private readonly List<TItem> SelectedItems = new();
+
+    private ItemDataTable<TItem> Table;
+
+    protected override void OnInitialized()
+    {
+        ArgumentNullException.ThrowIfNull(OnConfigure);
+        OnConfigure.Invoke(CrudOptions);
+    }
+
+    // Proxy method so other components can implement actions properly
+    public Task Refresh(bool isSilent = false, bool bypassCache = false)
+        => Table.Refresh(isSilent, bypassCache);
+
+    private void StartUpdate(TItem item)
+    {
+        var url = CrudOptions.UpdateUrl!.Invoke(item);
+        Navigation.NavigateTo(url);
+    }
+
+    #region Delete
+
+    private async Task StartDelete(TItem item)
+    {
+        if (CrudOptions.DeleteFunction != null)
+        {
+            await AlertService.ConfirmDanger(
+                "Deleting item",
+                "Do you really want to delete this item?",
+                () => Delete(item)
+            );
+        }
+        else if (CrudOptions.DeleteUrl != null)
+        {
+            var url = CrudOptions.DeleteUrl.Invoke(item);
+            Navigation.NavigateTo(url);
+        }
+    }
+
+    private async Task Delete(TItem item)
+    {
+        await CrudOptions.DeleteFunction!.Invoke(item);
+        await ToastService.Success("Successfully deleted item");
+
+        await Table.Refresh(bypassCache: true);
+    }
+
+    private async Task StartDeleteSelection()
+    {
+        await AlertService.ConfirmDanger(
+            "Deleting item(s)",
+            $"Do you really want to delete {SelectedItems.Count} item(s)?",
+            DeleteSelection
+        );
+    }
+
+    private async Task DeleteSelection()
+    {
+        foreach (var item in SelectedItems)
+            await CrudOptions.DeleteFunction!.Invoke(item);
+        
+        await ToastService.Success($"Successfully deleted {SelectedItems.Count} item(s)");
+        
+        await Table.Refresh(bypassCache: true);
+    }
+
+    #endregion
+
+    #region Selection
+
+    private async Task OnTableRefreshed() // Table changed its content, clear selection
+    {
+        SelectedItems.Clear();
+        await InvokeAsync(StateHasChanged);
+    }
+
+    private async Task ToggleItemSelection(TItem item)
+    {
+        if (SelectedItems.Contains(item))
+            SelectedItems.Remove(item);
+        else
+            SelectedItems.Add(item);
+
+        await InvokeAsync(StateHasChanged);
+    }
+
+    private async Task ToggleSelection(bool state)
+    {
+        SelectedItems.Clear();
+
+        if (state)
+            SelectedItems.AddRange(Table.PagedData.Items);
+
+        await InvokeAsync(StateHasChanged);
+    }
+
+    #endregion
+
+}

@@ -8,9 +8,10 @@ public class PagedData<TItem> : IPagedData<TItem>
     public int TotalItems { set; get; }
     public int PageSize { set; get; }
 
-    public static PagedData<TItem> Create(TItem[] items, int page, int pageSize)
+    // Do not use in production on large quantities of data
+    public static PagedData<TItem> Create(IEnumerable<TItem> items, int page, int pageSize)
     {
-        var count = items.Length;
+        var count = items.Count();
         
         var finalItems = items
             .Skip(page * pageSize)

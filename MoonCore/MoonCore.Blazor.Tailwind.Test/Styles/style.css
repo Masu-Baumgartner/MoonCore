@@ -7,6 +7,7 @@
 @import "additions/forms.css";
 @import "additions/progress.css";
 @import "additions/scrollbar.css";
+@import "additions/loaders.css";
 
 @import "tailwindcss/utilities";
 

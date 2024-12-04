@@ -1,0 +1,43 @@
+﻿<div class="form-input py-1 px-3">
+    <div class="grid grid-cols-6">
+        <div class="col-span-2 flex items-center">
+            <span class="ml-2">@Name</span>
+        </div>
+        <div class="col-span-1">
+            <button @onclick="ToggleFilter" class="btn btn-secondary">
+                @if (FilterMode == 0)
+                {
+                    <i class="icon-equal"></i>
+                }
+                else if (FilterMode == 1)
+                {
+                    <i class="icon-chevron-right"></i>
+                }
+                else if (FilterMode == 2)
+                {
+                    <i class="icon-chevron-left"></i>
+                }
+            </button>
+        </div>
+        <div class="col-span-3">
+            <input class="bg-gray-700/60 rounded-lg border-none focus:ring-0 focus:ring-offset-0 text-sm text-gray-100 w-full text-center " placeholder="Value"/>
+        </div>
+    </div>
+</div>
+
+@code
+{
+    [Parameter] public string Name { get; set; }
+
+    private int FilterMode = 0;
+
+    private async Task ToggleFilter()
+    {
+        FilterMode++;
+
+        if (FilterMode > 2)
+            FilterMode = 0;
+
+        await InvokeAsync(StateHasChanged);
+    }
+}

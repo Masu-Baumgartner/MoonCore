@@ -1,6 +1,6 @@
 ﻿using System.Linq.Expressions;
 
-namespace MoonCore.Helpers;
+namespace MoonCore.Extensions;
 
 public static class EnumerableExtensions
 {

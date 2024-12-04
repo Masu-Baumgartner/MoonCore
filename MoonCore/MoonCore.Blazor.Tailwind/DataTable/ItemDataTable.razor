@@ -1,0 +1,415 @@
+@using MoonCore.Blazor.Tailwind.Modals
+@using MoonCore.Blazor.Tailwind.Toasts
+@using MoonCore.Helpers
+@using MoonCore.Models
+@using MoonCore.Blazor.Tailwind.Components
+
+@typeparam TItem
+
+@inject ModalService ModalService
+@inject ToastService ToastService
+@inject NavigationManager Navigation
+
+<CascadingValue Name="ItemDataTable" Value="this" IsFixed="true">
+    @ChildContent
+</CascadingValue>
+
+<div>
+    <div class="mb-3">
+        <div class="flex justify-end">
+            <div class="flex items-center">
+                @if (!IsLoading)
+                {
+                    if (ActionBarTemplate != null)
+                    {
+                        @ActionBarTemplate
+                    }
+
+                    if (ExportColumns.Length > 0)
+                    {
+                        <WButton OnClick="_ => ExportAndDownloadCsv()" CssClasses="btn btn-secondary">
+                            <i class="icon-table-2 me-2"></i>
+                            Export
+                        </WButton>
+                    }
+                }
+            </div>
+        </div>
+    </div>
+
+    <div class="overflow-x-auto rounded-lg  bg-gray-800">
+        <table class="table-auto w-full text-gray-300">
+            @if (IsLoading)
+            {
+                <thead class="text-xs uppercase text-gray-500 bg-gray-700 bg-opacity-50">
+                <tr>
+                    <th scope="col" class="p-2 font-semibold">
+                        <div class="flex items-center justify-center">Loading</div>
+                    </th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr>
+                    <td>
+                        <div class="flex justify-center p-5">
+                            <div class="loader"></div>
+                        </div>
+                    </td>
+                </tr>
+                </tbody>
+            } @* TODO: Error handling (maybe) here *@
+            else if (PagedData.TotalItems == 0)
+            {
+                <thead class="text-xs uppercase text-gray-500 bg-gray-700 bg-opacity-50">
+                <tr>
+                    <th scope="col" class="p-2 font-semibold">
+                        <div class="flex items-center justify-center">No items found</div>
+                    </th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr>
+                    <td>
+                        <div class="flex justify-center p-5">
+                            <div class="text-center">
+                                <i class="icon-hexagon mx-auto text-3xl text-primary-500"></i>
+                                <h3 class="mt-2 font-semibold text-gray-300">
+                                    No items found
+                                </h3>
+                                <p class="mt-1 text-gray-500">
+                                    We were unable to find any items. Try changing filter options if you set any.
+                                </p>
+                            </div>
+                        </div>
+                    </td>
+                </tr>
+                </tbody>
+            }
+            else
+            {
+                <thead class="text-xs uppercase text-gray-500 bg-gray-700 bg-opacity-50">
+                <tr>
+                    @foreach (var column in Columns)
+                    {
+                        <th scope="col" class="@(column.HeadCssClasses ?? "p-2 font-semibold text-left")">
+                            @if (column.IsSortable && column.Field != null)
+                            {
+                                <a href="#" @onclick="() => SortToggle(column)" @onclick:preventDefault>
+                                    <div class="flex items-center">
+                                        @(column.Title ?? "")
+                                        @if (!SortStates.ContainsKey(column))
+                                        {
+                                            <i class="icon-arrow-down-up font-normal text-sm ml-2"></i>
+                                        }
+                                        else if (SortStates[column])
+                                        {
+                                            <i class="icon-arrow-up-a-z ml-2 font-normal text-primary-500 text-sm"></i>
+                                        }
+                                        else
+                                        {
+                                            <i class="icon-arrow-down-z-a ml-2 font-normal text-primary-500 text-sm"></i>
+                                        }
+                                    </div>
+                                </a>
+                            }
+                            else
+                            {
+                                if (column.HeadTemplate == null)
+                                {
+                                    <div class="flex items-center">
+                                        @(column.Title ?? "")
+                                    </div>
+                                }
+                                else
+                                {
+                                    @column.HeadTemplate
+                                }
+                            }
+                        </th>
+                    }
+                </tr>
+                </thead>
+                <tbody class="text-sm divide-y divide-gray-700/60">
+
+                @foreach (var item in PagedData.Items)
+                {
+                    <tr>
+                        @foreach (var column in Columns)
+                        {
+                            <th scope="row" class="@(column.CssClasses ?? "p-2 text-left font-normal")">
+                                @if (column.Template == null) @* Default handling *@
+                                {
+                                    if (column.FieldFunc != null) @* Check if we actually defined a field to display *@
+                                    {
+                                        var val = column.FieldFunc.Invoke(item);
+
+                                        if (val == null)
+                                        {
+                                            <span class="italic">null</span>
+                                        }
+                                        else
+                                        {
+                                            <span>@val.ToString()</span>
+                                        }
+                                    }
+                                }
+                                else
+                                {
+                                    @column.Template.Invoke(item)
+                                }
+                            </th>
+                        }
+                    </tr>
+                }
+                </tbody>
+            }
+        </table>
+    </div>
+
+    @if (!IsLoading)
+    {
+        <nav class="flex flex-row justify-between items-start px-4 py-3">
+    <span class="text-sm font-normal text-gray-400">
+        @{
+            var start = 0;
+            var end = 0;
+
+            if (PagedData.TotalItems != 0)
+            {
+                start = PagedData.CurrentPage * PagedData.PageSize + 1;
+
+                var fullEnd = Page * PageSize + PageSize;
+
+                if (PagedData.TotalItems < fullEnd)
+                    end = PagedData.CurrentPage * PagedData.PageSize + (PagedData.TotalItems - start + 1);
+                else
+                    end = fullEnd;
+            }
+        }
+
+        Showing
+        <span class="font-semibold text-white">@(start)-@(end)</span>
+        of
+        <span class="font-semibold text-white">
+            @PagedData.TotalItems
+        </span>
+    </span>
+            <div class="flex">
+                @if (PagedData.CurrentPage == 0)
+                {
+                    <button
+                        class="flex items-center justify-center px-3 h-8 text-sm font-medium border rounded-lg bg-gray-800 border-gray-700 text-gray-400 hover:bg-gray-700 hover:text-white disabled:border-gray-700 disabled:bg-gray-800 disabled:text-gray-600 disabled:cursor-not-allowed"
+                        disabled="disabled">
+                        Previous
+                    </button>
+                }
+                else
+                {
+                    <button @onclick="() => NavigatePage(-1)"
+                            class="flex items-center justify-center px-3 h-8 text-sm font-medium   border  rounded-lg   bg-gray-800 border-gray-700 text-gray-400 hover:bg-gray-700 hover:text-white">
+                        Previous
+                    </button>
+                }
+
+                @if (PagedData.CurrentPage == PagedData.TotalPages || PagedData.TotalItems == 0)
+                {
+                    <button
+                        class="ms-3 lex items-center justify-center px-3 h-8 text-sm font-medium   border  rounded-lg   bg-gray-800 border-gray-700 text-gray-400 hover:bg-gray-700 hover:text-white disabled:border-gray-700 disabled:bg-gray-800 disabled:text-gray-600 disabled:cursor-not-allowed"
+                        disabled="disabled">
+                        Next
+                    </button>
+                }
+                else
+                {
+                    <button @onclick="() => NavigatePage(1)"
+                            class="ms-3 flex items-center justify-center px-3 h-8 text-sm font-medium   border  rounded-lg   bg-gray-800 border-gray-700 text-gray-400 hover:bg-gray-700 hover:text-white">
+                        Next
+                    </button>
+                }
+            </div>
+        </nav>
+    }
+</div>
+
+@code
+{
+    [Parameter] public RenderFragment ChildContent { get; set; }
+    [Parameter] public RenderFragment? ActionBarTemplate { get; set; }
+
+    [Parameter] public Func<int, int, Task<IPagedData<TItem>>> ItemLoader { get; set; }
+    [Parameter] public int PageSize { get; set; } = 15;
+
+    [Parameter] public bool UseCache { get; set; } = true;
+    [Parameter] public int MaxCacheRetrievalPageSize { get; set; } = 50;
+    
+    [Parameter] public Func<Task>? OnRefreshed { get; set; }
+
+    public IPagedData<TItem> PagedData { get; private set; }
+    
+    private readonly Dictionary<DataColumn<TItem>, bool> SortStates = new();
+    private readonly List<DataColumn<TItem>> Columns = new();
+
+    private TItem[]? ItemCache;
+    private DataColumn<TItem>[] ExportColumns;
+
+    private int Page = 0;
+    private bool IsLoading = true;
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (!firstRender)
+            return;
+
+        ExportColumns = Columns
+            .Where(x => x.ExportField != null && x.Title != null)
+            .ToArray();
+
+        await Refresh();
+    }
+
+    public void AddColumn(DataColumn<TItem> column)
+        => Columns.Add(column);
+
+    public async Task Refresh(bool isSilent = false, bool bypassCache = false)
+    {
+        if (!isSilent)
+        {
+            IsLoading = true;
+            await InvokeAsync(StateHasChanged);
+        }
+
+        PagedData = await QueryData(bypassCache: bypassCache); // Pass bypass cache to query function
+
+        IsLoading = false;
+        await InvokeAsync(StateHasChanged);
+
+        if (OnRefreshed != null)
+            await OnRefreshed.Invoke();
+    }
+
+    private async Task NavigatePage(int diff)
+    {
+        Page += diff;
+        await Refresh();
+    }
+
+    private async Task SortToggle(DataColumn<TItem> column)
+    {
+        if (!SortStates.ContainsKey(column))
+            SortStates[column] = false;
+        else if (SortStates[column])
+            SortStates.Remove(column);
+        else
+            SortStates[column] = true;
+
+        await InvokeAsync(StateHasChanged);
+        await Refresh();
+    }
+
+    private async Task<IPagedData<TItem>> QueryData(bool bypassCache = false)
+    {
+        // Determine if we are currently filtering or sorting
+        var needToModifyOrder = SortStates.Count > 0;
+
+        if (!needToModifyOrder) // no sorting? use live data
+        {
+            // Clear cache if no longer sorting/filtering
+            if (UseCache && ItemCache != null)
+                ItemCache = null;
+
+            return await ItemLoader.Invoke(Page, PageSize);
+        }
+
+        // Load items
+
+        TItem[] items;
+
+        if (UseCache)
+        {
+            if (ItemCache == null || bypassCache) // when cache is empty or we want to bypass it, we want to query live data
+                ItemCache = await QueryAll();
+            
+            items = ItemCache;
+        }
+        else
+            items = await QueryAll();
+
+        // Perform query
+        IEnumerable<TItem> query = items;
+
+        foreach (var sortState in SortStates)
+        {
+            if (sortState.Value)
+                query = query.OrderBy(sortState.Key.FieldFunc!);
+            else
+                query = query.OrderByDescending(sortState.Key.FieldFunc!);
+        }
+
+        var modifiedItems = query
+            .Skip(Page * PageSize)
+            .Take(PageSize)
+            .ToArray();
+
+        return new PagedData<TItem>()
+        {
+            Items = modifiedItems,
+            PageSize = PageSize,
+            CurrentPage = Page,
+            TotalItems = items.Length,
+            TotalPages = items.Length == 0 ? 0 : items.Length / PageSize
+        };
+    }
+
+    private async Task<TItem[]> QueryAll()
+    {
+        var initialData = await ItemLoader.Invoke(0, MaxCacheRetrievalPageSize);
+
+        if (initialData.CurrentPage == initialData.TotalPages)
+            return initialData.Items;
+
+        var result = new List<TItem>();
+
+        // Save already loaded data
+        result.AddRange(initialData.Items);
+
+        // Load all pages until we reached the end
+        for (var i = 1; i < initialData.TotalPages; i++)
+        {
+            var partialData = await ItemLoader.Invoke(i, MaxCacheRetrievalPageSize);
+            result.AddRange(partialData.Items);
+        }
+
+        return result.ToArray();
+    }
+
+    private async Task ExportAndDownloadCsv()
+    {
+        var csvContent = await ExportCsv();
+        var dataContent = "data:text/csv;base64," + Formatter.FromTextToBase64(csvContent);
+
+        Navigation.NavigateTo(dataContent, true);
+        await ToastService.Success("Successfully exported data");
+    }
+
+    private async Task<string> ExportCsv()
+    {
+        var output = "";
+
+        // Head
+        output += string.Join(",", ExportColumns.Select(x => x.Title)) + "\n";
+
+        // Content
+
+        var items = await QueryAll();
+
+        foreach (var item in items)
+        {
+            var values = ExportColumns
+                .Select(x => x.ExportFunc!.Invoke(item)?.ToString() ?? "null");
+
+            output += string.Join(",", values) + "\n";
+        }
+
+        return output;
+    }
+}

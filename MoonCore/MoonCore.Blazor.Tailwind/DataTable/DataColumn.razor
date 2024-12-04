@@ -1,0 +1,35 @@
+@using System.Linq.Expressions
+@using System.Reflection
+@using MoonCore.Helpers
+@typeparam TItem
+
+@code
+{
+    [Parameter] public Expression<Func<TItem, object?>>? Field { get; set; }
+    [Parameter] public Expression<Func<TItem, object?>>? ExportField { get; set; }
+    [Parameter] public string? Title { get; set; }
+    [Parameter] public bool IsSortable { get; set; }
+    [Parameter] public bool IsFilterable { get; set; }
+    [Parameter] public RenderFragment<TItem>? Template { get; set; }
+    [Parameter] public RenderFragment? HeadTemplate { get; set; }
+    [Parameter] public string? HeadCssClasses { get; set; }
+    [Parameter] public string? CssClasses { get; set; }
+    
+    [CascadingParameter(Name = "ItemDataTable")]
+    public ItemDataTable<TItem> Table { get; set; }
+
+    public Func<TItem, object?>? FieldFunc { get; private set; }
+    public Func<TItem, object?>? ExportFunc { get; private set; }
+    public PropertyInfo? Property { get; set; }
+
+    protected override void OnInitialized()
+    {
+        FieldFunc = Field?.Compile() ?? null;
+        ExportFunc = ExportField?.Compile() ?? null;
+
+        if (Field != null)
+            Property = LinqHelper.GetPropertyInfo(Field);
+        
+        Table.AddColumn(this);
+    }
+}

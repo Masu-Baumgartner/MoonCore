@@ -1,0 +1,8 @@
+﻿@page "/cruditempage/{Id:int}"
+
+<h1>My id is: @Id</h1>
+
+@code
+{
+    [Parameter] public int Id { get; set; }
+}

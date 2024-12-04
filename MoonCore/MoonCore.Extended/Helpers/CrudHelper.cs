@@ -2,6 +2,7 @@
 using MoonCore.Exceptions;
 using MoonCore.Extended.Abstractions;
 using MoonCore.Extended.Configuration;
+using MoonCore.Extensions;
 using MoonCore.Helpers;
 using MoonCore.Models;
 

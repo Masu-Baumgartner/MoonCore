@@ -1,0 +1,40 @@
+﻿@page "/datatable"
+
+@using Bogus
+@using MoonCore.Blazor.Tailwind.DataTable
+@using MoonCore.Blazor.Tailwind.Test.Models
+@using MoonCore.Models
+
+<ItemDataTable TItem="DemoDataModel" PageSize="15" ItemLoader="ItemLoader">
+    <DataColumn TItem="DemoDataModel" Field="@(x => x.Id)" Title="Id" IsSortable="true" ExportField="@(x => x.Id)" />
+    <DataColumn TItem="DemoDataModel" Field="@(x => x.Email)" Title="Email" IsSortable="true" ExportField="@(x => x.Email)" />
+    <DataColumn TItem="DemoDataModel" Field="@(x => x.Name)" Title="Name" ExportField="@(x => x.Name)" />
+</ItemDataTable>
+
+@code
+{
+    private static List<DemoDataModel>? Data;
+    
+    protected override void OnInitialized()
+    {
+        if (Data == null)
+        {
+            var faker = new Faker<DemoDataModel>()
+                .RuleFor(x => x.Id, x => x.UniqueIndex)
+                .RuleFor(x => x.Email, x => x.Person.Email)
+                .RuleFor(x => x.Flag, x => x.Random.Bool())
+                .RuleFor(x => x.Name, x => x.Person.UserName);
+
+            Data = faker
+                .Generate(100);
+        }
+    }
+
+    private async Task<IPagedData<DemoDataModel>> ItemLoader(int page, int pageSize)
+    {
+        Console.WriteLine($"Querying {page} (size: {pageSize})");
+        
+        //return PagedData<DemoDataModel>.Create([], page, pageSize);
+        return PagedData<DemoDataModel>.Create(Data!, page, pageSize);
+    }
+}
