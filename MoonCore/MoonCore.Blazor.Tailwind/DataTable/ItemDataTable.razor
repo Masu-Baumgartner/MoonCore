@@ -1,9 +1,14 @@
 @using MoonCore.Blazor.Tailwind.Modals
+@using MoonCore.Blazor.Tailwind.Toasts
+@using MoonCore.Helpers
 @using MoonCore.Models
+@using MoonCore.Blazor.Tailwind.Components
 
 @typeparam TItem
 
 @inject ModalService ModalService
+@inject ToastService ToastService
+@inject NavigationManager Navigation
 
 <CascadingValue Name="ItemDataTable" Value="this" IsFixed="true">
     @ChildContent
@@ -15,17 +20,13 @@
             <div>
                 @if (!IsLoading)
                 {
-                    if (ColumnsWithFilter.Length > 0)
+                    @if (ExportColumns.Length > 0)
                     {
-                        <button @onclick="OpenFilterModal" class="btn btn-secondary">
-                            <i class="icon-filter"></i>
-                        </button>
+                        <WButton OnClick="_ => ExportAndDownloadCsv()" CssClasses="btn btn-secondary">
+                            <i class="icon-table-2 me-2"></i>
+                            Export
+                        </WButton>
                     }
-
-                    <button class="btn btn-secondary">
-                        <i class="icon-table-2 me-2"></i>
-                        Export
-                    </button>
                 }
             </div>
         </div>
@@ -86,18 +87,39 @@
                     @foreach (var column in Columns)
                     {
                         <th scope="col" class="@(column.HeadCssClasses ?? "p-2 font-semibold text-left")">
-                            @if (column.HeadTemplate == null)
+                            @if (column.IsSortable && column.Field != null)
                             {
-                                <div class="flex items-center">
-                                    @(column.Title ?? "")
-                                    @if (column.IsSortable)
-                                    {
-                                        <i class="icon-arrow-down-up ml-2"></i>
-                                    }
-                                </div>
+                                <a href="#" @onclick="() => SortToggle(column)" @onclick:preventDefault>
+                                    <div class="flex items-center">
+                                        @(column.Title ?? "")
+                                        @if (!SortStates.ContainsKey(column))
+                                        {
+                                            <i class="icon-arrow-down-up font-normal text-sm ml-2"></i>
+                                        }
+                                        else if(SortStates[column])
+                                        {
+                                            <i class="icon-arrow-up-a-z ml-2 font-normal text-primary-500 text-sm"></i>
+                                        }
+                                        else
+                                        {
+                                            <i class="icon-arrow-down-z-a ml-2 font-normal text-primary-500 text-sm"></i>
+                                        }
+                                    </div>
+                                </a>
                             }
                             else
-                            @column.HeadTemplate
+                            {
+                                if (column.HeadTemplate == null)
+                                {
+                                    <div class="flex items-center">
+                                        @(column.Title ?? "")
+                                    </div>
+                                }
+                                else
+                                {
+                                    @column.HeadTemplate
+                                }
+                            }
                         </th>
                     }
                 </tr>
@@ -206,34 +228,32 @@
 </div>
 
 @code
-
-
-
-
-
-
-
 {
     [Parameter] public RenderFragment ChildContent { get; set; }
 
-    [Parameter] public Func<int, int, QueryOptions, Task<IPagedData<TItem>>> ItemLoader { get; set; }
+    [Parameter] public Func<int, int, Task<IPagedData<TItem>>> ItemLoader { get; set; }
     [Parameter] public int PageSize { get; set; } = 15;
+    
+    [Parameter] public bool UseCache { get; set; } = true;
+    [Parameter] public int MaxCacheRetrievalPageSize { get; set; } = 50;
 
-    private List<DataColumn<TItem>> Columns = new();
-    private DataColumn<TItem>[] ColumnsWithFilter;
+    private readonly Dictionary<DataColumn<TItem>, bool> SortStates = new();
+    private readonly List<DataColumn<TItem>> Columns = new();
+
+    private TItem[]? ItemCache;
+    private DataColumn<TItem>[] ExportColumns;
 
     private IPagedData<TItem> PagedData;
     private int Page = 0;
     private bool IsLoading = true;
-    private QueryOptions QueryOptions = new();
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
         if (!firstRender)
             return;
 
-        ColumnsWithFilter = Columns
-            .Where(x => x.IsFilterable)
+        ExportColumns = Columns
+            .Where(x => x.ExportField != null && x.Title != null)
             .ToArray();
 
         await Refresh();
@@ -250,25 +270,135 @@
             await InvokeAsync(StateHasChanged);
         }
 
-        PagedData = await ItemLoader.Invoke(Page, PageSize, QueryOptions);
+        PagedData = await QueryData();
 
         IsLoading = false;
         await InvokeAsync(StateHasChanged);
     }
-
-    private async Task OpenFilterModal()
-    {
-        await ModalService.Launch<FilterModal<TItem>>(parameters =>
-        {
-            parameters.Add("Columns", ColumnsWithFilter);
-            parameters.Add("Options", QueryOptions);
-            parameters.Add("OnApplied", () => Refresh());
-        });
-    }
-
+    
     private async Task NavigatePage(int diff)
     {
         Page += diff;
         await Refresh();
+    }
+
+    private async Task SortToggle(DataColumn<TItem> column)
+    {
+        if (!SortStates.ContainsKey(column))
+            SortStates[column] = false;
+        else if (SortStates[column])
+            SortStates.Remove(column);
+        else
+            SortStates[column] = true;
+
+        await InvokeAsync(StateHasChanged);
+        await Refresh();
+    }
+
+    private async Task<IPagedData<TItem>> QueryData()
+    {
+        // Determine if we are currently filtering or sorting
+        var needToModifyOrder = SortStates.Count > 0;
+
+        if (!needToModifyOrder)
+        {
+            // Clear cache if no longer sorting/filtering
+            if (UseCache && ItemCache != null)
+                ItemCache = null;
+            
+            return await ItemLoader.Invoke(Page, PageSize);
+        }
+
+        // Load items
+        
+        TItem[] items;
+
+        if (UseCache)
+        {
+            if (ItemCache == null)
+                ItemCache = await QueryAll();
+
+            items = ItemCache;
+        }
+        else
+            items = await QueryAll();
+        
+        // Perform query
+        IEnumerable<TItem> query = items;
+
+        foreach (var sortState in SortStates)
+        {
+            if (sortState.Value)
+                query = query.OrderBy(sortState.Key.FieldFunc!);
+            else
+                query = query.OrderByDescending(sortState.Key.FieldFunc!);
+        }
+        
+        var modifiedItems = query
+            .Skip(Page * PageSize)
+            .Take(PageSize)
+            .ToArray();
+        
+        return new PagedData<TItem>()
+        {
+            Items = modifiedItems,
+            PageSize = PageSize,
+            CurrentPage = Page,
+            TotalItems = items.Length,
+            TotalPages = items.Length == 0 ? 0 : items.Length / PageSize
+        };
+    }
+
+    private async Task<TItem[]> QueryAll()
+    {
+        var initialData = await ItemLoader.Invoke(0, MaxCacheRetrievalPageSize);
+
+        if (initialData.CurrentPage == initialData.TotalPages)
+            return initialData.Items;
+
+        var result = new List<TItem>();
+        
+        // Save already loaded data
+        result.AddRange(initialData.Items);
+
+        // Load all pages until we reached the end
+        for (var i = 1; i < initialData.TotalPages; i++)
+        {
+            var partialData = await ItemLoader.Invoke(i, MaxCacheRetrievalPageSize);
+            result.AddRange(partialData.Items);
+        }
+
+        return result.ToArray();
+    }
+
+    private async Task ExportAndDownloadCsv()
+    {
+        var csvContent = await ExportCsv();
+        var dataContent = "data:text/csv;base64," + Formatter.FromTextToBase64(csvContent);
+        
+        Navigation.NavigateTo(dataContent, true);
+        await ToastService.Success("Successfully exported data");
+    }
+
+    private async Task<string> ExportCsv()
+    {
+        var output = "";
+        
+        // Head
+        output += string.Join(",", ExportColumns.Select(x => x.Title)) + "\n";
+        
+        // Content
+
+        var items = await QueryAll();
+        
+        foreach (var item in items)
+        {
+            var values = ExportColumns
+                .Select(x => x.ExportFunc!.Invoke(item)?.ToString() ?? "null");
+            
+            output += string.Join(",", values)  + "\n";
+        }
+
+        return output;
     }
 }

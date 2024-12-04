@@ -1,4 +1,6 @@
 @using System.Linq.Expressions
+@using System.Reflection
+@using MoonCore.Helpers
 @typeparam TItem
 
 @code
@@ -18,11 +20,15 @@
 
     public Func<TItem, object?>? FieldFunc { get; private set; }
     public Func<TItem, object?>? ExportFunc { get; private set; }
+    public PropertyInfo? Property { get; set; }
 
     protected override void OnInitialized()
     {
         FieldFunc = Field?.Compile() ?? null;
         ExportFunc = ExportField?.Compile() ?? null;
+
+        if (Field != null)
+            Property = LinqHelper.GetPropertyInfo(Field);
         
         Table.AddColumn(this);
     }
