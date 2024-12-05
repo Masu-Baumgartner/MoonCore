@@ -23,13 +23,13 @@
         </a>
     </ItemActions>
     <SelectionActions>
-        <button @onclick="() => CustomSelectionAction(context)" class="btn btn-tertiary mr-2">
+        <button @onclick="() => CustomSelectionAction(context)" class="btn btn-tertiary">
             <i class="icon-pickaxe mr-1"></i>
             Selection action
         </button>
     </SelectionActions>
     <Actions>
-        <a href="/toasts" class="btn btn-success mr-2">
+        <a href="/toasts" class="btn btn-success">
             <i class="icon-flame mr-1"></i>
             Some action
         </a>
@@ -57,6 +57,7 @@
 
     private void OnConfigure(MinimalCrudOptions<DemoDataModel> options)
     {
+        options.Title = "Demo Data Model";
         options.ItemLoader = async (page, pageSize) => 
             PagedData<DemoDataModel>.Create(Data!, page, pageSize);
         
