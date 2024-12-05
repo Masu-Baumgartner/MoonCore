@@ -10,6 +10,7 @@
 
 <ItemDataTable @ref="Table"
                TItem="TItem"
+               Title="@CrudOptions.Title"
                ItemLoader="CrudOptions.ItemLoader"
                PageSize="CrudOptions.PageSize"
                OnRefreshed="OnTableRefreshed">
@@ -93,7 +94,7 @@
             
             if (CrudOptions.DeleteFunction != null)
             {
-                <button @onclick="StartDeleteSelection" class="btn btn-danger mr-2">
+                <button @onclick="StartDeleteSelection" class="btn btn-danger">
                     Delete selection
                 </button>
             }
@@ -107,7 +108,7 @@
             
             if (!string.IsNullOrEmpty(CrudOptions.CreateUrl))
             {
-                <a href="@CrudOptions.CreateUrl" class="btn btn-primary mr-2">
+                <a href="@CrudOptions.CreateUrl" class="btn btn-primary">
                     Create
                 </a>
             }
