@@ -1,0 +1,86 @@
+﻿@typeparam TItem
+
+<div class="relative mt-2">
+    <button @onclick="ToggleShow" @onfocusout="OnFocusOut" type="button" class="form-select w-full cursor-default">
+        <div class="flex items-center justify-start">
+            @if (CurrentItem == null)
+            {
+                <span class="block truncate text-gray-500">Select...</span>
+            }
+            else
+            {
+                <span class="block truncate">
+                    @DisplayProperty.Invoke(CurrentItem)
+                </span>
+            }
+        </div>
+    </button>
+
+    @if (Show)
+    {
+        <ul class="absolute z-10 mt-1 max-h-56 w-full overflow-auto rounded-md bg-gray-800 py-1 text-base shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none sm:text-sm" tabindex="-1" role="listbox">
+            @if (AllowNone)
+            {
+                <li @onclick="() => Select(default)" class="relative cursor-default select-none py-2 pl-3 pr-3 text-gray-300 hover:bg-primary-600 hover:text-white">
+                    <div class="flex items-center justify-between">
+                        <span class="block truncate">
+                            None
+                        </span>
+
+
+                    </div>
+                </li>
+            }
+
+            @foreach (var item in Items)
+            {
+                <li @onclick="() => Select(item)" class="relative cursor-default select-none py-2 pl-3 pr-3 text-gray-300 hover:bg-primary-600 hover:text-white">
+                    <div class="flex items-center justify-between">
+                        <span class="block truncate">
+                            @DisplayProperty.Invoke(item)
+                        </span>
+
+
+                    </div>
+                </li>
+            }
+        </ul>
+    }
+</div>
+
+@code
+{
+    [Parameter] public List<TItem> Items { get; set; }
+    [Parameter] public Func<TItem, string> DisplayProperty { get; set; }
+    [Parameter] public EventCallback<TItem> EventCallback { get; set; }
+    [Parameter] public bool AllowNone { get; set; } = false;
+
+    private TItem? CurrentItem { get; set; }
+    private bool Show = false;
+
+    private async Task ToggleShow()
+    {
+        Show = !Show;
+        await InvokeAsync(StateHasChanged);
+    }
+
+    private async Task Select(TItem? item)
+    {
+        CurrentItem = item;
+        EventCallback.InvokeAsync(item);
+        await InvokeAsync(StateHasChanged);
+    }
+
+    private Task OnFocusOut()
+    {
+        Task.Run(async () =>
+        {
+            await Task.Delay(200);
+
+            Show = false;
+            await InvokeAsync(StateHasChanged);
+        });
+
+        return Task.CompletedTask;
+    }
+}
