@@ -1,0 +1,95 @@
+@typeparam TProperty where TProperty : struct, Enum
+
+@using MoonCore.Helpers
+
+<div class="relative">
+    <button @onclick="ToggleShow" @onfocusout="OnFocusOut" type="button" class="form-select w-full cursor-default">
+        <div class="flex items-center justify-start">
+            <span class="block truncate">
+                @Formatter.ConvertCamelCaseToSpaces(Value.ToString())
+            </span>
+        </div>
+    </button>
+
+    @if (Show)
+    {
+        <ul class="absolute z-10 mt-1 max-h-56 w-full overflow-auto rounded-md bg-gray-800 py-1 text-base shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none sm:text-sm"
+            tabindex="-1"
+            role="listbox">
+
+            @foreach (var val in Enum.GetValues<TProperty>())
+            {
+                <li @onclick="() => Select(val)"
+                    class="relative cursor-default select-none py-2 pl-3 pr-3 text-gray-300 hover:bg-primary-600 hover:text-white">
+                    <div class="flex items-center justify-between">
+                        <span class="block truncate">
+                            @Formatter.ConvertCamelCaseToSpaces(val.ToString())
+                        </span>
+
+                        <span>
+                            @if (val.Equals(Value))
+                            {
+                                <svg class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+                                    <path fill-rule="evenodd"
+                                          d="M16.704 4.153a.75.75 0 01.143 1.052l-8 10.5a.75.75 0 01-1.127.075l-4.5-4.5a.75.75 0 011.06-1.06l3.894 3.893 7.48-9.817a.75.75 0 011.05-.143z"
+                                          clip-rule="evenodd"/>
+                                </svg>
+                            }
+                        </span>
+                    </div>
+                </li>
+            }
+        </ul>
+    }
+</div>
+
+@code
+{
+
+    #region Binder
+
+    private TProperty _value;
+
+    [Parameter]
+    public TProperty Value
+    {
+        get => _value;
+        set
+        {
+            if (_value.Equals(value)) return;
+            _value = value;
+            ValueChanged.InvokeAsync(value);
+        }
+    }
+
+    [Parameter] public EventCallback<TProperty> ValueChanged { get; set; }
+
+    #endregion
+
+    private bool Show = false;
+
+    private async Task ToggleShow()
+    {
+        Show = !Show;
+        await InvokeAsync(StateHasChanged);
+    }
+
+    private async Task Select(TProperty val)
+    {
+        Value = val;
+        await InvokeAsync(StateHasChanged);
+    }
+
+    private Task OnFocusOut()
+    {
+        Task.Run(async () =>
+        {
+            await Task.Delay(200);
+
+            Show = false;
+            await InvokeAsync(StateHasChanged);
+        });
+
+        return Task.CompletedTask;
+    }
+}

@@ -1,0 +1,68 @@
+@page "/inputs"
+@using Bogus
+@using MoonCore.Blazor.Tailwind.Test.Models
+@using MoonCore.Blazor.Tailwind.Inputs
+
+<h3>Inputs</h3>
+@*
+<InputItemSelect @bind-Value="InputSelectIdValue"
+                 TItem="DemoDataModel"
+                 TProperty="int"
+                 DisplayProperty="@(x => x.Email)"
+                 ValueProperty="@(x => x?.Id ?? -1)"
+                 ItemLoader="ItemSelectLoader"/>*@
+
+<InputItemSelect TItem="DemoDataModel"
+                 TProperty="int"
+                 AllowNone="true"
+                 Loader="ItemSelectLoader"
+                 DisplayProperty="@(x => x.Email)"
+                 ValueProperty="@(x => x?.Id ?? -1)"
+                 @bind-Value="InputSelectIdValue"/>
+
+<InputItemSearchSelect TItem="DemoDataModel"
+                       TProperty="int"
+                       AllowNone="true"
+                       Loader="Loader"
+                       DisplayProperty="@(x => x.Email)"
+                       ValueProperty="@(x => x?.Id ?? -1)"
+                       @bind-Value="InputSearchSelectIdValue"/>
+
+<InputEnumSelect TProperty="SomeCoolEnum"
+                 @bind-Value="CoolEnum"/>
+
+@code
+{
+    private int InputSelectIdValue = -1;
+    private int InputSearchSelectIdValue = -1;
+    private SomeCoolEnum CoolEnum;
+    
+    private static List<DemoDataModel>? Data;
+    
+    protected override void OnInitialized()
+    {
+        if (Data == null)
+        {
+            var faker = new Faker<DemoDataModel>()
+                .RuleFor(x => x.Id, x => x.UniqueIndex)
+                .RuleFor(x => x.Email, x => x.Person.Email)
+                .RuleFor(x => x.Flag, x => x.Random.Bool())
+                .RuleFor(x => x.Name, x => x.Person.UserName);
+
+            Data = faker
+                .Generate(25);
+        }
+    }
+
+    private async Task<DemoDataModel[]> ItemSelectLoader()
+    {
+        await Task.Delay(TimeSpan.FromSeconds(3));
+        return Data!.ToArray();
+    }
+
+    private async Task<DemoDataModel[]> Loader(string arg)
+    {
+        await Task.Delay(TimeSpan.FromSeconds(1));
+        return Data!.Where(x => x.Email.StartsWith(arg)).ToArray();
+    }
+}
