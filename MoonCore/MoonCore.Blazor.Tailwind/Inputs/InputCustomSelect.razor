@@ -1,0 +1,117 @@
+@typeparam TValue
+
+<CascadingValue Value="this" Name="InputCustomSelect" IsFixed="true">
+    @ChildContent
+</CascadingValue>
+
+@if (IsInitialized)
+{
+    <div class="relative">
+        <button @onclick="ToggleShow" @onfocusout="OnFocusOut" type="button" class="form-select w-full cursor-default">
+            <div class="flex items-center">
+                @{
+                    var selectedOption = Options.FirstOrDefault(x => x.Value?.Equals(Value) ?? false);
+                }
+            
+                @if (selectedOption == null)
+                {
+                    <span class="block truncate text-gray-500">Select...</span>
+                }
+                else
+                {
+                    @selectedOption.Template
+                }
+            </div>
+        </button>
+
+        @if (Show)
+        {
+            <ul class="absolute z-10 mt-1 max-h-56 w-full overflow-auto rounded-md bg-gray-800 py-1 text-base shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none sm:text-sm"
+                tabindex="-1" role="listbox">
+                @foreach (var option in Options)
+                {
+                    <li @onclick="() => Select(option.Value)"
+                        class="relative cursor-default select-none py-2 pl-3 pr-3 text-gray-300 hover:bg-primary-600 hover:text-white">
+                        <div class="flex items-center">
+                            @if (option.DetailTemplate != null)
+                            {
+                                @option.DetailTemplate
+                            }
+                            else
+                            {
+                                @option.Template
+                            }
+                        </div>
+                    </li>
+                }
+            </ul>
+        }
+    </div>
+}
+
+@code
+{
+    [Parameter] public RenderFragment ChildContent { get; set; }
+
+    private List<CustomSelectOption<TValue>> Options = new();
+    private bool IsInitialized = false;
+
+    #region Binder
+
+    private TValue? _value;
+
+    [Parameter]
+    public TValue? Value
+    {
+        get => _value;
+        set
+        {
+            if (Equals(value, _value) ) return;
+            _value = value;
+            ValueChanged.InvokeAsync(value);
+        }
+    }
+
+    [Parameter]
+    public EventCallback<TValue?> ValueChanged { get; set; }  
+
+    #endregion
+    
+    private bool Show = false;
+    
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (!firstRender)
+            return;
+
+        IsInitialized = true;
+        await InvokeAsync(StateHasChanged);
+    }
+
+    public void AddOption(CustomSelectOption<TValue> option) => Options.Add(option);
+    
+    private async Task ToggleShow()
+    {
+        Show = !Show;
+        await InvokeAsync(StateHasChanged);
+    }
+
+    private async Task Select(TValue? val)
+    {
+        Value = val;
+        await InvokeAsync(StateHasChanged);
+    }
+
+    private Task OnFocusOut()
+    {
+        Task.Run(async () =>
+        {
+            await Task.Delay(200);
+
+            Show = false;
+            await InvokeAsync(StateHasChanged);
+        });
+
+        return Task.CompletedTask;
+    }
+}

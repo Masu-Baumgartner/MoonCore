@@ -112,7 +112,7 @@
         get => _value;
         set
         {
-            if (value != null && _value.Equals(value) ) return;
+            if (Equals(value, _value) ) return;
             _value = value;
             ValueChanged.InvokeAsync(value);
         }
