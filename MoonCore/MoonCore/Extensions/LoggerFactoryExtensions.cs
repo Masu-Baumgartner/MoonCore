@@ -16,4 +16,14 @@ public static class LoggerFactoryExtensions
     {
         factory.AddProviders(LoggerBuildHelper.BuildFromConfiguration(onConfigure));
     }
+    
+    public static void AddMoonCore(this ILoggerFactory factory)
+    {
+        factory.AddProviders(LoggerBuildHelper.BuildFromConfiguration(configuration =>
+        {
+            configuration.Console.Enable = true;
+            configuration.Console.EnableAnsiMode = true;
+            configuration.FileLogging.Enable = false;
+        }));
+    }
 }

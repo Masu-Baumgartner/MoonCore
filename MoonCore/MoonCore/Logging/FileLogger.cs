@@ -27,7 +27,7 @@ public class FileLogger : ILogger
 
         var shortName = LoggingConstants.ShortTextMappings[logLevel];
         
-        TextWriter.WriteLine($"{DateTime.Now:HH:mm:ss} {shortName} {CategoryName}: {message}");
+        TextWriter.WriteLine($"{DateTime.Now:dd.MM.yy HH:mm:ss} {shortName} {CategoryName}: {message}");
         WriteCounter++;
 
         if (WriteCounter <= WriteFlushLimit)
