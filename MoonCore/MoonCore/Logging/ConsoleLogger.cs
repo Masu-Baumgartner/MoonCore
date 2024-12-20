@@ -21,6 +21,6 @@ public class ConsoleLogger : ILogger
 
         var shortText = LoggingConstants.ShortTextMappings[logLevel];
         
-        Console.WriteLine($"{DateTime.Now:HH:mm:ss} {shortText} {CategoryName}: {message}");
+        Console.WriteLine($"{DateTime.Now:dd.MM.yy HH:mm:ss} {shortText} {CategoryName}: {message}");
     }
 }

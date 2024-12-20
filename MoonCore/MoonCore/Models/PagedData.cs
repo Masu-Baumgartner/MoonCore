@@ -27,4 +27,44 @@ public class PagedData<TItem> : IPagedData<TItem>
             TotalPages = count == 0 ? 0 : count / pageSize
         };
     }
+
+    public static async Task<TItem[]> All(Func<int, int, Task<PagedData<TItem>>> loader, int pageSize = 50)
+    {
+        var initialData = await loader.Invoke(0, pageSize);
+
+        // Check if we already have all data
+        if (initialData.Items.Length == initialData.TotalItems)
+            return initialData.Items;
+        
+        var items = new List<TItem>();
+        items.AddRange(initialData.Items);
+        
+        for (var page = 1; page < initialData.TotalPages; page++)
+        {
+            var data = await loader.Invoke(page, pageSize);
+            items.AddRange(data.Items);
+        }
+
+        return items.ToArray();
+    }
+    
+    public static TItem[] All(Func<int, int, PagedData<TItem>> loader, int pageSize = 50)
+    {
+        var initialData = loader.Invoke(0, pageSize);
+
+        // Check if we already have all data
+        if (initialData.Items.Length == initialData.TotalItems)
+            return initialData.Items;
+        
+        var items = new List<TItem>();
+        items.AddRange(initialData.Items);
+        
+        for (var page = 1; page < initialData.TotalPages; page++)
+        {
+            var data = loader.Invoke(page, pageSize);
+            items.AddRange(data.Items);
+        }
+
+        return items.ToArray();
+    }
 }
