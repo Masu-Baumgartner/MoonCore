@@ -30,8 +30,14 @@
     {
         var page1 = configuration.WithPage("Page 1");
 
-        page1.WithField(x => x.Id);
         page1.WithField(x => x.Email, fieldConfiguration => { fieldConfiguration.Description = "Boooooooooooop"; });
+        
+        var section1Ping1 = page1.WithSection("My cool section", sectionConfiguration =>
+        {
+            sectionConfiguration.Description = "A good description";
+        });
+
+        section1Ping1.WithField(x => x.Id);
 
         var page2 = configuration.WithPage("Page 2");
 

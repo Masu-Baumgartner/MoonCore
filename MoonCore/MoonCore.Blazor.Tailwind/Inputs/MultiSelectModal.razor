@@ -1,0 +1,163 @@
+@using MoonCore.Blazor.Tailwind.Modals.Components
+@using MoonCore.Blazor.Tailwind.Components
+
+@typeparam TItem
+@typeparam TProperty
+
+@inherits BaseModal
+
+<LazyLoader Load="Load">
+    <div class="grid grid-cols-1 md:grid-cols-2 md:gap-x-5 gap-y-5 md:gap-y-0">
+        <div class="col-span-1">
+            <div class="card card-body bg-gray-800">
+                @if (AllowSearch)
+                {
+                    <input @oninput="SelectedSearchCallback" class="form-input mb-3 placeholder-gray-500" placeholder="Search..."/>
+                }
+                
+                <div class="flex flex-col gap-y-2 m-1 h-[20vh] md:h-[40vh] overflow-y-auto rounded-lg">
+                    @foreach (var item in SelectedSorted)
+                    {
+                        <div class="rounded-lg bg-gray-700 p-2 flex justify-between items-center">
+                            <span class="truncate text-sm">
+                                @DisplayProperty.Invoke(item)
+                            </span>
+                            <button @onclick="() => SetSelectState(item, false)" class="btn btn-sm btn-danger">
+                                <i class="icon-minus"></i>
+                            </button>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+        <div class="col-span-1">
+            <div class="card card-body bg-gray-800">
+                @if (AllowSearch)
+                {
+                    <input @oninput="ItemsSearchCallback" class="form-input mb-3 placeholder-gray-500" placeholder="Search..."/>
+                }
+                
+                <div class="flex flex-col gap-y-2 m-1 h-[20vh] md:h-[40vh] overflow-y-auto rounded-lg">
+                    @foreach (var item in ItemsSorted)
+                    {
+                        if (SelectedItems.Contains(item))
+                            continue;
+
+                        <div class="rounded-lg bg-gray-700 p-2 flex justify-between items-center">
+                            <span class="truncate text-sm">
+                                @DisplayProperty.Invoke(item)
+                            </span>
+                            <button @onclick="() => SetSelectState(item, true)" class="btn btn-sm btn-primary">
+                                <i class="icon-plus text-base"></i>
+                            </button>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+</LazyLoader>
+
+<div class="mt-5 flex justify-end gap-x-2">
+    <WButton OnClick="_ => Submit()" CssClasses="btn btn-primary">Save</WButton>
+    <WButton OnClick="_ => Hide()" CssClasses="btn btn-secondary">Cancel</WButton>
+</div>
+
+@code
+{
+    [Parameter] public Func<TItem, string> DisplayProperty { get; set; }
+    [Parameter] public Func<TItem, TProperty> ValueProperty { get; set; }
+    [Parameter] public Func<Task<TItem[]>> Loader { get; set; }
+    [Parameter] public Func<TProperty[], Task> OnSubmit { get; set; }
+    [Parameter] public TProperty[]? Value { get; set; }
+    [Parameter] public bool AllowSearch { get; set; } = true;
+
+    private string SelectedSearchTerm = "";
+    private string ItemsSearchTerm = "";
+
+    private IEnumerable<TItem> SelectedSorted
+    {
+        get
+        {
+            if (Items == null)
+                return [];
+
+            if (string.IsNullOrEmpty(SelectedSearchTerm))
+                return SelectedItems;
+            
+            return SelectedItems
+                .Where(x => DisplayProperty.Invoke(x).Contains(SelectedSearchTerm));
+        }
+    }
+    
+    private IEnumerable<TItem> ItemsSorted
+    {
+        get
+        {
+            if (Items == null)
+                return [];
+
+            if (string.IsNullOrEmpty(ItemsSearchTerm))
+                return Items;
+            
+            return Items
+                .Where(x => DisplayProperty.Invoke(x).Contains(ItemsSearchTerm));
+        }
+    }
+
+    private List<TItem> SelectedItems = new();
+    private TItem[]? Items;
+
+    private async Task Load(LazyLoader _)
+    {
+        Items = await Loader.Invoke();
+        
+        if(Value == null)
+            return;
+
+        foreach (var item in Items)
+        {
+            if(Value.Contains(ValueProperty.Invoke(item)))
+                SelectedItems.Add(item);
+        }
+    }
+
+    private async Task SetSelectState(TItem item, bool toggle)
+    {
+        if (toggle && !SelectedItems.Contains(item))
+            SelectedItems.Add(item);
+        else if (!toggle && SelectedItems.Contains(item))
+            SelectedItems.Remove(item);
+
+        await InvokeAsync(StateHasChanged);
+    }
+
+    private async Task Submit()
+    {
+        if (Items == null) // Handle submit on not loaded state
+        {
+            await Hide();
+            return;
+        }
+        
+        var value = SelectedItems
+            .Select(x => ValueProperty.Invoke(x))
+            .ToArray();
+
+        await OnSubmit.Invoke(value);
+        await Hide();
+    }
+
+
+    private async Task SelectedSearchCallback(ChangeEventArgs eventArgs)
+    {
+        SelectedSearchTerm = eventArgs.Value?.ToString() ?? "";
+        await InvokeAsync(StateHasChanged);
+    }
+    
+    private async Task ItemsSearchCallback(ChangeEventArgs eventArgs)
+    {
+        ItemsSearchTerm = eventArgs.Value?.ToString() ?? "";
+        await InvokeAsync(StateHasChanged);
+    }
+}
