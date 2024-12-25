@@ -31,22 +31,35 @@ public class DatabaseRepository<TEntity> where TEntity : class
         return DbSet;
     }
 
-    public TEntity Add(TEntity entity)
+    public async Task<TEntity> Add(TEntity entity)
     {
-        var x = DbSet.Add(entity);
-        DataContext.SaveChanges();
-        return x.Entity;
+        var result = await DataContext.AddAsync(entity);
+        await DataContext.SaveChangesAsync();
+
+        return result.Entity;
     }
 
-    public void Update(TEntity entity)
+    public async Task Update(TEntity entity)
     {
-        DbSet.Update(entity);
-        DataContext.SaveChanges();
+        DataContext.Update(entity);
+        await DataContext.SaveChangesAsync();
+    }
+
+    public async Task Remove(TEntity entity)
+    {
+        DataContext.Remove(entity);
+        await DataContext.SaveChangesAsync();
+    }
+
+    public async Task RunTransaction(Action<DbSet<TEntity>> transaction)
+    {
+        transaction.Invoke(DbSet);
+        await DataContext.SaveChangesAsync();
     }
     
-    public void Delete(TEntity entity)
+    public async Task RunTransaction(Func<DbSet<TEntity>, Task> transactionTask)
     {
-        DbSet.Remove(entity);
-        DataContext.SaveChanges();
+        await transactionTask.Invoke(DbSet);
+        await DataContext.SaveChangesAsync();
     }
 }
