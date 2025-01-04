@@ -2,9 +2,9 @@
 @using MoonCore.Exceptions
 @using MoonCore.Blazor.Tailwind.States
 
-<div class="@(EnableDefaultSpacing ? "mt-5" : "")">
-    @if (IsLoading)
-    {
+@if (IsLoading)
+{
+    <div class="@(EnableDefaultSpacing ? "mt-5" : "")">
         <div class="text-center">
             <div class="mb-3">
                 <div role="status">
@@ -23,19 +23,21 @@
             </div>
             <p class="font-normal text-lg text-white">@(LoadingText)</p>
         </div>
+    </div>
+}
+else
+{
+    if (LoadingException != null)
+    {
+        <div class="@(EnableDefaultSpacing ? "mt-5" : "")">
+            <ErrorStateDisplay Exception="LoadingException"/>
+        </div>
     }
     else
     {
-        if (LoadingException != null)
-        {
-            <ErrorStateDisplay Exception="LoadingException"/>
-        }
-        else
-        {
-            @ChildContent
-        }
+        @ChildContent
     }
-</div>
+}
 
 @code
 {
