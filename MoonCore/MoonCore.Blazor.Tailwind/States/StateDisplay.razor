@@ -1,0 +1,58 @@
+<div class="flex items-center justify-center">
+    <div class="flex flex-col text-center">
+        @{
+            var icon = Type switch
+            {
+                StateType.Information => "icon-info",
+                StateType.Warning => "icon-triangle-alert",
+                StateType.Success => "icon-check",
+                StateType.Error => "icon-x",
+                StateType.Empty => "icon-square-dashed",
+                StateType.Custom => Icon,
+                _ => Icon
+            };
+            
+            var iconColor = Type switch
+            {
+                StateType.Information => "text-info-500",
+                StateType.Warning => "text-warning-500",
+                StateType.Success => "text-success-500",
+                StateType.Error => "text-danger-500",
+                StateType.Empty => "text-secondary-500",
+                StateType.Custom => IconColor,
+                _ => IconColor
+            };
+        }
+        
+        <i class="@icon @iconColor text-2xl"></i>
+
+        @if (!string.IsNullOrEmpty(Title))
+        {
+            <div class="text-lg font-semibold">
+                @Title
+            </div>
+        }
+
+        @if (!string.IsNullOrEmpty(Description))
+        {
+            <div class="text-base text-secondary-600">
+                @Description
+            </div>
+        }
+        
+        @if (ChildContent != null)
+        {
+            @ChildContent
+        }
+    </div>
+</div>
+
+@code
+{
+    [Parameter] public StateType Type { get; set; }
+    [Parameter] public string? Icon { get; set; }
+    [Parameter] public string? IconColor { get; set; }
+    [Parameter] public string Title { get; set; }
+    [Parameter] public string Description { get; set; }
+    [Parameter] public RenderFragment? ChildContent { get; set; }
+}

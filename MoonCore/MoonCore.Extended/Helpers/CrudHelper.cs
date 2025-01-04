@@ -2,6 +2,7 @@
 using MoonCore.Exceptions;
 using MoonCore.Extended.Abstractions;
 using MoonCore.Extended.Configuration;
+using MoonCore.Extended.Extensions;
 using MoonCore.Extensions;
 using MoonCore.Helpers;
 using MoonCore.Models;
@@ -22,14 +23,12 @@ public class CrudHelper<T, TResult> where T : class
         ServiceProvider = serviceProvider;
     }
 
-    public Task<IPagedData<TResult>> Get(int page, int pageSize)
+    public async Task<IPagedData<TResult>> Get(int page, int pageSize)
     {
         var configuration = GetConfig();
 
         if (pageSize > configuration.MaxItemLimit)
             throw new HttpApiException("The requested page size is too large", 400);
-
-        var totalItems = Repository.Get().Count();
 
         var items = Repository
             .Get() as IQueryable<T>;
@@ -37,22 +36,7 @@ public class CrudHelper<T, TResult> where T : class
         if (QueryModifier != null)
             items = QueryModifier.Invoke(items);
 
-        var loadedItems = items
-            .Skip(page * pageSize)
-            .Take(pageSize).ToArray();
-
-        var castedItems = loadedItems
-            .Select(MapToResult)
-            .ToArray();
-
-        return Task.FromResult<IPagedData<TResult>>(new PagedData<TResult>()
-        {
-            Items = castedItems,
-            CurrentPage = page,
-            PageSize = pageSize,
-            TotalItems = totalItems,
-            TotalPages = pageSize == 0 ? 0 : totalItems / pageSize
-        });
+        return await items.ToPagedDataMapped<T, TResult>(page, pageSize);
     }
 
     public async Task<TResult> GetSingle(int id)
@@ -68,7 +52,7 @@ public class CrudHelper<T, TResult> where T : class
     {
         var query = Repository
             .Get();
-
+        
         T? item;
 
         if (QueryModifier == null)
@@ -82,15 +66,20 @@ public class CrudHelper<T, TResult> where T : class
         return Task.FromResult(item);
     }
 
-    public Task<TResult> Create(object data)
+    public async Task<TResult> Create(object data)
     {
         var item = Mapper.Map<T>(data);
 
-        var finalItem = Repository.Add(item);
+        return await CreateModel(item);
+    }
+
+    public async Task<TResult> CreateModel(T model)
+    {
+        var finalItem = await Repository.Add(model);
 
         var castedItem = MapToResult(finalItem);
 
-        return Task.FromResult(castedItem);
+        return castedItem;
     }
 
     public async Task<TResult> Update(int id, object data)
@@ -100,22 +89,22 @@ public class CrudHelper<T, TResult> where T : class
         return await Update(item, data);
     }
     
-    public Task<TResult> Update(T item, object data)
+    public async Task<TResult> Update(T item, object data)
     {
         item = Mapper.Map(item, data, ignoreNullValues: true);
         
-        Repository.Update(item);
+        await Repository.Update(item);
 
         var castedItem = MapToResult(item);
 
-        return Task.FromResult(castedItem);
+        return castedItem;
     }
 
     public async Task Delete(int id)
     {
         var item = await GetSingleModel(id);
         
-        Repository.Delete(item);
+        await Repository.Remove(item);
     }
 
     public TResult MapToResult(T item)
