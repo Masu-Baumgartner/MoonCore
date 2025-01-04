@@ -1,41 +1,16 @@
-@using System.Diagnostics
+@using Microsoft.Extensions.Logging
 @using MoonCore.Blazor.Tailwind.Exceptions
 @using MoonCore.Exceptions
+@using MoonCore.Blazor.Tailwind.States
 
 @inherits ErrorBoundaryBase
 
 @inject NavigationManager Navigation
+@inject ILogger<ErrorHandler> Logger
 
 @if (Exception != null)
 {
-    var uri = new Uri(Navigation.Uri);
-    var path = uri.LocalPath;
-
-    <div class="mt-10 mx-5 flex justify-center items-center">
-        <div class="card lg:max-w-5xl">
-            <div class="card-header">
-                <span class="card-title">A crash occured in this view</span>
-            </div>
-            <div class="card-body">
-                An unhandled exception has been thrown in this view. This may indicate a bug in the application.<br/>
-                <br/>
-                <b>Path:</b><br/>
-                <div class="bg-gray-950 font-scp text-white p-5 rounded-lg">
-                    @path
-                </div>
-                <br/>
-                <b>Stacktrace:</b><br/>
-                <div class="bg-gray-950 font-scp text-white p-5 rounded-lg overflow-x-scroll">
-                    @Exception.ToStringDemystified()
-                </div>
-            </div>
-            <div class="card-footer">
-                <div class="flex justify-center">
-                    <button @onclick="RecoverCrash" class="btn btn-primary">Recover crash</button>
-                </div>
-            </div>
-        </div>
-    </div>
+    <ErrorStateDisplay Exception="Exception" />
 }
 else if (MissingPermissionName != null)
 {
@@ -166,6 +141,8 @@ else
         else
         {
             Exception = exception;
+            
+            Logger.LogError("An unhandled error has been captured: {e}", exception);
         }
 
         // Save exception after handling as last error
@@ -177,7 +154,9 @@ else
         // Note:
         // This fixes a weird behavior when a error in a component render call happens, e.g. missing parameter
         // Without this, it would not show the error, just nothing
-        Task.Run(async () => { await InvokeAsync(StateHasChanged); });
+        
+        // Disabled for testing
+        //Task.Run(async () => { await InvokeAsync(StateHasChanged); });
     }
 
     private void AddMessage(string message)
