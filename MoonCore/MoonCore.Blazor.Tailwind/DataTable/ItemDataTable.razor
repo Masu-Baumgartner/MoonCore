@@ -39,7 +39,7 @@
         <table class="table-auto w-full text-gray-300">
             @if (IsLoading)
             {
-                <thead class="text-xs uppercase text-gray-500 bg-gray-700 bg-opacity-50">
+                <thead class="text-xs uppercase text-gray-500 bg-gray-700/50">
                 <tr>
                     <th scope="col" class="p-2 font-semibold">
                         <div class="flex items-center justify-center">Loading</div>
@@ -58,7 +58,7 @@
             } @* TODO: Error handling (maybe) here *@
             else if (PagedData.TotalItems == 0)
             {
-                <thead class="text-xs uppercase text-gray-500 bg-gray-700 bg-opacity-50">
+                <thead class="text-xs uppercase text-gray-500 bg-gray-700/50">
                 <tr>
                     <th scope="col" class="p-2 font-semibold">
                         <div class="flex items-center justify-center">No items found</div>
@@ -85,7 +85,7 @@
             }
             else
             {
-                <thead class="text-xs uppercase text-gray-500 bg-gray-700 bg-opacity-50">
+                <thead class="text-xs uppercase text-gray-500 bg-gray-700/50">
                 <tr>
                     @foreach (var column in Columns)
                     {
