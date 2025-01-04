@@ -1,4 +1,5 @@
-﻿using Microsoft.Extensions.DependencyInjection;
+﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.DependencyInjection;
 using MoonCore.Exceptions;
 using MoonCore.Extended.Abstractions;
 using MoonCore.Extended.Configuration;
@@ -30,13 +31,42 @@ public class CrudHelper<T, TResult> where T : class
         if (pageSize > configuration.MaxItemLimit)
             throw new HttpApiException("The requested page size is too large", 400);
 
-        var items = Repository
+        var query = Repository
             .Get() as IQueryable<T>;
 
         if (QueryModifier != null)
-            items = QueryModifier.Invoke(items);
+            query = QueryModifier.Invoke(query);
 
-        return await items.ToPagedDataMapped<T, TResult>(page, pageSize);
+        if(LateMapper == null) // No late mapper?, then lets take the easy route and auto map it
+            return await query.ToPagedDataMapped<T, TResult>(page, pageSize);
+        
+        // If we reach the code here, the late mapper is defined,
+        // so we are required to map and call the late mapper here
+        var count = await query.CountAsync();
+        
+        var items = await query
+            .Skip(page * pageSize)
+            .Take(pageSize)
+            .ToArrayAsync();
+
+        var castedItems = new List<TResult>();
+
+        foreach (var item in items)
+        {
+            var castedItem = Mapper.Map<TResult>(item);
+            castedItem = LateMapper.Invoke(item, castedItem);
+                
+            castedItems.Add(castedItem);
+        }
+        
+        return new PagedData<TResult>()
+        {
+            Items = castedItems.ToArray(),
+            CurrentPage = page,
+            PageSize = pageSize,
+            TotalItems = count,
+            TotalPages = pageSize == 0 ? 0 : count / pageSize
+        };
     }
 
     public async Task<TResult> GetSingle(int id)
