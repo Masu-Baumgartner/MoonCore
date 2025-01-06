@@ -15,7 +15,7 @@
         <PackageReadmeFile>README.md</PackageReadmeFile>
         <RepositoryType>git</RepositoryType>
         <PackageTags>mooncore</PackageTags>
-        <Version>1.2.4</Version>
+        <Version>1.2.6</Version>
         <IsPackable>true</IsPackable>
         <StaticWebAssetsEnabled>false</StaticWebAssetsEnabled>
     </PropertyGroup>
