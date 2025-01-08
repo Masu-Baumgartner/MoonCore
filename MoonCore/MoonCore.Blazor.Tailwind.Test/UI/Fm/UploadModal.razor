@@ -1,0 +1,80 @@
+@using MoonCore.Blazor.Tailwind.Modals.Components
+@using MoonCore.Blazor.Tailwind.Toasts
+
+@inherits BaseModal
+
+@inject ToastService ToastService
+
+@if (IsUploading)
+{
+    <div class="p-5 flex justify-center items-center">
+        <div class="relative size-52">
+            <svg class="size-full -rotate-90" viewBox="0 0 36 36" xmlns="http://www.w3.org/2000/svg">
+                <circle cx="18" cy="18" r="16" fill="none" class="stroke-current text-gray-900" stroke-width="2"></circle>
+                <circle cx="18" cy="18" r="16" fill="none" class="stroke-current text-primary-500"
+                        stroke-width="2" stroke-dasharray="100" stroke-dashoffset="@(100 - ProgressPercent)" stroke-linecap="round"></circle>
+            </svg>
+
+            <div class="absolute top-1/2 start-1/2 transform -translate-y-1/2 -translate-x-1/2">
+                <div class="text-center text-2xl font-bold text-white">@(ProgressPercent)%</div>
+                <div class="text-center text-sm text-gray-400">@(CurrentFileCount) / @(TotalFileCount)</div>
+                <div class="text-center text-sm text-gray-400">@(UploadSpeed) MB/s</div>
+            </div>
+        </div>
+    </div>
+}
+else
+{
+    <div class="flex items-center justify-center w-full">
+        <label for="dropzone-file" class="flex flex-col items-center justify-center w-full h-64 border-2 border-dashed rounded-lg cursor-pointer bg-gray-700 border-gray-600 hover:border-gray-500 hover:bg-gray-600">
+            <div class="flex flex-col items-center justify-center pt-5 pb-6">
+                <i class="text-gray-400 text-3xl icon-cloud-upload"></i>
+                <p class="mb-2 text-sm text-gray-400"><span class="font-semibold">Click to upload</span> or drag and drop</p>
+                <p class="text-xs text-gray-400">Maximum file size: 100MB, Folders supported via drag and drop</p>
+            </div>
+        </label>
+    </div>
+}
+
+@* The input is placed here so we can change the view without losing track of the element *@
+<InputFile OnChange="_ => StartUpload()" id="dropzone-file" class="hidden" />
+
+@code
+{
+    private bool IsUploading = false;
+    private int ProgressPercent = 0;
+    private int CurrentFileCount = 0;
+    private int TotalFileCount = 10324;
+    private int UploadSpeed = 0;
+
+    private async Task StartUpload()
+    {
+        IsUploading = true;
+        ProgressPercent = 0;
+        CurrentFileCount = 0;
+
+        await InvokeAsync(StateHasChanged);
+
+        var random = new Random();
+        
+        while (CurrentFileCount < TotalFileCount)
+        {
+            var filesUploaded = random.Next(100, 200);
+
+            // Ensure we dont overshoot
+            if (CurrentFileCount + filesUploaded > TotalFileCount)
+                filesUploaded = TotalFileCount - CurrentFileCount;
+
+            UploadSpeed = random.Next(5, 15);
+            CurrentFileCount += filesUploaded;
+
+            ProgressPercent = CurrentFileCount == 0 ? 0 : (int)Math.Round((float)CurrentFileCount / TotalFileCount * 100f);
+            await InvokeAsync(StateHasChanged);
+            
+            await Task.Delay(500);
+        }
+
+        await ToastService.Success($"Successfully uploaded {TotalFileCount} files");
+        await Hide();
+    }
+}

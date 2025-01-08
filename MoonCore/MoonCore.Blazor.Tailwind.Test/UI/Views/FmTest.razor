@@ -1,0 +1,14 @@
+@page "/fmtest"
+@using MoonCore.Blazor.Tailwind.Test.UI.Fm
+
+<FileManager FileSystemProvider="Provider" />
+
+@code
+{
+    private IFileSystemProvider Provider;
+
+    protected override void OnInitialized()
+    {
+        Provider = new HostFileSystemProvider("testFs");
+    }
+}
