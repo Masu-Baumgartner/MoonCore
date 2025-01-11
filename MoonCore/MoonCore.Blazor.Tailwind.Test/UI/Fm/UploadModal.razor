@@ -1,9 +1,11 @@
 @using MoonCore.Blazor.Tailwind.Modals.Components
 @using MoonCore.Blazor.Tailwind.Toasts
+@using MoonCore.Helpers
 
 @inherits BaseModal
 
 @inject ToastService ToastService
+@inject IJSRuntime JsRuntime
 
 @if (IsUploading)
 {
@@ -26,7 +28,7 @@
 else
 {
     <div class="flex items-center justify-center w-full">
-        <label for="dropzone-file" class="flex flex-col items-center justify-center w-full h-64 border-2 border-dashed rounded-lg cursor-pointer bg-gray-700 border-gray-600 hover:border-gray-500 hover:bg-gray-600">
+        <label id="dropzone" for="dropzone-file" class="flex flex-col items-center justify-center w-full h-64 border-2 border-dashed rounded-lg cursor-pointer bg-gray-700 border-gray-600 hover:border-gray-500 hover:bg-gray-600">
             <div class="flex flex-col items-center justify-center pt-5 pb-6">
                 <i class="text-gray-400 text-3xl icon-cloud-upload"></i>
                 <p class="mb-2 text-sm text-gray-400"><span class="font-semibold">Click to upload</span> or drag and drop</p>
@@ -37,7 +39,8 @@ else
 }
 
 @* The input is placed here so we can change the view without losing track of the element *@
-<InputFile OnChange="_ => StartUpload()" id="dropzone-file" class="hidden" />
+
+<InputFile OnChange="StartUpload" id="dropzone-file" class="hidden" />
 
 @code
 {
@@ -47,8 +50,69 @@ else
     private int TotalFileCount = 10324;
     private int UploadSpeed = 0;
 
-    private async Task StartUpload()
+    protected override async Task OnAfterRenderAsync(bool firstRender)
     {
+        if(!firstRender)
+            return;
+
+        await JsRuntime.InvokeVoidAsync("moonCoreFileManager.setup", "dropzone", DotNetObjectReference.Create(this));
+    }
+
+    #region Drag and drop callback
+
+    [JSInvokable]
+    public async Task UpdateState(int current, int total, bool showUpload)
+    {
+        CurrentFileCount = current;
+        TotalFileCount = total;
+
+        if (IsUploading && !showUpload) // Handles the end of the upload state
+        {
+            await ToastService.Success($"Successfully uploaded {TotalFileCount} files");
+            await Hide();
+        }
+        
+        IsUploading = showUpload;
+        
+        ProgressPercent = CurrentFileCount == 0 ? 0 : (int)Math.Round((float)CurrentFileCount / TotalFileCount * 100f);
+
+        await InvokeAsync(StateHasChanged);
+    }
+
+    [JSInvokable]
+    public async Task PushFile(string path, IJSStreamReference streamReference)
+    {
+        try
+        {
+            Console.WriteLine("Getting pushed: " + path);
+            Console.WriteLine("Stream length: " + streamReference.Length);
+
+            var dataStream = await streamReference.OpenReadStreamAsync(streamReference.Length); // Hndle empty files
+
+            var realPath = PathBuilder.File("uploads", path);
+            var directory = Path.GetDirectoryName(realPath);
+
+            Directory.CreateDirectory(directory!);
+
+            var fs = File.Create(realPath);
+            await dataStream.CopyToAsync(fs);
+            await fs.FlushAsync();
+            fs.Close();
+        }
+        catch (Exception e)
+        {
+            Console.WriteLine(e);
+            throw;
+        }
+    }
+
+    #endregion
+
+    private async Task StartUpload(InputFileChangeEventArgs args)
+    {
+        Console.WriteLine(args.File.Name);
+        
+        return;
         IsUploading = true;
         ProgressPercent = 0;
         CurrentFileCount = 0;

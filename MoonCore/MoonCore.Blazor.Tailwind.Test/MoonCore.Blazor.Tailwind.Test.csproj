@@ -12,7 +12,7 @@
 
     <ItemGroup>
         <Folder Include="Styles\mappings\" />
-        <Folder Include="wwwroot\"/>
+        <Folder Include="uploads\" />
     </ItemGroup>
 
     <ItemGroup>
