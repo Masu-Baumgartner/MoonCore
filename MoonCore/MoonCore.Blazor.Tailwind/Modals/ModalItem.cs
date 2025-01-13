@@ -6,4 +6,5 @@ public class ModalItem
 {
     public RenderFragment Component { get; set; }
     public string Size { get; set; }
+    public bool AllowUnfocusHide { get; set; }
 }

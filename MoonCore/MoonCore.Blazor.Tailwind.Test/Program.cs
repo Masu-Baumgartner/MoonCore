@@ -3,6 +3,7 @@ using MoonCore.Blazor.Tailwind.Forms;
 using MoonCore.Blazor.Tailwind.Forms.Components;
 using MoonCore.Blazor.Tailwind.Test.UI;
 using MoonCore.Extensions;
+using MoonCore.Helpers;
 
 FormComponentRepository.Set<int, IntComponent>();
 FormComponentRepository.Set<string, StringComponent>();
@@ -15,6 +16,10 @@ builder.Services.AddRazorComponents()
     .AddInteractiveServerComponents(options =>
     {
         options.DetailedErrors = true;
+    })
+    .AddHubOptions(options =>
+    {
+        options.MaximumReceiveMessageSize = ByteConverter.FromMegaBytes(100).Bytes;
     });
 
 builder.Logging.ClearProviders();

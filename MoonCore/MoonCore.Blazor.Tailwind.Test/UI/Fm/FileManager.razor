@@ -1,6 +1,8 @@
 @using MoonCore.Blazor.Tailwind.Modals
+@using MoonCore.Helpers
 
 @inject ModalService ModalService
+@inject ILogger<FileManager> Logger
 
 <div class="bg-gray-800 rounded-lg py-1">
     <div class="flex justify-between items-center px-3 py-2">
@@ -24,7 +26,7 @@
     </div>
 </div>
 
-<div class="bg-gray-800 rounded-lg py-1 mt-5">
+<div class="bg-gray-800 rounded-lg py-1 mt-5" @ondragenter="HandleDrag">
     <div class="flex justify-between items-center px-4 py-2">
         <div>
             <nav class="flex" aria-label="Breadcrumb">
@@ -110,9 +112,31 @@
 @code
 {
     [Parameter] public IFileSystemProvider FileSystemProvider { get; set; }
+    
+    private DateTime LastDragEventHandledAt = DateTime.MinValue;
 
     private async Task LaunchUploadModal()
     {
-        await ModalService.Launch<UploadModal>(size: "max-w-xl");
+        Logger.LogInformation("Launching modal");
+        
+        await ModalService.Launch<UploadModal>(size: "max-w-xl", allowUnfocusHide: true, onConfigure: parameters =>
+        {
+            parameters.Add("OnUpload", Task (string path, Stream dataStream) =>
+            {
+                Logger.LogInformation("Uploading file: {path} ({size})", path, Formatter.FormatSize(dataStream.Length));
+                return Task.CompletedTask;
+            });
+        });
+    }
+
+    private async Task HandleDrag()
+    {
+        // Debounce time of one second
+        if((DateTime.UtcNow - LastDragEventHandledAt).TotalSeconds < 1)
+            return;
+        
+        LastDragEventHandledAt = DateTime.UtcNow;
+
+        await LaunchUploadModal();
     }
 }

@@ -1,4 +1,44 @@
 window.moonCoreFileManager = {
+    uploadCache: [],
+    readCache: async function (index) {
+        const item = this.uploadCache.at(index);
+        const streamRef = await this.createStreamRef(item);
+        
+        return {
+            path: item.fullPath,
+            streamRef: streamRef
+        };
+    },
+    createStreamRef: async function (fileEntry)
+    {
+        const promise = new Promise(resolve => {
+            fileEntry.file(file => {
+                resolve(file);
+            }, err => console.log(err));
+        });
+
+        const processedFile = await promise;
+
+        // Prevent uploads of empty files
+        if (processedFile.size <= 0) {
+            console.log("Skipping upload of '" + fileEntry.fullPath + "' as its empty");
+            return null;
+        }
+
+        const fileReader = new FileReader();
+
+        const readerPromise = new Promise(resolve => {
+            fileReader.addEventListener("loadend", ev => {
+                resolve(fileReader.result)
+            });
+        });
+
+        fileReader.readAsArrayBuffer(processedFile);
+
+        const arrayBuffer = await readerPromise;
+
+        return DotNet.createJSStreamReference(arrayBuffer);
+    },
     setup: function (id, callbackRef) {
         // Check which features are supported by the browser
         const supportsFileSystemAccessAPI =
@@ -25,46 +65,8 @@ window.moonCoreFileManager = {
                 return;
             }
 
-            const files = [];
-            
-            async function getDirectoryContents(entry) {
-                const result = [];
-
-                let reader = entry.createReader();
-                
-                // Resolved when the entire directory is traversed
-                await new Promise((resolve_directory) => {
-                    var iteration_attempts = [];
-                    (function read_entries() {
-                        // According to the FileSystem API spec, readEntries() must be called until
-                        // it calls the callback with an empty array.  Seriously??
-                        reader.readEntries((entries) => {
-                            if (!entries.length) {
-                                // Done iterating this particular directory
-                                resolve_directory(Promise.all(iteration_attempts));
-                            } else {
-                                // Add a list of promises for each directory entry.  If the entry is itself 
-                                // a directory, then that promise won't resolve until it is fully traversed.
-                                iteration_attempts.push(Promise.all(entries.map(async (entry) => {
-                                    if (entry.isFile) {
-                                        console.log();
-                                        
-                                        result.push(entry);
-                                        return entry;
-                                    } else {
-                                        // DO SOMETHING WITH DIRECTORIES
-                                        return await getDirectoryContents(entry);
-                                    }
-                                })));
-                                // Try calling readEntries() again for the same dir, according to spec
-                                read_entries();
-                            }
-                        }, err => console.log(err));
-                    })();
-                });
-                
-                return result;
-            }
+            // Store are loaded entries here
+            const contentEntries = [];
 
             for (let i = 0; i < e.dataTransfer.items.length; i++) {
                 const fileItem = e.dataTransfer.items[i];
@@ -72,45 +74,57 @@ window.moonCoreFileManager = {
                 const webkitEntry = fileItem.webkitGetAsEntry();
 
                 if (webkitEntry.isFile)
-                    files.push(webkitEntry);
+                    contentEntries.push(webkitEntry);
                 else if (webkitEntry.isDirectory) {
-                    const entries = await getDirectoryContents(webkitEntry);
+                    const entries = await this.traverseDirectory(webkitEntry);
 
                     for (const directoryEntry of entries) {
-                        files.push(directoryEntry)
+                        contentEntries.push(directoryEntry)
                     }
                 }
             }
 
-            await callbackRef.invokeMethodAsync("UpdateState", 0, files.length, true);
-
-            for (let i = 0; i < files.length; i++) {
-                const promise = new Promise(resolve => {
-                    files[i].file(file => {
-                        resolve(file);
-                    }, err => console.log(err));
-                });
-
-                const processedFile = await promise;
-
-                const fileReader = new FileReader();
-
-                const readerPromise = new Promise(resolve => {
-                    fileReader.addEventListener("loadend", ev => {
-                        resolve(fileReader.result)
-                    });
-                });
-
-                fileReader.readAsArrayBuffer(processedFile);
-
-                const arrayBuffer = await readerPromise;
-                const interopStream = DotNet.createJSStreamReference(arrayBuffer);
-
-                await callbackRef.invokeMethodAsync("UpdateState", i + 1, files.length, true);
-                await callbackRef.invokeMethodAsync("PushFile", files[i].fullPath, interopStream);
-            }
-
-            await callbackRef.invokeMethodAsync("UpdateState", files.length, files.length, false);
+            this.uploadCache = contentEntries;
+            await callbackRef.invokeMethodAsync("OnFilesDropped", this.uploadCache.length);
         });
+    },
+    traverseDirectory: async function (directoryEntry) {
+        let files = [];
+
+        // Function to handle reading the directory entries
+        async function readDirectory(entry) {
+            const reader = entry.createReader();
+
+            // Function to read entries in batches
+            const readEntriesBatch = () => {
+                return new Promise((resolve, reject) => {
+                    reader.readEntries((entries) => {
+                        if (entries.length === 0) {
+                            resolve([]);
+                        } else {
+                            resolve(entries);
+                        }
+                    }, reject);
+                });
+            };
+
+            let entries;
+            do {
+                entries = await readEntriesBatch();
+                for (const entry of entries) {
+                    if (entry.isFile) {
+                        files.push(entry); // Add file entry to the list
+                    } else if (entry.isDirectory) {
+                        // Recursively traverse sub-directories
+                        await readDirectory(entry);
+                    }
+                }
+            } while (entries.length > 0);  // Repeat until no more entries are left
+        }
+
+        // Start reading from the given directory
+        await readDirectory(directoryEntry);
+
+        return files;
     }
 }
