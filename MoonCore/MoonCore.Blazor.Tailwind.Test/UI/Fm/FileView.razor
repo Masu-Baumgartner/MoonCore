@@ -1,5 +1,6 @@
 @using MoonCore.Helpers
 @using MoonCore.Blazor.Tailwind.States
+@using MoonCore.Blazor.Tailwind.Components
 
 @inject ILogger<FileView> Logger
 
@@ -75,7 +76,7 @@
                         var entry = Entries[i];
 
                         @* Only append to all elements exept the last one *@
-                        <tr class="@(i != Entries.Length - 1 ? "border-b border-gray-700" : "")">
+                        <tr @oncontextmenu="e => ContextMenu.Show(e)" @oncontextmenu:preventDefault class="@(i != Entries.Length - 1 ? "border-b border-gray-700" : "")">
                             <td class="ps-4">
                                 <div class="flex justify-center">
                                     <input type="checkbox" class="form-checkbox">
@@ -103,7 +104,7 @@
                                 @Formatter.FormatDate(entry.CreatedAt)
                             </td>
                             <td class="px-3">
-                                <a href="#" class="flex justify-end">
+                                <a href="#" @onclick="e => ContextMenu.Show(e)" @onclick:preventDefault class="flex justify-end">
                                     <i class="icon-ellipsis text-xl text-white"></i>
                                 </a>
                             </td>
@@ -127,6 +128,12 @@
     </table>
 </div>
 
+<ContextMenu @ref="ContextMenu">
+    <a href="#" @onclick:preventDefault @onmousedown:preventDefault @onmousedown:stopPropagation class="block px-4 py-2 text-sm" role="menuitem" tabindex="-1" id="menu-item-0">Account settings</a>
+    <a href="#" @onclick:preventDefault @onmousedown:preventDefault @onmousedown:stopPropagation class="block px-4 py-2 text-sm" role="menuitem" tabindex="-1" id="menu-item-1">Support</a>
+    <a href="#" @onclick:preventDefault @onmousedown:preventDefault @onmousedown:stopPropagation class="block px-4 py-2 text-sm" role="menuitem" tabindex="-1" id="menu-item-2">License</a>
+</ContextMenu>
+
 @code
 {
     [Parameter] public RenderFragment<FileSystemEntry>? Template { get; set; }
@@ -139,6 +146,9 @@
     
     private bool IsLoading = true;
     private Exception? LoadingException;
+    
+    // Context Menu
+    private ContextMenu ContextMenu;
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
@@ -180,6 +190,8 @@
             await OnNavigated.Invoke(CurrentPath);
     }
 
+    #region Navigation
+
     public async Task GoUp()
     {
         if (CurrentPath == "/")
@@ -205,4 +217,6 @@
     {
         CurrentPath = Path.GetFullPath(Path.Join(CurrentPath, diff), "/");
     }
+
+    #endregion
 }

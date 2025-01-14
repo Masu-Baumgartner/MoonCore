@@ -1,0 +1,50 @@
+@if (IsVisible)
+{
+    <div @ref="Reference" @onfocusout="OnFocusOut" style="top: @($"{Y}px"); left: @($"{X}px")" class="absolute z-10 mt-2 w-56 rounded-md bg-gray-900 text-white shadow-lg focus:outline-none" role="menu" aria-orientation="vertical" aria-labelledby="menu-button" tabindex="-1">
+        <div class="py-1" role="none">
+            @ChildContent
+        </div>
+    </div>
+}
+
+@code
+{
+    [Parameter] public RenderFragment ChildContent { get; set; }
+
+    private double X;
+    private double Y;
+    private bool IsVisible;
+    private ElementReference Reference;
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if(!IsVisible)
+            return;
+
+        await Reference.FocusAsync();
+    }
+
+    public async Task Show(double x, double y)
+    {
+        IsVisible = true;
+        X = x;
+        Y = y;
+
+        await InvokeAsync(StateHasChanged);
+    }
+
+    public Task Show(MouseEventArgs eventArgs)
+     => Show(eventArgs.ClientX, eventArgs.ClientY);
+
+    public async Task Hide()
+    {
+        IsVisible = false;
+        await InvokeAsync(StateHasChanged);
+    }
+
+    private async Task OnFocusOut()
+    {
+        await Task.Delay(200);
+        await Hide();
+    }
+}
