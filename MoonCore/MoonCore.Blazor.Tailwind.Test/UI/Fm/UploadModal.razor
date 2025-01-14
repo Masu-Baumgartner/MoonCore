@@ -14,9 +14,11 @@
     <div class="p-5 flex justify-center items-center">
         <div class="relative size-52">
             <svg class="size-full -rotate-90" viewBox="0 0 36 36" xmlns="http://www.w3.org/2000/svg">
-                <circle cx="18" cy="18" r="16" fill="none" class="stroke-current text-gray-900" stroke-width="2"></circle>
+                <circle cx="18" cy="18" r="16" fill="none" class="stroke-current text-gray-900"
+                        stroke-width="2"></circle>
                 <circle cx="18" cy="18" r="16" fill="none" class="stroke-current text-primary-500"
-                        stroke-width="2" stroke-dasharray="100" stroke-dashoffset="@(100 - ProgressPercent)" stroke-linecap="round"></circle>
+                        stroke-width="2" stroke-dasharray="100" stroke-dashoffset="@(100 - ProgressPercent)"
+                        stroke-linecap="round"></circle>
             </svg>
 
             <div class="absolute top-1/2 start-1/2 transform -translate-y-1/2 -translate-x-1/2">
@@ -29,10 +31,12 @@
 else
 {
     <div id="dropzone" class="flex items-center justify-center w-full">
-        <label for="file-select" class="flex flex-col items-center justify-center w-full h-64 border-2 border-dashed rounded-lg cursor-pointer bg-gray-700 border-gray-600 hover:border-gray-500 hover:bg-gray-600">
+        <label for="file-select"
+               class="flex flex-col items-center justify-center w-full h-64 border-2 border-dashed rounded-lg cursor-pointer bg-gray-700 border-gray-600 hover:border-gray-500 hover:bg-gray-600">
             <div class="flex flex-col items-center justify-center pt-5 pb-6">
                 <i class="text-gray-400 text-3xl icon-cloud-upload"></i>
-                <p class="mb-2 text-sm text-gray-400"><span class="font-semibold">Click to upload</span> or drag and drop</p>
+                <p class="mb-2 text-sm text-gray-400"><span class="font-semibold">Click to upload</span> or drag and
+                    drop</p>
                 <p class="text-xs text-gray-400">Folders supported via drag and drop</p>
             </div>
         </label>
@@ -40,13 +44,14 @@ else
 }
 
 @* The input is placed here so we can change the view without losing track of the element *@
-<InputFile OnChange="StartUpload" id="file-select" class="hidden" multiple="" />
+<InputFile OnChange="StartUpload" id="file-select" class="hidden" multiple=""/>
 
 @code
 {
     [Parameter] public Func<string, Stream, Task> OnUpload { get; set; }
+    [Parameter] public Func<Task>? OnUploadCompleted { get; set; }
     [Parameter] public long MaxUploadSize { get; set; } = ByteConverter.FromMegaBytes(100).Bytes;
-    
+
     private bool IsUploading = false;
     private int ProgressPercent = 0;
     private int CurrentFileCount = 0;
@@ -54,7 +59,7 @@ else
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
-        if(!firstRender)
+        if (!firstRender)
             return;
 
         await JsRuntime.InvokeVoidAsync("moonCoreFileManager.setup", "dropzone", DotNetObjectReference.Create(this));
@@ -71,58 +76,40 @@ else
         TotalFileCount = amount;
         IsUploading = true;
         await InvokeAsync(StateHasChanged);
-        
+
         for (var i = 0; i < TotalFileCount; i++)
         {
             // Read from client cache
             var data = await JsRuntime.InvokeAsync<TransferData>("moonCoreFileManager.readCache", i);
-            
-            if(data.StreamRef == null) //TODO: Handling
-                continue;
-            
-            // Read data stream
 
-            Stream dataStream;
-            
-            try
-            {
-                dataStream = await data.StreamRef.OpenReadStreamAsync(MaxUploadSize);
-            }
-            catch (ArgumentOutOfRangeException)
-            {
-                await ToastService.Danger($"Unable to upload file {data.Path}: The provided file is too big");
+            if (data.StreamRef == null) //TODO: Handling
                 continue;
-            }
-            catch (Exception e)
-            {
-                await ToastService.Danger($"Unable to upload file {data.Path}: An unknown error occured");
-                Logger.LogError("Unable to upload receive file '{path}': {e}", data.Path, e);
-                
-                continue;
-            }
 
-            // Callback upload function
-            await OnUpload.Invoke(data.Path, dataStream);
-            
-            // Close the stream again
-            dataStream.Close();
-            
+            // Handle upload
+            await HandleUpload(
+                data.Path,
+                async () => await data.StreamRef.OpenReadStreamAsync(MaxUploadSize)
+            );
+
             // Update UI
             CurrentFileCount++;
             ProgressPercent = CurrentFileCount == 0 ? 0 : (int)Math.Round((float)CurrentFileCount / TotalFileCount * 100f);
             await InvokeAsync(StateHasChanged);
         }
-        
+
         await ToastService.Success($"Successfully uploaded {TotalFileCount} file(s)");
         await Hide();
+
+        if (OnUploadCompleted != null)
+            await OnUploadCompleted.Invoke();
     }
-    
+
     #endregion
 
     private async Task StartUpload(InputFileChangeEventArgs args)
     {
         IBrowserFile[] files;
-        
+
         // Process event data
         switch (args.FileCount)
         {
@@ -135,7 +122,7 @@ else
                 files = args.GetMultipleFiles().ToArray();
                 break;
         }
-        
+
         // Set ui state
         IsUploading = true;
         CurrentFileCount = 0;
@@ -145,8 +132,12 @@ else
 
         foreach (var file in files)
         {
-            var dataStream = file.OpenReadStream(MaxUploadSize);
-            await OnUpload.Invoke(file.Name, dataStream);
+            // Handle upload
+            await HandleUpload("/" + file.Name, () =>
+            {
+                var stream = file.OpenReadStream(MaxUploadSize);
+                return Task.FromResult(stream);
+            });
 
             CurrentFileCount++;
             ProgressPercent = CurrentFileCount == 0 ? 0 : (int)Math.Round((float)CurrentFileCount / TotalFileCount * 100f);
@@ -155,14 +146,40 @@ else
 
         await ToastService.Success($"Successfully uploaded {TotalFileCount} file(s)");
         await Hide();
+
+        if (OnUploadCompleted != null)
+            await OnUploadCompleted.Invoke();
     }
-    
+
+    private async Task HandleUpload(string path, Func<Task<Stream>> streamCallback)
+    {
+        Stream? stream = null;
+        
+        try
+        {
+            stream = await streamCallback.Invoke();
+            
+            await OnUpload.Invoke(path, stream);
+        }
+        catch (ArgumentOutOfRangeException)
+        {
+            await ToastService.Danger($"Unable to upload file {path}: The provided file is too big");
+        }
+        catch (Exception e)
+        {
+            await ToastService.Danger($"Unable to upload file {path}: An unknown error occured");
+            Logger.LogError("Unable to upload receive file '{path}': {e}", path, e);
+        }
+        finally
+        {
+            stream?.Close();
+        }
+    }
+
     struct TransferData
     {
-        [JsonPropertyName("path")]
-        public string Path { get; set; }
-        
-        [JsonPropertyName("streamRef")]
-        public IJSStreamReference? StreamRef { get; set; }
+        [JsonPropertyName("path")] public string Path { get; set; }
+
+        [JsonPropertyName("streamRef")] public IJSStreamReference? StreamRef { get; set; }
     }
 }

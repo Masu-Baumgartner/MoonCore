@@ -1,0 +1,208 @@
+@using MoonCore.Helpers
+@using MoonCore.Blazor.Tailwind.States
+
+@inject ILogger<FileView> Logger
+
+<div class="relative overflow-x-auto">
+    <table class="w-full text-sm text-left text-gray-400">
+        <thead class="text-xs uppercase bg-gray-700/50 text-gray-400">
+        <tr>
+            <th scope="col" class="w-8 ps-4">
+                <div class="flex justify-center">
+                    <input type="checkbox" class="form-checkbox">
+                </div>
+            </th>
+            <th scope="col" class="w-12 px-2"></th>
+            <th scope="col" class="px-6 py-2">
+                Name
+            </th>
+            <th scope="col" class="px-6 py-2">
+                Size
+            </th>
+            <th scope="col" class="px-6 py-2 hidden md:table-cell">
+                Created at
+            </th>
+            <th class="px-3">
+            </th>
+        </tr>
+        </thead>
+        <tbody>
+
+        @if (IsLoading)
+        {
+            <tr>
+                <td colspan="6">
+                    <div class="w-full flex justify-center items-center p-5">
+                        <div role="status">
+                            <svg aria-hidden="true"
+                                 class="inline w-10 h-10 animate-spin text-slate-600 fill-primary-600"
+                                 viewBox="0 0 100 101" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                <path
+                                    d="M100 50.5908C100 78.2051 77.6142 100.591 50 100.591C22.3858 100.591 0 78.2051 0 50.5908C0 22.9766 22.3858 0.59082 50 0.59082C77.6142 0.59082 100 22.9766 100 50.5908ZM9.08144 50.5908C9.08144 73.1895 27.4013 91.5094 50 91.5094C72.5987 91.5094 90.9186 73.1895 90.9186 50.5908C90.9186 27.9921 72.5987 9.67226 50 9.67226C27.4013 9.67226 9.08144 27.9921 9.08144 50.5908Z"
+                                    fill="currentColor"/>
+                                <path
+                                    d="M93.9676 39.0409C96.393 38.4038 97.8624 35.9116 97.0079 33.5539C95.2932 28.8227 92.871 24.3692 89.8167 20.348C85.8452 15.1192 80.8826 10.7238 75.2124 7.41289C69.5422 4.10194 63.2754 1.94025 56.7698 1.05124C51.7666 0.367541 46.6976 0.446843 41.7345 1.27873C39.2613 1.69328 37.813 4.19778 38.4501 6.62326C39.0873 9.04874 41.5694 10.4717 44.0505 10.1071C47.8511 9.54855 51.7191 9.52689 55.5402 10.0491C60.8642 10.7766 65.9928 12.5457 70.6331 15.2552C75.2735 17.9648 79.3347 21.5619 82.5849 25.841C84.9175 28.9121 86.7997 32.2913 88.1811 35.8758C89.083 38.2158 91.5421 39.6781 93.9676 39.0409Z"
+                                    fill="currentFill"/>
+                            </svg>
+                            <span class="sr-only">Loading...</span>
+                        </div>
+                    </div>
+                </td>
+            </tr>
+        }
+        else
+        {
+            if (LoadingException == null)
+            {
+                if (Entries.Length == 0)
+                {
+                    <tr>
+                        <td colspan="6">
+                            <div class="p-5">
+                                <StateDisplay Title="No files found"
+                                              Description="Upload files by drag and drop or clicking on the upload button"
+                                              Icon="icon-folder-open"
+                                              IconColor="text-primary-500"
+                                              Type="StateType.Custom"/>
+                            </div>
+                        </td>
+                    </tr>
+                }
+                else
+                {
+                    for (var i = 0; i < Entries.Length; i++)
+                    {
+                        var entry = Entries[i];
+
+                        @* Only append to all elements exept the last one *@
+                        <tr class="@(i != Entries.Length - 1 ? "border-b border-gray-700" : "")">
+                            <td class="ps-4">
+                                <div class="flex justify-center">
+                                    <input type="checkbox" class="form-checkbox">
+                                </div>
+                            </td>
+                            <td>
+                                <div class="flex justify-center">
+                                    @if (entry.IsFile)
+                                    {
+                                        <i class="icon-file-text text-2xl text-amber-500"></i>
+                                    }
+                                    else
+                                    {
+                                        <i class="icon-folder text-2xl text-primary-500"></i>
+                                    }
+                                </div>
+                            </td>
+                            <td class="px-6 py-4">
+                                <a href="#" @onclick="() => GoIn(entry.Name)" @onclick:preventDefault>@entry.Name</a>
+                            </td>
+                            <td class="px-6 py-4">
+                                @Formatter.FormatSize(entry.Size)
+                            </td>
+                            <td class="px-6 py-4 hidden md:table-cell">
+                                @Formatter.FormatDate(entry.CreatedAt)
+                            </td>
+                            <td class="px-3">
+                                <a href="#" class="flex justify-end">
+                                    <i class="icon-ellipsis text-xl text-white"></i>
+                                </a>
+                            </td>
+                        </tr>
+                    }
+                }
+            }
+            else
+            {
+                <tr>
+                    <td colspan="6">
+                        <div class="p-5">
+                            <ErrorStateDisplay Exception="LoadingException"/>
+                        </div>
+                    </td>
+                </tr>
+            }
+        }
+
+        </tbody>
+    </table>
+</div>
+
+@code
+{
+    [Parameter] public RenderFragment<FileSystemEntry>? Template { get; set; }
+    [Parameter] public IFileSystemProvider FileSystemProvider { get; set; }
+    [Parameter] public string InitialPath { get; set; }
+    [Parameter] public Func<string, Task>? OnNavigated { get; set; }
+
+    public FileSystemEntry[] Entries { get; private set; }
+    public string CurrentPath { get; private set; } = "";
+    
+    private bool IsLoading = true;
+    private Exception? LoadingException;
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (!firstRender)
+            return;
+
+        await Refresh();
+    }
+
+    public async Task Refresh()
+    {
+        IsLoading = true;
+        LoadingException = null;
+        await InvokeAsync(StateHasChanged);
+
+        try
+        {
+            var entries = await FileSystemProvider
+                .List(CurrentPath);
+            
+            // Ordering
+            Entries = entries
+                .OrderBy(x => x.IsFile)
+                .ThenBy(x => x.Name)
+                .ToArray();
+        }
+        catch (Exception e)
+        {
+            Entries = [];
+            LoadingException = e;
+            
+            Logger.LogError("An error occured while loading entries for path '{path}': {e}", CurrentPath, e);
+        }
+
+        IsLoading = false;
+        await InvokeAsync(StateHasChanged);
+
+        if (OnNavigated != null)
+            await OnNavigated.Invoke(CurrentPath);
+    }
+
+    public async Task GoUp()
+    {
+        if (CurrentPath == "/")
+            return;
+
+        AppendedPath("..");
+        await Refresh();
+    }
+
+    public async Task GoTo(string newPath)
+    {
+        CurrentPath = newPath;
+        await Refresh();
+    }
+
+    public async Task GoIn(string item)
+    {
+        AppendedPath(item);
+        await Refresh();
+    }
+
+    private void AppendedPath(string diff)
+    {
+        CurrentPath = Path.GetFullPath(Path.Join(CurrentPath, diff), "/");
+    }
+}

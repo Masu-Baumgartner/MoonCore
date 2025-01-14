@@ -1,7 +1,9 @@
 @using MoonCore.Blazor.Tailwind.Modals
+@using MoonCore.Blazor.Tailwind.Toasts
 @using MoonCore.Helpers
 
 @inject ModalService ModalService
+@inject ToastService ToastService
 @inject ILogger<FileManager> Logger
 
 <div class="bg-gray-800 rounded-lg py-1">
@@ -13,12 +15,12 @@
                 Upload
             </button>
 
-            <button class="btn btn-primary">
+            <button @onclick="LaunchFileModal" class="btn btn-primary">
                 <i class="icon-file-plus me-2"></i>
                 New File
             </button>
 
-            <button class="btn btn-primary">
+            <button @onclick="LaunchFolderModal" class="btn btn-primary">
                 <i class="icon-folder-plus me-2"></i>
                 New Folder
             </button>
@@ -29,114 +31,163 @@
 <div class="bg-gray-800 rounded-lg py-1 mt-5" @ondragenter="HandleDrag">
     <div class="flex justify-between items-center px-4 py-2">
         <div>
-            <nav class="flex" aria-label="Breadcrumb">
+            <nav class="flex">
                 <ol class="inline-flex items-center space-x-0.5 md:space-x-2">
                     <li class="inline-flex items-center">
-                        <a href="#" class="inline-flex items-center text-sm font-medium text-gray-400 hover:text-white">
+                        <a href="#" @onclick="@(() => FileView!.GoTo("/"))" @onclick:preventDefault
+                           class="inline-flex items-center text-sm font-medium text-gray-400 hover:text-white">
                             <i class="icon-hard-drive text-lg me-2.5"></i>
                             Home
                         </a>
                     </li>
-                    <li>
-                        <div class="flex items-center">
-                            <i class="text-gray-400 mx-0.5 icon-chevron-right"></i>
-                            <a href="#" class="ms-1 text-sm font-medium md:ms-2 text-gray-400 hover:text-white">someFolder</a>
-                        </div>
-                    </li>
-                    <li aria-current="page">
-                        <div class="flex items-center">
-                            <i class="text-gray-400 mx-0.5 icon-chevron-right"></i>
-                            <span class="ms-1 text-sm font-medium text-gray-500 md:ms-2 dark:text-gray-400">someOtherFolder</span>
-                        </div>
-                    </li>
+
+                    @{
+                        var path = FileView?.CurrentPath ?? "/";
+                        var pathParts = path.Split("/");
+                    }
+
+                    @for (var i = 1; i < pathParts.Length; i++)
+                    {
+                        var pathName = pathParts[i];
+                        var currentPath = string.Join("/", pathParts.Take(i + 1));
+
+                        if (i == pathParts.Length - 1)
+                        {
+                            <li aria-current="page">
+                                <div class="flex items-center">
+                                    <i class="text-gray-400 mx-0.5 icon-chevron-right"></i>
+                                    <span class="ms-1 text-sm font-medium text-gray-500 md:ms-2 dark:text-gray-400">
+                                        @pathName
+                                    </span>
+                                </div>
+                            </li>
+                        }
+                        else
+                        {
+                            <li>
+                                <div class="flex items-center">
+                                    <i class="text-gray-400 mx-0.5 icon-chevron-right"></i>
+                                    <a href="#" @onclick="@(() => FileView!.GoTo(currentPath))" @onclick:preventDefault
+                                       class="ms-1 text-sm font-medium md:ms-2 text-gray-400 hover:text-white">
+                                        @pathName
+                                    </a>
+                                </div>
+                            </li>
+                        }
+                    }
                 </ol>
             </nav>
         </div>
     </div>
-    
-    <div class="relative overflow-x-auto">
-        <table class="w-full text-sm text-left text-gray-400">
-            <thead class="text-xs uppercase bg-gray-700/50 text-gray-400">
-            <tr>
-                <th scope="col" class="w-8 ps-4">
-                    <div class="flex justify-center">
-                        <input type="checkbox" class="form-checkbox">
-                    </div>
-                </th>
-                <th scope="col" class="w-12 px-2"></th>
-                <th scope="col" class="px-6 py-2">
-                    Name
-                </th>
-                <th scope="col" class="px-6 py-2">
-                    Size
-                </th>
-                <th scope="col" class="px-6 py-2 hidden md:table-cell">
-                    Created at
-                </th>
-                <th class="px-3">
-                </th>
-            </tr>
-            </thead>
-            <tbody>
-            <tr class="border-b border-gray-700">
-                <td class="ps-4">
-                    <div class="flex justify-center">
-                        <input type="checkbox" class="form-checkbox">
-                    </div>
-                </td>
-                <td>
-                    <div class="flex justify-center">
-                        <i class="icon-file-text text-2xl text-amber-500"></i>
-                    </div>
-                </td>
-                <td class="px-6 py-4">
-                    test.txt
-                </td>
-                <td class="px-6 py-4">
-                    1.5 MB
-                </td>
-                <td class="px-6 py-4 hidden md:table-cell">
-                    08.01.2025 20:32 Uhr
-                </td>
-                <td class="px-3">
-                    <a href="#" class="flex justify-end">
-                        <i class="icon-ellipsis text-xl text-white"></i>
-                    </a>
-                </td>
-            </tr>
-            </tbody>
-        </table>
-    </div>
+
+    <FileView @ref="FileView"
+              FileSystemProvider="FileSystemProvider"
+              OnNavigated="OnNavigated"/>
 </div>
 
 @code
 {
     [Parameter] public IFileSystemProvider FileSystemProvider { get; set; }
-    
+
+    private FileView? FileView;
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (!firstRender)
+            return;
+
+        await InvokeAsync(StateHasChanged);
+    }
+
+    private async Task OnNavigated(string newPath)
+        => await InvokeAsync(StateHasChanged);
+
+    #region Create File / Folder
+
+    private async Task LaunchFileModal()
+    {
+        await ModalService.Launch<CreateFileModal>(parameters =>
+        {
+            parameters.Add("OnSubmit", async (string fileName) =>
+            {
+                try
+                {
+                    await FileSystemProvider.Create(
+                        Path.Join(FileView!.CurrentPath, fileName),
+                        new MemoryStream([])
+                    );
+
+                    await ToastService.Success("Successfully created file");
+                    await FileView.Refresh();
+                }
+                catch (Exception e)
+                {
+                    Logger.LogError("Unable to create file '{fileName}': {e}", fileName, e);
+                    await ToastService.Danger($"Unable to create file: {fileName}");
+                }
+            });
+        });
+    }
+
+    private async Task LaunchFolderModal()
+    {
+        await ModalService.Launch<CreateFolderModal>(parameters =>
+        {
+            parameters.Add("OnSubmit", async (string folderName) =>
+            {
+                try
+                {
+                    await FileSystemProvider.CreateDirectory(
+                        Path.Join(FileView!.CurrentPath, folderName)
+                    );
+                    
+                    await ToastService.Success("Successfully created folder");
+                    await FileView.Refresh();
+                }
+                catch (Exception e)
+                {
+                    Logger.LogError("Unable to create folder '{folderName}': {e}", folderName, e);
+                    await ToastService.Danger($"Unable to create folder: {folderName}");
+                }
+            });
+        });
+    }
+
+    #endregion
+
+    #region Uploading
+
     private DateTime LastDragEventHandledAt = DateTime.MinValue;
 
     private async Task LaunchUploadModal()
     {
         Logger.LogInformation("Launching modal");
-        
+
         await ModalService.Launch<UploadModal>(size: "max-w-xl", allowUnfocusHide: true, onConfigure: parameters =>
         {
-            parameters.Add("OnUpload", Task (string path, Stream dataStream) =>
+            parameters.Add("OnUpload", async Task (string path, Stream dataStream) =>
             {
                 Logger.LogInformation("Uploading file: {path} ({size})", path, Formatter.FormatSize(dataStream.Length));
-                return Task.CompletedTask;
+
+                var pathToUpload = Path.Join(FileView!.CurrentPath, path);
+                await FileSystemProvider.Create(pathToUpload, dataStream);
             });
+
+            parameters.Add("OnUploadCompleted", async () => { await FileView!.Refresh(); });
         });
     }
 
     private async Task HandleDrag()
     {
         // Debounce time of one second
-        if((DateTime.UtcNow - LastDragEventHandledAt).TotalSeconds < 1)
+        if ((DateTime.UtcNow - LastDragEventHandledAt).TotalSeconds < 1)
             return;
-        
+
         LastDragEventHandledAt = DateTime.UtcNow;
 
         await LaunchUploadModal();
     }
+
+    #endregion
+
 }

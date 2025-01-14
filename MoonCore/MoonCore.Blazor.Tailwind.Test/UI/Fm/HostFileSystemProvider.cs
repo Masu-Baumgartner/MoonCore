@@ -50,9 +50,19 @@ public class HostFileSystemProvider : IFileSystemProvider
         return entries.ToArray();
     }
 
-    public Task Create(string path, Stream stream)
+    public async Task Create(string path, Stream stream)
     {
-        throw new NotImplementedException();
+        var baseDir = Path.GetDirectoryName(path);
+        
+        if(!string.IsNullOrEmpty(baseDir))
+            Directory.CreateDirectory(PathBuilder.Dir(BaseDirectory, baseDir));
+
+        await using var fs = File.Create(PathBuilder.File(BaseDirectory, path));
+        
+        await stream.CopyToAsync(fs);
+        
+        await fs.FlushAsync();
+        fs.Close();
     }
 
     public Task Move(string oldPath, string newPath)
@@ -67,6 +77,7 @@ public class HostFileSystemProvider : IFileSystemProvider
 
     public Task CreateDirectory(string path)
     {
-        throw new NotImplementedException();
+        Directory.CreateDirectory(PathBuilder.Dir(BaseDirectory, path));
+        return Task.CompletedTask;
     }
 }
