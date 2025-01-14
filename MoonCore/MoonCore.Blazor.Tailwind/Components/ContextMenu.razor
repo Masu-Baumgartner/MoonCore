@@ -1,6 +1,6 @@
 @if (IsVisible)
 {
-    <div @ref="Reference" @onfocusout="OnFocusOut" style="top: @($"{Y}px"); left: @($"{X}px")" class="absolute z-10 mt-2 w-56 rounded-md bg-gray-900 text-white shadow-lg focus:outline-none" role="menu" aria-orientation="vertical" aria-labelledby="menu-button" tabindex="-1">
+    <div @ref="Reference" @onfocusout="OnFocusOut" style="@($"top: {Y}px; left: {X}px")" class="fixed z-10 mt-2 w-40 rounded-md bg-gray-900 text-white shadow-lg focus:outline-none" role="menu" aria-orientation="vertical" aria-labelledby="menu-button" tabindex="-1">
         <div class="py-1" role="none">
             @ChildContent
         </div>
@@ -16,6 +16,8 @@
     private bool IsVisible;
     private ElementReference Reference;
 
+    private CancellationTokenSource? Cancellation;
+
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
         if(!IsVisible)
@@ -26,6 +28,11 @@
 
     public async Task Show(double x, double y)
     {
+        if (Cancellation != null && !Cancellation.IsCancellationRequested)
+            await Cancellation.CancelAsync();
+
+        Cancellation = new();
+        
         IsVisible = true;
         X = x;
         Y = y;
@@ -44,7 +51,13 @@
 
     private async Task OnFocusOut()
     {
-        await Task.Delay(200);
-        await Hide();
+        try
+        {
+            await Task.Delay(150, Cancellation?.Token ?? CancellationToken.None);
+            await Hide();
+        }
+        catch (TaskCanceledException)
+        {
+        }
     }
 }

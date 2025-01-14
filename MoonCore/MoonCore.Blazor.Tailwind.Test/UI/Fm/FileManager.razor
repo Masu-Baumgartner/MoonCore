@@ -82,7 +82,16 @@
 
     <FileView @ref="FileView"
               FileSystemProvider="FileSystemProvider"
-              OnNavigated="OnNavigated"/>
+              OnNavigated="OnNavigated">
+        <ContextMenuTemplate>
+            <a href="#" @onclick:preventDefault @onmousedown:preventDefault @onmousedown:stopPropagation class="block px-4 py-2 text-sm" role="menuitem" tabindex="-1" id="menu-item-0">Entry: @context.Name</a>
+            <a href="#" @onclick:preventDefault @onmousedown:preventDefault @onmousedown:stopPropagation class="flex px-4 py-2 items-center" role="menuitem" tabindex="-1" id="menu-item-1">
+                <i class="me-2 text-danger-500 icon-trash text-base"></i>
+                <span class="text-sm">Delete</span>
+            </a>
+            <a href="#" @onclick:preventDefault @onmousedown:preventDefault @onmousedown:stopPropagation class="block px-4 py-2 text-sm" role="menuitem" tabindex="-1" id="menu-item-2">License</a>
+        </ContextMenuTemplate>
+    </FileView>
 </div>
 
 @code
