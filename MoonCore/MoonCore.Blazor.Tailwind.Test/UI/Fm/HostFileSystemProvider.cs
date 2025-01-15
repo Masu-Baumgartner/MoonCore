@@ -80,4 +80,10 @@ public class HostFileSystemProvider : IFileSystemProvider
         Directory.CreateDirectory(PathBuilder.Dir(BaseDirectory, path));
         return Task.CompletedTask;
     }
+
+    public async Task<Stream> Read(string path)
+    {
+        var fs = File.Open(PathBuilder.File(BaseDirectory, path), FileMode.Open, FileAccess.Read, FileShare.ReadWrite);
+        return fs;
+    }
 }

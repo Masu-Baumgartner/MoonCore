@@ -95,10 +95,17 @@
                                 </div>
                             </td>
                             <td class="px-6 py-4">
-                                <a href="#" @onclick="() => GoIn(entry.Name)" @onclick:preventDefault>@entry.Name</a>
+                                <a href="#" class="hover:text-white" @onclick="() => Interact(entry)" @onclick:preventDefault>@entry.Name</a>
                             </td>
                             <td class="px-6 py-4">
-                                @Formatter.FormatSize(entry.Size)
+                                @if (entry.IsFile)
+                                {
+                                    <span>@Formatter.FormatSize(entry.Size)</span>
+                                }
+                                else
+                                {
+                                    <span>-</span>
+                                }
                             </td>
                             <td class="px-6 py-4 hidden md:table-cell">
                                 @Formatter.FormatDate(entry.CreatedAt)
@@ -147,21 +154,33 @@
 {
     [Parameter] public RenderFragment<FileSystemEntry>? Template { get; set; }
     [Parameter] public IFileSystemProvider FileSystemProvider { get; set; }
-    [Parameter] public string InitialPath { get; set; }
-    [Parameter] public Func<string, Task>? OnNavigated { get; set; }
 
-    public FileSystemEntry[] Entries { get; private set; }
-    public string CurrentPath { get; private set; } = "";
+    #region Context Menu
     
-    private bool IsLoading = true;
-    private Exception? LoadingException;
-    
-    // Context Menu
     [Parameter] public RenderFragment<FileSystemEntry>? ContextMenuTemplate { get; set; }
     
     private ContextMenu ContextMenu;
     private FileSystemEntry? ContextEntry;
 
+    private async Task ShowContextMenu(FileSystemEntry contextEntry, double x, double y)
+    {
+        if(ContextMenuTemplate == null)
+            return;
+
+        ContextEntry = contextEntry;
+        
+        await ContextMenu.Show(x, y);
+    }
+
+    #endregion
+
+    #region Entry Loading
+
+    public FileSystemEntry[] Entries { get; private set; }
+    
+    private bool IsLoading = true;
+    private Exception? LoadingException;
+    
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
         if (!firstRender)
@@ -202,17 +221,35 @@
             await OnNavigated.Invoke(CurrentPath);
     }
 
-    private async Task ShowContextMenu(FileSystemEntry contextEntry, double x, double y)
-    {
-        if(ContextMenuTemplate == null)
-            return;
+    #endregion
 
-        ContextEntry = contextEntry;
+    #region Interact
+    
+    [Parameter] public Func<FileSystemEntry, Task<bool>>? OnInteract { get; set; }
+
+    private async Task Interact(FileSystemEntry entry)
+    {
+        if (OnInteract != null)
+        {
+            var shouldSkipDefault = await OnInteract.Invoke(entry);
+            
+            if(shouldSkipDefault)
+                return;
+        }
         
-        await ContextMenu.Show(x, y);
+        // Default handling. Its basically just navigation at the moment
+        if (!entry.IsFile)
+            await GoIn(entry.Name);
     }
 
+    #endregion
+
     #region Navigation
+    
+    [Parameter] public Func<string, Task>? OnNavigated { get; set; }
+    [Parameter] public string InitialPath { get; set; }
+    
+    public string CurrentPath { get; private set; } = "";
 
     public async Task GoUp()
     {

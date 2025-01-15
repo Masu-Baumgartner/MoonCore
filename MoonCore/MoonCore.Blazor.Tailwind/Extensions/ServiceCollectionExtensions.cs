@@ -14,5 +14,6 @@ public static class ServiceCollectionExtensions
         collection.AddScoped<ToastService>();
         collection.AddScoped<AlertService>();
         collection.AddScoped<QueryParameterService>();
+        collection.AddScoped<DownloadService>();
     }
 }

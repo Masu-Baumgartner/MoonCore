@@ -1,7 +1,7 @@
 @if (IsVisible)
 {
-    <div @ref="Reference" @onfocusout="OnFocusOut" style="@($"top: {Y}px; left: {X}px")" class="fixed z-10 mt-2 w-40 rounded-md bg-gray-900 text-white shadow-lg focus:outline-none" role="menu" aria-orientation="vertical" aria-labelledby="menu-button" tabindex="-1">
-        <div class="py-1" role="none">
+    <div @ref="Reference" @onfocusout="OnFocusOut" style="@($"top: {Y}px; left: {X}px")" class="fixed z-10 mt-2 w-40 rounded-md bg-gray-750 text-white shadow-lg focus:outline-none" role="menu" aria-orientation="vertical" aria-labelledby="menu-button" tabindex="-1">
+        <div class="py-1">
             @ChildContent
         </div>
     </div>

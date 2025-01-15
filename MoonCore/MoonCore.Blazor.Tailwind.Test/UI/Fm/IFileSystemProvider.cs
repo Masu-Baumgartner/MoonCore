@@ -7,4 +7,5 @@ public interface IFileSystemProvider
     public Task Move(string oldPath, string newPath);
     public Task Delete(string path);
     public Task CreateDirectory(string path);
+    public Task<Stream> Read(string path);
 }
