@@ -83,9 +83,14 @@
     </div>
 
     <FileView @ref="FileView"
+              EnableSelection="true"
               FileSystemProvider="FileSystemProvider"
               OnNavigated="OnNavigated">
         <ContextMenuTemplate>
+            <a href="#" @onclick="() => Move(context)" @onclick:preventDefault @onmousedown:preventDefault @onmousedown:stopPropagation class="flex px-4 py-2 items-center hover:bg-gray-700 border-b border-gray-700" role="menuitem" tabindex="-1">
+                <i class="me-2 text-warning-500 icon-move text-lg"></i>
+                <span class="text-sm">Move</span>
+            </a>
             <a href="#" @onclick="() => Download(context)" @onclick:preventDefault @onmousedown:preventDefault @onmousedown:stopPropagation class="flex px-4 py-2 items-center hover:bg-gray-700 border-b border-gray-700" role="menuitem" tabindex="-1">
                 <i class="me-2 text-primary-500 icon-hard-drive-download text-lg"></i>
                 <span class="text-sm">Download</span>
@@ -221,5 +226,18 @@
         await DownloadService.DownloadStream(entry.Name, stream);
 
         stream.Close();
+    }
+
+    private async Task Move(FileSystemEntry entry)
+    {
+        await ModalService.Launch<LocationSelectModal>(size: "max-w-2xl", onConfigure: parameters =>
+        {
+            parameters.Add("OnSubmit", async (string path) =>
+            {
+                await ToastService.Info(path);
+            });
+            
+            parameters.Add("FileSystemProvider", FileSystemProvider);
+        });
     }
 }

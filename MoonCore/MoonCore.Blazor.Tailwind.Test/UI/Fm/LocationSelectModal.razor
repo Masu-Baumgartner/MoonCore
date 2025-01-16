@@ -1,0 +1,60 @@
+@using MoonCore.Blazor.Tailwind.Modals.Components
+@using MoonCore.Blazor.Tailwind.Components
+@using MoonCore.Blazor.Tailwind.States
+
+@inherits BaseModal
+
+<h1 class="mb-5 font-semibold text-xl">Select a location</h1>
+
+<div class="rounded-lg bg-gray-800">
+    <FileView InitialPath="@InitialPath"
+              OnNavigated="OnNavigated"
+              EntriesFilter="EntriesFilter"
+              EnableHeaderRounding="true"
+              ShowGoUpElement="true"
+              ShowDate="false"
+              ShowSize="false"
+              FileSystemProvider="FileSystemProvider">
+        <NoFilesTemplate>
+            <StateDisplay Title="No folders found"
+                          Description="No folders in the selected directory found"
+                          Icon="icon-folder-open"
+                          IconColor="text-primary-500"
+                          Type="StateType.Custom"/>
+        </NoFilesTemplate>
+    </FileView>
+</div>
+
+<div class="mt-5 flex space-x-2">
+    <WButton OnClick="_ => Hide()" CssClasses="btn btn-secondary grow">Cancel</WButton>
+    <WButton OnClick="_ => Submit()" CssClasses="btn btn-primary grow">Select</WButton>
+</div>
+
+@code
+{
+    [Parameter] public IFileSystemProvider FileSystemProvider { get; set; }
+    [Parameter] public string InitialPath { get; set; } = "/";
+    [Parameter] public Func<string, Task> OnSubmit { get; set; }
+
+    private string Path;
+
+    protected override void OnInitialized()
+    {
+        Path = InitialPath;
+    }
+
+    private async Task Submit()
+    {
+        await OnSubmit.Invoke(Path);
+        await Hide();
+    }
+
+    private Task OnNavigated(string path)
+    {
+        Path = path;
+        return Task.CompletedTask;
+    }
+
+    private IEnumerable<FileSystemEntry> EntriesFilter(IEnumerable<FileSystemEntry> entries)
+        => entries.Where(x => !x.IsFile);
+}
