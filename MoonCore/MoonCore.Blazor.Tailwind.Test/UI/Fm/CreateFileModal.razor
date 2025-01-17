@@ -33,7 +33,7 @@
     struct InputStruct
     {
         [Required(ErrorMessage = "You need to specify a file name")]
-        [RegularExpression("^[a-zA-Z0-9_-]+(\\.[a-zA-Z0-9]+)?$", ErrorMessage = "You need to provide a valid file name")]
+        [RegularExpression("^[^\\\\/:*?\"<>|/]+$", ErrorMessage = "You need to provide a valid file name")]
         public string FileName { get; set; }
     }
 }

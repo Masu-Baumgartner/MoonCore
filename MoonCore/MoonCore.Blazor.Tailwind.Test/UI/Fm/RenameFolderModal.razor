@@ -4,36 +4,42 @@
 
 @inherits BaseModal
 
-<h1 class="mb-5 font-semibold text-xl">Create a new folder</h1>
+<h1 class="mb-5 font-semibold text-xl">Enter a new folder name</h1>
 
 <HandleForm @ref="HandleForm" Model="Input" OnValidSubmit="OnValidSubmit">
-    <input @bind="Input.FolderName" type="text" class="form-input w-full placeholder-gray-500" placeholder="Enter a folder name"/>
+    <input @bind="Input.FolderName" type="text" class="form-input w-full"/>
 </HandleForm>
 
 <div class="mt-5 flex space-x-2">
     <WButton OnClick="_ => Hide()" CssClasses="btn btn-secondary grow">Cancel</WButton>
-    <WButton OnClick="_ => Submit()" CssClasses="btn btn-primary grow">Create</WButton>
+    <WButton OnClick="_ => Submit()" CssClasses="btn btn-primary grow">Rename</WButton>
 </div>
 
 @code
 {
+    [Parameter] public string DefaultValue { get; set; }
     [Parameter] public Func<string, Task> OnSubmit { get; set; }
     
     private HandleForm HandleForm;
     private InputStruct Input = new();
+
+    protected override void OnInitialized()
+    {
+        Input.FolderName = DefaultValue;
+    }
 
     private async Task OnValidSubmit()
     {
         await OnSubmit.Invoke(Input.FolderName);
         await Hide();
     }
-    
+
     private Task Submit() => HandleForm.Submit();
-    
+
     struct InputStruct
     {
         [Required(ErrorMessage = "You need to specify a folder name")]
-        [RegularExpression("^[^\\\\/:*?\"<>|/]+$\n", ErrorMessage = "You need to provide a valid folder name")]
+        [RegularExpression("^[^\\\\/:*?\"<>|/]+$", ErrorMessage = "You need to provide a valid folder name")]
         public string FolderName { get; set; }
     }
 }
