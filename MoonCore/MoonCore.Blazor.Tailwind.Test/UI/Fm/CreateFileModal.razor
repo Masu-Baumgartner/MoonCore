@@ -1,6 +1,6 @@
-@using System.ComponentModel.DataAnnotations
 @using MoonCore.Blazor.Tailwind.Modals.Components
 @using MoonCore.Blazor.Tailwind.Components
+@using MoonCore.Blazor.Tailwind.Test.UI.Fm.Models
 
 @inherits BaseModal
 
@@ -20,7 +20,7 @@
     [Parameter] public Func<string, Task> OnSubmit { get; set; }
     
     private HandleForm HandleForm;
-    private InputStruct Input = new();
+    private FileNameStruct Input = new();
 
     private async Task OnValidSubmit()
     {
@@ -29,11 +29,4 @@
     }
     
     private Task Submit() => HandleForm.Submit();
-    
-    struct InputStruct
-    {
-        [Required(ErrorMessage = "You need to specify a file name")]
-        [RegularExpression("^[^\\\\/:*?\"<>|/]+$", ErrorMessage = "You need to provide a valid file name")]
-        public string FileName { get; set; }
-    }
 }

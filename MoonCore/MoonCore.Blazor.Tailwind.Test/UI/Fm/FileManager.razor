@@ -201,8 +201,6 @@
 
     private async Task LaunchUploadModal()
     {
-        Logger.LogInformation("Launching modal");
-
         await ModalService.Launch<UploadModal>(size: "max-w-xl", allowUnfocusHide: true, onConfigure: parameters =>
         {
             parameters.Add("OnUpload", async Task (string path, Stream dataStream) =>
@@ -229,6 +227,8 @@
     }
 
     #endregion
+
+    #region Context Actions
 
     private async Task Download(FileSystemEntry entry)
     {
@@ -315,4 +315,6 @@
             }
         );
     }
+
+    #endregion
 }

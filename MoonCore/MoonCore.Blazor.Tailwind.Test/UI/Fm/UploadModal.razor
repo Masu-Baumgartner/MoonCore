@@ -1,5 +1,6 @@
 @using System.Text.Json.Serialization
 @using MoonCore.Blazor.Tailwind.Modals.Components
+@using MoonCore.Blazor.Tailwind.Test.UI.Fm.Models
 @using MoonCore.Blazor.Tailwind.Toasts
 @using MoonCore.Helpers
 
@@ -174,12 +175,5 @@ else
         {
             stream?.Close();
         }
-    }
-
-    struct TransferData
-    {
-        [JsonPropertyName("path")] public string Path { get; set; }
-
-        [JsonPropertyName("streamRef")] public IJSStreamReference? StreamRef { get; set; }
     }
 }

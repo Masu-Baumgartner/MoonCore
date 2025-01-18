@@ -137,7 +137,7 @@
                     {
                         var entry = Entries[i];
 
-                        @* Only append to all elements exept the last one *@
+                        @* Only append border to all elements exept the last one *@
                         <tr @oncontextmenu="e => ShowContextMenu(entry, e.ClientX, e.ClientY)"
                             @oncontextmenu:preventDefault
                             class="@(i != Entries.Length - 1 ? "border-b border-gray-700" : "")">
@@ -432,5 +432,4 @@
     }
 
     #endregion
-
 }
