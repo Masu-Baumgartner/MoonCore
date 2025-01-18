@@ -3,14 +3,13 @@ window.moonCoreFileManager = {
     readCache: async function (index) {
         const item = this.uploadCache.at(index);
         const streamRef = await this.createStreamRef(item);
-        
+
         return {
             path: item.fullPath,
             streamRef: streamRef
         };
     },
-    createStreamRef: async function (fileEntry)
-    {
+    createStreamRef: async function (fileEntry) {
         const promise = new Promise(resolve => {
             fileEntry.file(file => {
                 resolve(file);
@@ -55,7 +54,6 @@ window.moonCoreFileManager = {
         });
 
         elem.addEventListener('drop', async (e) => {
-
             // Prevent navigation.
             e.preventDefault();
 
@@ -65,66 +63,55 @@ window.moonCoreFileManager = {
                 return;
             }
 
-            // Store are loaded entries here
-            const contentEntries = [];
-
-            for (let i = 0; i < e.dataTransfer.items.length; i++) {
-                const fileItem = e.dataTransfer.items[i];
-
-                const webkitEntry = fileItem.webkitGetAsEntry();
-
-                if (webkitEntry.isFile)
-                    contentEntries.push(webkitEntry);
-                else if (webkitEntry.isDirectory) {
-                    const entries = await this.traverseDirectory(webkitEntry);
-
-                    for (const directoryEntry of entries) {
-                        contentEntries.push(directoryEntry)
-                    }
-                }
-            }
-
-            this.uploadCache = contentEntries;
-            await callbackRef.invokeMethodAsync("OnFilesDropped", this.uploadCache.length);
+            this.getAllWebkitFileEntries(e.dataTransfer.items).then(async value => {
+                this.uploadCache = value;
+                await callbackRef.invokeMethodAsync("OnFilesDropped", this.uploadCache.length);
+            });
         });
     },
-    traverseDirectory: async function (directoryEntry) {
-        let files = [];
-
-        // Function to handle reading the directory entries
-        async function readDirectory(entry) {
-            const reader = entry.createReader();
-
-            // Function to read entries in batches
-            const readEntriesBatch = () => {
-                return new Promise((resolve, reject) => {
-                    reader.readEntries((entries) => {
-                        if (entries.length === 0) {
-                            resolve([]);
-                        } else {
+    getAllWebkitFileEntries: async function (dataTransferItemList) {
+        function readAllEntries(reader) {
+            return new Promise((resolve, reject) => {
+                const entries = [];
+                function readEntries() {
+                    reader.readEntries((batch) => {
+                        if (batch.length === 0) {
                             resolve(entries);
+                        } else {
+                            entries.push(...batch);
+                            readEntries();
                         }
                     }, reject);
-                });
-            };
-
-            let entries;
-            do {
-                entries = await readEntriesBatch();
-                for (const entry of entries) {
-                    if (entry.isFile) {
-                        files.push(entry); // Add file entry to the list
-                    } else if (entry.isDirectory) {
-                        // Recursively traverse sub-directories
-                        await readDirectory(entry);
-                    }
                 }
-            } while (entries.length > 0);  // Repeat until no more entries are left
+                readEntries();
+            });
         }
 
-        // Start reading from the given directory
-        await readDirectory(directoryEntry);
+        async function traverseEntry(entry) {
+            if (entry.isFile) {
+                return [entry];
+            } else if (entry.isDirectory) {
+                const reader = entry.createReader();
+                const entries = await readAllEntries(reader);
+                const subEntries = await Promise.all(entries.map(traverseEntry));
+                return subEntries.flat();
+            }
+            return [];
+        }
 
-        return files;
+        const entries = [];
+
+        // Convert DataTransferItemList to entries
+        for (let i = 0; i < dataTransferItemList.length; i++) {
+            const item = dataTransferItemList[i];
+            const entry = item.webkitGetAsEntry();
+            if (entry) {
+                entries.push(entry);
+            }
+        }
+
+        // Traverse all entries and collect file entries
+        const allFileEntries = await Promise.all(entries.map(traverseEntry));
+        return allFileEntries.flat();
     }
 }

@@ -33,7 +33,7 @@
     struct InputStruct
     {
         [Required(ErrorMessage = "You need to specify a folder name")]
-        [RegularExpression("^[^\\\\/:*?\"<>|/]+$\n", ErrorMessage = "You need to provide a valid folder name")]
+        [RegularExpression("^[^\\\\/:*?\"<>|/]+$", ErrorMessage = "You need to provide a valid folder name")]
         public string FolderName { get; set; }
     }
 }
