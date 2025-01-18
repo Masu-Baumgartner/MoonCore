@@ -399,3 +399,5 @@ FodyWeavers.xsd
 
 # Style builds
 style.min.css
+
+**/testFs/**

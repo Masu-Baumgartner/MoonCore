@@ -63,6 +63,7 @@ public class HostFileSystemProvider : IFileSystemProvider
 
         await fs.FlushAsync();
         fs.Close();
+        stream.Close();
     }
 
     public Task Move(string oldPath, string newPath)
