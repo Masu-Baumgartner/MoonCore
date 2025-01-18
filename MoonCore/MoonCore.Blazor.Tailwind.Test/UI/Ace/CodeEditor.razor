@@ -1,0 +1,54 @@
+@inject CodeEditorService CodeEditorService
+
+@implements IAsyncDisposable
+
+<div class="flex">
+    <div class="flex-grow w-full rounded-lg" style="height: 30rem" id="@EditorId">@(InitialContent)</div>
+</div>
+
+@code
+{
+    [Parameter] public string InitialContent { get; set; }
+    [Parameter] public Action<CodeEditorOptions>? OnConfigure { get; set; }
+    
+    private string EditorId;
+    private CodeEditorOptions Options;
+    private bool IsInitialized = false;
+
+    protected override void OnInitialized()
+    {
+        EditorId = "editor" + GetHashCode();
+        
+        Options = new()
+        {
+            Mode = "ace/mode/csharp",
+            Theme = "ace/theme/github_dark",
+            FontSize = 14
+        };
+
+        if(OnConfigure != null)
+            OnConfigure.Invoke(Options);
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if(!firstRender)
+            return;
+        
+        await CodeEditorService.Attach(EditorId, Options);
+        IsInitialized = true;
+    }
+
+    public async Task<string> GetValue()
+    {
+        return await CodeEditorService.GetValue(EditorId);
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        if(!IsInitialized)
+            return;
+        
+        await CodeEditorService.Destroy(EditorId);
+    }
+}

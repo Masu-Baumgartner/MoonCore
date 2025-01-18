@@ -1,0 +1,29 @@
+@page "/editorTest"
+
+@using MoonCore.Blazor.Tailwind.Alerts
+@using MoonCore.Blazor.Tailwind.Test.UI.Ace
+@using MoonCore.Blazor.Tailwind.Toasts
+
+@inject AlertService AlertService
+
+<CodeEditor @ref="Editor" OnConfigure="OnConfigure" />
+
+<div class="mt-5">
+    <button @onclick="GetValue" class="btn btn-primary">Get value</button>
+</div>
+
+@code
+{
+    private CodeEditor Editor;
+    
+    private void OnConfigure(CodeEditorOptions options)
+    {
+        options.FontFamily = "Inter";
+    }
+
+    private async Task GetValue()
+    {
+        var val = await Editor.GetValue();
+        await AlertService.Info("Value from editor", val);
+    }
+}

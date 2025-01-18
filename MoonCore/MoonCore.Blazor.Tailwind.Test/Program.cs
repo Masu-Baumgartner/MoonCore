@@ -2,6 +2,7 @@ using MoonCore.Blazor.Tailwind.Extensions;
 using MoonCore.Blazor.Tailwind.Forms;
 using MoonCore.Blazor.Tailwind.Forms.Components;
 using MoonCore.Blazor.Tailwind.Test.UI;
+using MoonCore.Blazor.Tailwind.Test.UI.Ace;
 using MoonCore.Extensions;
 using MoonCore.Helpers;
 
@@ -26,6 +27,8 @@ builder.Logging.ClearProviders();
 builder.Logging.AddMoonCore();
 
 builder.Services.AddMoonCoreBlazorTailwind();
+
+builder.Services.AddScoped<CodeEditorService>();
 
 var app = builder.Build();
 
