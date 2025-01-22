@@ -6,6 +6,7 @@
 @using MoonCore.Blazor.Tailwind.Toasts
 @using MoonCore.Helpers
 @using MoonCore.Blazor.Tailwind.Components
+@using MoonCore.Blazor.Tailwind.Toasts.Components
 
 @inject ModalService ModalService
 @inject ToastService ToastService
@@ -20,17 +21,30 @@
             <div class="flex items-center text-base font-semibold">
                 <i class="icon-file text-lg me-3"></i>
                 <span class="me-1">@EditorEntry.Name</span>
-                <span class="text-sm text-gray-400">/ @Formatter.FormatSize(EditorEntry.Size)</span>
+                <span class="text-sm text-gray-400 hidden sm:block">/ @Formatter.FormatSize(EditorEntry.Size)</span>
             </div>
             <div class="flex flex-row gap-x-2">
-                <button @onclick="SaveFile" class="btn btn-primary">
-                    <i class="icon-save me-2"></i>
-                    Save changes
-                </button>
+                <WButton OnClick="_ => SaveFile()" CssClasses="btn btn-primary">
+                    <i class="icon-save"></i>
+                    <span class="hidden sm:block ms-2">Save changes</span>
+                </WButton>
 
                 <button @onclick="CloseEditor" class="btn btn-danger">
-                    <i class="icon-door-open me-2"></i>
-                    Close
+                    <i class="icon-door-open"></i>
+                    <span class="hidden sm:block ms-2">Close</span>
+                </button>
+            </div>
+        }
+        else if (SelectedEntries.Length > 0)
+        {
+            <div class="flex items-center text-base font-semibold">
+                <i class="icon-files text-lg me-3"></i>
+                <span class="me-1">@SelectedEntries.Length item(s) selected</span>
+            </div>
+            <div class="flex flex-row gap-x-2">
+                <button @onclick="DeleteSelection" class="btn btn-danger">
+                    <i class="icon-trash-2"></i>
+                    <span class="hidden sm:block ms-2">Delete</span>
                 </button>
             </div>
         }
@@ -122,7 +136,8 @@ else
                   EnableSelection="true"
                   FileSystemProvider="FileSystemProvider"
                   OnInteract="OnInteract"
-                  OnNavigated="OnNavigated">
+                  OnNavigated="OnNavigated"
+                  OnSelectionChanged="OnSelectionChanged">
             <ContextMenuTemplate>
                 <a href="#" @onclick="() => Move(context)" @onclick:preventDefault @onmousedown:preventDefault
                    @onmousedown:stopPropagation
@@ -154,7 +169,7 @@ else
                 <a href="#" @onclick="() => Delete(context)" @onclick:preventDefault @onmousedown:preventDefault
                    @onmousedown:stopPropagation
                    class="flex px-4 py-2 items-center hover:bg-gray-700" role="menuitem" tabindex="-1">
-                    <i class="me-2 text-danger-500 icon-trash text-lg"></i>
+                    <i class="me-2 text-danger-500 icon-trash-2 text-lg"></i>
                     <span class="text-sm">Delete</span>
                 </a>
             </ContextMenuTemplate>
@@ -428,4 +443,61 @@ else
 
         return false;
     }
+
+    #region Selection Actions
+
+    private FileSystemEntry[] SelectedEntries = [];
+
+    private async Task OnSelectionChanged(FileSystemEntry[] entries)
+    {
+        SelectedEntries = entries;
+        await InvokeAsync(StateHasChanged);
+    }
+
+    private async Task DeleteSelection()
+    {
+        async Task DeleteSelectedItems(ProgressToast toast)
+        {
+            var entries = SelectedEntries.ToArray();
+            var currentPath = CurrentPath;
+            var deleted = 0;
+            
+            foreach (var entry in entries)
+            {
+                await toast.UpdateText(entry.Name);
+
+                try
+                {
+                    await FileSystemProvider.Delete(Path.Join(currentPath, entry.Name));
+
+                    deleted++;
+                }
+                catch (Exception e)
+                {
+                    await ToastService.Danger($"An error occured while deleting '{entry.Name}'");
+                    
+                    Logger.LogError("An unhandled error occured while deleting file '{name}': {e}", entry.Name, e);
+                }
+            }
+
+            await ToastService.Success($"Successfully deleted {deleted} files");
+            await FileView.Refresh();
+        }
+
+        await AlertService.ConfirmDanger(
+            "Deleting multiple items",
+            $"Do you really want to delete {SelectedEntries.Length} item(s)",
+            async () =>
+            {
+                await ToastService.Progress(
+                    $"Deleting {SelectedEntries.Length} items",
+                    "",
+                    DeleteSelectedItems
+                );
+            }
+        );
+    }
+
+    #endregion
+
 }

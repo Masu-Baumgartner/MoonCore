@@ -285,6 +285,9 @@
         // Clear selection
         InternalSelectedItems.Clear();
         
+        if(OnSelectionChanged != null)
+            await OnSelectionChanged.Invoke(SelectedEntries);
+        
         await InvokeAsync(StateHasChanged);
 
         try
@@ -419,6 +422,9 @@
         }
 
         await InvokeAsync(StateHasChanged);
+        
+        if(OnSelectionChanged != null)
+            await OnSelectionChanged.Invoke(SelectedEntries);
     }
 
     private async Task SetAllSelection(bool toggle)
@@ -429,6 +435,9 @@
             InternalSelectedItems.AddRange(Entries);
 
         await InvokeAsync(StateHasChanged);
+        
+        if(OnSelectionChanged != null)
+            await OnSelectionChanged.Invoke(SelectedEntries);
     }
 
     #endregion
