@@ -1,4 +1,4 @@
-window.downloadService = {
+window.moonCoreDownloadService = {
     download: async function (fileName, contentStreamReference) {
         const arrayBuffer = await contentStreamReference.arrayBuffer();
         const blob = new Blob([arrayBuffer]);

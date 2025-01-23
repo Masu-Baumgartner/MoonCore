@@ -16,7 +16,7 @@ public class DownloadService
     {
         using var streamRef = new DotNetStreamReference(stream);
 
-        await JsRuntime.InvokeVoidAsync("downloadService.download", fileName, streamRef);
+        await JsRuntime.InvokeVoidAsync("moonCoreDownloadService.download", fileName, streamRef);
     }
 
     public async Task DownloadBytes(string fileName, byte[] bytes)

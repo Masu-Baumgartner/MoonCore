@@ -6,12 +6,14 @@
 @using MoonCore.Blazor.Tailwind.Toasts
 @using MoonCore.Helpers
 @using MoonCore.Blazor.Tailwind.Components
+@using MoonCore.Blazor.Tailwind.HotKeys
 @using MoonCore.Blazor.Tailwind.Toasts.Components
 
 @inject ModalService ModalService
 @inject ToastService ToastService
 @inject AlertService AlertService
 @inject DownloadService DownloadService
+@inject HotKeyService HotKeyService
 @inject ILogger<FileManager> Logger
 
 <div class="bg-gray-800 rounded-lg py-1 mb-5">
@@ -388,6 +390,11 @@ else
         IsEditing = true;
         EditorEntry = entry;
 
+        // Hot keys
+        await HotKeyService.Register("KeyS", ModifierKey.Control, SaveFile);
+        await HotKeyService.Register("KeyQ", ModifierKey.Control, CloseEditor);
+        
+        //
         await InvokeAsync(StateHasChanged);
     }
 
@@ -419,6 +426,11 @@ else
         await FileEditor.DisposeAsync();
         IsEditing = false;
 
+        // Hot keys
+        await HotKeyService.Unregister("KeyS", ModifierKey.Control, SaveFile);
+        await HotKeyService.Unregister("KeyQ", ModifierKey.Control, CloseEditor);
+        
+        //
         await InvokeAsync(StateHasChanged);
     }
 
