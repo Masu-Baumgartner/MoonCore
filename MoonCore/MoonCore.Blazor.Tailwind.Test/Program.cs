@@ -1,6 +1,9 @@
+using Microsoft.AspNetCore.Components.Authorization;
+using MoonCore.Blazor.Tailwind.Auth;
 using MoonCore.Blazor.Tailwind.Extensions;
 using MoonCore.Blazor.Tailwind.Forms;
 using MoonCore.Blazor.Tailwind.Forms.Components;
+using MoonCore.Blazor.Tailwind.Test;
 using MoonCore.Blazor.Tailwind.Test.UI;
 using MoonCore.Blazor.Tailwind.Test.UI.Ace;
 using MoonCore.Extensions;
@@ -29,6 +32,11 @@ builder.Logging.AddMoonCore();
 builder.Services.AddMoonCoreBlazorTailwind();
 
 builder.Services.AddScoped<CodeEditorService>();
+
+builder.Services.AddScoped<AuthenticationStateManager, CoolestAuthStateManager>();
+builder.Services.AddScoped<AuthenticationStateProvider>(sp => sp.GetRequiredService<AuthenticationStateManager>());
+builder.Services.AddAuthorizationCore();
+builder.Services.AddCascadingAuthenticationState();
 
 var app = builder.Build();
 
