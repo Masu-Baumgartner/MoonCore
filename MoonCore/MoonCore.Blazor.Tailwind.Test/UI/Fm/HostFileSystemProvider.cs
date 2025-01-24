@@ -1,8 +1,9 @@
+using MoonCore.Blazor.Tailwind.Test.UI.Fm.Models;
 using MoonCore.Helpers;
 
 namespace MoonCore.Blazor.Tailwind.Test.UI.Fm;
 
-public class HostFileSystemProvider : IFileSystemProvider
+public class HostFileSystemProvider : IFileSystemProvider, ICompressFileSystemProvider
 {
     private readonly string BaseDirectory;
 
@@ -106,5 +107,29 @@ public class HostFileSystemProvider : IFileSystemProvider
     {
         var fs = File.Open(PathBuilder.File(BaseDirectory, path), FileMode.Open, FileAccess.Read, FileShare.ReadWrite);
         return fs;
+    }
+
+    public CompressType[] CompressTypes { get; } =
+    [
+        new()
+        {
+            Extension = "zip",
+            DisplayName = "ZIP Archive"
+        },
+        new()
+        {
+            Extension = "tar.gz",
+            DisplayName = "GZ Compressed Tar Archive"
+        }
+    ];
+    
+    public async Task Compress(CompressType type, string path, string[] itemsToArchive)
+    {
+        Console.WriteLine($"{type.DisplayName}: Compressing {string.Join(", ", itemsToArchive)} to {path}");
+    }
+
+    public async Task Decompress(CompressType type, string path, string destination)
+    {
+        Console.WriteLine($"{type.DisplayName}: Decompressing {path} to {destination}");
     }
 }

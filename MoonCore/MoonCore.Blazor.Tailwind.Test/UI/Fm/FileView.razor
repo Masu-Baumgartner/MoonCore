@@ -386,7 +386,7 @@
 
     private void Navigate(string diff)
     {
-        CurrentPath = Path.GetFullPath(Path.Join(CurrentPath, diff), "/");
+        CurrentPath = PathBuilder.FullPathUnix(CurrentPath, diff);
     }
 
     #endregion
