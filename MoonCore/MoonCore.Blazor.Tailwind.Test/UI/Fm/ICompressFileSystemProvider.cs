@@ -6,6 +6,6 @@ public interface ICompressFileSystemProvider
 {
     public CompressType[] CompressTypes { get; }
     
-    public Task Compress(CompressType type, string path, string[] itemsToArchive);
+    public Task Compress(CompressType type, string path, string[] itemsToCompress);
     public Task Decompress(CompressType type, string path, string destination);
 }

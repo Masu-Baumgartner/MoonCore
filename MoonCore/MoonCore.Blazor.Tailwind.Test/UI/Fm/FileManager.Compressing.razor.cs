@@ -32,7 +32,7 @@ public partial class FileManager
             await CompressProvider.Compress(
                 compressType,
                 PathBuilder.JoinPaths(CurrentPath, fileName),
-                entries.Select(x => x.Name).ToArray()
+                entries.Select(x => PathBuilder.JoinPaths(CurrentPath, x.Name)).ToArray()
             );
 
             await ToastService.Success("Successfully created archive", fileName);

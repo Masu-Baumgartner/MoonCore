@@ -1,3 +1,7 @@
+using System.Text;
+using ICSharpCode.SharpZipLib.GZip;
+using ICSharpCode.SharpZipLib.Tar;
+using ICSharpCode.SharpZipLib.Zip;
 using MoonCore.Blazor.Tailwind.Test.UI.Fm.Models;
 using MoonCore.Helpers;
 
@@ -123,10 +127,144 @@ public class HostFileSystemProvider : IFileSystemProvider, ICompressFileSystemPr
         }
     ];
     
-    public async Task Compress(CompressType type, string path, string[] itemsToArchive)
+    public async Task Compress(CompressType type, string path, string[] itemsToCompress)
     {
-        Console.WriteLine($"{type.DisplayName}: Compressing {string.Join(", ", itemsToArchive)} to {path}");
+        if (type.Extension == "tar.gz")
+            await CompressTarGz(path, itemsToCompress);
+        else if (type.Extension == "zip")
+            await CompressZip(path, itemsToCompress);
     }
+
+    #region Tar Gz
+
+    private async Task CompressTarGz(string path, string[] itemsToCompress)
+    {
+        var destination = PathBuilder.File(BaseDirectory, path);
+
+        await using var outStream = File.Create(destination);
+        await using var gzoStream = new GZipOutputStream(outStream);
+        await using var tarStream = new TarOutputStream(gzoStream, Encoding.UTF8);
+
+        foreach (var itemName in itemsToCompress)
+        {
+            var filePath = PathBuilder.File(BaseDirectory, itemName);
+            var fi = new FileInfo(filePath);
+
+            if (fi.Exists)
+                await AddFileToTarGz(tarStream, filePath);
+            else
+                await AddDirectoryToTarGz(tarStream, PathBuilder.Dir(BaseDirectory, itemName));
+        }
+
+        await tarStream.FlushAsync();
+        await gzoStream.FlushAsync();
+        await outStream.FlushAsync();
+        
+        tarStream.Close();
+        gzoStream.Close();
+        outStream.Close();
+    }
+
+    private async Task AddDirectoryToTarGz(TarOutputStream tarOutputStream, string root)
+    {
+        foreach (var file in Directory.GetFiles(root))
+            await AddFileToTarGz(tarOutputStream, file);
+
+        foreach (var directory in Directory.GetDirectories(root))
+            await AddDirectoryToTarGz(tarOutputStream, directory);
+    }
+
+    private async Task AddFileToTarGz(TarOutputStream tarOutputStream, string file)
+    {
+        // Open file stream
+        var fs = File.Open(file, FileMode.Open, FileAccess.Read, FileShare.ReadWrite);
+        
+        // Meta 
+        var entry = TarEntry.CreateTarEntry(file);
+
+        // Fix path
+        entry.Name = Formatter
+            .ReplaceStart(entry.Name, BaseDirectory, "")
+            .TrimStart('/');
+        
+        entry.Size = fs.Length;
+        
+        // Write entry
+        await tarOutputStream.PutNextEntryAsync(entry, CancellationToken.None);
+        
+        // Copy file content to tar stream
+        await fs.CopyToAsync(tarOutputStream);
+        fs.Close();
+        
+        // Close the entry
+        tarOutputStream.CloseEntry();
+    }
+
+    #endregion
+
+    #region ZIP
+
+    private async Task CompressZip(string path, string[] itemsToCompress)
+    {
+        var destination = PathBuilder.File(BaseDirectory, path);
+        
+        await using var outStream = File.Create(destination);
+        await using var zipOutputStream = new ZipOutputStream(outStream);
+        
+        foreach (var itemName in itemsToCompress)
+        {
+            var filePath = PathBuilder.File(BaseDirectory, itemName);
+            var fi = new FileInfo(filePath);
+
+            if (fi.Exists)
+                await AddFileToZip(zipOutputStream, filePath);
+            else
+                await AddDirectoryToZip(zipOutputStream, PathBuilder.Dir(BaseDirectory, itemName));
+        }
+
+        await zipOutputStream.FlushAsync();
+        await outStream.FlushAsync();
+        
+        zipOutputStream.Close();
+        outStream.Close();
+    }
+
+    private async Task AddFileToZip(ZipOutputStream zipOutputStream, string path)
+    {
+        // Open file stream
+        var fs = File.Open(path, FileMode.Open, FileAccess.Read, FileShare.ReadWrite);
+        
+        // Fix path
+        var name = Formatter
+            .ReplaceStart(path, BaseDirectory, "")
+            .TrimStart('/');
+        
+        // Meta 
+        var entry = new ZipEntry(name);
+        
+        entry.Size = fs.Length;
+        
+        // Write entry
+        await zipOutputStream.PutNextEntryAsync(entry, CancellationToken.None);
+        
+        // Copy file content to tar stream
+        await fs.CopyToAsync(zipOutputStream);
+        fs.Close();
+        
+        // Close the entry
+        zipOutputStream.CloseEntry();
+    }
+    
+    private async Task AddDirectoryToZip(ZipOutputStream zipOutputStream, string root)
+    {
+        foreach (var file in Directory.GetFiles(root))
+            await AddFileToZip(zipOutputStream, file);
+
+        foreach (var directory in Directory.GetDirectories(root))
+            await AddDirectoryToZip(zipOutputStream, directory);
+    }
+
+    #endregion
 
     public async Task Decompress(CompressType type, string path, string destination)
     {
