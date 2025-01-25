@@ -24,21 +24,28 @@ public partial class FileManager
 
     private async Task Compress(FileSystemEntry[] entries)
     {
-        if(CompressProvider == null)
+        if (CompressProvider == null)
             return;
-        
+
         async Task InternalCompress(CompressType compressType, string fileName)
         {
-            await CompressProvider.Compress(
-                compressType,
-                PathBuilder.JoinPaths(CurrentPath, fileName),
-                entries.Select(x => PathBuilder.JoinPaths(CurrentPath, x.Name)).ToArray()
-            );
+            await ToastService.Progress(
+                "Compressing",
+                "Please be patient",
+                async _ =>
+                {
+                    await CompressProvider.Compress(
+                        compressType,
+                        PathBuilder.JoinPaths(CurrentPath, fileName),
+                        entries.Select(x => PathBuilder.JoinPaths(CurrentPath, x.Name)).ToArray()
+                    );
 
-            await ToastService.Success("Successfully created archive", fileName);
-            await FileView.Refresh();
+                    await ToastService.Success("Successfully created archive", fileName);
+                    await FileView.Refresh();
+                }
+            );
         }
-        
+
         await ModalService.Launch<CompressFileNameModal>(parameters =>
         {
             parameters.Add("OnSubmit", InternalCompress);

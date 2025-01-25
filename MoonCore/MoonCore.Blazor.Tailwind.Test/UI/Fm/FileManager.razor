@@ -50,10 +50,13 @@
                     @SelectionActionTemplate.Invoke(SelectedEntries)
                 }
 
-                <button @onclick="() => Compress(SelectedEntries)" class="btn btn-success">
-                    <i class="icon-file-archive"></i>
-                    <span class="hidden sm:block ms-2">Archive</span>
-                </button>
+                @if (CompressProvider != null)
+                {
+                    <button @onclick="() => Compress(SelectedEntries)" class="btn btn-success">
+                        <i class="icon-file-archive"></i>
+                        <span class="hidden sm:block ms-2">Archive</span>
+                    </button>
+                }
 
                 <button @onclick="DeleteSelection" class="btn btn-danger">
                     <i class="icon-trash-2"></i>

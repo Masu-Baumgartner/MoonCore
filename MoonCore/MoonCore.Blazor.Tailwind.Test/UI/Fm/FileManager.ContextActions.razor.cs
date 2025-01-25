@@ -6,18 +6,52 @@ public partial class FileManager
 {
     private async Task Download(FileSystemEntry entry)
     {
-        if (!entry.IsFile)
+        if (entry.IsFile)
         {
-            await ToastService.Danger("Folder downloads are not supported at the moment");
-            return;
+            await ToastService.Info($"Downloading {entry.Name}...");
+
+            var stream = await FileSystemProvider.Read(PathBuilder.JoinPaths(CurrentPath, entry.Name));
+            await DownloadService.DownloadStream(entry.Name, stream);
+
+            stream.Close();
         }
+        else if (CompressProvider != null)
+        {
+            var compressType = CompressProvider.CompressTypes.FirstOrDefault();
 
-        await ToastService.Info($"Downloading {entry.Name}...");
+            if (compressType == null)
+            {
+                await ToastService.Danger("Folder downloads are not supported");
+                return;
+            }
+            
+            var tempArchiveFileName = $"folderDownload.{DateTimeOffset.UtcNow.ToUnixTimeSeconds()}." + compressType.Extension;
+            var tempArchivePath = PathBuilder.JoinPaths(CurrentPath, tempArchiveFileName);
 
-        var stream = await FileSystemProvider.Read(PathBuilder.JoinPaths(CurrentPath, entry.Name));
-        await DownloadService.DownloadStream(entry.Name, stream);
+            await ToastService.Progress(
+                $"Downloading {entry.Name}",
+                "Compressing folder",
+                async toast =>
+                {
+                    await CompressProvider.Compress(
+                        compressType,
+                        tempArchivePath,
+                        [PathBuilder.JoinPaths(CurrentPath, entry.Name)]
+                    );
 
-        stream.Close();
+                    await FileView.Refresh();
+
+                    await toast.UpdateText("Downloading folder");
+                    
+                    var stream = await FileSystemProvider.Read(tempArchivePath);
+                    await DownloadService.DownloadStream($"{entry.Name}.{compressType.Extension}", stream);
+
+                    await ToastService.Success("Downloading folder", $"You can delete the '{tempArchiveFileName}' after the download has finished");
+                }
+            );
+        }
+        else
+            await ToastService.Danger("Folder downloads are not supported");
     }
 
     private async Task Move(FileSystemEntry entry)
