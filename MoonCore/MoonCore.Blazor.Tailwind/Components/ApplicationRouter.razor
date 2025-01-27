@@ -1,9 +1,11 @@
 ﻿@using System.Reflection
 @using Microsoft.AspNetCore.Components.Authorization
 @using Microsoft.AspNetCore.Components.Routing
-@using MoonCore.Blazor.Components
 @using MoonCore.Blazor.Tailwind.States
 @using MoonCore.Blazor.Tailwind.Auth
+@using MoonCore.Exceptions
+
+@inject AuthenticationStateManager AuthenticationStateManager
 
 <ErrorLogger>
     @if (IsLoading)
@@ -30,7 +32,7 @@
                 <Router AppAssembly="AppAssembly" AdditionalAssemblies="AdditionalAssemblies">
                     <Found Context="routeData">
                         <LayoutView Layout="@DefaultLayout">
-                            <ErrorHandler>
+                            <ErrorHandler CustomHandler="OnHandleException">
                                 <RouteView RouteData="@routeData"/>
                             </ErrorHandler>
                         </LayoutView>
@@ -104,5 +106,18 @@
 
         IsLoading = false;
         await InvokeAsync(StateHasChanged);
+    }
+
+    private async Task<bool> OnHandleException(Exception exception, ErrorHandler errorHandler)
+    {
+        if (exception is not HttpApiException httpApiException)
+            return false;
+
+        if (httpApiException.Status != 401)
+            return false;
+
+        await AuthenticationStateManager.Logout();
+        
+        return true;
     }
 }
