@@ -268,6 +268,47 @@ public class HostFileSystemProvider : IFileSystemProvider, ICompressFileSystemPr
 
     public async Task Decompress(CompressType type, string path, string destination)
     {
-        Console.WriteLine($"{type.DisplayName}: Decompressing {path} to {destination}");
+        if (type.Extension == "tar.gz")
+            await DecompressTarGz(path, destination);
+        /*else if (type.Extension == "zip")
+            await CompressZip(path, itemsToCompress);*/
     }
+
+    #region Tar Gz
+
+    private async Task DecompressTarGz(string path, string destination)
+    {
+        var archivePath = PathBuilder.File(BaseDirectory, path);
+
+        await using var fs = File.Open(archivePath, FileMode.Open, FileAccess.Read, FileShare.ReadWrite);
+        await using var gzipInputStream = new GZipInputStream(fs);
+        await using var tarInputStream = new TarInputStream(gzipInputStream, Encoding.UTF8);
+
+        while (true)
+        {
+            var entry = await tarInputStream.GetNextEntryAsync(CancellationToken.None);
+            
+            if(entry == null)
+                break;
+
+            var fileDestination = PathBuilder.File(BaseDirectory, destination, entry.Name);
+            var parentFolder = Path.GetDirectoryName(fileDestination);
+
+            // Ensure parent directory exists, if it's not the base directory
+            if (parentFolder != null && parentFolder != BaseDirectory)
+                Directory.CreateDirectory(parentFolder);
+
+            await using var fileDestinationFs = File.Open(fileDestination, FileMode.Create, FileAccess.ReadWrite, FileShare.Read);
+            await tarInputStream.CopyEntryContentsAsync(fileDestinationFs, CancellationToken.None);
+
+            await fileDestinationFs.FlushAsync();
+            fileDestinationFs.Close();
+        }
+        
+        tarInputStream.Close();
+        gzipInputStream.Close();
+        fs.Close();
+    }
+
+    #endregion
 }

@@ -187,9 +187,27 @@ else
                        @onmousedown:stopPropagation
                        class="flex px-4 py-2 items-center hover:bg-gray-700 border-b border-gray-700" role="menuitem"
                        tabindex="-1">
-                        <i class="me-2 text-success-500 icon-file-archive text-lg"></i>
-                        <span class="text-sm">Archive</span>
+                        <i class="me-2 text-success-500 icon-package text-lg"></i>
+                        <span class="text-sm">Compress</span>
                     </a>
+
+                    if (context.IsFile)
+                    {
+                        var compressType = CompressProvider.CompressTypes.FirstOrDefault(
+                            x => context.Name.EndsWith(x.Extension, StringComparison.InvariantCultureIgnoreCase)
+                        );
+
+                        if (compressType != null)
+                        {
+                            <a href="#" @onclick="() => Decompress(context, compressType)" @onclick:preventDefault @onmousedown:preventDefault
+                               @onmousedown:stopPropagation
+                               class="flex px-4 py-2 items-center hover:bg-gray-700 border-b border-gray-700" role="menuitem"
+                               tabindex="-1">
+                                <i class="me-2 text-success-500 icon-package-open text-lg"></i>
+                                <span class="text-sm">Decompress</span>
+                            </a>
+                        }
+                    }
                 }
 
                 <a href="#" @onclick="() => Rename(context)" @onclick:preventDefault @onmousedown:preventDefault

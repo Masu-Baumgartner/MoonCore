@@ -28,6 +28,8 @@
 
     public async Task Show(double x, double y)
     {
+        // Cancel "previous" context menu disappear function, as we reuse this instance and dont want it to hide
+        // in the Show function obv.
         if (Cancellation != null && !Cancellation.IsCancellationRequested)
             await Cancellation.CancelAsync();
 
@@ -53,6 +55,8 @@
     {
         try
         {
+            // We make the task cancelable, because if we spawn a "new" context menu while "the other one"
+            // is still open this would lead to the "new" one to close after 150 because we just reuse the instance
             await Task.Delay(150, Cancellation?.Token ?? CancellationToken.None);
             await Hide();
         }
