@@ -6,6 +6,7 @@
 @using MoonCore.Helpers
 @using MoonCore.Models
 
+@*
 <DataTable TItem="FileSystemEntry" LoadItemsPaginatedAsync="LoadItemsAsync" PageSize="10">
     <Configuration>
         <DataTableColumn TItem="FileSystemEntry" Field="@(x => x.Name)" Name="Name"/>
@@ -15,7 +16,11 @@
             </ColumnTemplate>
         </DataTableColumn>
     </Configuration>
-</DataTable>
+</DataTable>*@
+
+<FileListY CurrentPath="/"
+           FileSystemProvider="FileSystemProvider">
+</FileListY>
 
 @code
 {

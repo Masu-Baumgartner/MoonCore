@@ -1,0 +1,74 @@
+﻿@using MoonCore.Blazor.Tailwind.Test.UI.Dt
+@using MoonCore.Helpers
+
+<DataTable TItem="FileSystemEntry" LoadItemsAsync="LoadItemsAsync">
+    <Configuration>
+        <DataTableColumn TItem="FileSystemEntry" HeaderCss="w-12 px-2" ColumnCss="w-12 px-2">
+            <ColumnTemplate>
+                <div class="flex justify-center items-center">
+                    @if (context.IsFile)
+                    {
+                        <i class="icon-file-text text-2xl text-warning-500"></i>
+                    }
+                    else
+                    {
+                        <i class="icon-folder text-2xl text-primary-500"></i>
+                    }
+                </div>
+            </ColumnTemplate>
+        </DataTableColumn>
+        <DataTableColumn TItem="FileSystemEntry" Field="@(x => x.Name)"
+                         Name="Name"
+                         HeaderCss="px-1 py-2"
+                         ColumnCss="px-1 py-2" />
+        <DataTableColumn TItem="FileSystemEntry" Field="@(x => x.Size)"
+                         Name="Size"
+                         HeaderCss="px-6 py-2 hidden md:table-cell"
+                         ColumnCss="px-6 py-3 hidden md:table-cell">
+            <ColumnTemplate>
+                @if (context.IsFile)
+                {
+                    @Formatter.FormatSize(context.Size)
+                }
+                else
+                {
+                    <span>-</span>
+                }
+            </ColumnTemplate>
+        </DataTableColumn>
+        <DataTableColumn TItem="FileSystemEntry" Field="@(x => x.CreatedAt)"
+                         Name="Created At"
+                         HeaderCss="px-6 py-2 hidden md:table-cell"
+                         ColumnCss="px-6 py-3 hidden md:table-cell">
+            <ColumnTemplate>
+                @Formatter.FormatDate(context.CreatedAt)
+            </ColumnTemplate>
+        </DataTableColumn>
+    </Configuration>
+</DataTable>
+
+@code
+{
+    [Parameter] public IFileSystemProvider FileSystemProvider { get; set; }
+    [Parameter] public string CurrentPath { get; set; } = "/";
+    [Parameter] public Func<IEnumerable<FileSystemEntry>, IEnumerable<FileSystemEntry>>? EntryFilter { get; set; }
+    
+    [Parameter] public Func<FileSystemEntry, Task>? OnInteract { get; set; }
+
+    private ElementReference Reference;
+
+    private async Task<IEnumerable<FileSystemEntry>> LoadItemsAsync()
+    {
+        IEnumerable<FileSystemEntry> entries = await FileSystemProvider.List(CurrentPath);
+
+        if (EntryFilter != null)
+            entries = EntryFilter.Invoke(entries);
+
+        return entries;
+    }
+
+    private async Task InvokeInteract(FileSystemEntry entry)
+    {
+        
+    }
+}
