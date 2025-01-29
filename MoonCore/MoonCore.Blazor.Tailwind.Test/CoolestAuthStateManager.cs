@@ -9,7 +9,7 @@ namespace MoonCore.Blazor.Tailwind.Test;
 
 public class CoolestAuthStateManager : AuthenticationStateManager
 {
-    private bool IsLoggedIn = false;
+    private bool IsLoggedIn = true;
     private readonly ILogger<CoolestAuthStateManager> Logger;
     private readonly NavigationManager Navigation;
     private readonly HttpApiClient HttpApiClient;

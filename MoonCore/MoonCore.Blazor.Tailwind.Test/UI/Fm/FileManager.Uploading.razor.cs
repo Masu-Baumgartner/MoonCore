@@ -18,7 +18,7 @@ public partial class FileManager
                 await FileSystemProvider.Create(pathToUpload, dataStream);
             });
 
-            parameters.Add("OnUploadCompleted", async () => { await FileView!.Refresh(); });
+            parameters.Add("OnUploadCompleted", async () => { await FileList.Refresh(); });
         });
     }
 

@@ -7,14 +7,29 @@
 <h1 class="mb-5 font-semibold text-xl">Select a location</h1>
 
 <div class="rounded-lg bg-gray-800">
-    <FileView InitialPath="@InitialPath"
-              OnNavigated="OnNavigated"
+    <FileList @ref="FileList"
+              InitialPath="@InitialPath"
               EntriesFilter="EntriesFilter"
               EnableHeaderRounding="true"
-              ShowGoUpElement="true"
               ShowDate="false"
               ShowSize="false"
+              OnInteract="OnInteract"
               FileSystemProvider="FileSystemProvider">
+        <GoUpTemplate>
+            <tr class="border-b border-gray-700">
+                <td>
+                    <div class="flex justify-center">
+                        <i class="icon-corner-left-up text-2xl text-primary-500"></i>
+                    </div>
+                </td>
+                <td class="px-6 py-4" colspan="20">
+                    <a href="#" class="hover:text-white" @onclick="FileList.GoUp"
+                       @onclick:preventDefault>
+                        Go to parent directory
+                    </a>
+                </td>
+            </tr>
+        </GoUpTemplate>
         <NoFilesTemplate>
             <StateDisplay Title="No folders found"
                           Description="No folders in the selected directory found"
@@ -22,7 +37,7 @@
                           IconColor="text-primary-500"
                           Type="StateType.Custom"/>
         </NoFilesTemplate>
-    </FileView>
+    </FileList>
 </div>
 
 <div class="mt-5 flex space-x-2">
@@ -36,6 +51,7 @@
     [Parameter] public string InitialPath { get; set; } = "/";
     [Parameter] public Func<string, Task> OnSubmit { get; set; }
 
+    private FileList FileList;
     private string Path;
 
     protected override void OnInitialized()
@@ -49,10 +65,10 @@
         await Hide();
     }
 
-    private Task OnNavigated(string path)
+    private async Task OnInteract(FileSystemEntry entry)
     {
-        Path = path;
-        return Task.CompletedTask;
+        await FileList.GoIn(entry.Name);
+        Path = FileList.CurrentPath;
     }
 
     private IEnumerable<FileSystemEntry> EntriesFilter(IEnumerable<FileSystemEntry> entries)

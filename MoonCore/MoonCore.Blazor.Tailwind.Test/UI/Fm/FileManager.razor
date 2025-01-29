@@ -1,4 +1,3 @@
-@using System.Text
 @using MoonCore.Blazor.Tailwind.Alerts
 @using MoonCore.Blazor.Tailwind.Modals
 @using MoonCore.Blazor.Tailwind.Services
@@ -7,7 +6,6 @@
 @using MoonCore.Helpers
 @using MoonCore.Blazor.Tailwind.Components
 @using MoonCore.Blazor.Tailwind.HotKeys
-@using MoonCore.Blazor.Tailwind.Toasts.Components
 
 @inject ModalService ModalService
 @inject ToastService ToastService
@@ -106,7 +104,7 @@ else
                 <nav class="flex">
                     <ol class="inline-flex items-center space-x-0.5 md:space-x-2">
                         <li class="inline-flex items-center">
-                            <a href="#" @onclick="@(() => FileView!.GoTo("/"))" @onclick:preventDefault
+                            <a href="#" @onclick="@(() => FileList!.GoTo("/"))" @onclick:preventDefault
                                class="inline-flex items-center text-sm font-medium text-gray-400 hover:text-white">
                                 <i class="icon-hard-drive text-lg me-2.5"></i>
                                 Home
@@ -139,7 +137,7 @@ else
                                 <li>
                                     <div class="flex items-center">
                                         <i class="text-gray-400 mx-0.5 icon-chevron-right"></i>
-                                        <a href="#" @onclick="@(() => FileView!.GoTo(currentPath))"
+                                        <a href="#" @onclick="@(() => FileList!.GoTo(currentPath))"
                                            @onclick:preventDefault
                                            class="ms-1 text-sm font-medium md:ms-2 text-gray-400 hover:text-white">
                                             @pathName
@@ -153,11 +151,10 @@ else
             </div>
         </div>
 
-        <FileView @ref="FileView"
+        <FileList @ref="FileList"
                   EnableSelection="true"
                   FileSystemProvider="FileSystemProvider"
                   OnInteract="OnInteract"
-                  OnNavigated="OnNavigated"
                   InitialPath="@CurrentPath"
                   OnSelectionChanged="OnSelectionChanged">
             <ContextMenuTemplate>
@@ -224,7 +221,7 @@ else
                     <span class="text-sm">Delete</span>
                 </a>
             </ContextMenuTemplate>
-        </FileView>
+        </FileList>
     </div>
 }
 
@@ -240,20 +237,23 @@ else
         await InvokeAsync(StateHasChanged);
     }
 
-    private async Task<bool> OnInteract(FileSystemEntry entry)
+    private async Task OnInteract(FileSystemEntry entry)
     {
         if (entry.IsFile)
         {
             if (entry.Size > MaxEditorOpenSize)
             {
                 await ToastService.Danger("Unable to open file in text editor. The file is too big");
-                return true;
+                return;
             }
 
             await OpenEditor(entry);
-            return true;
+            return;
         }
-
-        return false;
+        else
+        {
+            await FileList.GoIn(entry.Name);
+            CurrentPath = FileList.CurrentPath;
+        }
     }
 }

@@ -1,0 +1,55 @@
+﻿@page "/tableTest"
+
+@using MoonCore.Blazor.Tailwind.Test.UI.Fm
+@using MoonCore.Blazor.Tailwind.Test.UI.Dt
+@using MoonCore.Exceptions
+@using MoonCore.Helpers
+@using MoonCore.Models
+
+<DataTable TItem="FileSystemEntry" LoadItemsPaginatedAsync="LoadItemsAsync" PageSize="10">
+    <Configuration>
+        <DataTableColumn TItem="FileSystemEntry" Field="@(x => x.Name)" Name="Name"/>
+        <DataTableColumn TItem="FileSystemEntry" Field="@(x => x.Size)">
+            <ColumnTemplate>
+                @Formatter.FormatSize(context.Size)
+            </ColumnTemplate>
+        </DataTableColumn>
+    </Configuration>
+</DataTable>
+
+@code
+{
+    private IFileSystemProvider FileSystemProvider = new HostFileSystemProvider("testFs");
+
+    private async Task<IPagedData<FileSystemEntry>> LoadItemsAsync(PaginationOptions paginationOptions)
+    {
+        await Task.Delay(TimeSpan.FromSeconds(3));
+        
+        var result = new List<FileSystemEntry>();
+
+        for (var i = 0; i < 100; i++)
+        {
+            result.Add(new FileSystemEntry()
+            {
+                Name = $"file {i}"
+            });
+        }
+        
+        return PagedData<FileSystemEntry>.Create(result, paginationOptions.Page, paginationOptions.PerPage);
+    }
+    
+    private async Task<IEnumerable<FileSystemEntry>> LoadItemsAsync() // Discard pagination
+    {
+        var result = new List<FileSystemEntry>();
+
+        for (var i = 0; i < 100; i++)
+        {
+            result.Add(new FileSystemEntry()
+            {
+                Name = $"file {i}"
+            });
+        }
+        
+        return result;
+    }
+}

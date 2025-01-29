@@ -2,7 +2,7 @@
 
 public partial class FileManager
 {
-    private FileView FileView;
+    private FileList FileList;
     private string CurrentPath = "/";
     
     private async Task OnNavigated(string newPath)

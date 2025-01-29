@@ -41,7 +41,7 @@ public partial class FileManager : ComponentBase
             }
 
             await ToastService.Success($"Successfully deleted {deleted} files");
-            await FileView.Refresh();
+            await FileList.Refresh();
         }
 
         await AlertService.ConfirmDanger(

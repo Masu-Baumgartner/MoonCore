@@ -41,7 +41,7 @@ public partial class FileManager
                     );
 
                     await ToastService.Success("Successfully created archive", fileName);
-                    await FileView.Refresh();
+                    await FileList.Refresh();
                 }
             );
         }
@@ -91,7 +91,7 @@ public partial class FileManager
                     );
 
                     await ToastService.Success("Successfully extracted archive", entry.Name);
-                    await FileView.Refresh();
+                    await FileList.Refresh();
                 }
             );
         }

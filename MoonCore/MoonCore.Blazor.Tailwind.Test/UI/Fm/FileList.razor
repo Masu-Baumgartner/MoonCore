@@ -2,7 +2,7 @@
 @using MoonCore.Blazor.Tailwind.States
 @using MoonCore.Blazor.Tailwind.Components
 
-@inject ILogger<FileView> Logger
+@inject ILogger<FileList> Logger
 
 <div class="relative overflow-x-auto @(EnableHeaderRounding ? "rounded-lg" : "")">
     <table class="w-full text-sm text-left text-gray-400">
@@ -72,42 +72,9 @@
         {
             if (LoadingException == null)
             {
-                if (ShowGoUpElement && CurrentPath != "/")
+                if (GoUpTemplate != null && CurrentPath != "/")
                 {
-                    <tr class="border-b border-gray-700">
-                        
-                        @if (EnableSelection)
-                        {
-                            <td class="ps-4">
-                            </td>
-                        }
-                        
-                        <td>
-                            <div class="flex justify-center">
-                                <i class="icon-corner-left-up text-2xl text-primary-500"></i>
-                            </div>
-                        </td>
-                        <td class="px-6 py-4">
-                            <a href="#" class="hover:text-white" @onclick="GoUp"
-                               @onclick:preventDefault>
-                                Go to parent directory
-                            </a>
-                        </td>
-                        @if (ShowSize)
-                        {
-                            <td class="px-6 py-4 hidden md:table-cell">
-                                <span>-</span>
-                            </td>
-                        }
-                        @if (ShowDate)
-                        {
-                            <td class="px-6 py-4 hidden md:table-cell">
-                                <span>-</span>
-                            </td>
-                        }
-                        <td class="px-3">
-                        </td>
-                    </tr>
+                    @GoUpTemplate
                 }
 
                 if (Entries.Length == 0)
@@ -329,21 +296,12 @@
 
     #region Interact
 
-    [Parameter] public Func<FileSystemEntry, Task<bool>>? OnInteract { get; set; }
+    [Parameter] public Func<FileSystemEntry, Task>? OnInteract { get; set; }
 
     private async Task Interact(FileSystemEntry entry)
     {
-        if (OnInteract != null)
-        {
-            var shouldSkipDefault = await OnInteract.Invoke(entry);
-
-            if (shouldSkipDefault)
-                return;
-        }
-
-        // Default handling. Its basically just navigation at the moment
-        if (!entry.IsFile)
-            await GoIn(entry.Name);
+        if(OnInteract != null)
+            await OnInteract.Invoke(entry);
     }
 
     #endregion
@@ -355,9 +313,7 @@
         CurrentPath = InitialPath;
     }
 
-    [Parameter] public Func<string, Task>? OnNavigated { get; set; }
     [Parameter] public string InitialPath { get; set; } = "/";
-    [Parameter] public bool ShowGoUpElement { get; set; } = false;
 
     public string CurrentPath { get; private set; } = "";
 
@@ -374,10 +330,6 @@
         CurrentPath = newPath;
         
         await Refresh();
-        
-        // Notify possible parent
-        if (OnNavigated != null)
-            await OnNavigated.Invoke(CurrentPath);
     }
 
     public async Task GoIn(string item)
@@ -388,10 +340,6 @@
         CurrentPath = PathBuilder.FullPathUnix(CurrentPath, diff);
 
         await Refresh();
-        
-        // Notify possible parent
-        if (OnNavigated != null)
-            await OnNavigated.Invoke(CurrentPath);
     }
 
     #endregion
@@ -402,6 +350,7 @@
     [Parameter] public bool ShowSize { get; set; } = true;
     [Parameter] public bool ShowDate { get; set; } = true;
     [Parameter] public RenderFragment? NoFilesTemplate { get; set; }
+    [Parameter] public RenderFragment? GoUpTemplate { get; set; }
 
     #endregion
 

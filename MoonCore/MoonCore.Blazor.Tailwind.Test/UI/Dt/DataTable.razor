@@ -1,0 +1,363 @@
+﻿@using MoonCore.Blazor.Tailwind.States
+@using MoonCore.Models
+
+@typeparam TItem
+
+@if (Configuration != null)
+{
+    <CascadingValue TValue="DataTable<TItem>" Name="DataTable" Value="@this" IsFixed="true">
+        @Configuration
+    </CascadingValue>
+}
+
+@* Add option for rounded-lg in the element below *@
+
+<div class="bg-gray-800 rounded-lg">
+    <div class="rounded-lg relative overflow-x-auto">
+        <table class="w-full text-sm text-left text-gray-400">
+            <thead class="text-xs uppercase bg-gray-700/50 text-gray-400">
+            <tr>
+
+                @*
+@if (EnableSelection)
+            {
+                <th scope="col" class="w-8 ps-4">
+                    <div class="flex justify-center">
+                        As we want to show the header while loading, we need to handle the loading state before looking at the entries
+    @if (!IsLoading && Entries.Length != 0 && Entries.Length == InternalSelectedItems.Count)
+    {
+        <input @onclick="() => SetAllSelection(false)" type="checkbox" class="form-checkbox" checked="checked">
+    }
+    else
+    {
+        <input @onclick="() => SetAllSelection(true)" type="checkbox" class="form-checkbox">
+    }
+</div>
+</th>
+}
+*@
+
+                @foreach (var column in Columns)
+                {
+                    <th scope="col" class="@column.HeaderCss">
+                        @if (column.HeaderTemplate != null)
+                        {
+                            @column.HeaderTemplate
+                        }
+                        else
+                        {
+                            @column.Name
+                        }
+                    </th>
+                }
+            </tr>
+            </thead>
+            <tbody>
+
+            @if (IsLoading)
+            {
+                <tr>
+                    <td colspan="@Columns.Count">
+                        <div class="w-full flex justify-center items-center p-5">
+                            <div role="status">
+                                <svg aria-hidden="true"
+                                     class="inline w-10 h-10 animate-spin text-slate-600 fill-primary-600"
+                                     viewBox="0 0 100 101" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                    <path
+                                        d="M100 50.5908C100 78.2051 77.6142 100.591 50 100.591C22.3858 100.591 0 78.2051 0 50.5908C0 22.9766 22.3858 0.59082 50 0.59082C77.6142 0.59082 100 22.9766 100 50.5908ZM9.08144 50.5908C9.08144 73.1895 27.4013 91.5094 50 91.5094C72.5987 91.5094 90.9186 73.1895 90.9186 50.5908C90.9186 27.9921 72.5987 9.67226 50 9.67226C27.4013 9.67226 9.08144 27.9921 9.08144 50.5908Z"
+                                        fill="currentColor"/>
+                                    <path
+                                        d="M93.9676 39.0409C96.393 38.4038 97.8624 35.9116 97.0079 33.5539C95.2932 28.8227 92.871 24.3692 89.8167 20.348C85.8452 15.1192 80.8826 10.7238 75.2124 7.41289C69.5422 4.10194 63.2754 1.94025 56.7698 1.05124C51.7666 0.367541 46.6976 0.446843 41.7345 1.27873C39.2613 1.69328 37.813 4.19778 38.4501 6.62326C39.0873 9.04874 41.5694 10.4717 44.0505 10.1071C47.8511 9.54855 51.7191 9.52689 55.5402 10.0491C60.8642 10.7766 65.9928 12.5457 70.6331 15.2552C75.2735 17.9648 79.3347 21.5619 82.5849 25.841C84.9175 28.9121 86.7997 32.2913 88.1811 35.8758C89.083 38.2158 91.5421 39.6781 93.9676 39.0409Z"
+                                        fill="currentFill"/>
+                                </svg>
+                                <span class="sr-only">Loading...</span>
+                            </div>
+                        </div>
+                    </td>
+                </tr>
+            }
+            else
+            {
+                if (LoadException == null)
+                {
+                    if (InternalData.Items.Length == 0)
+                    {
+                        <tr>
+                            <td colspan="@Columns.Count" class="px-6 py-2">
+                                @if (NoItemsTemplate == null)
+                                {
+                                    <div class="p-5">
+                                        <StateDisplay Type="StateType.Custom"
+                                                      IconColor="text-info-500"
+                                                      Icon="icon-hexagon"
+                                                      Title="No items found"
+                                                      Description="No items could be found"/>
+                                    </div>
+                                }
+                                else
+                                {
+                                    @NoItemsTemplate
+                                }
+                            </td>
+                        </tr>
+                    }
+                    else
+                    {
+                        foreach (var row in Rows)
+                        {
+                            <tr>
+                                <td colspan="@Columns.Count" class="@row.Css">
+                                    @row.Template
+                                </td>
+                            </tr>
+                        }
+                        
+                        for (var i = 0; i < InternalData.Items.Length; i++)
+                        {
+                            var item = InternalData.Items[i];
+
+                            <tr class="@(i != InternalData.Items.Length - 1 ? "border-b border-gray-700" : "")">
+                                @foreach (var column in Columns)
+                                {
+                                    <td class="@column.ColumnCss">
+                                        @if (column.ColumnTemplate == null)
+                                        {
+                                            if (column.Field != null)
+                                            {
+                                                var val = column.Field.Invoke(item);
+
+                                                @(val?.ToString() ?? "null")
+                                            }
+                                        }
+                                        else
+                                        {
+                                            @column.ColumnTemplate.Invoke(item)
+                                        }
+                                    </td>
+                                }
+                            </tr>
+                        }
+                    }
+                }
+                else
+                {
+                    <tr>
+                        <td colspan="@Columns.Count">
+                            <div class="p-5">
+                                <ErrorStateDisplay Exception="LoadException"/>
+                            </div>
+                        </td>
+                    </tr>
+                }
+            }
+
+            </tbody>
+        </table>
+    </div>
+</div>
+
+@* Pagination *@
+
+@if (!IsLoading && EnablePagination)
+{
+    <nav class="flex flex-row justify-between items-start px-4 py-2 mt-1">
+    <span class="text-sm font-normal text-gray-400">
+        @{
+            var start = 0;
+            var end = 0;
+
+            if (InternalData.TotalItems != 0)
+            {
+                start = InternalData.CurrentPage * InternalData.PageSize + 1;
+
+                var fullEnd = PaginationOptions.Page * PaginationOptions.PerPage + PaginationOptions.PerPage;
+
+                if (InternalData.TotalItems < fullEnd)
+                    end = InternalData.CurrentPage * InternalData.PageSize + (InternalData.TotalItems - start + 1);
+                else
+                    end = fullEnd;
+            }
+        }
+
+        Showing
+        <span class="font-semibold text-white">@(start)-@(end)</span>
+        of
+        <span class="font-semibold text-white">
+            @InternalData.TotalItems
+        </span>
+    </span>
+        <div class="flex">
+            @if (InternalData.CurrentPage == 0)
+            {
+                <button
+                    class="flex items-center justify-center px-3 h-8 text-sm font-medium border rounded-lg bg-gray-800 border-gray-700 text-gray-400 hover:bg-gray-700 hover:text-white disabled:border-gray-700 disabled:bg-gray-800 disabled:text-gray-600 disabled:cursor-not-allowed"
+                    disabled="disabled">
+                    Previous
+                </button>
+            }
+            else
+            {
+                <button @onclick="() => NavigatePage(-1)"
+                        class="flex items-center justify-center px-3 h-8 text-sm font-medium   border  rounded-lg   bg-gray-800 border-gray-700 text-gray-400 hover:bg-gray-700 hover:text-white">
+                    Previous
+                </button>
+            }
+
+            @if (InternalData.CurrentPage == InternalData.TotalPages || InternalData.TotalItems == 0)
+            {
+                <button
+                    class="ms-3 lex items-center justify-center px-3 h-8 text-sm font-medium   border  rounded-lg   bg-gray-800 border-gray-700 text-gray-400 hover:bg-gray-700 hover:text-white disabled:border-gray-700 disabled:bg-gray-800 disabled:text-gray-600 disabled:cursor-not-allowed"
+                    disabled="disabled">
+                    Next
+                </button>
+            }
+            else
+            {
+                <button @onclick="() => NavigatePage(1)"
+                        class="ms-3 flex items-center justify-center px-3 h-8 text-sm font-medium   border  rounded-lg   bg-gray-800 border-gray-700 text-gray-400 hover:bg-gray-700 hover:text-white">
+                    Next
+                </button>
+            }
+        </div>
+    </nav>
+}
+
+@code
+{
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (!firstRender)
+            return;
+
+        await Refresh();
+    }
+
+    #region Configuration
+
+    [Parameter] public RenderFragment? Configuration { get; set; }
+
+    private readonly List<DataTableColumn<TItem>> Columns = new();
+    private readonly List<DataTableRow<TItem>> Rows = new();
+
+    public void AddColumn(DataTableColumn<TItem> column)
+        => Columns.Add(column);
+
+    public void AddRow(DataTableRow<TItem> row)
+        => Rows.Add(row);
+
+    #endregion
+
+    #region Loading
+
+    [Parameter] public IEnumerable<TItem>? Items { get; set; }
+    [Parameter] public Func<IEnumerable<TItem>>? LoadItems { get; set; }
+    [Parameter] public Func<Task<IEnumerable<TItem>>>? LoadItemsAsync { get; set; }
+
+    // Paginated
+    [Parameter] public Func<PaginationOptions, IPagedData<TItem>>? LoadItemsPaginated { get; set; }
+    [Parameter] public Func<PaginationOptions, Task<IPagedData<TItem>>>? LoadItemsPaginatedAsync { get; set; }
+    
+    // Design
+    [Parameter] public RenderFragment? NoItemsTemplate { get; set; }
+
+    private bool IsLoading = true;
+    private Exception? LoadException;
+
+    protected override void OnInitialized()
+    {
+        if (Items == null && LoadItems == null && LoadItemsAsync == null && LoadItemsPaginated != null && LoadItemsPaginatedAsync != null)
+            throw new ArgumentNullException(nameof(LoadItems), "Specify either Items, LoadItems or LoadItemsAsync or the paginated variants");
+
+        if (LoadItemsPaginated != null || LoadItemsPaginatedAsync != null)
+            EnablePagination = true;
+
+        PaginationOptions.PerPage = PageSize;
+        InternalData = PagedData<TItem>.Create([], 0, 0);
+    }
+
+    private async Task Load()
+    {
+        if (EnablePagination)
+        {
+            if (LoadItemsPaginated != null)
+                InternalData = LoadItemsPaginated.Invoke(PaginationOptions);
+            else if (LoadItemsPaginatedAsync != null)
+                InternalData = await LoadItemsPaginatedAsync.Invoke(PaginationOptions);
+        }
+        else
+        {
+            TItem[] items;
+
+            if (Items != null)
+            {
+                items = Items
+                    .ToArray();
+            }
+            else if (LoadItems != null)
+            {
+                items = LoadItems
+                    .Invoke()
+                    .ToArray();
+            }
+            else //if (LoadItemsAsync != null)
+            {
+                var itemSource = await LoadItemsAsync!.Invoke();
+                items = itemSource.ToArray();
+            }
+
+            InternalData = PagedData<TItem>.Create(items, 0, items.Length);
+        }
+    }
+
+    public async Task Refresh()
+    {
+        // Reset state
+        LoadException = null;
+
+        // Set loading state
+        IsLoading = true;
+        await InvokeAsync(StateHasChanged);
+
+        try
+        {
+            await Load();
+        }
+        catch (Exception e)
+        {
+            LoadException = e;
+
+            IsLoading = false;
+            await InvokeAsync(StateHasChanged);
+            return;
+        }
+
+        IsLoading = false;
+        await InvokeAsync(StateHasChanged);
+    }
+
+    #endregion
+
+    #region Pagination
+    
+    // Pagination
+    [Parameter] public int PageSize { get; set; } = 15;
+    
+    private bool EnablePagination = false;
+    private IPagedData<TItem> InternalData;
+    private PaginationOptions PaginationOptions = new();
+
+    private async Task NavigatePage(int diff)
+    {
+        PaginationOptions.Page += diff;
+
+        if (PaginationOptions.Page < 0)
+            PaginationOptions.Page = 0;
+        else if (PaginationOptions.Page > InternalData.TotalPages)
+            PaginationOptions.Page = InternalData.TotalPages;
+
+        await Refresh();
+    }
+
+    #endregion
+
+}

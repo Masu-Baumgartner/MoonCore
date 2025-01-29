@@ -39,7 +39,7 @@ public partial class FileManager
                         [PathBuilder.JoinPaths(CurrentPath, entry.Name)]
                     );
 
-                    await FileView.Refresh();
+                    await FileList.Refresh();
 
                     await toast.UpdateText("Downloading folder");
                     
@@ -65,7 +65,7 @@ public partial class FileManager
                     PathBuilder.JoinPaths(path, entry.Name)
                 );
 
-                await FileView!.Refresh();
+                await FileList!.Refresh();
             });
 
             parameters.Add("FileSystemProvider", FileSystemProvider);
@@ -86,7 +86,7 @@ public partial class FileManager
                         PathBuilder.JoinPaths(CurrentPath, val)
                     );
 
-                    await FileView!.Refresh();
+                    await FileList.Refresh();
                 });
             });
         }
@@ -102,7 +102,7 @@ public partial class FileManager
                         PathBuilder.JoinPaths(CurrentPath, val)
                     );
 
-                    await FileView!.Refresh();
+                    await FileList.Refresh();
                 });
             });
         }
@@ -118,7 +118,7 @@ public partial class FileManager
                 await ToastService.Progress("Deleting", string.Empty, async _ =>
                 {
                     await FileSystemProvider.Delete(PathBuilder.JoinPaths(CurrentPath, entry.Name));
-                    await FileView.Refresh();
+                    await FileList.Refresh();
                 });
             }
         );

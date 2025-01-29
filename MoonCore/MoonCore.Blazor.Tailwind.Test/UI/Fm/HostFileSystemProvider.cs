@@ -270,8 +270,8 @@ public class HostFileSystemProvider : IFileSystemProvider, ICompressFileSystemPr
     {
         if (type.Extension == "tar.gz")
             await DecompressTarGz(path, destination);
-        /*else if (type.Extension == "zip")
-            await CompressZip(path, itemsToCompress);*/
+        else if (type.Extension == "zip")
+            await DecompressZip(path, destination);
     }
 
     #region Tar Gz
@@ -299,7 +299,7 @@ public class HostFileSystemProvider : IFileSystemProvider, ICompressFileSystemPr
                 Directory.CreateDirectory(parentFolder);
 
             await using var fileDestinationFs = File.Open(fileDestination, FileMode.Create, FileAccess.ReadWrite, FileShare.Read);
-            await tarInputStream.CopyEntryContentsAsync(fileDestinationFs, CancellationToken.None);
+            await tarInputStream.CopyToAsync(fileDestinationFs, CancellationToken.None);
 
             await fileDestinationFs.FlushAsync();
             fileDestinationFs.Close();
@@ -307,6 +307,45 @@ public class HostFileSystemProvider : IFileSystemProvider, ICompressFileSystemPr
         
         tarInputStream.Close();
         gzipInputStream.Close();
+        fs.Close();
+    }
+
+    #endregion
+    
+    #region Zip
+
+    private async Task DecompressZip(string path, string destination)
+    {
+        var archivePath = PathBuilder.File(BaseDirectory, path);
+
+        await using var fs = File.Open(archivePath, FileMode.Open, FileAccess.Read, FileShare.ReadWrite);
+        await using var zipInputStream = new ZipInputStream(fs);
+
+        while (true)
+        {
+            var entry = zipInputStream.GetNextEntry();
+            
+            if(entry == null)
+                break;
+            
+            if(entry.IsDirectory)
+                continue;
+
+            var fileDestination = PathBuilder.File(BaseDirectory, destination, entry.Name);
+            var parentFolder = Path.GetDirectoryName(fileDestination);
+
+            // Ensure parent directory exists, if it's not the base directory
+            if (parentFolder != null && parentFolder != BaseDirectory)
+                Directory.CreateDirectory(parentFolder);
+
+            await using var fileDestinationFs = File.Open(fileDestination, FileMode.Create, FileAccess.ReadWrite, FileShare.Read);
+            await zipInputStream.CopyToAsync(fileDestinationFs, CancellationToken.None);
+
+            await fileDestinationFs.FlushAsync();
+            fileDestinationFs.Close();
+        }
+        
+        zipInputStream.Close();
         fs.Close();
     }
 

@@ -1,0 +1,15 @@
+﻿@typeparam TItem
+
+@code
+{
+    [CascadingParameter(Name = "DataTable")]
+    public DataTable<TItem> DataTable { get; set; }
+    
+    [Parameter] public RenderFragment Template { get; set; }
+    [Parameter] public string Css { get; set; } = "px-6 py-2";
+
+    protected override void OnInitialized()
+    {
+        DataTable.AddRow(this);
+    }
+}
