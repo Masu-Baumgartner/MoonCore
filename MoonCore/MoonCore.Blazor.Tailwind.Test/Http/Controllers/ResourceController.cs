@@ -16,7 +16,7 @@ public class ResourceController : Controller
     }
 
     [HttpGet]
-    [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
+    [Authorize]
     public async Task<string> Get()
     {
         Logger.LogInformation("Accessed resource using token");

@@ -1,3 +1,4 @@
+using System.Security.Claims;
 using System.Text;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Components.Authorization;
@@ -7,6 +8,9 @@ using MoonCore.Blazor.Tailwind.Extensions;
 using MoonCore.Blazor.Tailwind.Forms;
 using MoonCore.Blazor.Tailwind.Forms.Components;
 using MoonCore.Blazor.Tailwind.Test;
+using MoonCore.Blazor.Tailwind.Test.Extensions;
+using MoonCore.Blazor.Tailwind.Test.Http.Middleware;
+using MoonCore.Blazor.Tailwind.Test.Models;
 using MoonCore.Blazor.Tailwind.Test.UI;
 using MoonCore.Blazor.Tailwind.Test.UI.Ace;
 using MoonCore.Extensions;
@@ -56,11 +60,37 @@ builder.Services.AddScoped(sp =>
     return httpApiClient;
 });
 
-builder.Services.AddScoped<CoolestAuthStateManager>();
-builder.Services.AddScoped<AuthenticationStateManager>(sp => sp.GetRequiredService<CoolestAuthStateManager>());
-builder.Services.AddScoped<AuthenticationStateProvider>(sp => sp.GetRequiredService<AuthenticationStateManager>());
+builder.Services.AddAuthenticationStateManager<CoolestAuthStateManager>();
+
 builder.Services.AddAuthorizationCore();
 builder.Services.AddCascadingAuthenticationState();
+
+Dictionary<int, DateTime> expireTimes = new();
+expireTimes.Add(1, DateTime.MinValue);
+
+Task.Run(async () =>
+{
+    await Task.Delay(TimeSpan.FromSeconds(15));
+    expireTimes[1] = DateTime.UtcNow;
+    
+    Console.WriteLine("Invalidated");
+});
+
+builder.Services.AddSingleton(new JwtInvalidateOptions()
+{
+    InvalidateTimeProvider = async (_, principal) =>
+    {
+        var userIdClaim = principal.Claims.FirstOrDefault(x => x.Type == "userId");
+        
+        if (userIdClaim == null)
+            return null;
+
+        if (!int.TryParse(userIdClaim.Value, out var userId))
+            return DateTime.UtcNow;
+
+        return expireTimes[userId];
+    }
+});
 
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme).AddJwtBearer(options =>
 {
@@ -75,8 +105,6 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme).AddJw
         ValidateAudience = true,
         ClockSkew = TimeSpan.Zero
     };
-    
-    options.RefreshInterval = TimeSpan.FromSeconds(1);
 });
 
 builder.Services.AddAuthorization();
@@ -95,6 +123,9 @@ app.UseStaticFiles();
 app.UseAntiforgery();
 
 app.UseAuthentication();
+
+app.UseMiddleware<JwtInvalidateMiddleware>();
+
 app.UseAuthorization();
 
 app.MapControllers();

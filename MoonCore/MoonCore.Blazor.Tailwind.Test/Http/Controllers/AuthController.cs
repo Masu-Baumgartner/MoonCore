@@ -4,6 +4,7 @@ using System.Text;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.IdentityModel.Tokens;
 using MoonCore.Blazor.Tailwind.Test.Models;
+using MoonCore.Exceptions;
 
 namespace MoonCore.Blazor.Tailwind.Test.Http.Controllers;
 
@@ -12,6 +13,9 @@ namespace MoonCore.Blazor.Tailwind.Test.Http.Controllers;
 public class AuthController : Controller
 {
     private readonly ILogger<AuthController> Logger;
+
+    private const int AccessDuration = 3600;
+    private const string SecurityKey = "j4epTQEhvkZJqQ9Ek88385Kr2DBKcWabcdefgh";
 
     public AuthController(ILogger<AuthController> logger)
     {
@@ -25,130 +29,52 @@ public class AuthController : Controller
         {
             Endpoint = "http://localhost:5230/oauth2/start",
             ClientId = "myCoolClientId",
-            RedirectUri = "http://localhost:5230/#auth"
+            RedirectUri = "http://localhost:5230/"
         };
     }
-
-    [HttpPost("refresh")]
-    public async Task<AuthCompleteModel> Refresh([FromBody] AuthRefreshModel model)
-    {
-        try
-        {
-            var tokenHandler = new JwtSecurityTokenHandler();
-
-            var x = tokenHandler.ValidateToken(model.RefreshToken, new TokenValidationParameters()
-            {
-                IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes("j4epTQEhvkZJqQ9Ek88385Kr2DBKcWabcdefgh")),
-                ValidIssuer = "localhost:5230",
-                ValidAudience = "localhost:5230",
-                ValidateIssuerSigningKey = true,
-                ValidateLifetime = true,
-                ValidateIssuer = true,
-                ValidateAudience = true,
-                ClockSkew = TimeSpan.Zero
-            }, out _);
-
-            if (x == null)
-                Logger.LogInformation("Null");
-            else
-            {
-                foreach (var claim in x.Claims)
-                {
-                    Logger.LogInformation("{type}: {value}", claim.Type, claim.Value);
-                }
-            }
-        }
-        catch (Exception e)
-        {
-            Logger.LogError("Verification: {e}", e);
-        }
-        
-        return new();
-        /*
-        var accessTokenJwt = new JwtSecurityToken(
-            claims:
-            [
-                new Claim("Name", "CoolUser")
-            ],
-            issuer: "localhost:5230",
-            audience: "localhost:5230",
-            notBefore: DateTime.Now.AddMinutes(-1),
-            expires: DateTime.Now.AddMinutes(15),
-            signingCredentials: new SigningCredentials(
-                new SymmetricSecurityKey(Encoding.UTF8.GetBytes("j4epTQEhvkZJqQ9Ek88385Kr2DBKcWabcdefgh")),
-                SecurityAlgorithms.HmacSha256
-            )
-        );
-        
-        var refreshTokenJwt = new JwtSecurityToken(
-            claims:
-            [
-                new Claim("Name", "CoolUser")
-            ],
-            issuer: "localhost:5230",
-            audience: "localhost:5230",
-            notBefore: DateTime.Now.AddMinutes(-1),
-            expires: DateTime.Now.AddMinutes(60),
-            signingCredentials: new SigningCredentials(
-                new SymmetricSecurityKey(Encoding.UTF8.GetBytes("j4epTQEhvkZJqQ9Ek88385Kr2DBKcWabcdefgh")),
-                SecurityAlgorithms.HmacSha256
-            )
-        );
-
-        var accessToken = tokenHandler.WriteToken(accessTokenJwt);
-        var refreshToken = tokenHandler.WriteToken(refreshTokenJwt);
-
-        return new AuthCompleteModel()
-        {
-            AccessToken = accessToken,
-            RefreshToken = refreshToken,
-            ExpiresIn = 30 * 60
-        };*/
-    }
-
+    
     [HttpPost("complete")]
     public async Task<AuthCompleteModel> Complete([FromForm] string code)
     {
-        var tokenHandler = new JwtSecurityTokenHandler();
+        // You would handle the code here
+        var completePrincipal = new ClaimsPrincipal(new ClaimsIdentity([
+            new Claim("Name", "Testy"),
+            new Claim("userId", "1")
+        ]));
         
-        var accessTokenJwt = new JwtSecurityToken(
-            claims:
-            [
-                new Claim("Name", "CoolUser")
-            ],
-            issuer: "localhost:5230",
-            audience: "localhost:5230",
-            notBefore: DateTime.Now.AddMinutes(-1),
-            expires: DateTime.Now.AddMinutes(15),
-            signingCredentials: new SigningCredentials(
-                new SymmetricSecurityKey(Encoding.UTF8.GetBytes("j4epTQEhvkZJqQ9Ek88385Kr2DBKcWabcdefgh")),
-                SecurityAlgorithms.HmacSha256
-            )
-        );
-        
-        var refreshTokenJwt = new JwtSecurityToken(
-            claims:
-            [
-                new Claim("Name", "CoolUser")
-            ],
-            issuer: "localhost:5230",
-            audience: "localhost:5230",
-            notBefore: DateTime.Now.AddMinutes(-1),
-            expires: DateTime.Now.AddMinutes(60),
-            signingCredentials: new SigningCredentials(
-                new SymmetricSecurityKey(Encoding.UTF8.GetBytes("j4epTQEhvkZJqQ9Ek88385Kr2DBKcWabcdefgh")),
-                SecurityAlgorithms.HmacSha256
-            )
-        );
+        if (completePrincipal == null)
+            throw new HttpApiException("Unable to complete authentication", 403);
 
-        var accessToken = tokenHandler.WriteToken(accessTokenJwt);
-        var refreshToken = tokenHandler.WriteToken(refreshTokenJwt);
+        var accessData = new List<Claim>();
+        accessData.AddRange(completePrincipal.Claims);
+        accessData.Add(new Claim(JwtRegisteredClaimNames.Iat, DateTimeOffset.Now.ToUnixTimeSeconds().ToString()));
+
+        var tokenHandler = new JwtSecurityTokenHandler();
+
+        var std = new SecurityTokenDescriptor()
+        {
+            IssuedAt = DateTime.Now,
+            Expires = DateTime.Now.AddSeconds(AccessDuration),
+            NotBefore = DateTime.Now.AddMinutes(-1),
+            SigningCredentials = new SigningCredentials(
+                new SymmetricSecurityKey(Encoding.UTF8.GetBytes(SecurityKey)),
+                SecurityAlgorithms.HmacSha256
+            ),
+            Audience = "localhost:5230",
+            Issuer = "localhost:5230",
+            Claims = new Dictionary<string, object>()
+        };
+
+        foreach (var claim in accessData)
+            std.Claims.Add(claim.Type, claim.Value);
+
+        var token = tokenHandler.CreateToken(std);
+        var accessToken = tokenHandler.WriteToken(token);
 
         return new AuthCompleteModel()
         {
             AccessToken = accessToken,
-            RefreshToken = refreshToken,
-            ExpiresIn = 30 * 60
+            ExpiresIn = AccessDuration
         };
     }
 }

@@ -66,7 +66,6 @@ public class CoolestAuthStateManager : AuthenticationStateManager
             
             Logger.LogInformation("Received complete data with valid access token for {seconds} seconds", authCompleteData.ExpiresIn);
             Logger.LogInformation("Access token: {accessToken}", authCompleteData.AccessToken);
-            Logger.LogInformation("Refresh token: {refreshToken}", authCompleteData.RefreshToken);
             
             AccessToken = authCompleteData.AccessToken;
             IsLoggedIn = true;
