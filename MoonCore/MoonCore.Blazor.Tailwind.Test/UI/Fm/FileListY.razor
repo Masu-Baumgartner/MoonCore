@@ -55,8 +55,6 @@
     
     [Parameter] public Func<FileSystemEntry, Task>? OnInteract { get; set; }
 
-    private ElementReference Reference;
-
     private async Task<IEnumerable<FileSystemEntry>> LoadItemsAsync()
     {
         IEnumerable<FileSystemEntry> entries = await FileSystemProvider.List(CurrentPath);
