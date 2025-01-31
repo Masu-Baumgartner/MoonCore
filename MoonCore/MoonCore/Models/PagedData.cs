@@ -24,7 +24,7 @@ public class PagedData<TItem> : IPagedData<TItem>
             CurrentPage = page,
             PageSize = pageSize,
             TotalItems = count,
-            TotalPages = count == 0 ? 0 : count / pageSize
+            TotalPages = count == 0 ? 0 : (count - 1) / pageSize
         };
     }
 

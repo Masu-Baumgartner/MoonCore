@@ -15,7 +15,7 @@
         <PackageReadmeFile>README.md</PackageReadmeFile>
         <RepositoryType>git</RepositoryType>
         <PackageTags>mooncore</PackageTags>
-        <Version>1.2.6</Version>
+        <Version>1.2.7</Version>
         <IsPackable>true</IsPackable>
         <StaticWebAssetsEnabled>false</StaticWebAssetsEnabled>
     </PropertyGroup>
@@ -31,6 +31,7 @@
     </ItemGroup>
 
     <ItemGroup>
+        <PackageReference Include="Microsoft.AspNetCore.Components.Authorization" Version="8.0.12" />
         <PackageReference Include="Microsoft.AspNetCore.Components.Web" Version="8.0.10"/>
     </ItemGroup>
 
@@ -53,6 +54,22 @@
 
     <ItemGroup>
       <Folder Include="Styles\mappings\" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <AdditionalFiles Include="Ace\CodeEditor.razor" />
+      <AdditionalFiles Include="Dt\DataTable.razor" />
+      <AdditionalFiles Include="Dt\DataTableColumn.razor" />
+      <AdditionalFiles Include="Dt\DataTableRow.razor" />
+      <AdditionalFiles Include="Fm\CompressFileNameModal.razor" />
+      <AdditionalFiles Include="Fm\CreateFileModal.razor" />
+      <AdditionalFiles Include="Fm\CreateFolderModal.razor" />
+      <AdditionalFiles Include="Fm\FileList.razor" />
+      <AdditionalFiles Include="Fm\FileManager.razor" />
+      <AdditionalFiles Include="Fm\LocationSelectModal.razor" />
+      <AdditionalFiles Include="Fm\RenameFileModal.razor" />
+      <AdditionalFiles Include="Fm\RenameFolderModal.razor" />
+      <AdditionalFiles Include="Fm\UploadModal.razor" />
     </ItemGroup>
 
 </Project>

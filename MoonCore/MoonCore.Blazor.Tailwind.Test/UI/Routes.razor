@@ -1,6 +1,11 @@
 ﻿@using MoonCore.Blazor.Tailwind.Test.UI.Layouts
+@using MoonCore.Blazor.Tailwind.Components
+
+<ApplicationRouter AppAssembly="@typeof(Program).Assembly" DefaultLayout="@typeof(MainLayout)" />
+
+@*
 <Router AppAssembly="typeof(Program).Assembly">
     <Found Context="routeData">
         <RouteView RouteData="routeData" DefaultLayout="typeof(MainLayout)"/>
     </Found>
-</Router>
+</Router>*@

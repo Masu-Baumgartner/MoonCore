@@ -10,11 +10,11 @@
     var modal = Modals.Last();
     
     <div class="relative z-50" aria-labelledby="modal-title" role="dialog" aria-modal="true">
-        <div class="fixed inset-0 bg-gray-900/75 transition-opacity" aria-hidden="true"></div>
+        <div @onclick="HandleOutOfFocusClick" class="fixed inset-0 bg-gray-900/75 transition-opacity" aria-hidden="true"></div>
 
-        <div class="fixed inset-0 z-50 w-screen overflow-y-auto">
+        <div class="fixed inset-0 z-50 w-screen overflow-y-auto" style="pointer-events: none">
             <div class="flex min-h-full justify-center p-4 text-center items-center sm:p-0">
-                <div class="relative transform overflow-hidden rounded-lg text-left shadow-xl transition-all my-8 w-full max-w-lg sm:@(modal.Size)">
+                <div class="relative transform overflow-hidden rounded-lg text-left shadow-xl transition-all my-8 w-full max-w-lg sm:@(modal.Size)" style="pointer-events: all">
                     <div class="bg-gray-750 px-4 pb-4 pt-5 sm:p-6 sm:pb-4">
                         <div>
                             @modal.Component
@@ -37,11 +37,12 @@
         ModalService.SetLauncher(this);
     }
 
-    public async Task<ModalItem> Launch<T>(Action<Dictionary<string, object>>? onConfigure = null, string size = "max-w-lg") where T : BaseModal
+    public async Task<ModalItem> Launch<T>(Action<Dictionary<string, object>>? onConfigure = null, string size = "max-w-lg", bool allowUnfocusHide = false) where T : BaseModal
     {
         var item = new ModalItem()
         {
-            Size = size
+            Size = size,
+            AllowUnfocusHide = allowUnfocusHide
         };
 
         item.Component = ComponentHelper.FromType<T>(buildAttr =>
@@ -57,6 +58,19 @@
         await InvokeAsync(StateHasChanged);
 
         return item;
+    }
+
+    private async Task HandleOutOfFocusClick()
+    {
+        var modal = Modals.LastOrDefault();
+        
+        if(modal == null)
+            return;
+        
+        if(!modal.AllowUnfocusHide)
+            return;
+
+        await Close(modal);
     }
 
     public async Task Close(ModalItem item)

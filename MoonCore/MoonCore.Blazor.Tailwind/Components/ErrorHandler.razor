@@ -10,7 +10,9 @@
 
 @if (Exception != null)
 {
-    <ErrorStateDisplay Exception="Exception" />
+    <div class="mt-5">
+        <ErrorStateDisplay Exception="Exception" />
+    </div>
 }
 else if (MissingPermissionName != null)
 {
@@ -27,7 +29,7 @@ else
 {
     if (DisplayMessages.Count > 0)
     {
-        <div class="flex flex-col space-y-1 my-4 mx-5">
+        <div class="flex flex-col space-y-1 mb-5">
             @foreach (var message in DisplayMessages)
             {
                 <div class="rounded-md bg-danger-600 p-4">

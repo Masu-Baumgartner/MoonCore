@@ -1,0 +1,32 @@
+﻿@using System.Diagnostics
+@using Microsoft.Extensions.Logging
+@using MoonCore.Blazor.Tailwind.States
+
+@inherits ErrorBoundaryBase
+
+@inject ILogger<ErrorLogger> Logger
+
+@if (CurrentException == null)
+{
+    @ChildContent
+}
+else
+{
+    <div class="m-10">
+        <StateDisplay Type="StateType.Custom"
+                      Icon="icon-flame"
+                      IconColor="text-danger-500"
+                      Title="Critical Application Error"
+                      Description="@CurrentException.ToStringDemystified()"/>
+    </div>
+}
+
+@code
+{
+    protected override Task OnErrorAsync(Exception exception)
+    {
+        Logger.LogCritical("An unhandled error occured: {e}", exception);
+
+        return Task.CompletedTask;
+    }
+}

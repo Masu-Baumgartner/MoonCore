@@ -1,14 +1,17 @@
 ﻿@page "/"
 
+@using MoonCore.Blazor.Tailwind.Auth
 @using MoonCore.Blazor.Tailwind.Components
 @using MoonCore.Blazor.Tailwind.Toasts
 @using MoonCore.Exceptions
 
 @inject ToastService ToastService
+@inject AuthenticationStateManager AuthenticationStateManager
 
 <div class="mb-5 flex items-center space-x-1">
     <button @onclick="TriggerPermError" class="btn btn-danger">Trigger perm error</button>
     <button @onclick="TriggerError" class="btn btn-danger">Trigger unhandled error</button>
+    <button @onclick="AuthenticationStateManager.Logout" class="btn btn-danger">Logout :(</button>
 </div>
 
 <div class="mb-8">
@@ -242,7 +245,7 @@
 
 </div>
 
-<h3 class="my-3">Forms</h3>
+<h3 class="my-3">LegacyForms</h3>
 
 <div class="space-y-8 mt-8">
 

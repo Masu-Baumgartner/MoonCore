@@ -1,0 +1,19 @@
+﻿@typeparam TItem
+
+@code
+{
+    [CascadingParameter(Name = "DataTable")]
+    public DataTable<TItem> DataTable { get; set; }
+
+    [Parameter] public Func<TItem, object?>? Field { get; set; }
+    [Parameter] public string HeaderCss { get; set; } = "px-6 py-2";
+    [Parameter] public RenderFragment? HeaderTemplate { get; set; }
+    [Parameter] public string ColumnCss { get; set; } = "px-6 py-2";
+    [Parameter] public RenderFragment<TItem>? ColumnTemplate { get; set; }
+    [Parameter] public string Name { get; set; } = "";
+
+    protected override void OnInitialized()
+    {
+        DataTable.AddColumn(this);
+    }
+}

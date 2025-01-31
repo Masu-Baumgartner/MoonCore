@@ -11,7 +11,7 @@ public static class ClaimsPrincipalExtensions
         if (claimsPrincipal is not PermClaimsPrinciple permClaimsPrinciple)
             return false;
 
-        return PermissionHelper.HasPermissions(permClaimsPrinciple.Permissions, permission);
+        return PermissionHelper.HasPermission(permClaimsPrinciple.Permissions, permission);
     }
     
     public static bool HasPermissions(this ClaimsPrincipal claimsPrincipal, string[] permissions)
@@ -21,7 +21,7 @@ public static class ClaimsPrincipalExtensions
 
         foreach (var permission in permissions)
         {
-            if (!PermissionHelper.HasPermissions(permClaimsPrinciple.Permissions, permission))
+            if (!PermissionHelper.HasPermission(permClaimsPrinciple.Permissions, permission))
                 return false;
         }
 

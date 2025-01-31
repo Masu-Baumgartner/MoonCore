@@ -1,0 +1,67 @@
+@if (IsVisible)
+{
+    <div @ref="Reference" @onfocusout="OnFocusOut" style="@($"top: {Y}px; left: {X}px")" class="fixed z-10 mt-2 w-40 rounded-md bg-gray-750 text-white shadow-lg focus:outline-none" role="menu" aria-orientation="vertical" aria-labelledby="menu-button" tabindex="-1">
+        <div class="py-1">
+            @ChildContent
+        </div>
+    </div>
+}
+
+@code
+{
+    [Parameter] public RenderFragment ChildContent { get; set; }
+
+    private double X;
+    private double Y;
+    private bool IsVisible;
+    private ElementReference Reference;
+
+    private CancellationTokenSource? Cancellation;
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if(!IsVisible)
+            return;
+
+        await Reference.FocusAsync();
+    }
+
+    public async Task Show(double x, double y)
+    {
+        // Cancel "previous" context menu disappear function, as we reuse this instance and dont want it to hide
+        // in the Show function obv.
+        if (Cancellation != null && !Cancellation.IsCancellationRequested)
+            await Cancellation.CancelAsync();
+
+        Cancellation = new();
+        
+        IsVisible = true;
+        X = x;
+        Y = y;
+
+        await InvokeAsync(StateHasChanged);
+    }
+
+    public Task Show(MouseEventArgs eventArgs)
+     => Show(eventArgs.ClientX, eventArgs.ClientY);
+
+    public async Task Hide()
+    {
+        IsVisible = false;
+        await InvokeAsync(StateHasChanged);
+    }
+
+    private async Task OnFocusOut()
+    {
+        try
+        {
+            // We make the task cancelable, because if we spawn a "new" context menu while "the other one"
+            // is still open this would lead to the "new" one to close after 150 because we just reuse the instance
+            await Task.Delay(150, Cancellation?.Token ?? CancellationToken.None);
+            await Hide();
+        }
+        catch (TaskCanceledException)
+        {
+        }
+    }
+}
