@@ -1,6 +1,9 @@
 ﻿using System.IdentityModel.Tokens.Jwt;
 using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 
 namespace MoonCore.Extended.JwtInvalidation;
@@ -22,7 +25,7 @@ public class JwtInvalidateMiddleware
     {
         if (await Handle(context)) // If we evaluate the current identity as invalidated, clear the identity
         {
-            await context.ForbidAsync();
+            await Results.Unauthorized().ExecuteAsync(context);
             return;
         }
         
@@ -31,6 +34,11 @@ public class JwtInvalidateMiddleware
 
     private async Task<bool> Handle(HttpContext context)
     {
+        var isAnonymous = (context.GetEndpoint()?.Metadata.GetMetadata<IAllowAnonymous>() ?? null) != null;
+
+        if (isAnonymous)
+            return false;
+        
         // Only handle authenticated requests
         if (!(context.User.Identity?.IsAuthenticated ?? false))
             return false;

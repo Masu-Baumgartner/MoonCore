@@ -2,7 +2,7 @@
 
 public static class PermissionHelper
 {
-    public static bool HasPermissions(string[] permissions, string requiredPermission)
+    public static bool HasPermission(string[] permissions, string requiredPermission)
     {
         // Check for wildcard permission
         if (permissions.Contains("*"))

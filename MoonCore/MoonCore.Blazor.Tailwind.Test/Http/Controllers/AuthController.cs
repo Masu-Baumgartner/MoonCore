@@ -1,6 +1,7 @@
 ﻿using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.IdentityModel.Tokens;
 using MoonCore.Blazor.Tailwind.Test.Models;
@@ -22,6 +23,7 @@ public class AuthController : Controller
         Logger = logger;
     }
 
+    [AllowAnonymous]
     [HttpGet("start")]
     public async Task<AuthStartModel> Start()
     {
@@ -33,13 +35,15 @@ public class AuthController : Controller
         };
     }
     
+    [AllowAnonymous]
     [HttpPost("complete")]
     public async Task<AuthCompleteModel> Complete([FromForm] string code)
     {
         // You would handle the code here
         var completePrincipal = new ClaimsPrincipal(new ClaimsIdentity([
             new Claim("Name", "Testy"),
-            new Claim("userId", "1")
+            new Claim("userId", "1"),
+            new Claim("permissions", "someWrongPerm")
         ]));
         
         if (completePrincipal == null)
