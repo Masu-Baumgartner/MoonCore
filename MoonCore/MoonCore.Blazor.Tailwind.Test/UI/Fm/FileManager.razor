@@ -6,6 +6,8 @@
 @using MoonCore.Helpers
 @using MoonCore.Blazor.Tailwind.Components
 @using MoonCore.Blazor.Tailwind.HotKeys
+@using MoonCore.Blazor.Tailwind.States
+@using MoonCore.Blazor.Tailwind.Test.UI.Dt
 
 @inject ModalService ModalService
 @inject ToastService ToastService
@@ -36,21 +38,21 @@
                 </button>
             </div>
         }
-        else if (SelectedEntries.Length > 0)
+        else if (SelectedEntries.Count > 0)
         {
             <div class="flex items-center text-base font-semibold">
                 <i class="icon-files text-lg me-3"></i>
-                <span class="me-1">@SelectedEntries.Length item(s) selected</span>
+                <span class="me-1">@SelectedEntries.Count item(s) selected</span>
             </div>
             <div class="flex flex-row gap-x-2">
                 @if (SelectionActionTemplate != null)
                 {
-                    @SelectionActionTemplate.Invoke(SelectedEntries)
+                    @SelectionActionTemplate.Invoke(SelectedEntries.ToArray())
                 }
 
                 @if (CompressProvider != null)
                 {
-                    <button @onclick="() => Compress(SelectedEntries)" class="btn btn-success">
+                    <button @onclick="() => Compress(SelectedEntries.ToArray())" class="btn btn-success">
                         <i class="icon-file-archive"></i>
                         <span class="hidden sm:block ms-2">Archive</span>
                     </button>
@@ -100,145 +102,182 @@ else
 {
     <div class="bg-gray-800 rounded-lg py-1" @ondragenter="HandleDrag">
         <div class="flex justify-between items-center px-4 py-2">
-            <div>
-                <nav class="flex">
-                    <ol class="inline-flex items-center space-x-0.5 md:space-x-2">
-                        <li class="inline-flex items-center">
-                            <a href="#" @onclick="@(() => FileList!.GoTo("/"))" @onclick:preventDefault
-                               class="inline-flex items-center text-sm font-medium text-gray-400 hover:text-white">
-                                <i class="icon-hard-drive text-lg me-2.5"></i>
-                                Home
-                            </a>
-                        </li>
-
-                        @{
-                            var path = CurrentPath;
-                            var pathParts = path.Split("/");
-                        }
-
-                        @for (var i = 1; i < pathParts.Length; i++)
-                        {
-                            var pathName = pathParts[i];
-                            var currentPath = string.Join("/", pathParts.Take(i + 1));
-
-                            if (i == pathParts.Length - 1)
-                            {
-                                <li aria-current="page">
-                                    <div class="flex items-center">
-                                        <i class="text-gray-400 mx-0.5 icon-chevron-right"></i>
-                                        <span class="ms-1 text-sm font-medium text-gray-500 md:ms-2 dark:text-gray-400">
-                                        @pathName
-                                    </span>
-                                    </div>
-                                </li>
-                            }
-                            else
-                            {
-                                <li>
-                                    <div class="flex items-center">
-                                        <i class="text-gray-400 mx-0.5 icon-chevron-right"></i>
-                                        <a href="#" @onclick="@(() => FileList!.GoTo(currentPath))"
-                                           @onclick:preventDefault
-                                           class="ms-1 text-sm font-medium md:ms-2 text-gray-400 hover:text-white">
-                                            @pathName
-                                        </a>
-                                    </div>
-                                </li>
-                            }
-                        }
-                    </ol>
-                </nav>
-            </div>
+            <PathBreadcrumb Path="@CurrentPath"
+                            OnClick="OnPathBreadcrumbClick"
+                            ShowHome="true"/>
         </div>
 
         <FileList @ref="FileList"
-                  EnableSelection="true"
-                  FileSystemProvider="FileSystemProvider"
-                  OnInteract="OnInteract"
-                  InitialPath="@CurrentPath"
-                  OnSelectionChanged="OnSelectionChanged">
-            <ContextMenuTemplate>
-                @if (ContextMenuTemplate != null)
-                {
-                    @ContextMenuTemplate.Invoke(context)
-                }
+                   FileSystemProvider="FileSystemProvider"
+                   OnInteract="OnInteract"
+                   InitialPath="@CurrentPath"
+                   EnableHeadRounding="false"
+                   OnContextMenuRequested="(args, entry) => LaunchContextMenu(args, entry)">
+            <PreConfiguration>
+                <DataTableColumn TItem="FileSystemEntry" HeaderCss="w-8 ps-4" ColumnCss="ps-4">
+                    <HeaderTemplate>
+                        <div class="flex justify-center">
+                            @if (FileList.LoadedEntries.Length != 0 && FileList.LoadedEntries.Length == SelectedEntries.Count)
+                            {
+                                <input @onclick="() => SetAllSelection(false)" type="checkbox" class="form-checkbox" checked="checked">
+                            }
+                            else
+                            {
+                                <input @onclick="() => SetAllSelection(true)" type="checkbox" class="form-checkbox">
+                            }
+                        </div>
+                    </HeaderTemplate>
+                    <ColumnTemplate>
+                        <div class="flex justify-center">
+                            @if (SelectedEntries.Contains(context))
+                            {
+                                <input @onclick="() => SetSelection(context, false)" type="checkbox" class="form-checkbox" checked="checked">
+                            }
+                            else
+                            {
+                                <input @onclick="() => SetSelection(context, true)" type="checkbox" class="form-checkbox">
+                            }
+                        </div>
+                    </ColumnTemplate>
+                </DataTableColumn>
+            </PreConfiguration>
+            <PostConfiguration>
+                <DataTableColumn TItem="FileSystemEntry" Field="@(x => x.Size)"
+                                 Name="Size"
+                                 HeaderCss="px-6 py-2 hidden md:table-cell"
+                                 ColumnCss="px-6 py-3 hidden md:table-cell">
+                    <ColumnTemplate>
+                        @if (context.IsFile)
+                        {
+                            @Formatter.FormatSize(context.Size)
+                        }
+                        else
+                        {
+                            <span>-</span>
+                        }
+                    </ColumnTemplate>
+                </DataTableColumn>
+                <DataTableColumn TItem="FileSystemEntry" Field="@(x => x.CreatedAt)"
+                                 Name="Created At"
+                                 HeaderCss="px-6 py-2 hidden md:table-cell"
+                                 ColumnCss="px-6 py-3 hidden md:table-cell">
+                    <ColumnTemplate>
+                        @Formatter.FormatDate(context.CreatedAt)
+                    </ColumnTemplate>
+                </DataTableColumn>
+                <DataTableColumn TItem="FileSystemEntry" ColumnCss="px-3">
+                    <ColumnTemplate>
+                        <div class="flex justify-end">
+                            <a @onclick="args => LaunchContextMenu(args, context, useOffset: true)" @onclick:preventDefault href="#">
+                                <i class="icon-ellipsis text-xl text-white"></i>
+                            </a>
+                        </div>
+                    </ColumnTemplate>
+                </DataTableColumn>
+            </PostConfiguration>
+            <NoFilesTemplate>
+                <div class="p-5">
+                    <StateDisplay Title="No files found"
+                                  Description="Upload files by drag and drop or clicking on the upload button"
+                                  Icon="icon-folder-open"
+                                  IconColor="text-primary-500"
+                                  Type="StateType.Custom"/>
+                </div>
+            </NoFilesTemplate>
+        </FileList>
+    </div>
 
-                <a href="#" @onclick="() => Move(context)" @onclick:preventDefault @onmousedown:preventDefault
-                   @onmousedown:stopPropagation
-                   class="flex px-4 py-2 items-center hover:bg-gray-700 border-b border-gray-700" role="menuitem"
-                   tabindex="-1">
-                    <i class="me-2 text-warning-500 icon-move text-lg"></i>
-                    <span class="text-sm">Move</span>
-                </a>
-                <a href="#" @onclick="() => Download(context)" @onclick:preventDefault @onmousedown:preventDefault
-                   @onmousedown:stopPropagation
-                   class="flex px-4 py-2 items-center hover:bg-gray-700 border-b border-gray-700" role="menuitem"
-                   tabindex="-1">
-                    <i class="me-2 text-primary-500 icon-hard-drive-download text-lg"></i>
-                    <span class="text-sm">Download</span>
-                </a>
+    <ContextMenu @ref="ContextMenu">
+        @if (ContextMenuTemplate != null)
+        {
+            @ContextMenuTemplate.Invoke(ContextMenuEntry)
+        }
 
-                @if (CompressProvider != null)
+        <a href="#" @onclick="() => Move(ContextMenuEntry)" @onclick:preventDefault @onmousedown:preventDefault
+           @onmousedown:stopPropagation
+           class="flex px-4 py-2 items-center hover:bg-gray-700 border-b border-gray-700" role="menuitem"
+           tabindex="-1">
+            <i class="me-2 text-warning-500 icon-move text-lg"></i>
+            <span class="text-sm">Move</span>
+        </a>
+        <a href="#" @onclick="() => Download(ContextMenuEntry)" @onclick:preventDefault @onmousedown:preventDefault
+           @onmousedown:stopPropagation
+           class="flex px-4 py-2 items-center hover:bg-gray-700 border-b border-gray-700" role="menuitem"
+           tabindex="-1">
+            <i class="me-2 text-primary-500 icon-hard-drive-download text-lg"></i>
+            <span class="text-sm">Download</span>
+        </a>
+
+        @if (CompressProvider != null)
+        {
+            <a href="#" @onclick="() => Compress([ContextMenuEntry])" @onclick:preventDefault
+               @onmousedown:preventDefault
+               @onmousedown:stopPropagation
+               class="flex px-4 py-2 items-center hover:bg-gray-700 border-b border-gray-700" role="menuitem"
+               tabindex="-1">
+                <i class="me-2 text-success-500 icon-package text-lg"></i>
+                <span class="text-sm">Compress</span>
+            </a>
+
+            if (ContextMenuEntry.IsFile)
+            {
+                var compressType = CompressProvider.CompressTypes.FirstOrDefault(
+                    x => ContextMenuEntry.Name.EndsWith(x.Extension, StringComparison.InvariantCultureIgnoreCase)
+                );
+
+                if (compressType != null)
                 {
-                    <a href="#" @onclick="() => Compress([context])" @onclick:preventDefault @onmousedown:preventDefault
+                    <a href="#" @onclick="() => Decompress(ContextMenuEntry, compressType)" @onclick:preventDefault
+                       @onmousedown:preventDefault
                        @onmousedown:stopPropagation
                        class="flex px-4 py-2 items-center hover:bg-gray-700 border-b border-gray-700" role="menuitem"
                        tabindex="-1">
-                        <i class="me-2 text-success-500 icon-package text-lg"></i>
-                        <span class="text-sm">Compress</span>
+                        <i class="me-2 text-success-500 icon-package-open text-lg"></i>
+                        <span class="text-sm">Decompress</span>
                     </a>
-
-                    if (context.IsFile)
-                    {
-                        var compressType = CompressProvider.CompressTypes.FirstOrDefault(
-                            x => context.Name.EndsWith(x.Extension, StringComparison.InvariantCultureIgnoreCase)
-                        );
-
-                        if (compressType != null)
-                        {
-                            <a href="#" @onclick="() => Decompress(context, compressType)" @onclick:preventDefault @onmousedown:preventDefault
-                               @onmousedown:stopPropagation
-                               class="flex px-4 py-2 items-center hover:bg-gray-700 border-b border-gray-700" role="menuitem"
-                               tabindex="-1">
-                                <i class="me-2 text-success-500 icon-package-open text-lg"></i>
-                                <span class="text-sm">Decompress</span>
-                            </a>
-                        }
-                    }
                 }
+            }
+        }
 
-                <a href="#" @onclick="() => Rename(context)" @onclick:preventDefault @onmousedown:preventDefault
-                   @onmousedown:stopPropagation
-                   class="flex px-4 py-2 items-center hover:bg-gray-700 border-b border-gray-700" role="menuitem"
-                   tabindex="-1">
-                    <i class="me-2 text-tertiary-500 icon-pencil-line text-lg"></i>
-                    <span class="text-sm">Rename</span>
-                </a>
-                <a href="#" @onclick="() => Delete(context)" @onclick:preventDefault @onmousedown:preventDefault
-                   @onmousedown:stopPropagation
-                   class="flex px-4 py-2 items-center hover:bg-gray-700" role="menuitem" tabindex="-1">
-                    <i class="me-2 text-danger-500 icon-trash-2 text-lg"></i>
-                    <span class="text-sm">Delete</span>
-                </a>
-            </ContextMenuTemplate>
-        </FileList>
-    </div>
+        <a href="#" @onclick="() => Rename(ContextMenuEntry)" @onclick:preventDefault @onmousedown:preventDefault
+           @onmousedown:stopPropagation
+           class="flex px-4 py-2 items-center hover:bg-gray-700 border-b border-gray-700" role="menuitem"
+           tabindex="-1">
+            <i class="me-2 text-tertiary-500 icon-pencil-line text-lg"></i>
+            <span class="text-sm">Rename</span>
+        </a>
+        <a href="#" @onclick="() => Delete(ContextMenuEntry)" @onclick:preventDefault @onmousedown:preventDefault
+           @onmousedown:stopPropagation
+           class="flex px-4 py-2 items-center hover:bg-gray-700" role="menuitem" tabindex="-1">
+            <i class="me-2 text-danger-500 icon-trash-2 text-lg"></i>
+            <span class="text-sm">Delete</span>
+        </a>
+    </ContextMenu>
 }
 
 @code
 {
     [Parameter] public IFileSystemProvider FileSystemProvider { get; set; }
 
+    protected override void OnInitialized()
+    {
+        // Cast if possible, save so the ui doesnt need to try casting all the time
+        CompressProvider = FileSystemProvider as ICompressFileSystemProvider;
+    }
+
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
         if (!firstRender)
             return;
-
+        
         await InvokeAsync(StateHasChanged);
     }
 
     private async Task OnInteract(FileSystemEntry entry)
     {
+        // We want to clear the selected entries no matter what we are doing
+        SelectedEntries.Clear();
+        
         if (entry.IsFile)
         {
             if (entry.Size > MaxEditorOpenSize)
@@ -248,12 +287,11 @@ else
             }
 
             await OpenEditor(entry);
-            return;
         }
         else
         {
-            await FileList.GoIn(entry.Name);
-            CurrentPath = FileList.CurrentPath;
+            CurrentPath = await FileList.Navigate(entry.Name);
+            await InvokeAsync(StateHasChanged);
         }
     }
 }

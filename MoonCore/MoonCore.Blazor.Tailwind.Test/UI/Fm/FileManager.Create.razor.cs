@@ -18,6 +18,9 @@ public partial class FileManager
                     );
 
                     await ToastService.Success("Successfully created file");
+                    
+                    // Reset state
+                    await SetAllSelection(false);
                     await FileList.Refresh();
                 }
                 catch (Exception e)
@@ -42,6 +45,9 @@ public partial class FileManager
                     );
 
                     await ToastService.Success("Successfully created folder");
+                    
+                    // Reset state
+                    await SetAllSelection(false);
                     await FileList.Refresh();
                 }
                 catch (Exception e)

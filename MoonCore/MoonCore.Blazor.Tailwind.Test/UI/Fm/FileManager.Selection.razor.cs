@@ -6,20 +6,49 @@ namespace MoonCore.Blazor.Tailwind.Test.UI.Fm;
 
 public partial class FileManager : ComponentBase
 {
-    private FileSystemEntry[] SelectedEntries = [];
+    private List<FileSystemEntry> SelectedEntries = new();
 
-    private async Task OnSelectionChanged(FileSystemEntry[] entries)
+    #region Select Impl
+
+    private async Task SetSelection(FileSystemEntry entry, bool toggle)
     {
-        SelectedEntries = entries;
+        if (toggle)
+        {
+            if(!SelectedEntries.Contains(entry))
+                SelectedEntries.Add(entry);
+        }
+        else
+        {
+            if (SelectedEntries.Contains(entry))
+                SelectedEntries.Remove(entry);
+        }
+
         await InvokeAsync(StateHasChanged);
     }
+
+    private async Task SetAllSelection(bool toggle)
+    {
+        SelectedEntries.Clear();
+        
+        if(toggle)
+            SelectedEntries.AddRange(FileList.LoadedEntries);
+
+        await InvokeAsync(StateHasChanged);
+    }
+
+    #endregion
 
     private async Task DeleteSelection()
     {
         async Task DeleteSelectedItems(ProgressToast toast)
         {
+            // We create an array here because the user could change the selection while we are working on deleting the selected files
             var entries = SelectedEntries.ToArray();
+            
+            // Same reason as above
             var currentPath = CurrentPath;
+            
+            // To keep track of things
             var deleted = 0;
             
             foreach (var entry in entries)
@@ -41,16 +70,19 @@ public partial class FileManager : ComponentBase
             }
 
             await ToastService.Success($"Successfully deleted {deleted} files");
+            
+            // Reset state
+            await SetAllSelection(false);
             await FileList.Refresh();
         }
 
         await AlertService.ConfirmDanger(
             "Deleting multiple items",
-            $"Do you really want to delete {SelectedEntries.Length} item(s)",
+            $"Do you really want to delete {SelectedEntries.Count} item(s)",
             async () =>
             {
                 await ToastService.Progress(
-                    $"Deleting {SelectedEntries.Length} items",
+                    $"Deleting {SelectedEntries.Count} items",
                     "",
                     DeleteSelectedItems
                 );

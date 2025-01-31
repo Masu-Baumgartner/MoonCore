@@ -5,9 +5,9 @@ public partial class FileManager
     private FileList FileList;
     private string CurrentPath = "/";
     
-    private async Task OnNavigated(string newPath)
+    private async Task OnPathBreadcrumbClick(string path)
     {
-        CurrentPath = newPath;
-        await InvokeAsync(StateHasChanged);
+        await SetAllSelection(false);
+        CurrentPath = await FileList.Navigate(path);
     }
 }

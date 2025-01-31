@@ -5,25 +5,11 @@ namespace MoonCore.Blazor.Tailwind.Test.UI.Fm;
 
 public partial class FileManager
 {
-    private ICompressFileSystemProvider? CompressProvider
-    {
-        get
-        {
-            if (HasCheckedProvider)
-                return CachedProviderResult;
-
-            CachedProviderResult = FileSystemProvider as ICompressFileSystemProvider;
-            HasCheckedProvider = true;
-
-            return CachedProviderResult;
-        }
-    }
-
-    private bool HasCheckedProvider = false;
-    private ICompressFileSystemProvider? CachedProviderResult;
+    private ICompressFileSystemProvider? CompressProvider;
 
     private async Task Compress(FileSystemEntry[] entries)
     {
+        // Do nothing if we have no provider for it
         if (CompressProvider == null)
             return;
 
@@ -41,6 +27,9 @@ public partial class FileManager
                     );
 
                     await ToastService.Success("Successfully created archive", fileName);
+                    
+                    // Reset state
+                    await SetAllSelection(false);
                     await FileList.Refresh();
                 }
             );
@@ -56,6 +45,7 @@ public partial class FileManager
     // This overload is unused atm
     private async Task Decompress(FileSystemEntry entry)
     {
+        // Do nothing if we have no provider for it
         if (CompressProvider == null)
             return;
         
@@ -74,6 +64,7 @@ public partial class FileManager
     
     private async Task Decompress(FileSystemEntry entry, CompressType compressType)
     {
+        // Do nothing if we have no provider for it
         if(CompressProvider == null)
             return;
         
@@ -91,6 +82,9 @@ public partial class FileManager
                     );
 
                     await ToastService.Success("Successfully extracted archive", entry.Name);
+                    
+                    // Reset state
+                    await SetAllSelection(false);
                     await FileList.Refresh();
                 }
             );

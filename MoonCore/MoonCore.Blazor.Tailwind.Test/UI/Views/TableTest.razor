@@ -2,9 +2,9 @@
 
 @using MoonCore.Blazor.Tailwind.Test.UI.Fm
 @using MoonCore.Blazor.Tailwind.Test.UI.Dt
-@using MoonCore.Exceptions
-@using MoonCore.Helpers
 @using MoonCore.Models
+@using MoonCore.Blazor.Tailwind.States
+@using MoonCore.Helpers
 
 @*
 <DataTable TItem="FileSystemEntry" LoadItemsPaginatedAsync="LoadItemsAsync" PageSize="10">
@@ -18,18 +18,72 @@
     </Configuration>
 </DataTable>*@
 
-<FileListY CurrentPath="/"
-           FileSystemProvider="FileSystemProvider">
-</FileListY>
+<FileList @ref="FileList"
+           InitialPath="/"
+           FileSystemProvider="FileSystemProvider"
+           OnInteract="OnInteract">
+    <PostConfiguration>
+        <DataTableRow TItem="FileSystemEntry" Css="border-b border-gray-700">
+            <Template>
+                @if (FileList.CurrentPath != "/")
+                {
+                    <td class="w-12 px-2">
+                        <div class="flex justify-center">
+                            <i class="icon-corner-left-up text-2xl text-primary-500"></i>
+                        </div>
+                    </td>
+                    <td class="px-1 py-3" colspan="99">
+                        <a href="#" class="hover:text-gray-100" @onclick="GoUp"
+                           @onclick:preventDefault>
+                            Go to parent directory
+                        </a>
+                    </td>
+                }
+            </Template>
+        </DataTableRow>
+
+        <DataTableColumn TItem="FileSystemEntry" Field="@(x => x.Size)"
+                         Name="Size"
+                         HeaderCss="px-6 py-2 hidden md:table-cell"
+                         ColumnCss="px-6 py-3 hidden md:table-cell">
+            <ColumnTemplate>
+                @if (context.IsFile)
+                {
+                    @Formatter.FormatSize(context.Size)
+                }
+                else
+                {
+                    <span>-</span>
+                }
+            </ColumnTemplate>
+        </DataTableColumn>
+        <DataTableColumn TItem="FileSystemEntry" Field="@(x => x.CreatedAt)"
+                         Name="Created At"
+                         HeaderCss="px-6 py-2 hidden md:table-cell"
+                         ColumnCss="px-6 py-3 hidden md:table-cell">
+            <ColumnTemplate>
+                @Formatter.FormatDate(context.CreatedAt)
+            </ColumnTemplate>
+        </DataTableColumn>
+    </PostConfiguration>
+    <NoFilesTemplate>
+        <StateDisplay Title="No folders found"
+                      Description="No folders in the selected directory found"
+                      Icon="icon-folder-open"
+                      IconColor="text-primary-500"
+                      Type="StateType.Custom"/>
+    </NoFilesTemplate>
+</FileList>
 
 @code
 {
     private IFileSystemProvider FileSystemProvider = new HostFileSystemProvider("testFs");
+    private FileList FileList;
 
     private async Task<IPagedData<FileSystemEntry>> LoadItemsAsync(PaginationOptions paginationOptions)
     {
         await Task.Delay(TimeSpan.FromSeconds(3));
-        
+
         var result = new List<FileSystemEntry>();
 
         for (var i = 0; i < 100; i++)
@@ -39,10 +93,10 @@
                 Name = $"file {i}"
             });
         }
-        
+
         return PagedData<FileSystemEntry>.Create(result, paginationOptions.Page, paginationOptions.PerPage);
     }
-    
+
     private async Task<IEnumerable<FileSystemEntry>> LoadItemsAsync() // Discard pagination
     {
         var result = new List<FileSystemEntry>();
@@ -54,7 +108,13 @@
                 Name = $"file {i}"
             });
         }
-        
+
         return result;
     }
+
+    private Task GoUp()
+     => FileList.Navigate("..");
+
+    private async Task OnInteract(FileSystemEntry fileSystemEntry)
+        => await FileList.Navigate(fileSystemEntry.Name);
 }

@@ -12,8 +12,8 @@
 
 @* Add option for rounded-lg in the element below *@
 
-<div class="bg-gray-800 rounded-lg">
-    <div class="rounded-lg relative overflow-x-auto">
+<div class="bg-gray-800 @(EnableHeaderRounding ? "rounded-lg" : "")">
+    <div class="relative overflow-x-auto @(EnableHeaderRounding ? "rounded-lg" : "")">
         <table class="w-full text-sm text-left text-gray-400">
             <thead class="text-xs uppercase bg-gray-700/50 text-gray-400">
             <tr>
@@ -80,7 +80,7 @@
             {
                 if (LoadException == null)
                 {
-                    if (InternalData.Items.Length == 0)
+                    if (LoadedData.Items.Length == 0)
                     {
                         <tr>
                             <td colspan="@Columns.Count" class="px-6 py-2">
@@ -105,18 +105,18 @@
                     {
                         foreach (var row in Rows)
                         {
-                            <tr>
-                                <td colspan="@Columns.Count" class="@row.Css">
-                                    @row.Template
-                                </td>
+                            <tr class="@row.Css">
+                                @row.Template
                             </tr>
                         }
                         
-                        for (var i = 0; i < InternalData.Items.Length; i++)
+                        for (var i = 0; i < LoadedData.Items.Length; i++)
                         {
-                            var item = InternalData.Items[i];
+                            var item = LoadedData.Items[i];
 
-                            <tr class="@(i != InternalData.Items.Length - 1 ? "border-b border-gray-700" : "")">
+                            <tr @oncontextmenu="args => InvokeContextMenuRequest(args, item)"
+                                @oncontextmenu:preventDefault
+                                class="@(i != LoadedData.Items.Length - 1 ? "border-b border-gray-700" : "")">
                                 @foreach (var column in Columns)
                                 {
                                     <td class="@column.ColumnCss">
@@ -166,14 +166,14 @@
             var start = 0;
             var end = 0;
 
-            if (InternalData.TotalItems != 0)
+            if (LoadedData.TotalItems != 0)
             {
-                start = InternalData.CurrentPage * InternalData.PageSize + 1;
+                start = LoadedData.CurrentPage * LoadedData.PageSize + 1;
 
                 var fullEnd = PaginationOptions.Page * PaginationOptions.PerPage + PaginationOptions.PerPage;
 
-                if (InternalData.TotalItems < fullEnd)
-                    end = InternalData.CurrentPage * InternalData.PageSize + (InternalData.TotalItems - start + 1);
+                if (LoadedData.TotalItems < fullEnd)
+                    end = LoadedData.CurrentPage * LoadedData.PageSize + (LoadedData.TotalItems - start + 1);
                 else
                     end = fullEnd;
             }
@@ -183,11 +183,11 @@
         <span class="font-semibold text-white">@(start)-@(end)</span>
         of
         <span class="font-semibold text-white">
-            @InternalData.TotalItems
+            @LoadedData.TotalItems
         </span>
     </span>
         <div class="flex">
-            @if (InternalData.CurrentPage == 0)
+            @if (LoadedData.CurrentPage == 0)
             {
                 <button
                     class="flex items-center justify-center px-3 h-8 text-sm font-medium border rounded-lg bg-gray-800 border-gray-700 text-gray-400 hover:bg-gray-700 hover:text-white disabled:border-gray-700 disabled:bg-gray-800 disabled:text-gray-600 disabled:cursor-not-allowed"
@@ -203,7 +203,7 @@
                 </button>
             }
 
-            @if (InternalData.CurrentPage == InternalData.TotalPages || InternalData.TotalItems == 0)
+            @if (LoadedData.CurrentPage == LoadedData.TotalPages || LoadedData.TotalItems == 0)
             {
                 <button
                     class="ms-3 lex items-center justify-center px-3 h-8 text-sm font-medium   border  rounded-lg   bg-gray-800 border-gray-700 text-gray-400 hover:bg-gray-700 hover:text-white disabled:border-gray-700 disabled:bg-gray-800 disabled:text-gray-600 disabled:cursor-not-allowed"
@@ -272,7 +272,7 @@
             EnablePagination = true;
 
         PaginationOptions.PerPage = PageSize;
-        InternalData = PagedData<TItem>.Create([], 0, 0);
+        LoadedData = PagedData<TItem>.Create([], 0, 0);
     }
 
     private async Task Load()
@@ -280,9 +280,9 @@
         if (EnablePagination)
         {
             if (LoadItemsPaginated != null)
-                InternalData = LoadItemsPaginated.Invoke(PaginationOptions);
+                LoadedData = LoadItemsPaginated.Invoke(PaginationOptions);
             else if (LoadItemsPaginatedAsync != null)
-                InternalData = await LoadItemsPaginatedAsync.Invoke(PaginationOptions);
+                LoadedData = await LoadItemsPaginatedAsync.Invoke(PaginationOptions);
         }
         else
         {
@@ -305,7 +305,7 @@
                 items = itemSource.ToArray();
             }
 
-            InternalData = PagedData<TItem>.Create(items, 0, items.Length);
+            LoadedData = PagedData<TItem>.Create(items, 0, items.Length);
         }
     }
 
@@ -343,7 +343,7 @@
     [Parameter] public int PageSize { get; set; } = 15;
     
     private bool EnablePagination = false;
-    private IPagedData<TItem> InternalData;
+    public IPagedData<TItem> LoadedData { get; private set; }
     private PaginationOptions PaginationOptions = new();
 
     private async Task NavigatePage(int diff)
@@ -352,12 +352,26 @@
 
         if (PaginationOptions.Page < 0)
             PaginationOptions.Page = 0;
-        else if (PaginationOptions.Page > InternalData.TotalPages)
-            PaginationOptions.Page = InternalData.TotalPages;
+        else if (PaginationOptions.Page > LoadedData.TotalPages)
+            PaginationOptions.Page = LoadedData.TotalPages;
 
         await Refresh();
     }
 
     #endregion
 
+    #region Misc (Context Menu, Design)
+
+    [Parameter] public Func<MouseEventArgs, TItem, Task>? OnContextMenuRequested { get; set; }
+    [Parameter] public bool EnableHeaderRounding { get; set; } = true;
+
+    private async Task InvokeContextMenuRequest(MouseEventArgs eventArgs, TItem item)
+    {
+        if(OnContextMenuRequested == null)
+            return;
+
+        await OnContextMenuRequested.Invoke(eventArgs, item);
+    }
+
+    #endregion
 }

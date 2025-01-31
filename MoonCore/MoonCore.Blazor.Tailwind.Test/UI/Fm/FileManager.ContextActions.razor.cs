@@ -1,9 +1,24 @@
-﻿using MoonCore.Helpers;
+﻿using Microsoft.AspNetCore.Components.Web;
+using MoonCore.Blazor.Tailwind.Components;
+using MoonCore.Helpers;
 
 namespace MoonCore.Blazor.Tailwind.Test.UI.Fm;
 
 public partial class FileManager
 {
+    private ContextMenu ContextMenu;
+    private FileSystemEntry ContextMenuEntry;
+
+    private async Task LaunchContextMenu(MouseEventArgs eventArgs, FileSystemEntry entry, bool useOffset = false)
+    {
+        ContextMenuEntry = entry;
+
+        if (useOffset)
+            await ContextMenu.Show(eventArgs.ClientX - 150, eventArgs.ClientY - 10);
+        else
+            await ContextMenu.Show(eventArgs.ClientX, eventArgs.ClientY);
+    }
+
     private async Task Download(FileSystemEntry entry)
     {
         if (entry.IsFile)
@@ -15,17 +30,19 @@ public partial class FileManager
 
             stream.Close();
         }
-        else if (CompressProvider != null)
+        else if (CompressProvider != null) // If we have a compress provider, we can help the user out a bit by compressing and then downloading the folder
         {
             var compressType = CompressProvider.CompressTypes.FirstOrDefault();
-
-            if (compressType == null)
+            
+            if (compressType == null) // Just to make sure
             {
                 await ToastService.Danger("Folder downloads are not supported");
                 return;
             }
-            
-            var tempArchiveFileName = $"folderDownload.{DateTimeOffset.UtcNow.ToUnixTimeSeconds()}." + compressType.Extension;
+
+            // We need the temp paths here as the user can navigate away later on, which would change the current path
+            var tempArchiveFileName =
+                $"folderDownload.{DateTimeOffset.UtcNow.ToUnixTimeSeconds()}." + compressType.Extension;
             var tempArchivePath = PathBuilder.JoinPaths(CurrentPath, tempArchiveFileName);
 
             await ToastService.Progress(
@@ -39,14 +56,17 @@ public partial class FileManager
                         [PathBuilder.JoinPaths(CurrentPath, entry.Name)]
                     );
 
+                    // Reset state
+                    await SetAllSelection(false);
                     await FileList.Refresh();
 
                     await toast.UpdateText("Downloading folder");
-                    
+
                     var stream = await FileSystemProvider.Read(tempArchivePath);
                     await DownloadService.DownloadStream($"{entry.Name}.{compressType.Extension}", stream);
 
-                    await ToastService.Success("Downloading folder", $"You can delete the '{tempArchiveFileName}' after the download has finished");
+                    await ToastService.Success("Downloading folder",
+                        $"You can delete the '{tempArchiveFileName}' after the download has finished");
                 }
             );
         }
@@ -65,7 +85,11 @@ public partial class FileManager
                     PathBuilder.JoinPaths(path, entry.Name)
                 );
 
-                await FileList!.Refresh();
+                await ToastService.Success("Successfully moved item");
+                
+                // Reset state
+                await SetAllSelection(false);
+                await FileList.Refresh();
             });
 
             parameters.Add("FileSystemProvider", FileSystemProvider);
@@ -86,6 +110,8 @@ public partial class FileManager
                         PathBuilder.JoinPaths(CurrentPath, val)
                     );
 
+                    // Reset state
+                    await SetAllSelection(false);
                     await FileList.Refresh();
                 });
             });
@@ -102,6 +128,8 @@ public partial class FileManager
                         PathBuilder.JoinPaths(CurrentPath, val)
                     );
 
+                    // Reset state
+                    await SetAllSelection(false);
                     await FileList.Refresh();
                 });
             });
@@ -118,6 +146,9 @@ public partial class FileManager
                 await ToastService.Progress("Deleting", string.Empty, async _ =>
                 {
                     await FileSystemProvider.Delete(PathBuilder.JoinPaths(CurrentPath, entry.Name));
+                    
+                    // Reset state
+                    await SetAllSelection(false);
                     await FileList.Refresh();
                 });
             }

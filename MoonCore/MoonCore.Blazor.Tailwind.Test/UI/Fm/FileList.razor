@@ -1,398 +1,137 @@
-@using MoonCore.Helpers
+﻿@using MoonCore.Blazor.Tailwind.Test.UI.Dt
 @using MoonCore.Blazor.Tailwind.States
-@using MoonCore.Blazor.Tailwind.Components
+@using MoonCore.Helpers
 
-@inject ILogger<FileList> Logger
+<DataTable @ref="DataTable"
+           TItem="FileSystemEntry"
+           LoadItemsAsync="LoadItemsAsync"
+           OnContextMenuRequested="OnContextMenuRequested"
+           EnableHeaderRounding="EnableHeadRounding">
+    <Configuration>
 
-<div class="relative overflow-x-auto @(EnableHeaderRounding ? "rounded-lg" : "")">
-    <table class="w-full text-sm text-left text-gray-400">
-        <thead class="text-xs uppercase bg-gray-700/50 text-gray-400">
-        <tr>
-            @if (EnableSelection)
-            {
-                <th scope="col" class="w-8 ps-4">
-                    <div class="flex justify-center">
-                        @* As we want to show the header while loading, we need to handle the loading state before looking at the entries *@
-                        @if (!IsLoading && Entries.Length != 0 && Entries.Length == InternalSelectedItems.Count)
-                        {
-                            <input @onclick="() => SetAllSelection(false)" type="checkbox" class="form-checkbox" checked="checked">
-                        }
-                        else
-                        {
-                            <input @onclick="() => SetAllSelection(true)" type="checkbox" class="form-checkbox">
-                        }
-                    </div>
-                </th>
-            }
-            <th scope="col" class="w-12 px-2"></th>
-            <th scope="col" class="px-6 py-2">
-                Name
-            </th>
-            @if (ShowSize)
-            {
-                <th scope="col" class="px-6 py-2 hidden md:table-cell">
-                    Size
-                </th>
-            }
-            @if (ShowDate)
-            {
-                <th scope="col" class="px-6 py-2 hidden md:table-cell">
-                    Created at
-                </th>
-            }
-            <th class="px-3">
-            </th>
-        </tr>
-        </thead>
-        <tbody>
-
-        @if (IsLoading)
+        @* First, let other components apply their config if necessary *@
+        
+        @if (PreConfiguration != null)
         {
-            <tr>
-                <td colspan="6">
-                    <div class="w-full flex justify-center items-center p-5">
-                        <div role="status">
-                            <svg aria-hidden="true"
-                                 class="inline w-10 h-10 animate-spin text-slate-600 fill-primary-600"
-                                 viewBox="0 0 100 101" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                <path
-                                    d="M100 50.5908C100 78.2051 77.6142 100.591 50 100.591C22.3858 100.591 0 78.2051 0 50.5908C0 22.9766 22.3858 0.59082 50 0.59082C77.6142 0.59082 100 22.9766 100 50.5908ZM9.08144 50.5908C9.08144 73.1895 27.4013 91.5094 50 91.5094C72.5987 91.5094 90.9186 73.1895 90.9186 50.5908C90.9186 27.9921 72.5987 9.67226 50 9.67226C27.4013 9.67226 9.08144 27.9921 9.08144 50.5908Z"
-                                    fill="currentColor"/>
-                                <path
-                                    d="M93.9676 39.0409C96.393 38.4038 97.8624 35.9116 97.0079 33.5539C95.2932 28.8227 92.871 24.3692 89.8167 20.348C85.8452 15.1192 80.8826 10.7238 75.2124 7.41289C69.5422 4.10194 63.2754 1.94025 56.7698 1.05124C51.7666 0.367541 46.6976 0.446843 41.7345 1.27873C39.2613 1.69328 37.813 4.19778 38.4501 6.62326C39.0873 9.04874 41.5694 10.4717 44.0505 10.1071C47.8511 9.54855 51.7191 9.52689 55.5402 10.0491C60.8642 10.7766 65.9928 12.5457 70.6331 15.2552C75.2735 17.9648 79.3347 21.5619 82.5849 25.841C84.9175 28.9121 86.7997 32.2913 88.1811 35.8758C89.083 38.2158 91.5421 39.6781 93.9676 39.0409Z"
-                                    fill="currentFill"/>
-                            </svg>
-                            <span class="sr-only">Loading...</span>
-                        </div>
-                    </div>
-                </td>
-            </tr>
+            @PreConfiguration
+        }
+
+        @* Then, apply our own config *@
+        <DataTableColumn TItem="FileSystemEntry" HeaderCss="w-12 px-2" ColumnCss="w-12 px-2">
+            <ColumnTemplate>
+                <div class="flex justify-center items-center">
+                    @if (context.IsFile)
+                    {
+                        <i class="icon-file-text text-2xl text-warning-500"></i>
+                    }
+                    else
+                    {
+                        <i class="icon-folder text-2xl text-primary-500"></i>
+                    }
+                </div>
+            </ColumnTemplate>
+        </DataTableColumn>
+        <DataTableColumn TItem="FileSystemEntry" Field="@(x => x.Name)"
+                         Name="Name"
+                         HeaderCss="px-1 py-2"
+                         ColumnCss="px-1 py-3">
+            <ColumnTemplate>
+                <a class="hover:text-gray-100" @onclick="() => InvokeInteract(context)" @onclick:preventDefault
+                   href="#">
+                    @context.Name
+                </a>
+            </ColumnTemplate>
+        </DataTableColumn>
+
+        @* And at the end, let other components apply their post config if necessary *@
+
+        @if (PostConfiguration != null)
+        {
+            @PostConfiguration
+        }
+        
+    </Configuration>
+    <NoItemsTemplate>
+        @if (NoFilesTemplate != null)
+        {
+            @NoFilesTemplate
         }
         else
         {
-            if (LoadingException == null)
-            {
-                if (GoUpTemplate != null && CurrentPath != "/")
-                {
-                    @GoUpTemplate
-                }
-
-                if (Entries.Length == 0)
-                {
-                    <tr>
-                        <td colspan="6">
-                            <div class="p-5">
-                                @if (NoFilesTemplate != null)
-                                {
-                                    @NoFilesTemplate
-                                }
-                                else
-                                {
-                                    <StateDisplay Title="No files found"
-                                                  Description="Upload files by drag and drop or clicking on the upload button"
-                                                  Icon="icon-folder-open"
-                                                  IconColor="text-primary-500"
-                                                  Type="StateType.Custom"/>
-                                }
-                            </div>
-                        </td>
-                    </tr>
-                }
-                else
-                {
-                    for (var i = 0; i < Entries.Length; i++)
-                    {
-                        var entry = Entries[i];
-
-                        @* Only append border to all elements exept the last one *@
-                        <tr @oncontextmenu="e => ShowContextMenu(entry, e.ClientX, e.ClientY)"
-                            @oncontextmenu:preventDefault
-                            class="@(i != Entries.Length - 1 ? "border-b border-gray-700" : "")">
-                            
-                            @if (EnableSelection)
-                            {
-                                <td class="ps-4">
-                                    <div class="flex justify-center">
-                                        @if (InternalSelectedItems.Contains(entry))
-                                        {
-                                            <input @onclick="() => SetSelection(entry, false)" type="checkbox" class="form-checkbox" checked="checked">
-                                        }
-                                        else
-                                        {
-                                            <input @onclick="() => SetSelection(entry, true)" type="checkbox" class="form-checkbox">
-                                        }
-                                    </div>
-                                </td>
-                            }
-                            
-                            <td>
-                                <div class="flex justify-center">
-                                    @if (entry.IsFile)
-                                    {
-                                        <i class="icon-file-text text-2xl text-amber-500"></i>
-                                    }
-                                    else
-                                    {
-                                        <i class="icon-folder text-2xl text-primary-500"></i>
-                                    }
-                                </div>
-                            </td>
-                            <td class="px-6 py-4">
-                                <a href="#" class="hover:text-white" @onclick="() => Interact(entry)"
-                                   @onclick:preventDefault>@entry.Name</a>
-                            </td>
-                            @if (ShowSize)
-                            {
-                                <td class="px-6 py-4 hidden md:table-cell">
-                                    @if (entry.IsFile)
-                                    {
-                                        <span>@Formatter.FormatSize(entry.Size)</span>
-                                    }
-                                    else
-                                    {
-                                        <span>-</span>
-                                    }
-                                </td>
-                            }
-                            @if (ShowDate)
-                            {
-                                <td class="px-6 py-4 hidden md:table-cell">
-                                    @Formatter.FormatDate(entry.CreatedAt)
-                                </td>
-                            }
-                            <td class="px-3">
-                                @if (ContextMenuTemplate != null)
-                                {
-                                    <div class="flex justify-end">
-                                        <a href="#"
-                                           @onclick="e => ShowContextMenu(entry, e.ClientX - 150, e.ClientY - 10)"
-                                           @onclick:preventDefault>
-                                            <i class="icon-ellipsis text-xl text-white"></i>
-                                        </a>
-                                    </div>
-                                }
-                            </td>
-                        </tr>
-                    }
-                }
-            }
-            else
-            {
-                <tr>
-                    <td colspan="6">
-                        <div class="p-5">
-                            <ErrorStateDisplay Exception="LoadingException"/>
-                        </div>
-                    </td>
-                </tr>
-            }
+            <StateDisplay Title="No files found"
+                          Description="No files or folders found"
+                          Icon="icon-folder-open"
+                          IconColor="text-primary-500"
+                          Type="StateType.Custom"/>
         }
-
-        </tbody>
-    </table>
-</div>
-
-@if (ContextMenuTemplate != null)
-{
-    <ContextMenu @ref="ContextMenu">
-        @if (ContextEntry != null)
-        {
-            @ContextMenuTemplate.Invoke(ContextEntry)
-        }
-    </ContextMenu>
-}
-
+    </NoItemsTemplate>
+</DataTable>
 
 @code
 {
-    [Parameter] public RenderFragment<FileSystemEntry>? Template { get; set; }
     [Parameter] public IFileSystemProvider FileSystemProvider { get; set; }
+    [Parameter] public string InitialPath { get; set; } = "/";
+    [Parameter] public Func<IEnumerable<FileSystemEntry>, IEnumerable<FileSystemEntry>>? EntryFilter { get; set; }
 
-    #region Context Menu
-
-    [Parameter] public RenderFragment<FileSystemEntry>? ContextMenuTemplate { get; set; }
-
-    private ContextMenu ContextMenu;
-    private FileSystemEntry? ContextEntry;
-
-    private async Task ShowContextMenu(FileSystemEntry contextEntry, double x, double y)
-    {
-        if (ContextMenuTemplate == null)
-            return;
-
-        ContextEntry = contextEntry;
-
-        await ContextMenu.Show(x, y);
-    }
-
-    #endregion
-
-    #region Entry Loading
-
-    [Parameter] public Func<IEnumerable<FileSystemEntry>, IEnumerable<FileSystemEntry>>? EntriesFilter { get; set; }
-
-    public FileSystemEntry[] Entries { get; private set; }
-
-    private bool IsLoading = true;
-    private Exception? LoadingException;
-
-    protected override async Task OnAfterRenderAsync(bool firstRender)
-    {
-        if (!firstRender)
-            return;
-
-        await Refresh();
-    }
-
-    public async Task Refresh()
-    {
-        // Reset UI State
-        IsLoading = true;
-        LoadingException = null;
-        
-        // Clear selection
-        InternalSelectedItems.Clear();
-        
-        if(OnSelectionChanged != null)
-            await OnSelectionChanged.Invoke(SelectedEntries);
-        
-        await InvokeAsync(StateHasChanged);
-
-        try
-        {
-            var rawEntries = await FileSystemProvider
-                .List(CurrentPath);
-
-            if (rawEntries.Length == 0)
-                Entries = [];
-            else
-            {
-                IEnumerable<FileSystemEntry> itemToOrder;
-
-                if (EntriesFilter == null)
-                    itemToOrder = rawEntries;
-                else
-                    itemToOrder = EntriesFilter.Invoke(rawEntries);
-
-                Entries = itemToOrder
-                    .OrderBy(x => x.IsFile)
-                    .ThenBy(x => x.Name)
-                    .ToArray();
-            }
-        }
-        catch (Exception e)
-        {
-            Entries = [];
-            LoadingException = e;
-
-            Logger.LogError("An error occured while loading entries for path '{path}': {e}", CurrentPath, e);
-        }
-
-        IsLoading = false;
-        await InvokeAsync(StateHasChanged);
-    }
-
-    #endregion
-
-    #region Interact
+    [Parameter] public RenderFragment? PreConfiguration { get; set; }
+    [Parameter] public RenderFragment? PostConfiguration { get; set; }
+    [Parameter] public RenderFragment? NoFilesTemplate { get; set; }
 
     [Parameter] public Func<FileSystemEntry, Task>? OnInteract { get; set; }
 
-    private async Task Interact(FileSystemEntry entry)
-    {
-        if(OnInteract != null)
-            await OnInteract.Invoke(entry);
-    }
-
-    #endregion
-
-    #region Navigation
-
+    public string CurrentPath { get; private set; }
+    
+    // Proxy to DataTable
+    [Parameter] public bool EnableHeadRounding { get; set; } = true;
+    [Parameter] public Func<MouseEventArgs, FileSystemEntry, Task>? OnContextMenuRequested { get; set; }
+    
+    public FileSystemEntry[] LoadedEntries => DataTable.LoadedData.Items;
+    
+    private DataTable<FileSystemEntry> DataTable;
+    
     protected override void OnInitialized()
     {
         CurrentPath = InitialPath;
     }
 
-    [Parameter] public string InitialPath { get; set; } = "/";
-
-    public string CurrentPath { get; private set; } = "";
-
-    public async Task GoUp()
+    private async Task<IEnumerable<FileSystemEntry>> LoadItemsAsync()
     {
-        if (CurrentPath == "/")
+        IEnumerable<FileSystemEntry> entries = await FileSystemProvider.List(CurrentPath);
+
+        // Additional filter
+        if (EntryFilter != null)
+            entries = EntryFilter.Invoke(entries);
+
+        // Default filter
+        entries = entries
+            .OrderBy(x => x.IsFile)
+            .ThenBy(x => x.Name);
+
+        return entries;
+    }
+
+    private async Task InvokeInteract(FileSystemEntry entry)
+    {
+        if (OnInteract == null)
             return;
 
-        await Navigate("..");
+        await OnInteract.Invoke(entry);
     }
 
-    public async Task GoTo(string newPath)
+    public async Task Refresh()
     {
-        CurrentPath = newPath;
-        
-        await Refresh();
+        await DataTable.Refresh();
+        await InvokeAsync(StateHasChanged);
     }
 
-    public async Task GoIn(string item)
-     => await Navigate(item);
-
-    private async Task Navigate(string diff)
+    public async Task<string> Navigate(string path)
     {
-        CurrentPath = PathBuilder.FullPathUnix(CurrentPath, diff);
-
-        await Refresh();
-    }
-
-    #endregion
-
-    #region Design
-
-    [Parameter] public bool EnableHeaderRounding { get; set; } = false;
-    [Parameter] public bool ShowSize { get; set; } = true;
-    [Parameter] public bool ShowDate { get; set; } = true;
-    [Parameter] public RenderFragment? NoFilesTemplate { get; set; }
-    [Parameter] public RenderFragment? GoUpTemplate { get; set; }
-
-    #endregion
-
-    #region Selection
-
-    [Parameter] public bool EnableSelection { get; set; }
-    [Parameter] public Func<FileSystemEntry[], Task>? OnSelectionChanged { get; set; }
-
-    public FileSystemEntry[] SelectedEntries => InternalSelectedItems.ToArray();
-    private List<FileSystemEntry> InternalSelectedItems = new();
-
-    private async Task SetSelection(FileSystemEntry entry, bool toggle)
-    {
-        if (toggle)
-        {
-            if(!InternalSelectedItems.Contains(entry))
-                InternalSelectedItems.Add(entry);
-        }
+        if (path.StartsWith("/"))
+            CurrentPath = path;
         else
-        {
-            if (InternalSelectedItems.Contains(entry))
-                InternalSelectedItems.Remove(entry);
-        }
-
-        await InvokeAsync(StateHasChanged);
+            CurrentPath = PathBuilder.FullPathUnix(CurrentPath, path);
         
-        if(OnSelectionChanged != null)
-            await OnSelectionChanged.Invoke(SelectedEntries);
+        await DataTable.Refresh();
+        return CurrentPath;
     }
-
-    private async Task SetAllSelection(bool toggle)
-    {
-        InternalSelectedItems.Clear();
-        
-        if(toggle)
-            InternalSelectedItems.AddRange(Entries);
-
-        await InvokeAsync(StateHasChanged);
-        
-        if(OnSelectionChanged != null)
-            await OnSelectionChanged.Invoke(SelectedEntries);
-    }
-
-    #endregion
 }

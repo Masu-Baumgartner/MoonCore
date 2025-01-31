@@ -1,41 +1,50 @@
 @using MoonCore.Blazor.Tailwind.Modals.Components
 @using MoonCore.Blazor.Tailwind.Components
 @using MoonCore.Blazor.Tailwind.States
+@using MoonCore.Blazor.Tailwind.Test.UI.Dt
 
 @inherits BaseModal
 
 <h1 class="mb-5 font-semibold text-xl">Select a location</h1>
 
+<div class="bg-gray-800 px-3 py-2 rounded-lg mb-3">
+    <PathBreadcrumb Path="@Path" OnClick="OnPathBreadcrumbClick" />
+</div>
+
 <div class="rounded-lg bg-gray-800">
     <FileList @ref="FileList"
-              InitialPath="@InitialPath"
-              EntriesFilter="EntriesFilter"
-              EnableHeaderRounding="true"
-              ShowDate="false"
-              ShowSize="false"
-              OnInteract="OnInteract"
-              FileSystemProvider="FileSystemProvider">
-        <GoUpTemplate>
-            <tr class="border-b border-gray-700">
-                <td>
-                    <div class="flex justify-center">
-                        <i class="icon-corner-left-up text-2xl text-primary-500"></i>
-                    </div>
-                </td>
-                <td class="px-6 py-4" colspan="20">
-                    <a href="#" class="hover:text-white" @onclick="FileList.GoUp"
-                       @onclick:preventDefault>
-                        Go to parent directory
-                    </a>
-                </td>
-            </tr>
-        </GoUpTemplate>
+               InitialPath="@InitialPath"
+               EntryFilter="EntriesFilter"
+               OnInteract="OnInteract"
+               FileSystemProvider="FileSystemProvider">
+        <PreConfiguration>
+            <DataTableRow TItem="FileSystemEntry" Css="border-b border-gray-700">
+                <Template>
+                    @if (FileList.CurrentPath != "/")
+                    {
+                        <td class="w-12 px-2">
+                            <div class="flex justify-center">
+                                <i class="icon-corner-left-up text-2xl text-primary-500"></i>
+                            </div>
+                        </td>
+                        <td class="px-1 py-3" colspan="99">
+                            <a href="#" class="hover:text-gray-100" @onclick="GoUp"
+                               @onclick:preventDefault>
+                                Go to parent directory
+                            </a>
+                        </td>
+                    }
+                </Template>
+            </DataTableRow>
+        </PreConfiguration>
         <NoFilesTemplate>
-            <StateDisplay Title="No folders found"
-                          Description="No folders in the selected directory found"
-                          Icon="icon-folder-open"
-                          IconColor="text-primary-500"
-                          Type="StateType.Custom"/>
+            <div class="p-5">
+                <StateDisplay Title="No folders found"
+                              Description="No folders in the selected directory found"
+                              Icon="icon-folder-open"
+                              IconColor="text-primary-500"
+                              Type="StateType.Custom"/>
+            </div>
         </NoFilesTemplate>
     </FileList>
 </div>
@@ -65,10 +74,22 @@
         await Hide();
     }
 
+    private async Task GoUp()
+    {
+        Path = await FileList.Navigate("..");
+        await InvokeAsync(StateHasChanged);
+    }
+
     private async Task OnInteract(FileSystemEntry entry)
     {
-        await FileList.GoIn(entry.Name);
-        Path = FileList.CurrentPath;
+        Path = await FileList.Navigate(entry.Name);
+        await InvokeAsync(StateHasChanged);
+    }
+    
+    private async Task OnPathBreadcrumbClick(string path)
+    {
+        Path = await FileList.Navigate(path);
+        await InvokeAsync(StateHasChanged);
     }
 
     private IEnumerable<FileSystemEntry> EntriesFilter(IEnumerable<FileSystemEntry> entries)
