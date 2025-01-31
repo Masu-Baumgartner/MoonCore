@@ -1,5 +1,5 @@
 using MoonCore.Blazor.Tailwind.Alerts.Components;
-using MoonCore.Blazor.Tailwind.Forms;
+using MoonCore.Blazor.Tailwind.LegacyForms;
 using MoonCore.Blazor.Tailwind.Modals.Components;
 using MoonCore.Blazor.Tailwind.Modals;
 

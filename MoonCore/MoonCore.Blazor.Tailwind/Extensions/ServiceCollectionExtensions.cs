@@ -1,4 +1,5 @@
 using Microsoft.Extensions.DependencyInjection;
+using MoonCore.Blazor.Tailwind.Ace;
 using MoonCore.Blazor.Tailwind.Alerts;
 using MoonCore.Blazor.Tailwind.HotKeys;
 using MoonCore.Blazor.Tailwind.Modals;
@@ -17,5 +18,6 @@ public static class ServiceCollectionExtensions
         collection.AddScoped<QueryParameterService>();
         collection.AddScoped<DownloadService>();
         collection.AddScoped<HotKeyService>();
+        collection.AddScoped<CodeEditorService>();
     }
 }

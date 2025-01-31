@@ -1,9 +1,9 @@
 ﻿@page "/datatable"
 
 @using Bogus
-@using MoonCore.Blazor.Tailwind.DataTable
 @using MoonCore.Blazor.Tailwind.Test.Models
 @using MoonCore.Models
+@using MoonCore.Blazor.Tailwind.LegacyDataTable
 
 <ItemDataTable TItem="DemoDataModel" PageSize="15" ItemLoader="ItemLoader">
     <DataColumn TItem="DemoDataModel" Field="@(x => x.Id)" Title="Id" IsSortable="true" ExportField="@(x => x.Id)" />

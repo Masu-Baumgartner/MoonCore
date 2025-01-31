@@ -8,9 +8,11 @@
 
     <ItemGroup>
         <ProjectReference Include="..\MoonCore.Blazor.Tailwind\MoonCore.Blazor.Tailwind.csproj"/>
+        <ProjectReference Include="..\MoonCore.Extended\MoonCore.Extended.csproj" />
     </ItemGroup>
 
     <ItemGroup>
+        <Folder Include="Http\Middleware\" />
         <Folder Include="Styles\mappings\" />
     </ItemGroup>
 

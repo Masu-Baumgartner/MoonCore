@@ -5,14 +5,12 @@ using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.IdentityModel.Tokens;
 using MoonCore.Blazor.Tailwind.Auth;
 using MoonCore.Blazor.Tailwind.Extensions;
-using MoonCore.Blazor.Tailwind.Forms;
-using MoonCore.Blazor.Tailwind.Forms.Components;
+using MoonCore.Blazor.Tailwind.LegacyForms;
+using MoonCore.Blazor.Tailwind.LegacyForms.Components;
 using MoonCore.Blazor.Tailwind.Test;
 using MoonCore.Blazor.Tailwind.Test.Extensions;
-using MoonCore.Blazor.Tailwind.Test.Http.Middleware;
-using MoonCore.Blazor.Tailwind.Test.Models;
 using MoonCore.Blazor.Tailwind.Test.UI;
-using MoonCore.Blazor.Tailwind.Test.UI.Ace;
+using MoonCore.Extended.JwtInvalidation;
 using MoonCore.Extensions;
 using MoonCore.Helpers;
 
@@ -31,8 +29,6 @@ builder.Logging.ClearProviders();
 builder.Logging.AddMoonCore();
 
 builder.Services.AddMoonCoreBlazorTailwind();
-
-builder.Services.AddScoped<CodeEditorService>();
 
 builder.Services.AddScoped(sp =>
 {
@@ -76,12 +72,12 @@ Task.Run(async () =>
     Console.WriteLine("Invalidated");
 });
 
-builder.Services.AddSingleton(new JwtInvalidateOptions()
+builder.Services.AddJwtInvalidation(options =>
 {
-    InvalidateTimeProvider = async (_, principal) =>
+    options.InvalidateTimeProvider = async (_, principal) =>
     {
         var userIdClaim = principal.Claims.FirstOrDefault(x => x.Type == "userId");
-        
+
         if (userIdClaim == null)
             return null;
 
@@ -89,7 +85,7 @@ builder.Services.AddSingleton(new JwtInvalidateOptions()
             return DateTime.UtcNow;
 
         return expireTimes[userId];
-    }
+    };
 });
 
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme).AddJwtBearer(options =>
@@ -124,7 +120,7 @@ app.UseAntiforgery();
 
 app.UseAuthentication();
 
-app.UseMiddleware<JwtInvalidateMiddleware>();
+app.UseJwtInvalidation();
 
 app.UseAuthorization();
 

@@ -1,0 +1,96 @@
+@using MoonCore.Blazor.Tailwind.Modals.Components
+@using MoonCore.Blazor.Tailwind.Components
+@using MoonCore.Blazor.Tailwind.States
+
+@inherits BaseModal
+
+<h1 class="mb-5 font-semibold text-xl">Select a location</h1>
+
+<div class="bg-gray-800 px-3 py-2 rounded-lg mb-3">
+    <PathBreadcrumb Path="@Path" OnClick="OnPathBreadcrumbClick" />
+</div>
+
+<div class="rounded-lg bg-gray-800">
+    <FileList @ref="FileList"
+               InitialPath="@InitialPath"
+               EntryFilter="EntriesFilter"
+               OnInteract="OnInteract"
+               FileSystemProvider="FileSystemProvider">
+        <PreConfiguration>
+            <DataTableRow TItem="FileSystemEntry" Css="border-b border-gray-700">
+                <Template>
+                    @if (FileList.CurrentPath != "/")
+                    {
+                        <td class="w-12 px-2">
+                            <div class="flex justify-center">
+                                <i class="icon-corner-left-up text-2xl text-primary-500"></i>
+                            </div>
+                        </td>
+                        <td class="px-1 py-3" colspan="99">
+                            <a href="#" class="hover:text-gray-100" @onclick="GoUp"
+                               @onclick:preventDefault>
+                                Go to parent directory
+                            </a>
+                        </td>
+                    }
+                </Template>
+            </DataTableRow>
+        </PreConfiguration>
+        <NoFilesTemplate>
+            <div class="p-5">
+                <StateDisplay Title="No folders found"
+                              Description="No folders in the selected directory found"
+                              Icon="icon-folder-open"
+                              IconColor="text-primary-500"
+                              Type="StateType.Custom"/>
+            </div>
+        </NoFilesTemplate>
+    </FileList>
+</div>
+
+<div class="mt-5 flex space-x-2">
+    <WButton OnClick="_ => Hide()" CssClasses="btn btn-secondary grow">Cancel</WButton>
+    <WButton OnClick="_ => Submit()" CssClasses="btn btn-primary grow">Select</WButton>
+</div>
+
+@code
+{
+    [Parameter] public IFileSystemProvider FileSystemProvider { get; set; }
+    [Parameter] public string InitialPath { get; set; } = "/";
+    [Parameter] public Func<string, Task> OnSubmit { get; set; }
+
+    private FileList FileList;
+    private string Path;
+
+    protected override void OnInitialized()
+    {
+        Path = InitialPath;
+    }
+
+    private async Task Submit()
+    {
+        await OnSubmit.Invoke(Path);
+        await Hide();
+    }
+
+    private async Task GoUp()
+    {
+        Path = await FileList.Navigate("..");
+        await InvokeAsync(StateHasChanged);
+    }
+
+    private async Task OnInteract(FileSystemEntry entry)
+    {
+        Path = await FileList.Navigate(entry.Name);
+        await InvokeAsync(StateHasChanged);
+    }
+    
+    private async Task OnPathBreadcrumbClick(string path)
+    {
+        Path = await FileList.Navigate(path);
+        await InvokeAsync(StateHasChanged);
+    }
+
+    private IEnumerable<FileSystemEntry> EntriesFilter(IEnumerable<FileSystemEntry> entries)
+        => entries.Where(x => !x.IsFile);
+}
