@@ -8,7 +8,6 @@ using MoonCore.Blazor.Tailwind.Extensions;
 using MoonCore.Blazor.Tailwind.LegacyForms;
 using MoonCore.Blazor.Tailwind.LegacyForms.Components;
 using MoonCore.Blazor.Tailwind.Test;
-using MoonCore.Blazor.Tailwind.Test.Extensions;
 using MoonCore.Blazor.Tailwind.Test.UI;
 using MoonCore.Extended.JwtInvalidation;
 using MoonCore.Extensions;
