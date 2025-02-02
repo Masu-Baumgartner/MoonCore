@@ -1,8 +1,7 @@
 ﻿using Microsoft.AspNetCore.Components.Authorization;
-using MoonCore.Blazor.Tailwind.Auth;
-using MoonCore.Blazor.Tailwind.Test.Models;
+using Microsoft.Extensions.DependencyInjection;
 
-namespace MoonCore.Blazor.Tailwind.Test.Extensions;
+namespace MoonCore.Blazor.Tailwind.Auth;
 
 public static class ServiceCollectionExtensions
 {
