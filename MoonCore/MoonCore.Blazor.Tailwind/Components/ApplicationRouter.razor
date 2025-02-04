@@ -27,55 +27,57 @@
     }
     else
     {
-        <AuthorizeView>
-            <Authorized>
-                <Router AppAssembly="AppAssembly" AdditionalAssemblies="AdditionalAssemblies">
-                    <Found Context="routeData">
-                        <LayoutView Layout="@DefaultLayout">
-                            <ErrorHandler CustomHandler="OnHandleException">
-                                <RouteView RouteData="@routeData"/>
-                            </ErrorHandler>
-                        </LayoutView>
-                    </Found>
-                    <NotFound>
-                        <PageTitle>Not found</PageTitle>
-                        <LayoutView Layout="@DefaultLayout">
+        <CascadingAuthenticationState>
+            <AuthorizeView>
+                <Authorized>
+                    <Router AppAssembly="AppAssembly" AdditionalAssemblies="AdditionalAssemblies">
+                        <Found Context="routeData">
+                            <LayoutView Layout="@DefaultLayout">
+                                <ErrorHandler CustomHandler="OnHandleException">
+                                    <RouteView RouteData="@routeData"/>
+                                </ErrorHandler>
+                            </LayoutView>
+                        </Found>
+                        <NotFound>
+                            <PageTitle>Not found</PageTitle>
+                            <LayoutView Layout="@DefaultLayout">
+                                <StateDisplay Type="StateType.Custom"
+                                              Icon="icon-telescope"
+                                              IconColor="text-tertiary-500"
+                                              Title="Page not found"
+                                              Description="The requested page could not be found"/>
+                            </LayoutView>
+                        </NotFound>
+                    </Router>
+                </Authorized>
+                <Authorizing>
+                    @if (AuthenticatingTemplate != null)
+                    {
+                        @AuthenticatingTemplate
+                    }
+                    else
+                    {
+                        <div class="m-10">
                             <StateDisplay Type="StateType.Custom"
-                                          Icon="icon-telescope"
+                                          Icon="icon-arrow-up-down"
                                           IconColor="text-tertiary-500"
-                                          Title="Page not found"
-                                          Description="The requested page could not be found"/>
-                        </LayoutView>
-                    </NotFound>
-                </Router>
-            </Authorized>
-            <Authorizing>
-                @if (AuthenticatingTemplate != null)
-                {
-                    @AuthenticatingTemplate
-                }
-                else
-                {
-                    <div class="m-10">
-                        <StateDisplay Type="StateType.Custom"
-                                      Icon="icon-arrow-up-down"
-                                      IconColor="text-tertiary-500"
-                                      Title="Checking authentication state"
-                                      Description="Loading authentication state from identity provider"/>
-                    </div>
-                }
-            </Authorizing>
-            <NotAuthorized>
-                @if (LoginTemplate != null)
-                {
-                    @LoginTemplate
-                }
-                else
-                {
-                    <DefaultLoginTemplate/>
-                }
-            </NotAuthorized>
-        </AuthorizeView>
+                                          Title="Checking authentication state"
+                                          Description="Loading authentication state from identity provider"/>
+                        </div>
+                    }
+                </Authorizing>
+                <NotAuthorized>
+                    @if (LoginTemplate != null)
+                    {
+                        @LoginTemplate
+                    }
+                    else
+                    {
+                        <DefaultLoginTemplate/>
+                    }
+                </NotAuthorized>
+            </AuthorizeView>
+        </CascadingAuthenticationState>
     }
 </ErrorLogger>
 
