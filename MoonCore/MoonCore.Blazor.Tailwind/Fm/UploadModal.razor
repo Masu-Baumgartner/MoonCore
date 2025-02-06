@@ -101,7 +101,7 @@ else
             await InvokeAsync(StateHasChanged);
         }
 
-        await ToastService.Success($"Successfully uploaded {TotalFileCount} file(s)");
+        await ToastService.Success($"Successfully uploaded {CurrentFileCount} file(s)");
         await Hide();
 
         if (OnUploadCompleted != null)
@@ -148,7 +148,7 @@ else
             await InvokeAsync(StateHasChanged);
         }
 
-        await ToastService.Success($"Successfully uploaded {TotalFileCount} file(s)");
+        await ToastService.Success($"Successfully uploaded {CurrentFileCount} file(s)");
         await Hide();
 
         if (OnUploadCompleted != null)

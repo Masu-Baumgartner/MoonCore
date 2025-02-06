@@ -1,4 +1,5 @@
 ﻿@using MoonCore.Blazor.Tailwind.States
+@using MoonCore.Exceptions
 @using MoonCore.Models
 
 @typeparam TItem
@@ -16,7 +17,7 @@
     <table class="table-auto w-full text-gray-300">
         
         @* Header *@
-        <thead class="text-xs uppercase text-gray-500 bg-gray-700/50">
+        <thead class="text-xs uppercase text-gray-500 bg-gray-700/50 text-left">
         
         <tr>
 
@@ -308,6 +309,11 @@
         }
         catch (Exception e)
         {
+            // Special handling for 401s
+            if (e is HttpApiException httpApiException && httpApiException.Status == 401)
+                throw;
+            
+            // Normal handling
             LoadException = e;
 
             IsLoading = false;
