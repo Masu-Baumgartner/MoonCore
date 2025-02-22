@@ -6,4 +6,4 @@ var secureFs = new SecureFileSystem(
     PathBuilder.Dir(Directory.GetCurrentDirectory(), "testFs")
 );
 
-secureFs.RemoveAll("c");
+secureFs.ChownAll("a", 0, 0);
