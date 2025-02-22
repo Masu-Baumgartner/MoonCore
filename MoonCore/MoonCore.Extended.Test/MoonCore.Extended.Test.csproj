@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
         <OutputType>Exe</OutputType>
@@ -10,13 +10,11 @@
 
     <ItemGroup>
       <ProjectReference Include="..\MoonCore.Extended\MoonCore.Extended.csproj" />
-      <ProjectReference Include="..\MoonCore.PluginFramework\MoonCore.PluginFramework.csproj" />
-      <ProjectReference Include="..\MoonCore.Unix\MoonCore.Unix.csproj" />
-      <ProjectReference Include="..\MoonCore\MoonCore.csproj" />
     </ItemGroup>
-
+    
     <ItemGroup>
-        <PackageReference Include="Mono.Posix" Version="7.1.0-final.1.21458.1" />
+        <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="8.0.1" />
+        <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="8.0.11" />
     </ItemGroup>
 
 </Project>

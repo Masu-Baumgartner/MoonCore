@@ -1,0 +1,6 @@
+﻿services:
+  mooncore.extended.test:
+    image: mooncore.extended.test
+    build:
+      context: .
+      dockerfile: MoonCore.Extended.Test/Dockerfile

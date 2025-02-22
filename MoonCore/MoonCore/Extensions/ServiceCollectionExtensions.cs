@@ -55,13 +55,6 @@ public static class ServiceCollectionExtensions
                 collection.AddSingleton(type);
                 continue;
             }
-            
-            if (attributes.Any(x => x.GetType() == typeof(HostedServiceAttribute)))
-            {
-                collection.AddSingleton<IHostedService>(provider => (IHostedService)provider.GetRequiredService(type));
-                collection.AddSingleton(type);
-                continue;
-            }
         }
     }
 
