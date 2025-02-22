@@ -1,0 +1,16 @@
+services:
+  database:
+    image: postgres
+    restart: always
+    shm_size: 128mb
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_USER: test_db
+      POSTGRES_PASSWORD: test_db
+      POSTGRES_DATABASE: test_db
+    volumes:
+      - data:/var/lib/postgresql/data
+
+volumes:
+  data:
