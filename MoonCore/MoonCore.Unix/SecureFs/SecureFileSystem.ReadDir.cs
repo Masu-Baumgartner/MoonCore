@@ -8,6 +8,8 @@ public partial class SecureFileSystem
 {
     public SecureFsEntry[] ReadDir(string path)
     {
+        //Console.WriteLine("Read dir: " + path);
+        
         List<SecureFsEntry> entries = [];
 
         OpenEntrySafe(path, (parentFd, dirName) =>
@@ -28,7 +30,18 @@ public partial class SecureFileSystem
             }
 
             // Handle possible errors
-            var lastError = Stdlib.GetLastError();
+            Errno lastError;
+            
+            try
+            {
+                lastError = Stdlib.GetLastError();
+            }
+            catch (ArgumentOutOfRangeException)
+            {
+                // We got a 203 when reading the dir while chown-ing,
+                // which the commented out console write line fixed somehow. i chose to ignore the error fow now
+                lastError = 0;
+            }
 
             if (lastError != 0)
             {
@@ -103,7 +116,9 @@ public partial class SecureFileSystem
                     IsFile = IsFileType(stat.st_mode, FilePermissions.S_IFREG),
                     Size = stat.st_size,
                     LastChanged = DateTimeOffset.FromUnixTimeSeconds(stat.st_mtime).UtcDateTime,
-                    CreatedAt = DateTimeOffset.FromUnixTimeSeconds(stat.st_ctime).UtcDateTime
+                    CreatedAt = DateTimeOffset.FromUnixTimeSeconds(stat.st_ctime).UtcDateTime,
+                    OwnerUserId = (int)stat.st_uid,
+                    OwnerGroupId = (int)stat.st_gid
                 });
             } while (currentDirent != null);
             
