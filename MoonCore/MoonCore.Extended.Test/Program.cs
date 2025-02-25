@@ -1,9 +1,18 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
+using MoonCore.Extended.Extensions;
 using MoonCore.Extended.SingleDb;
 using MoonCore.Extended.Test;
+using MoonCore.Extensions;
 
 var serviceCollection = new ServiceCollection();
+
+serviceCollection.AddLogging(builder =>
+{
+    builder.AddMoonCore();
+});
+
+serviceCollection.AddDatabaseMappings();
 
 serviceCollection.AddSingleton(new DatabaseOptions()
 {
@@ -14,16 +23,18 @@ serviceCollection.AddSingleton(new DatabaseOptions()
     Password = "test_db"
 });
 
-serviceCollection.AddDbContext<DataContext>();
+serviceCollection.AddDbContext<DbContext, DataContext>();
 
 var serviceProvider = serviceCollection.BuildServiceProvider();
 
+await serviceProvider.EnsureDatabaseMigrated();
+serviceProvider.GenerateDatabaseMappings();
+
 var scope = serviceProvider.CreateScope();
 
-var dbc = scope.ServiceProvider.GetRequiredService<DataContext>();
+var dc = scope.ServiceProvider.GetRequiredService<DataContext>();
 
-var pending = await dbc.Database.GetPendingMigrationsAsync();
+Console.WriteLine(await dc.Database.CanConnectAsync());
 
-if (pending.Any())
-    await dbc.Database.MigrateAsync();
+Console.WriteLine("Exit");
 

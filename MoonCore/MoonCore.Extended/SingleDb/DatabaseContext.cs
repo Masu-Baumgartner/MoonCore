@@ -4,14 +4,9 @@ namespace MoonCore.Extended.SingleDb;
 
 public abstract class DatabaseContext : DbContext
 {
-    private readonly DatabaseOptions Options;
+    protected DatabaseOptions Options;
 
     public abstract string Prefix { get; }
-
-    public DatabaseContext(DatabaseOptions options)
-    {
-        Options = options;
-    }
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
     {
