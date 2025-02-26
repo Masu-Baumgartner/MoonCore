@@ -19,9 +19,10 @@ public static class ServiceCollectionExtensions
         collection.AddSingleton<DatabaseMappingOptions>();
     }
 
-    public static void AddDatabaseContext<T>(this IServiceCollection collection, ServiceLifetime lifetime) where T : DatabaseContext
+    public static void AddServiceCollectionAccessor(this IServiceCollection collection)
     {
-        collection.Add(new ServiceDescriptor(typeof(DatabaseContext), typeof(T), lifetime));
-        collection.AddDbContext<DbContext, T>(lifetime);
+        collection.AddSingleton(
+            new ServiceCollectionAccessor(collection)
+        );
     }
 }
