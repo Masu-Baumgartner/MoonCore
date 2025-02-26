@@ -13,6 +13,7 @@ serviceCollection.AddLogging(builder =>
 });
 
 serviceCollection.AddDatabaseMappings();
+serviceCollection.AddServiceCollectionAccessor();
 
 serviceCollection.AddSingleton(new DatabaseOptions()
 {
@@ -23,7 +24,7 @@ serviceCollection.AddSingleton(new DatabaseOptions()
     Password = "test_db"
 });
 
-serviceCollection.AddDbContext<DbContext, DataContext>();
+serviceCollection.AddDbContext<DataContext>();
 
 var serviceProvider = serviceCollection.BuildServiceProvider();
 

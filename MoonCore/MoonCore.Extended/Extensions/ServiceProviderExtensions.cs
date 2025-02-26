@@ -11,10 +11,14 @@ public static class ServiceProviderExtensions
     public static async Task EnsureDatabaseMigrated(this IServiceProvider serviceProvider)
     {
         using var scope = serviceProvider.CreateScope();
+
+        // Load all registered db context implementation...
+        var contextTypes = scope.ServiceProvider.GetDbContexts();
         
-        var databaseContexts = scope.ServiceProvider
-            .GetServices<DbContext>()
-            .ToArray();
+        // ... to resolve them from the di, in order to access the migration actions
+        var databaseContexts = contextTypes.Select(
+            contextType => (scope.ServiceProvider.GetRequiredService(contextType) as DbContext)!
+        ).ToArray();
 
         var loggerFactory = scope.ServiceProvider.GetRequiredService<ILoggerFactory>();
         var logger = loggerFactory.CreateLogger("Database Migration");
@@ -34,11 +38,11 @@ public static class ServiceProviderExtensions
                 databaseContext.GetType().FullName,
                 string.Join(", ", migrationNames)
             );
-            
+
             logger.LogInformation("Migrating...");
 
             await databaseContext.Database.MigrateAsync();
-            
+
             logger.LogInformation("Migration done!");
         }
     }
@@ -46,22 +50,20 @@ public static class ServiceProviderExtensions
     public static void GenerateDatabaseMappings(this IServiceProvider serviceProvider)
     {
         using var scope = serviceProvider.CreateScope();
-        
-        var contextTypes = scope.ServiceProvider
-            .GetServices<DbContext>()
-            .Select(x => x.GetType())
-            .ToArray();
+
+        var contextTypes = scope.ServiceProvider.GetDbContexts();
 
         var mappingOptions = scope.ServiceProvider.GetService<DatabaseMappingOptions>();
 
         if (mappingOptions == null)
-            throw new ArgumentException("You need to call AddDatabaseMappings() while registering services before generating the mappings");
+            throw new ArgumentException(
+                "You need to call AddDatabaseMappings() while registering services before generating the mappings");
 
         var loggerFactory = scope.ServiceProvider.GetRequiredService<ILoggerFactory>();
         var logger = loggerFactory.CreateLogger("Database Mappings");
-        
+
         logger.LogInformation("Generating mappings for {count} database contexts", contextTypes.Length);
-        
+
         mappingOptions.Mappings.Clear();
 
         foreach (var contextType in contextTypes)
@@ -83,5 +85,21 @@ public static class ServiceProviderExtensions
         }
 
         logger.LogInformation("Generated {count} entity-context mappings", mappingOptions.Mappings.Count);
+    }
+
+    public static Type[] GetDbContexts(this IServiceProvider serviceProvider)
+    {
+        var scAccessor = serviceProvider.GetService<ServiceCollectionAccessor>();
+
+        if (scAccessor == null)
+            throw new ArgumentException(
+                "You need to call AddServiceCollectionAccessor() on the service collection in order to use this method");
+
+        var dbContextType = typeof(DbContext);
+
+        return scAccessor.ServiceCollection
+            .Where(x => x.ServiceType.IsAssignableTo(dbContextType) && x.ServiceType != dbContextType)
+            .Select(x => x.ServiceType)
+            .ToArray();
     }
 }
