@@ -1,0 +1,25 @@
+﻿@layer base {
+    :root {
+        /* Gray (Inverted for White Mode) */
+
+        --color-gray-100: 14 18 28; /* Formerly gray-950 */
+        --color-gray-200: 17 23 33; /* Formerly gray-900 */
+        --color-gray-300: 28 36 56; /* Formerly gray-800 */
+        --color-gray-400: 41 50 73; /* Formerly gray-750 */
+        --color-gray-500: 68 78 107; /* Formerly gray-700 */
+        --color-gray-600: 112 121 147; /* Formerly gray-600 */
+        --color-gray-700: 153 161 183; /* Formerly gray-500 */
+        --color-gray-750: 181 181 195; /* Formerly gray-400 */
+        --color-gray-800: 219 223 233; /* Formerly gray-300 */
+        --color-gray-900: 241 241 242; /* Formerly gray-200 */
+        --color-gray-950: 249 249 249; /* Formerly gray-100 */
+
+        /* Full Colors (Inverted) */
+        
+        --color-light: 0 0 0;         /* Inverted to black */
+        --color-dark: 255 255 255;   /* Inverted to white */
+        
+        /* Special light mode stuff */
+        --color-diffcolor: 255 255 255;
+    }
+}

@@ -9,7 +9,8 @@ public class DataContext : DatabaseContext
 
     public DbSet<Car> Cars { get; set; }
 
-    public DataContext(DatabaseOptions options) : base(options)
+    public DataContext(DatabaseOptions options)
     {
+        Options = options;
     }
 }

@@ -8,10 +8,10 @@ public class DatabaseRepository<TEntity> where TEntity : class
     private DbSet<TEntity> DbSet;
     private DbContext DataContext;
 
-    public DatabaseRepository(DatabaseHelper databaseHelper, IServiceProvider serviceProvider)
+    public DatabaseRepository(DatabaseMappingOptions options, IServiceProvider serviceProvider)
     {
         // Resolve mapping
-        var dbContextType = databaseHelper.GetDbContextForEntity<TEntity>();
+        var dbContextType = options.Mappings.GetValueOrDefault(typeof(TEntity));
 
         if (dbContextType == null)
             throw new ArgumentException("The database mapping for this type does not exist", nameof(TEntity));
