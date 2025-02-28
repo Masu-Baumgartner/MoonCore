@@ -33,4 +33,26 @@
         <PackageReference Include="Microsoft.Extensions.Logging.Configuration" Version="8.0.0"/>
     </ItemGroup>
 
+    <ItemGroup>
+      <Compile Remove="Plugins\FolderPluginSource.cs" />
+      <Compile Remove="Plugins\IPluginSource.cs" />
+      <Compile Remove="Plugins\HttpHostedPluginSource.cs" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <Folder Include="Plugins\" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <Compile Remove="Models\HostedPluginsManifest.cs" />
+      <Compile Remove="Extensions\PluginLoaderServiceExtensions.cs" />
+      <Compile Remove="Plugins\FolderPluginSource.cs" />
+      <Compile Remove="Plugins\IPluginSource.cs" />
+      <Compile Remove="Plugins\HttpHostedPluginSource.cs" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <Folder Include="Plugins\" />
+    </ItemGroup>
+
 </Project>
