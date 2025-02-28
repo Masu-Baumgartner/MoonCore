@@ -4,7 +4,7 @@ namespace MoonCore.Logging;
 
 public static class LoggingConstants
 {
-    public static Dictionary<LogLevel, (byte, byte, byte)> ColorMappings = new()
+    public static readonly Dictionary<LogLevel, (byte, byte, byte)> ColorMappings = new()
     {
         {
             LogLevel.Critical,
