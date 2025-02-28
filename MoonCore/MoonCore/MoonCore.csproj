@@ -14,7 +14,7 @@
         <RepositoryUrl>https://github.com/Masu-Baumgartner/MoonCore</RepositoryUrl>
         <RepositoryType>git</RepositoryType>
         <PackageTags>moonlight</PackageTags>
-        <Version>1.8.3</Version>
+        <Version>1.8.4</Version>
         <PackageReadmeFile>README.md</PackageReadmeFile>
     </PropertyGroup>
 
@@ -31,28 +31,6 @@
         <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="8.0.0"/>
         <PackageReference Include="Microsoft.Extensions.Logging" Version="8.0.0"/>
         <PackageReference Include="Microsoft.Extensions.Logging.Configuration" Version="8.0.0"/>
-    </ItemGroup>
-
-    <ItemGroup>
-      <Compile Remove="Plugins\FolderPluginSource.cs" />
-      <Compile Remove="Plugins\IPluginSource.cs" />
-      <Compile Remove="Plugins\HttpHostedPluginSource.cs" />
-    </ItemGroup>
-
-    <ItemGroup>
-      <Folder Include="Plugins\" />
-    </ItemGroup>
-
-    <ItemGroup>
-      <Compile Remove="Models\HostedPluginsManifest.cs" />
-      <Compile Remove="Extensions\PluginLoaderServiceExtensions.cs" />
-      <Compile Remove="Plugins\FolderPluginSource.cs" />
-      <Compile Remove="Plugins\IPluginSource.cs" />
-      <Compile Remove="Plugins\HttpHostedPluginSource.cs" />
-    </ItemGroup>
-
-    <ItemGroup>
-      <Folder Include="Plugins\" />
     </ItemGroup>
 
 </Project>
