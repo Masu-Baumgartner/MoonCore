@@ -1,9 +1,8 @@
-﻿using System.IdentityModel.Tokens.Jwt;
+﻿using System.Collections.Frozen;
+using System.IdentityModel.Tokens.Jwt;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 
 namespace MoonCore.Extended.JwtInvalidation;
@@ -11,14 +10,20 @@ namespace MoonCore.Extended.JwtInvalidation;
 public class JwtInvalidateMiddleware
 {
     private readonly ILogger<JwtInvalidateMiddleware> Logger;
-    private readonly JwtInvalidateOptions Options;
+    private readonly FrozenDictionary<string, IJwtInvalidateOptions> Options;
     private readonly RequestDelegate Next;
 
-    public JwtInvalidateMiddleware(JwtInvalidateOptions options, RequestDelegate next, ILogger<JwtInvalidateMiddleware> logger)
+    public JwtInvalidateMiddleware(
+        IEnumerable<IJwtInvalidateOptions> options,
+        RequestDelegate next,
+        ILogger<JwtInvalidateMiddleware> logger
+    )
     {
-        Options = options;
         Next = next;
         Logger = logger;
+
+        Options = options
+            .ToFrozenDictionary(x => x.Scheme, x => x);
     }
 
     public async Task InvokeAsync(HttpContext context)
@@ -28,7 +33,7 @@ public class JwtInvalidateMiddleware
             await Results.Unauthorized().ExecuteAsync(context);
             return;
         }
-        
+
         await Next(context);
     }
 
@@ -38,13 +43,32 @@ public class JwtInvalidateMiddleware
 
         if (isAnonymous)
             return false;
-        
+
         // Only handle authenticated requests
         if (!(context.User.Identity?.IsAuthenticated ?? false))
             return false;
 
+        // Only handle defined schemes
+        var authenticateResultFeature = context.Features.Get<IAuthenticateResultFeature>();
+
+        // Null checks
+        if (authenticateResultFeature == null ||
+            authenticateResultFeature.AuthenticateResult == null ||
+            authenticateResultFeature.AuthenticateResult.Ticket == null)
+        {
+            return false;
+        }
+
+        // Lookup options for scheme
+        var optionsForScheme = Options
+            .GetValueOrDefault(authenticateResultFeature.AuthenticateResult.Ticket.AuthenticationScheme);
+        
+        // Don't handle if no options for this scheme have been found
+        if (optionsForScheme == null)
+            return false;
+
         // Invoke defined provider
-        var invalidateTime = await Options.InvalidateTimeProvider.Invoke(
+        var invalidateTime = await optionsForScheme.InvalidateTimeProvider.Invoke(
             context.RequestServices,
             context.User
         );
