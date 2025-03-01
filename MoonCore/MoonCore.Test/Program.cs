@@ -1,7 +1,6 @@
 ﻿using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
-using MoonCore.Configuration;
 using MoonCore.EnvConfiguration;
 using MoonCore.Helpers;
 using MoonCore.Test;

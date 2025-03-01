@@ -1,10 +1,11 @@
-﻿using Microsoft.Extensions.Logging;
+﻿using System.Collections.Frozen;
+using Microsoft.Extensions.Logging;
 
 namespace MoonCore.Logging;
 
 public static class LoggingConstants
 {
-    public static readonly Dictionary<LogLevel, (byte, byte, byte)> ColorMappings = new()
+    public static readonly FrozenDictionary<LogLevel, (byte, byte, byte)> ColorMappings = new Dictionary<LogLevel, (byte, byte, byte)>()
     {
         {
             LogLevel.Critical,
@@ -30,9 +31,9 @@ public static class LoggingConstants
             LogLevel.Trace,
             (68, 68, 68)
         }
-    };
+    }.ToFrozenDictionary();
 
-    public static Dictionary<LogLevel, string> ShortTextMappings = new()
+    public static FrozenDictionary<LogLevel, string> ShortTextMappings = new Dictionary<LogLevel, string>()
     {
         {
             LogLevel.Critical,
@@ -58,5 +59,5 @@ public static class LoggingConstants
             LogLevel.Trace,
             "TRCE"
         }
-    };
+    }.ToFrozenDictionary();
 }
