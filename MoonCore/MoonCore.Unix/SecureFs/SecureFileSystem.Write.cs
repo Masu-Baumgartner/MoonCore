@@ -43,7 +43,7 @@ public partial class SecureFileSystem
                 var safeFileHandle = new SafeFileHandle(fd, true);
                 var fs = new FileStream(safeFileHandle, FileAccess.Write);
 
-                dataStream.CopyToAsync(fs);
+                dataStream.CopyTo(fs);
                 
                 fs.Flush();
                 fs.Close();
