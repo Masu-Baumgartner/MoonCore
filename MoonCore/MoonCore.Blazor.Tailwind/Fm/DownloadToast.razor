@@ -1,0 +1,65 @@
+﻿@using MoonCore.Blazor.Tailwind.Toasts.Components
+
+@inherits BaseToast
+
+<div class="flex-shrink-0">
+    <i class="icon-cloud-download text-xl text-info-400"></i>
+</div>
+<div class="ml-3 w-0 flex-1 pt-0.5">
+    <p class="text-sm font-medium text-gray-100 truncate">
+        @Title
+    </p>
+    <div class="mt-1 text-sm text-gray-400 grid grid-cols-2 justify-between">
+        @if (IsCompleted)
+        {
+            <div class="col-span-2">Completed</div>
+        }
+        else
+        {
+            <div class="col-span-1">
+                Speed: 
+                @Speed
+            </div>
+            <div class="col-span-1">
+                Total: 
+                @Total
+            </div>
+        }
+    </div>
+</div>
+
+@code
+{
+    [Parameter] public string Title { get; set; } = "N/A";
+    [Parameter] public string Speed { get; set; } = "N/A";
+    [Parameter] public string Total { get; set; } = "N/A";
+    [Parameter] public TimeSpan Delay { get; set; } = TimeSpan.FromSeconds(3);
+    [Parameter] public Func<DownloadToast, Task> Work { get; set; }
+
+    private bool IsCompleted = false;
+    
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (!firstRender)
+            return;
+
+        await Work.Invoke(this);
+
+        IsCompleted = true;
+        await InvokeAsync(StateHasChanged);
+        
+        Task.Run(async () =>
+        {
+            await Task.Delay(Delay);
+            await Hide();
+        });
+    }
+
+    public async Task Update(string speed, string total)
+    {
+        Speed = speed;
+        Total = total;
+
+        await InvokeAsync(StateHasChanged);
+    }
+}

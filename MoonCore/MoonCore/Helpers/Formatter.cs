@@ -456,4 +456,10 @@ public static class Formatter
 
         return result.ToString();
     }
+
+    public static string TransferSpeed(long bytesDiff, TimeSpan timeDiff)
+    {
+        var bytesInSecond = timeDiff.TotalSeconds == 0 ? 0 : bytesDiff / timeDiff.TotalSeconds;
+        return FormatSize(bytesInSecond) + "/s";
+    }
 }

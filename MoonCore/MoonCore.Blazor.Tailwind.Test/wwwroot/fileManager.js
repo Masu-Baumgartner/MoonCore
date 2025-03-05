@@ -1,26 +1,60 @@
 window.moonCoreFileManager = {
     uploadCache: [],
-    readCache: async function (index) {
-        const item = this.uploadCache.at(index);
-        const streamRef = await this.createStreamRef(item);
+    getNextFromCache: async function() {
+        if(this.uploadCache.length === 0)
+            return null;
 
+        let nextItem = this.uploadCache.pop();
+
+        if(!nextItem)
+            return null;
+        
+        let file = await this.openFileEntry(nextItem);
+        
+        if(file.size === 0)
+        {
+            return {
+                path: null,
+                stream: null,
+                left: this.uploadCache.length
+            }
+        }
+        
+        let stream = await this.createStreamRef(file);
+        
         return {
-            path: item.fullPath,
-            streamRef: streamRef
+            path: nextItem.fullPath,
+            stream: stream,
+            left: this.uploadCache.length
         };
     },
-    createStreamRef: async function (fileEntry) {
+    readCache: async function (index) {
+        const item = this.uploadCache.pop();
+        console.log(item);
+        const streamRefData = await this.createStreamRef(item);
+
+        if(streamRefData == null)
+            return {path: item.fullPath, streamRef: null};
+        
+        return {
+            path: item.fullPath,
+            streamRef: streamRefData.stream,
+            size: streamRefData.size
+        };
+    },
+    openFileEntry: async function (fileEntry) {
         const promise = new Promise(resolve => {
             fileEntry.file(file => {
                 resolve(file);
             }, err => console.log(err));
         });
 
-        const processedFile = await promise;
-
+        return await promise;
+    },
+    createStreamRef: async function (processedFile) {
         // Prevent uploads of empty files
         if (processedFile.size <= 0) {
-            console.log("Skipping upload of '" + fileEntry.fullPath + "' as its empty");
+            console.log("Skipping upload of '" + processedFile.name + "' as its empty");
             return null;
         }
 
@@ -64,7 +98,7 @@ window.moonCoreFileManager = {
             }
 
             this.getAllWebkitFileEntries(e.dataTransfer.items).then(async value => {
-                this.uploadCache = value;
+                value.forEach(a => this.uploadCache.push(a));
                 await callbackRef.invokeMethodAsync("OnFilesDropped", this.uploadCache.length);
             });
         });

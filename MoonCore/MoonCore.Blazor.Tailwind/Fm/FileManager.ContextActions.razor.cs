@@ -23,12 +23,35 @@ public partial class FileManager
     {
         if (entry.IsFile)
         {
-            await ToastService.Info($"Downloading {entry.Name}...");
+            async Task Work(DownloadToast toast)
+            {
+                var lastRead = 0L;
+                var lastReadAt = DateTime.Now;
+                    
+                var stream = await FileSystemProvider.Read(PathBuilder.JoinPaths(CurrentPath, entry.Name));
+                await DownloadService.DownloadStream(entry.Name, stream, async (bytesRead, _) =>
+                {
+                    var diff = bytesRead - lastRead;
+                    var diffTime = DateTime.Now - lastReadAt;
 
-            var stream = await FileSystemProvider.Read(PathBuilder.JoinPaths(CurrentPath, entry.Name));
-            await DownloadService.DownloadStream(entry.Name, stream);
+                    var speed = Formatter.TransferSpeed(diff, diffTime);
+                    var total = Formatter.FormatSize(bytesRead);
 
-            stream.Close();
+                    // Reset
+                    lastRead = bytesRead;
+                    lastReadAt = DateTime.Now;
+                        
+                    await toast.Update(speed, total);
+                });
+
+                stream.Close();
+            };
+
+            await ToastService.Launch<DownloadToast>(parameters =>
+            {
+                parameters.Add("Title", entry.Name);
+                parameters.Add("Work", Work);
+            });
         }
         else if (CompressProvider != null) // If we have a compress provider, we can help the user out a bit by compressing and then downloading the folder
         {
@@ -62,11 +85,13 @@ public partial class FileManager
 
                     await toast.UpdateText("Downloading folder");
 
-                    var stream = await FileSystemProvider.Read(tempArchivePath);
+                    await using var stream = await FileSystemProvider.Read(tempArchivePath);
                     await DownloadService.DownloadStream($"{entry.Name}.{compressType.Extension}", stream);
 
                     await ToastService.Success("Downloading folder",
                         $"You can delete the '{tempArchiveFileName}' after the download has finished");
+                    
+                    stream.Close();
                 }
             );
         }

@@ -52,6 +52,7 @@ else
 
 @code
 {
+    [Parameter] public Func<Task> OnCache { get; set; }
     [Parameter] public Func<string, Stream, Task> OnUpload { get; set; }
     [Parameter] public Func<Task>? OnUploadCompleted { get; set; }
     [Parameter] public long MaxUploadSize { get; set; } = ByteConverter.FromMegaBytes(100).Bytes;
@@ -74,6 +75,12 @@ else
     [JSInvokable]
     public async Task OnFilesDropped(int amount)
     {
+        Console.WriteLine("AAAAAAAAAAA " + amount);
+        
+        await OnCache.Invoke();
+        await Hide();
+        return;
+        
         // Reset UI State
         CurrentFileCount = 0;
         ProgressPercent = 0;

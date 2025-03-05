@@ -1,4 +1,5 @@
 @using Microsoft.Extensions.Logging
+@using Microsoft.JSInterop
 @using MoonCore.Blazor.Tailwind.Alerts
 @using MoonCore.Blazor.Tailwind.Modals
 @using MoonCore.Blazor.Tailwind.Services
@@ -15,7 +16,7 @@
 @inject AlertService AlertService
 @inject DownloadService DownloadService
 @inject HotKeyService HotKeyService
-
+@inject IJSRuntime JsRuntime
 @inject ILogger<FileManager> Logger
 
 <div class="bg-gray-800 rounded-lg py-1 mb-5">

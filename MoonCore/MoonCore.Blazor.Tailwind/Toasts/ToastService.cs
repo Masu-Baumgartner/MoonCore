@@ -30,7 +30,7 @@ public class ToastService
         }, (int)TimeSpan.FromSeconds(5).TotalMilliseconds);
     }
 
-    private Task<ToastItem> Launch<T>(Action<Dictionary<string, object>>? onConfigure = null, int hideDelay = -1)
+    public Task<ToastItem> Launch<T>(Action<Dictionary<string, object>>? onConfigure = null, int hideDelay = -1)
         where T : BaseToast
         => ToastLauncher.Launch<T>(onConfigure, hideDelay);
 
