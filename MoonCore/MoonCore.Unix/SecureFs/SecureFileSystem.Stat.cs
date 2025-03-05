@@ -5,6 +5,23 @@ namespace MoonCore.Unix.SecureFs;
 
 public partial class SecureFileSystem
 {
+    public SecureFsEntry Stat(string path)
+    {
+        var stat = SecureStat(path);
+
+        return new SecureFsEntry()
+        {
+            Name = Path.GetFileName(path),
+            IsDirectory = IsFileType(stat.st_mode, FilePermissions.S_IFDIR),
+            IsFile = IsFileType(stat.st_mode, FilePermissions.S_IFREG),
+            Size = stat.st_size,
+            LastChanged = DateTimeOffset.FromUnixTimeSeconds(stat.st_mtime).UtcDateTime,
+            CreatedAt = DateTimeOffset.FromUnixTimeSeconds(stat.st_ctime).UtcDateTime,
+            OwnerUserId = (int)stat.st_uid,
+            OwnerGroupId = (int)stat.st_gid
+        };
+    }
+    
     private Stat SecureStat(string path)
         => SecureFStat(path, AtFlags.AT_SYMLINK_NOFOLLOW);
     
