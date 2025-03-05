@@ -27,106 +27,101 @@ public partial class FileManager
         UploadedCount = 0;
         LeftCount = 0;
 
+        await ToastService.Launch<UploadToast>(parameters =>
+        {
+            parameters.Add("Title", "Uploading");
+            parameters.Add("Work", UploadDroppedFiles);
+        });
+    }
+
+    private async Task UploadDroppedFiles(UploadToast toast)
+    {
         var uploadSizeInBytes = ByteConverter.FromMegaBytes(MaxUploadSize).Bytes;
 
-        async Task Work(UploadToast toast)
+        while (true)
         {
-            while (true)
+            var nextItem = await JsRuntime.InvokeAsync<TransferData2?>(
+                "moonCoreFileManager.getNextFromCache",
+                []
+            );
+
+            if (nextItem == null)
             {
-                var nextItem = await JsRuntime.InvokeAsync<TransferData2?>(
-                    "moonCoreFileManager.getNextFromCache",
-                    []
-                );
+                IsUploading = false;
 
-                if (nextItem == null)
-                {
-                    IsUploading = false;
-                    
-                    await toast.Update(
-                        $"Uploading",
-                        "0 MB/s",
-                        UploadedCount,
-                        LeftCount
-                    );
-                    
-                    break;
-                }
-
-                if (nextItem.Stream != null)
-                {
-                    await HandleUpload(
-                        nextItem.Path,
-                        async () => await nextItem.Stream.OpenReadStreamAsync(uploadSizeInBytes)
-                    );
-                }
-
-                LeftCount = nextItem.Left;
-                UploadedCount++;
-
-                var name = Path.GetFileName(nextItem.Path);
-                
                 await toast.Update(
-                    $"Uploading: {name}",
+                    $"Uploading",
                     "0 MB/s",
                     UploadedCount,
                     LeftCount
                 );
+
+                break;
             }
+
+            if (nextItem.Stream != null)
+            {
+                await HandleUpload(
+                    nextItem.Path,
+                    await nextItem.Stream.OpenReadStreamAsync(uploadSizeInBytes)
+                );
+            }
+
+            LeftCount = nextItem.Left;
+            UploadedCount++;
+
+            var name = Path.GetFileName(nextItem.Path);
+
+            await toast.Update(
+                $"Uploading: {name}",
+                "0 MB/s",
+                UploadedCount,
+                LeftCount
+            );
         }
 
-        await ToastService.Launch<UploadToast>(parameters =>
-        {
-            parameters.Add("Title", "Uploading");
-            parameters.Add("Work", Work);
-        });
-
-        Console.WriteLine("AAAAAAAA END");
+        // Reset state
+        await SetAllSelection(false);
+        await FileList.Refresh();
     }
 
-    private async Task HandleUpload(string path, Func<Task<Stream>> streamCallback)
+    private async Task HandleUpload(string fileName, Stream stream)
     {
-        Stream? stream = null;
-
         try
         {
-            stream = await streamCallback.Invoke();
-
-            var pathToUpload = PathBuilder.JoinPaths(CurrentPath, path);
+            var pathToUpload = PathBuilder.JoinPaths(CurrentPath, fileName);
             await FileSystemProvider.Create(pathToUpload, stream);
         }
         catch (ArgumentOutOfRangeException)
         {
-            await ToastService.Danger($"Unable to upload file {path}: The provided file is too big");
+            await ToastService.Danger($"Unable to upload file {fileName}: The provided file is too big");
         }
         catch (Exception e)
         {
-            await ToastService.Danger($"Unable to upload file {path}: An unknown error occured");
-            Logger.LogError("Unable to upload receive file '{path}': {e}", path, e);
+            await ToastService.Danger($"Unable to upload file {fileName}: An unknown error occured");
+            Logger.LogError("Unable to upload receive file '{path}': {e}", fileName, e);
         }
         finally
         {
-            stream?.Close();
+            stream.Close();
         }
+    }
+
+    private async Task OnUploadHandle(string path, Stream dataStream)
+    {
+        await ToastService.Launch<UploadToast>(parameters =>
+        {
+            parameters.Add("Title", "Uploading");
+            parameters.Add("Work", UploadDroppedFiles);
+        });
     }
 
     private async Task LaunchUploadModal()
     {
         await ModalService.Launch<UploadModal>(size: "max-w-xl", allowUnfocusHide: true, onConfigure: parameters =>
         {
-            parameters.Add("OnUpload", async Task (string path, Stream dataStream) =>
-            {
-                var pathToUpload = PathBuilder.JoinPaths(CurrentPath, path);
-                await FileSystemProvider.Create(pathToUpload, dataStream);
-            });
-
-            parameters.Add("OnCache", TriggerUpload);
-
-            parameters.Add("OnUploadCompleted", async () =>
-            {
-                // Reset state
-                await SetAllSelection(false);
-                await FileList.Refresh();
-            });
+            parameters.Add("OnUpload", OnUploadHandle);
+            parameters.Add("OnFilesDragged", TriggerUpload);
         });
     }
 

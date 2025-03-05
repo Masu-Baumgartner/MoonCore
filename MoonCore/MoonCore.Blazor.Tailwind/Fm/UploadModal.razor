@@ -52,10 +52,8 @@ else
 
 @code
 {
-    [Parameter] public Func<Task> OnCache { get; set; }
     [Parameter] public Func<string, Stream, Task> OnUpload { get; set; }
-    [Parameter] public Func<Task>? OnUploadCompleted { get; set; }
-    [Parameter] public long MaxUploadSize { get; set; } = ByteConverter.FromMegaBytes(100).Bytes;
+    [Parameter] public Func<Task> OnFilesDragged { get; set; }
 
     private bool IsUploading = false;
     private int ProgressPercent = 0;
@@ -70,52 +68,12 @@ else
         await JsRuntime.InvokeVoidAsync("moonCoreFileManager.setup", "dropzone", DotNetObjectReference.Create(this));
     }
 
-    #region Drag and drop callback
-
     [JSInvokable]
     public async Task OnFilesDropped(int amount)
     {
-        Console.WriteLine("AAAAAAAAAAA " + amount);
-        
-        await OnCache.Invoke();
+        await OnFilesDragged.Invoke();
         await Hide();
-        return;
-        
-        // Reset UI State
-        CurrentFileCount = 0;
-        ProgressPercent = 0;
-        TotalFileCount = amount;
-        IsUploading = true;
-        await InvokeAsync(StateHasChanged);
-
-        for (var i = 0; i < TotalFileCount; i++)
-        {
-            // Read from client cache
-            var data = await JsRuntime.InvokeAsync<TransferData>("moonCoreFileManager.readCache", i);
-
-            if (data.StreamRef == null) //TODO: Handling
-                continue;
-
-            // Handle upload
-            await HandleUpload(
-                data.Path,
-                async () => await data.StreamRef.OpenReadStreamAsync(MaxUploadSize)
-            );
-
-            // Update UI
-            CurrentFileCount++;
-            ProgressPercent = CurrentFileCount == 0 ? 0 : (int)Math.Round((float)CurrentFileCount / TotalFileCount * 100f);
-            await InvokeAsync(StateHasChanged);
-        }
-
-        await ToastService.Success($"Successfully uploaded {CurrentFileCount} file(s)");
-        await Hide();
-
-        if (OnUploadCompleted != null)
-            await OnUploadCompleted.Invoke();
     }
-
-    #endregion
 
     private async Task StartUpload(InputFileChangeEventArgs args)
     {
