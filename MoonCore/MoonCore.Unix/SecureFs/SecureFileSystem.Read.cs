@@ -5,7 +5,7 @@ namespace MoonCore.Unix.SecureFs;
 
 public partial class SecureFileSystem
 {
-    public void OpenFile(string path, Action<FileStream> handle)
+    public void OpenFileRead(string path, Action<FileStream> handle)
     {
         OpenEntrySafe(path, (parentFd, fileName) =>
         {
