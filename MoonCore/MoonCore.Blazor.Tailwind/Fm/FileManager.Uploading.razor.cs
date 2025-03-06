@@ -40,7 +40,7 @@ public partial class FileManager
 
         while (true)
         {
-            var nextItem = await JsRuntime.InvokeAsync<TransferData2?>(
+            var nextItem = await JsRuntime.InvokeAsync<TransferData?>(
                 "moonCoreFileManager.getNextFromCache",
                 []
             );
