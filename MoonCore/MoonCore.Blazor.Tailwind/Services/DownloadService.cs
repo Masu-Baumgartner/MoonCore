@@ -6,25 +6,68 @@ namespace MoonCore.Blazor.Tailwind.Services;
 public class DownloadService
 {
     private readonly IJSRuntime JsRuntime;
-    
+    private Dictionary<int, Func<long, bool, Task>> Handlers = new();
+
     public DownloadService(IJSRuntime jsRuntime)
     {
         JsRuntime = jsRuntime;
     }
 
-    public async Task DownloadStream(string fileName, Stream stream)
+    public async Task DownloadStream(string fileName, Stream stream, Func<long, bool, Task>? handler = null)
     {
-        using var streamRef = new DotNetStreamReference(stream);
+        using var streamRef = new DotNetStreamReference(stream, true);
 
-        await JsRuntime.InvokeVoidAsync("moonCoreDownloadService.download", fileName, streamRef);
+        if (handler == null)
+        {
+            await JsRuntime.InvokeVoidAsync(
+                "moonCoreDownloadService.download",
+                fileName,
+                streamRef,
+                null,
+                null
+            );
+        }
+        else
+        {
+            lock (Handlers)
+                Handlers[handler.GetHashCode()] = handler;
+
+            await JsRuntime.InvokeVoidAsync(
+                "moonCoreDownloadService.download",
+                fileName,
+                streamRef,
+                handler.GetHashCode(),
+                DotNetObjectReference.Create(this)
+            );
+        }
+    }
+
+    [JSInvokable]
+    public async Task ReceiveReport(int id, long downloadedBytes, bool end)
+    {
+        Func<long, bool, Task>? handler = null;
+
+        lock (Handlers)
+            handler = Handlers.GetValueOrDefault(id);
+
+        if (handler == null)
+            return;
+
+        await handler.Invoke(downloadedBytes, end);
+
+        if (end)
+        {
+            lock (Handlers)
+                Handlers.Remove(id);
+        }
     }
 
     public async Task DownloadBytes(string fileName, byte[] bytes)
     {
         var ms = new MemoryStream(bytes);
-        
+
         await DownloadStream(fileName, ms);
-        
+
         ms.Close();
         await ms.DisposeAsync();
     }
