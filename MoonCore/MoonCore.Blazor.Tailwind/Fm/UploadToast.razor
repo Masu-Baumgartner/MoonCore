@@ -3,7 +3,7 @@
 @inherits BaseToast
 
 <div class="flex-shrink-0">
-    <i class="icon-cloud-download text-xl text-info-400"></i>
+    <i class="icon-cloud-upload text-xl text-info-400"></i>
 </div>
 <div class="ml-3 w-0 flex-1 pt-0.5">
     <p class="text-sm font-medium text-gray-100 truncate">
@@ -17,13 +17,11 @@
         else
         {
             <div class="col-span-1">
-                Speed: 
-                @Speed
+                Done:
+                @Count
             </div>
             <div class="col-span-1">
-                Done: 
-                @Count/
-                Left: 
+                Left:
                 @Left
             </div>
         }
@@ -33,7 +31,6 @@
 @code
 {
     [Parameter] public string Title { get; set; } = "N/A";
-    [Parameter] public string Speed { get; set; } = "N/A";
     [Parameter] public int Count { get; set; } = 0;
     [Parameter] public int Left { get; set; } = 0;
     [Parameter] public TimeSpan Delay { get; set; } = TimeSpan.FromSeconds(3);
@@ -58,10 +55,9 @@
         });
     }
 
-    public async Task Update(string title, string speed, int count, int left)
+    public async Task Update(string title, int count, int left)
     {
         Title = title;
-        Speed = speed;
         Count = count;
         Left = left;
 

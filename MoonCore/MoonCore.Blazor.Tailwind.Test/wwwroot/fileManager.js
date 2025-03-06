@@ -1,5 +1,15 @@
 window.moonCoreFileManager = {
     uploadCache: [],
+    addFilesToCache: async function(id) {
+        let files = document.getElementById(id).files;
+
+
+        for (let i = 0; i < files.length; i++) {
+            this.uploadCache.push(files[i]);
+        }
+
+        await this.ref.invokeMethodAsync("TriggerUpload", this.uploadCache.length);
+    },
     getNextFromCache: async function() {
         if(this.uploadCache.length === 0)
             return null;
@@ -9,7 +19,19 @@ window.moonCoreFileManager = {
         if(!nextItem)
             return null;
         
-        let file = await this.openFileEntry(nextItem);
+        let file;
+        let path;
+        
+        if(nextItem instanceof File)
+        {
+            file = nextItem;
+            path = file.name;
+        }
+        else
+        {
+            file = await this.openFileEntry(nextItem);
+            path = nextItem.fullPath;
+        }
         
         if(file.size === 0)
         {
@@ -23,7 +45,7 @@ window.moonCoreFileManager = {
         let stream = await this.createStreamRef(file);
         
         return {
-            path: nextItem.fullPath,
+            path: path,
             stream: stream,
             left: this.uploadCache.length
         };
@@ -73,6 +95,8 @@ window.moonCoreFileManager = {
         return DotNet.createJSStreamReference(arrayBuffer);
     },
     setup: function (id, callbackRef) {
+        this.ref = callbackRef;
+        
         // Check which features are supported by the browser
         const supportsFileSystemAccessAPI =
             'getAsFileSystemHandle' in DataTransferItem.prototype;
@@ -99,7 +123,7 @@ window.moonCoreFileManager = {
 
             this.getAllWebkitFileEntries(e.dataTransfer.items).then(async value => {
                 value.forEach(a => this.uploadCache.push(a));
-                await callbackRef.invokeMethodAsync("OnFilesDropped", this.uploadCache.length);
+                await this.ref.invokeMethodAsync("TriggerUpload", this.uploadCache.length);
             });
         });
     },

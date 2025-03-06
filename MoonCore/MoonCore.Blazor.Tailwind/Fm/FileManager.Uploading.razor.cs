@@ -30,11 +30,11 @@ public partial class FileManager
         await ToastService.Launch<UploadToast>(parameters =>
         {
             parameters.Add("Title", "Uploading");
-            parameters.Add("Work", UploadDroppedFiles);
+            parameters.Add("Work", UploadFiles);
         });
     }
 
-    private async Task UploadDroppedFiles(UploadToast toast)
+    private async Task UploadFiles(UploadToast toast)
     {
         var uploadSizeInBytes = ByteConverter.FromMegaBytes(MaxUploadSize).Bytes;
 
@@ -50,8 +50,7 @@ public partial class FileManager
                 IsUploading = false;
 
                 await toast.Update(
-                    $"Uploading",
-                    "0 MB/s",
+                    "Uploading",
                     UploadedCount,
                     LeftCount
                 );
@@ -59,22 +58,39 @@ public partial class FileManager
                 break;
             }
 
+            var name = Path.GetFileName(nextItem.Path);
+            
             if (nextItem.Stream != null)
             {
-                await HandleUpload(
-                    nextItem.Path,
-                    await nextItem.Stream.OpenReadStreamAsync(uploadSizeInBytes)
-                );
+                Stream? stream = null;
+                
+                try
+                {
+                    var pathToUpload = PathBuilder.JoinPaths(CurrentPath, nextItem.Path);
+                    stream = await nextItem.Stream.OpenReadStreamAsync(uploadSizeInBytes);
+                    
+                    await FileSystemProvider.Create(pathToUpload, stream);
+                }
+                catch (ArgumentOutOfRangeException)
+                {
+                    await ToastService.Danger($"Unable to upload file {name}: The provided file is too big");
+                }
+                catch (Exception e)
+                {
+                    await ToastService.Danger($"Unable to upload file {name}: An unknown error occured");
+                    Logger.LogError("Unable to upload receive file '{path}': {e}", name, e);
+                }
+                finally
+                {
+                    stream?.Close();
+                }
             }
 
             LeftCount = nextItem.Left;
             UploadedCount++;
 
-            var name = Path.GetFileName(nextItem.Path);
-
             await toast.Update(
                 $"Uploading: {name}",
-                "0 MB/s",
                 UploadedCount,
                 LeftCount
             );
@@ -85,43 +101,11 @@ public partial class FileManager
         await FileList.Refresh();
     }
 
-    private async Task HandleUpload(string fileName, Stream stream)
-    {
-        try
-        {
-            var pathToUpload = PathBuilder.JoinPaths(CurrentPath, fileName);
-            await FileSystemProvider.Create(pathToUpload, stream);
-        }
-        catch (ArgumentOutOfRangeException)
-        {
-            await ToastService.Danger($"Unable to upload file {fileName}: The provided file is too big");
-        }
-        catch (Exception e)
-        {
-            await ToastService.Danger($"Unable to upload file {fileName}: An unknown error occured");
-            Logger.LogError("Unable to upload receive file '{path}': {e}", fileName, e);
-        }
-        finally
-        {
-            stream.Close();
-        }
-    }
-
-    private async Task OnUploadHandle(string path, Stream dataStream)
-    {
-        await ToastService.Launch<UploadToast>(parameters =>
-        {
-            parameters.Add("Title", "Uploading");
-            parameters.Add("Work", UploadDroppedFiles);
-        });
-    }
-
     private async Task LaunchUploadModal()
     {
         await ModalService.Launch<UploadModal>(size: "max-w-xl", allowUnfocusHide: true, onConfigure: parameters =>
         {
-            parameters.Add("OnUpload", OnUploadHandle);
-            parameters.Add("OnFilesDragged", TriggerUpload);
+            parameters.Add("OnTriggerUpload", TriggerUpload);
         });
     }
 

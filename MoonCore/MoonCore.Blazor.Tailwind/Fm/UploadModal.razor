@@ -12,136 +12,48 @@
 @inject IJSRuntime JsRuntime
 @inject ILogger<UploadModal> Logger
 
-@if (IsUploading)
-{
-    <div class="p-5 flex justify-center items-center">
-        <div class="relative size-52">
-            <svg class="size-full -rotate-90" viewBox="0 0 36 36" xmlns="http://www.w3.org/2000/svg">
-                <circle cx="18" cy="18" r="16" fill="none" class="stroke-current text-gray-900"
-                        stroke-width="2"></circle>
-                <circle cx="18" cy="18" r="16" fill="none" class="stroke-current text-primary-500"
-                        stroke-width="2" stroke-dasharray="100" stroke-dashoffset="@(100 - ProgressPercent)"
-                        stroke-linecap="round"></circle>
-            </svg>
-
-            <div class="absolute top-1/2 start-1/2 transform -translate-y-1/2 -translate-x-1/2">
-                <div class="text-center text-2xl font-bold text-white">@(ProgressPercent)%</div>
-                <div class="text-center text-sm text-gray-400">@(CurrentFileCount) / @(TotalFileCount)</div>
-            </div>
+<div id="dropzone" class="flex items-center justify-center w-full">
+    <label for="file-select"
+           class="flex flex-col items-center justify-center w-full h-64 border-2 border-dashed rounded-lg cursor-pointer bg-gray-700 border-gray-600 hover:border-gray-500 hover:bg-gray-600">
+        <div class="flex flex-col items-center justify-center pt-5 pb-6">
+            <i class="text-gray-400 text-3xl icon-cloud-upload"></i>
+            <p class="mb-2 text-sm text-gray-400 font-semibold">
+                Click to upload or drag and drop your files
+            </p>
+            <p class="text-xs text-gray-400 italic">Folders supported via drag and drop</p>
         </div>
-    </div>
-}
-else
-{
-    <div id="dropzone" class="flex items-center justify-center w-full">
-        <label for="file-select"
-               class="flex flex-col items-center justify-center w-full h-64 border-2 border-dashed rounded-lg cursor-pointer bg-gray-700 border-gray-600 hover:border-gray-500 hover:bg-gray-600">
-            <div class="flex flex-col items-center justify-center pt-5 pb-6">
-                <i class="text-gray-400 text-3xl icon-cloud-upload"></i>
-                <p class="mb-2 text-sm text-gray-400 font-semibold">
-                    Click to upload or drag and drop your files
-                </p>
-                <p class="text-xs text-gray-400 italic">Folders supported via drag and drop</p>
-            </div>
-        </label>
-    </div>
-}
+    </label>
+</div>
 
 @* The input is placed here so we can change the view without losing track of the element *@
-<InputFile OnChange="StartUpload" id="file-select" class="hidden" multiple=""/>
+<input @onchange="OnChanged" id="file-select" type="file" class="hidden" multiple=""/>
 
 @code
 {
-    [Parameter] public Func<string, Stream, Task> OnUpload { get; set; }
-    [Parameter] public Func<Task> OnFilesDragged { get; set; }
-
-    private bool IsUploading = false;
-    private int ProgressPercent = 0;
-    private int CurrentFileCount = 0;
-    private int TotalFileCount = 0;
+    [Parameter] public Func<Task> OnTriggerUpload { get; set; }
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
         if (!firstRender)
             return;
 
-        await JsRuntime.InvokeVoidAsync("moonCoreFileManager.setup", "dropzone", DotNetObjectReference.Create(this));
+        await JsRuntime.InvokeVoidAsync(
+            "moonCoreFileManager.setup",
+            "dropzone",
+            DotNetObjectReference.Create(this)
+        );
     }
 
     [JSInvokable]
-    public async Task OnFilesDropped(int amount)
+    public async Task TriggerUpload(int amount)
     {
-        await OnFilesDragged.Invoke();
+        await OnTriggerUpload.Invoke();
         await Hide();
     }
 
-    private async Task StartUpload(InputFileChangeEventArgs args)
+    private async Task OnChanged()
     {
-        IBrowserFile[] files;
-
-        // Process event data
-        switch (args.FileCount)
-        {
-            case 0:
-                return;
-            case 1:
-                files = [args.File];
-                break;
-            default:
-                files = args.GetMultipleFiles().ToArray();
-                break;
-        }
-
-        // Set ui state
-        IsUploading = true;
-        CurrentFileCount = 0;
-        TotalFileCount = files.Length;
-        ProgressPercent = 0;
-        await InvokeAsync(StateHasChanged);
-
-        foreach (var file in files)
-        {
-            // Handle upload
-            await HandleUpload("/" + file.Name, () =>
-            {
-                var stream = file.OpenReadStream(MaxUploadSize);
-                return Task.FromResult(stream);
-            });
-
-            CurrentFileCount++;
-            ProgressPercent = CurrentFileCount == 0 ? 0 : (int)Math.Round((float)CurrentFileCount / TotalFileCount * 100f);
-            await InvokeAsync(StateHasChanged);
-        }
-
-        await ToastService.Success($"Successfully uploaded {CurrentFileCount} file(s)");
+        await JsRuntime.InvokeVoidAsync("moonCoreFileManager.addFilesToCache", "file-select");
         await Hide();
-
-        if (OnUploadCompleted != null)
-            await OnUploadCompleted.Invoke();
-    }
-
-    private async Task HandleUpload(string path, Func<Task<Stream>> streamCallback)
-    {
-        Stream? stream = null;
-        
-        try
-        {
-            stream = await streamCallback.Invoke();
-            
-            await OnUpload.Invoke(path, stream);
-        }
-        catch (ArgumentOutOfRangeException)
-        {
-            await ToastService.Danger($"Unable to upload file {path}: The provided file is too big");
-        }
-        catch (Exception e)
-        {
-            await ToastService.Danger($"Unable to upload file {path}: An unknown error occured");
-            Logger.LogError("Unable to upload receive file '{path}': {e}", path, e);
-        }
-        finally
-        {
-            stream?.Close();
-        }
     }
 }
