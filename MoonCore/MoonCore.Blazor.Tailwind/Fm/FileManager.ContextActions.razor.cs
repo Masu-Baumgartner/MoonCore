@@ -67,6 +67,7 @@ public partial class FileManager
             var tempArchiveFileName =
                 $"folderDownload.{DateTimeOffset.UtcNow.ToUnixTimeSeconds()}." + compressType.Extension;
             var tempArchivePath = PathBuilder.JoinPaths(CurrentPath, tempArchiveFileName);
+            var downloadFileName = $"{entry.Name}.{compressType.Extension}";
 
             await ToastService.Progress(
                 $"Downloading {entry.Name}",
@@ -80,18 +81,44 @@ public partial class FileManager
                     );
 
                     // Reset state
-                    await SetAllSelection(false);
-                    await FileList.Refresh();
+                    //await SetAllSelection(false);
+                    //await FileList.Refresh();
 
-                    await toast.UpdateText("Downloading folder");
+                    await toast.Hide();
 
-                    await using var stream = await FileSystemProvider.Read(tempArchivePath);
-                    await DownloadService.DownloadStream($"{entry.Name}.{compressType.Extension}", stream);
-
-                    await ToastService.Success("Downloading folder",
-                        $"You can delete the '{tempArchiveFileName}' after the download has finished");
+                    async Task Work(DownloadToast downloadToast)
+                    {
+                        var lastRead = 0L;
+                        var lastReadAt = DateTime.Now;
                     
-                    stream.Close();
+                        var stream = await FileSystemProvider.Read(tempArchivePath);
+                        await DownloadService.DownloadStream(downloadFileName, stream, async (bytesRead, hasEnded) =>
+                        {
+                            var diff = bytesRead - lastRead;
+                            var diffTime = DateTime.Now - lastReadAt;
+
+                            var speed = Formatter.TransferSpeed(diff, diffTime);
+                            var total = Formatter.FormatSize(bytesRead);
+
+                            // Reset
+                            lastRead = bytesRead;
+                            lastReadAt = DateTime.Now;
+                        
+                            await downloadToast.Update(speed, total);
+
+                            if (hasEnded)
+                            {
+                                stream.Close();
+                                await FileSystemProvider.Delete(tempArchivePath);
+                            }
+                        });
+                    }
+                    
+                    await ToastService.Launch<DownloadToast>(parameters =>
+                    {
+                        parameters.Add("Title", downloadFileName);
+                        parameters.Add("Work", Work);
+                    });
                 }
             );
         }
