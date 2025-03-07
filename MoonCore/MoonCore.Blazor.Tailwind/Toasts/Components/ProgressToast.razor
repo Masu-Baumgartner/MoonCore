@@ -1,7 +1,8 @@
 @inherits BaseToast
 
-<div class="flex-shrink-0">
-    
+<div class="flex-shrink-0 flex items-center">
+    <i class="inline-block animate-spin icon-loader-circle text-2xl text-tertiary-500">
+    </i>
 </div>
 <div class="ml-3 w-0 pt-0.5 flex-1">
     <p class="text-sm font-medium text-gray-100">
@@ -10,13 +11,6 @@
     <p class="mt-1 text-sm text-gray-400">
         @Text
     </p>
-    <div class="mt-3">
-        <div class="progress">
-            <div class="progress-bar progress-intermediate"></div>
-        </div>
-    </div>
-</div>
-<div class="ml-4 flex flex-shrink-0">
 </div>
 
 @code

@@ -90,4 +90,36 @@ public partial class FileManager : ComponentBase
             }
         );
     }
+
+    private async Task MoveSelection()
+    {
+        await ModalService.Launch<LocationSelectModal>(size: "max-w-2xl", onConfigure: parameters =>
+        {
+            parameters.Add("OnSubmit", async (string path) =>
+            {
+                try
+                {
+                    var entries = SelectedEntries.ToArray();
+
+                    foreach (var entry in entries)
+                    {
+                        await FileSystemProvider.Move(
+                            PathBuilder.JoinPaths(CurrentPath, entry.Name),
+                            PathBuilder.JoinPaths(path, entry.Name)
+                        );
+                    }
+
+                    await ToastService.Success("Successfully moved item(s)");
+                }
+                finally
+                {
+                    // Reset state
+                    await SetAllSelection(false);
+                    await FileList.Refresh();
+                }
+            });
+
+            parameters.Add("FileSystemProvider", FileSystemProvider);
+        });
+    }
 }

@@ -9,6 +9,7 @@
     <button @onclick="WarningClick" class="btn btn-warning">Warning</button>
     <button @onclick="DangerClick" class="btn btn-danger">Danger</button>
     <button @onclick="WorkClick" class="btn btn-secondary">Work</button>
+    <button @onclick="EndlessWorkClick" class="btn btn-secondary">Endless Work</button>
 </div>
 
 @code
@@ -32,6 +33,15 @@
                 
                 await Task.Delay(TimeSpan.FromSeconds(3));
             }
+        );
+    }
+
+    private async Task EndlessWorkClick()
+    {
+        await ToastService.Progress(
+            "Doing a endless long task",
+            "Doing thing 1",
+            async toast => { await Task.Delay(TimeSpan.FromMinutes(10)); }
         );
     }
 }
