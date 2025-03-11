@@ -32,6 +32,7 @@
 
     <ItemGroup>
       <Content Remove="testFs\**" />
+      <Content Remove="UI\Components\MyCoolModal.razor" />
     </ItemGroup>
 
     <ItemGroup>

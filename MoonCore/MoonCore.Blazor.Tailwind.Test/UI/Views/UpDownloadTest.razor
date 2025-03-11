@@ -1,0 +1,71 @@
+﻿@page "/updownloadtest"
+@using MoonCore.Blazor.Tailwind.Fm
+@using MoonCore.Blazor.Tailwind.Services
+@using MoonCore.Blazor.Tailwind.Toasts
+@using MoonCore.Helpers
+
+@inject DownloadService DownloadService
+@inject ToastService ToastService
+
+<button @onclick="DownloadViaUrl" class="btn btn-primary">Download via URL</button>
+<button @onclick="DownloadViaStream" class="btn btn-primary">Download via Stream</button>
+
+@code
+{
+    private async Task DownloadViaUrl()
+    {
+        await ToastService.Launch<DownloadToast>(parameters =>
+        {
+            parameters.Add("Work", async Task (DownloadToast toast) =>
+            {
+                var lastTime = DateTime.Now;
+                var lastBytes = 0L;
+
+                await DownloadService.DownloadUrl("testy.bin", "http://localhost:5230/testy.bin", async (bytesDownloaded, end) =>
+                {
+                    var diffBytes = bytesDownloaded - lastBytes;
+                    var diffTime = DateTime.Now - lastTime;
+
+                    await toast.Update(
+                        Formatter.TransferSpeed(diffBytes, diffTime),
+                        Formatter.FormatSize(bytesDownloaded)
+                    );
+
+                    lastBytes = bytesDownloaded;
+                    lastTime = DateTime.Now;
+                });
+            });
+        });
+    }
+
+    private async Task DownloadViaStream()
+    {
+        await ToastService.Launch<DownloadToast>(parameters =>
+        {
+            parameters.Add("Work", async Task (DownloadToast toast) =>
+            {
+                var lastTime = DateTime.Now;
+                var lastBytes = 0L;
+
+                var fs = File.Open(PathBuilder.File("wwwroot", "testy.bin"), FileMode.Open, FileAccess.Read, FileShare.ReadWrite);
+
+                await DownloadService.DownloadStream("testy.bin", fs, async (bytesDownloaded, end) =>
+                {
+                    var diffBytes = bytesDownloaded - lastBytes;
+                    var diffTime = DateTime.Now - lastTime;
+
+                    await toast.Update(
+                        Formatter.TransferSpeed(diffBytes, diffTime),
+                        Formatter.FormatSize(bytesDownloaded)
+                    );
+
+                    lastBytes = bytesDownloaded;
+                    lastTime = DateTime.Now;
+                    
+                    if(end)
+                        fs.Close();
+                });
+            });
+        });
+    }
+}
