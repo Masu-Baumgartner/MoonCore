@@ -4,6 +4,7 @@ using ICSharpCode.SharpZipLib.Tar;
 using ICSharpCode.SharpZipLib.Zip;
 using MoonCore.Blazor.Tailwind.Fm;
 using MoonCore.Blazor.Tailwind.Fm.Models;
+using MoonCore.Blazor.Tailwind.Services;
 using MoonCore.Helpers;
 
 namespace MoonCore.Blazor.Tailwind.Test;
@@ -11,10 +12,12 @@ namespace MoonCore.Blazor.Tailwind.Test;
 public class HostFileSystemProvider : IFileSystemProvider, ICompressFileSystemProvider
 {
     private readonly string BaseDirectory;
+    private readonly DownloadService DownloadService;
 
-    public HostFileSystemProvider(string baseDirectory)
+    public HostFileSystemProvider(string baseDirectory, DownloadService downloadService)
     {
         BaseDirectory = baseDirectory;
+        DownloadService = downloadService;
     }
 
     public async Task<FileSystemEntry[]> List(string path)
@@ -108,10 +111,28 @@ public class HostFileSystemProvider : IFileSystemProvider, ICompressFileSystemPr
         return Task.CompletedTask;
     }
 
-    public async Task<Stream> Read(string path)
+    public Task<Stream> Read(string path)
     {
         var fs = File.Open(PathBuilder.File(BaseDirectory, path), FileMode.Open, FileAccess.Read, FileShare.ReadWrite);
-        return fs;
+        return Task.FromResult<Stream>(fs);
+    }
+
+    public async Task Download(Func<long, Task> updateProgress, string path, string fileName)
+    {
+        var stream = await Read(path);
+        
+        await DownloadService.DownloadStream(
+            fileName,
+            stream,
+            (bytes, _) => updateProgress.Invoke(bytes) 
+        );
+        
+        stream.Close();
+    }
+
+    public async Task Upload(Func<long, Task> updateProgress, string path, Stream stream)
+    {
+        await Create(path, stream);
     }
 
     public CompressType[] CompressTypes { get; } =

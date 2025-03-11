@@ -1,5 +1,8 @@
 @page "/fmtest"
 @using MoonCore.Blazor.Tailwind.Fm
+@using MoonCore.Blazor.Tailwind.Services
+
+@inject DownloadService DownloadService
 
 <FileManager FileSystemProvider="Provider" />
 
@@ -9,6 +12,6 @@
 
     protected override void OnInitialized()
     {
-        Provider = new HostFileSystemProvider("testFs");
+        Provider = new HostFileSystemProvider("testFs", DownloadService);
     }
 }

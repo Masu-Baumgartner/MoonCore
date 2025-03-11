@@ -17,12 +17,11 @@
         else
         {
             <div class="col-span-1">
-                Done:
+                Speed:
                 @Count
             </div>
             <div class="col-span-1">
-                Left:
-                @Left
+                @Left/@Count
             </div>
         }
     </div>
@@ -32,6 +31,7 @@
 {
     [Parameter] public string Title { get; set; } = "N/A";
     [Parameter] public int Count { get; set; } = 0;
+    [Parameter] public string Speed { get; set; } = "N/A";
     [Parameter] public int Left { get; set; } = 0;
     [Parameter] public TimeSpan Delay { get; set; } = TimeSpan.FromSeconds(3);
     [Parameter] public Func<UploadToast, Task> Work { get; set; }
@@ -55,9 +55,10 @@
         });
     }
 
-    public async Task Update(string title, int count, int left)
+    public async Task Update(string title, string speed, int count, int left)
     {
         Title = title;
+        Speed = speed;
         Count = count;
         Left = left;
 

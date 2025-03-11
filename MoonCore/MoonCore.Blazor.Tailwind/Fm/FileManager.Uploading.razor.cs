@@ -37,6 +37,7 @@ public partial class FileManager
     private async Task UploadFiles(UploadToast toast)
     {
         var uploadSizeInBytes = ByteConverter.FromMegaBytes(MaxUploadSize).Bytes;
+        var path = CurrentPath + ""; // Clone path so the upload target so the user cannot change it anymore
 
         while (true)
         {
@@ -51,6 +52,7 @@ public partial class FileManager
 
                 await toast.Update(
                     "Uploading",
+                    "N/A",
                     UploadedCount,
                     LeftCount
                 );
@@ -59,17 +61,36 @@ public partial class FileManager
             }
 
             var name = Path.GetFileName(nextItem.Path);
-            
+
             if (nextItem.Stream != null)
             {
                 Stream? stream = null;
-                
+
                 try
                 {
-                    var pathToUpload = PathBuilder.JoinPaths(CurrentPath, nextItem.Path);
+                    var pathToUpload = PathBuilder.JoinPaths(path, nextItem.Path);
                     stream = await nextItem.Stream.OpenReadStreamAsync(uploadSizeInBytes);
-                    
-                    await FileSystemProvider.Create(pathToUpload, stream);
+
+                    var lastBytes = 0L;
+                    var lastTime = DateTime.Now;
+
+                    async Task OnProgressUpdate(long bytes)
+                    {
+                        var diffBytes = bytes - lastBytes;
+                        var diffTime = DateTime.Now - lastTime;
+
+                        await toast.Update(
+                            $"Uploading {name}",
+                            Formatter.TransferSpeed(diffBytes, diffTime),
+                            UploadedCount,
+                            LeftCount
+                        );
+
+                        lastBytes = bytes;
+                        lastTime = DateTime.Now;
+                    }
+
+                    await FileSystemProvider.Upload(OnProgressUpdate, pathToUpload, stream);
                 }
                 catch (ArgumentOutOfRangeException)
                 {
@@ -91,6 +112,7 @@ public partial class FileManager
 
             await toast.Update(
                 $"Uploading: {name}",
+                "N/A",
                 UploadedCount,
                 LeftCount
             );
@@ -103,10 +125,8 @@ public partial class FileManager
 
     private async Task LaunchUploadModal()
     {
-        await ModalService.Launch<UploadModal>(size: "max-w-xl", allowUnfocusHide: true, onConfigure: parameters =>
-        {
-            parameters.Add("OnTriggerUpload", TriggerUpload);
-        });
+        await ModalService.Launch<UploadModal>(size: "max-w-xl", allowUnfocusHide: true,
+            onConfigure: parameters => { parameters.Add("OnTriggerUpload", TriggerUpload); });
     }
 
     private async Task HandleDrag()

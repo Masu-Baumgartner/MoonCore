@@ -23,35 +23,10 @@ public partial class FileManager
     {
         if (entry.IsFile)
         {
-            async Task Work(DownloadToast toast)
-            {
-                var lastRead = 0L;
-                var lastReadAt = DateTime.Now;
-                    
-                var stream = await FileSystemProvider.Read(PathBuilder.JoinPaths(CurrentPath, entry.Name));
-                await DownloadService.DownloadStream(entry.Name, stream, async (bytesRead, _) =>
-                {
-                    var diff = bytesRead - lastRead;
-                    var diffTime = DateTime.Now - lastReadAt;
+            var path = PathBuilder.JoinPaths(CurrentPath, entry.Name);
+            var name = Path.GetFileName(path);
 
-                    var speed = Formatter.TransferSpeed(diff, diffTime);
-                    var total = Formatter.FormatSize(bytesRead);
-
-                    // Reset
-                    lastRead = bytesRead;
-                    lastReadAt = DateTime.Now;
-                        
-                    await toast.Update(speed, total);
-                });
-
-                stream.Close();
-            };
-
-            await ToastService.Launch<DownloadToast>(parameters =>
-            {
-                parameters.Add("Title", entry.Name);
-                parameters.Add("Work", Work);
-            });
+            await DownloadInternal(path, name);
         }
         else if (CompressProvider != null) // If we have a compress provider, we can help the user out a bit by compressing and then downloading the folder
         {
@@ -86,44 +61,58 @@ public partial class FileManager
 
                     await toast.Hide();
 
-                    async Task Work(DownloadToast downloadToast)
-                    {
-                        var lastRead = 0L;
-                        var lastReadAt = DateTime.Now;
-                    
-                        var stream = await FileSystemProvider.Read(tempArchivePath);
-                        await DownloadService.DownloadStream(downloadFileName, stream, async (bytesRead, hasEnded) =>
-                        {
-                            var diff = bytesRead - lastRead;
-                            var diffTime = DateTime.Now - lastReadAt;
+                    await DownloadInternal(
+                        tempArchivePath,
+                        downloadFileName,
+                        runBlocking: true
+                    );
 
-                            var speed = Formatter.TransferSpeed(diff, diffTime);
-                            var total = Formatter.FormatSize(bytesRead);
-
-                            // Reset
-                            lastRead = bytesRead;
-                            lastReadAt = DateTime.Now;
-                        
-                            await downloadToast.Update(speed, total);
-
-                            if (hasEnded)
-                            {
-                                stream.Close();
-                                await FileSystemProvider.Delete(tempArchivePath);
-                            }
-                        });
-                    }
-                    
-                    await ToastService.Launch<DownloadToast>(parameters =>
-                    {
-                        parameters.Add("Title", downloadFileName);
-                        parameters.Add("Work", Work);
-                    });
+                    await FileSystemProvider.Delete(tempArchivePath);
                 }
             );
         }
         else
             await ToastService.Danger("Folder downloads are not supported");
+    }
+
+    private async Task DownloadInternal(string path, string name, bool runBlocking = false)
+    {
+        TaskCompletionSource? tsc = null;
+        
+        if(runBlocking)
+            tsc = new TaskCompletionSource();
+        
+        await ToastService.Launch<DownloadToast>(parameters =>
+        {
+            parameters.Add("Title", name);
+            parameters.Add("Work", async Task (DownloadToast toast) =>
+            {
+                var lastBytes = 0L;
+                var lastTime = DateTime.Now;
+                
+                async Task OnProgressUpdate(long bytes)
+                {
+                    var diffBytes = bytes - lastBytes;
+                    var diffTime = DateTime.Now - lastTime;
+
+                    await toast.Update(
+                        Formatter.TransferSpeed(diffBytes, diffTime),
+                        Formatter.FormatSize(bytes)
+                    );
+                    
+                    lastBytes = bytes;
+                    lastTime = DateTime.Now;
+                }
+
+                await FileSystemProvider.Download(OnProgressUpdate, path, name);
+
+                if (tsc != null)
+                    tsc.SetResult();
+            });
+        });
+
+        if (tsc != null)
+            await tsc.Task;
     }
 
     private async Task Move(FileSystemEntry entry)

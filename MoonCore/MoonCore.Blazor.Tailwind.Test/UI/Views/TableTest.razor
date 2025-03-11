@@ -1,9 +1,12 @@
 ﻿@page "/tableTest"
 @using MoonCore.Blazor.Tailwind.Dt
 @using MoonCore.Blazor.Tailwind.Fm
+@using MoonCore.Blazor.Tailwind.Services
 @using MoonCore.Models
 @using MoonCore.Blazor.Tailwind.States
 @using MoonCore.Helpers
+
+@inject DownloadService DownloadService
 
 @*
 <DataTable TItem="FileSystemEntry" LoadItemsPaginatedAsync="LoadItemsAsync" PageSize="10">
@@ -76,8 +79,15 @@
 
 @code
 {
-    private IFileSystemProvider FileSystemProvider = new HostFileSystemProvider("testFs");
+    private IFileSystemProvider FileSystemProvider;
     private FileList FileList;
+
+    protected override Task OnInitializedAsync()
+    {
+        FileSystemProvider = new HostFileSystemProvider("testFs", DownloadService);
+        
+        return Task.CompletedTask;
+    }
 
     private async Task<IPagedData<FileSystemEntry>> LoadItemsAsync(PaginationOptions paginationOptions)
     {
