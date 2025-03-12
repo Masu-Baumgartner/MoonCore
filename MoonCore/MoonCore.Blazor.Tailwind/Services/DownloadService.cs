@@ -13,6 +13,33 @@ public class DownloadService
         JsRuntime = jsRuntime;
     }
 
+    public async Task DownloadUrl(string fileName, string url, Func<long, bool, Task>? handler = null)
+    {
+        if (handler == null)
+        {
+            await JsRuntime.InvokeVoidAsync(
+                "moonCoreDownloadService.downloadUrl",
+                fileName,
+                url,
+                null,
+                null
+            );
+        }
+        else
+        {
+            lock (Handlers)
+                Handlers[handler.GetHashCode()] = handler;
+            
+            await JsRuntime.InvokeVoidAsync(
+                "moonCoreDownloadService.downloadUrl",
+                fileName,
+                url,
+                DotNetObjectReference.Create(this),
+                handler.GetHashCode()
+            );
+        }
+    }
+
     public async Task DownloadStream(string fileName, Stream stream, Func<long, bool, Task>? handler = null)
     {
         using var streamRef = new DotNetStreamReference(stream, true);
