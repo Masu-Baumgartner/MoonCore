@@ -132,7 +132,12 @@ public class HostFileSystemProvider : IFileSystemProvider, ICompressFileSystemPr
 
     public async Task Upload(Func<long, Task> updateProgress, string path, Stream stream)
     {
-        await Create(path, stream);
+        var progressStream = new ProgressStream(stream, new Progress<long>(async bytes =>
+        {
+            await updateProgress.Invoke(bytes);
+        }));
+        
+        await Create(path, progressStream);
     }
 
     public CompressType[] CompressTypes { get; } =
