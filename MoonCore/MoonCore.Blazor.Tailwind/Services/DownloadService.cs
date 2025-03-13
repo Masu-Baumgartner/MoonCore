@@ -13,8 +13,18 @@ public class DownloadService
         JsRuntime = jsRuntime;
     }
 
-    public async Task DownloadUrl(string fileName, string url, Func<long, bool, Task>? handler = null)
+    public async Task DownloadUrl(
+        string fileName,
+        string url,
+        Func<long, bool, Task>? handler = null,
+        Action<Dictionary<string, string>>? onConfigureHeaders = null
+    )
     {
+        var headers = new Dictionary<string, string>();
+        
+        if(onConfigureHeaders != null)
+            onConfigureHeaders.Invoke(headers);
+        
         if (handler == null)
         {
             await JsRuntime.InvokeVoidAsync(
@@ -22,20 +32,22 @@ public class DownloadService
                 fileName,
                 url,
                 null,
-                null
+                null,
+                headers
             );
         }
         else
         {
             lock (Handlers)
                 Handlers[handler.GetHashCode()] = handler;
-            
+
             await JsRuntime.InvokeVoidAsync(
                 "moonCoreDownloadService.downloadUrl",
                 fileName,
                 url,
                 DotNetObjectReference.Create(this),
-                handler.GetHashCode()
+                handler.GetHashCode(),
+                headers
             );
         }
     }
