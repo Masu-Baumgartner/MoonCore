@@ -38,13 +38,17 @@ window.moonCoreDownloadService = {
         
         await promise;
     },
-    downloadUrl: async function (fileName, url, reportRef, id) {
+    downloadUrl: async function (fileName, url, reportRef, id, headers) {
         const promise = new Promise(async resolve => {
-
             let loadRequest = new XMLHttpRequest();
             let lastReported = Date.now();
 
             loadRequest.open("GET", url, true);
+
+            for(let headerKey in headers) {
+                loadRequest.setRequestHeader(headerKey, headers[headerKey]);
+            }
+            
             loadRequest.responseType = "blob";
 
             if (reportRef) {

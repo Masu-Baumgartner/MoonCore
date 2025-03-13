@@ -33,6 +33,9 @@
 
                     lastBytes = bytesDownloaded;
                     lastTime = DateTime.Now;
+                }, headers =>
+                {
+                    headers.Add("TestyA", "TestyB");
                 });
             });
         });
