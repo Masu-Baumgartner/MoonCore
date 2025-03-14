@@ -93,8 +93,8 @@ public class JwtInvalidateMiddleware
 
         var issuedAtTime = DateTimeOffset.FromUnixTimeSeconds(issuedAtUnix).UtcDateTime;
 
-        // When the token has been issued AFTER we had our last invalidation, we can proceed
-        if (issuedAtTime > invalidateTime)
+        // When the token has been issued AFTER or AT we had our last invalidation, we can proceed
+        if (issuedAtTime >= invalidateTime)
             return false;
 
         // Otherwise nuke the identity
