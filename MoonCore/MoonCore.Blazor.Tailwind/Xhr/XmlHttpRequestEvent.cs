@@ -1,6 +1,6 @@
 ﻿using System.Text.Json.Serialization;
 
-namespace MoonCore.Blazor.Tailwind.Test.Xhr;
+namespace MoonCore.Blazor.Tailwind.Xhr;
 
 public class XmlHttpRequestEvent
 {

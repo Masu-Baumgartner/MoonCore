@@ -9,6 +9,7 @@ using MoonCore.Blazor.Tailwind.LegacyForms;
 using MoonCore.Blazor.Tailwind.LegacyForms.Components;
 using MoonCore.Blazor.Tailwind.Test;
 using MoonCore.Blazor.Tailwind.Test.UI;
+using MoonCore.Blazor.Tailwind.Xhr;
 using MoonCore.Extended.JwtInvalidation;
 using MoonCore.Extensions;
 using MoonCore.Helpers;
@@ -24,10 +25,17 @@ builder.Services.AddRazorComponents()
     .AddInteractiveServerComponents(options => { options.DetailedErrors = true; })
     .AddHubOptions(options => { options.MaximumReceiveMessageSize = ByteConverter.FromMegaBytes(100).Bytes; });
 
+builder.WebHost.ConfigureKestrel(options =>
+{
+    options.Limits.MaxRequestBodySize = ByteConverter.FromMegaBytes(100).Bytes;
+});
+
 builder.Logging.ClearProviders();
 builder.Logging.AddMoonCore();
 
 builder.Services.AddMoonCoreBlazorTailwind();
+
+builder.Services.AddScoped<XmlHttpClient>();
 
 builder.Services.AddScoped(sp =>
 {
