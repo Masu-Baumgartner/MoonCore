@@ -26,7 +26,8 @@
                         -1
                     );
 
-                }, headers => { headers.Add("TestyA", "TestyB"); });
+                }, 
+                onConfigureHeaders: headers => { headers.Add("TestyA", "TestyB"); });
             });
         });
     }
@@ -39,14 +40,16 @@
             {
                 var fs = File.Open(PathBuilder.File("wwwroot", "testy.bin"), FileMode.Open, FileAccess.Read, FileShare.ReadWrite);
 
-                await DownloadService.DownloadStream("testy.bin", fs, async (bytesDownloaded, end) =>
+                await DownloadService.DownloadStream("testy.bin", fs, async (_, _) =>
                 {
                     await toast.Update(
                         -1
                     );
-
-                    if (end)
-                        fs.Close();
+                },
+                onEnd: () =>
+                {
+                    fs.Close();
+                    return Task.CompletedTask;
                 });
             });
         });
