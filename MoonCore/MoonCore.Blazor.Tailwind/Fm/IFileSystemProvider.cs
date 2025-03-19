@@ -8,6 +8,6 @@ public interface IFileSystemProvider
     public Task Delete(string path);
     public Task CreateDirectory(string path);
     public Task<Stream> Read(string path);
-    public Task Download(Func<long, Task> updateProgress, string path, string fileName);
-    public Task Upload(Func<long, Task> updateProgress, string path, Stream stream);
+    public Task Download(Func<int, Task> updateProgress, string path, string fileName);
+    public Task Upload(Func<int, Task> updateProgress, string path, Stream stream);
 }

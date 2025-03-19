@@ -14,11 +14,16 @@
         {
             <div class="col-span-2">Completed</div>
         }
+        else if (Percent == -1)
+        {
+            <div class="col-span-2">
+                @Left/@Count
+            </div>
+        }
         else
         {
             <div class="col-span-1">
-                Speed:
-                @Speed
+                @Percent%
             </div>
             <div class="col-span-1">
                 @Left/@Count
@@ -29,9 +34,9 @@
 
 @code
 {
-    [Parameter] public string Title { get; set; } = "N/A";
+    [Parameter] public string Title { get; set; } = "Uploading";
     [Parameter] public int Count { get; set; } = 0;
-    [Parameter] public string Speed { get; set; } = "N/A";
+    [Parameter] public int Percent { get; set; } = 0;
     [Parameter] public int Left { get; set; } = 0;
     [Parameter] public TimeSpan Delay { get; set; } = TimeSpan.FromSeconds(3);
     [Parameter] public Func<UploadToast, Task> Work { get; set; }
@@ -55,10 +60,10 @@
         });
     }
 
-    public async Task Update(string title, string speed, int count, int left)
+    public async Task Update(string title, int percent, int count, int left)
     {
         Title = title;
-        Speed = speed;
+        Percent = percent;
         Count = count;
         Left = left;
 

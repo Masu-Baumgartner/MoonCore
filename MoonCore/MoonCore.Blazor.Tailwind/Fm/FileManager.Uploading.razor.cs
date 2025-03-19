@@ -52,7 +52,7 @@ public partial class FileManager
 
                 await toast.Update(
                     "Uploading",
-                    "N/A",
+                    -1,
                     UploadedCount,
                     LeftCount
                 );
@@ -64,6 +64,7 @@ public partial class FileManager
 
             if (nextItem.Stream != null)
             {
+                LeftCount = nextItem.Left;
                 Stream? stream = null;
 
                 try
@@ -71,23 +72,14 @@ public partial class FileManager
                     var pathToUpload = PathBuilder.JoinPaths(path, nextItem.Path);
                     stream = await nextItem.Stream.OpenReadStreamAsync(uploadSizeInBytes);
 
-                    var lastBytes = 0L;
-                    var lastTime = DateTime.Now;
-
-                    async Task OnProgressUpdate(long bytes)
+                    async Task OnProgressUpdate(int percent)
                     {
-                        var diffBytes = bytes - lastBytes;
-                        var diffTime = DateTime.Now - lastTime;
-
                         await toast.Update(
                             $"Uploading {name}",
-                            Formatter.TransferSpeed(diffBytes, diffTime),
+                            percent,
                             UploadedCount,
                             LeftCount
                         );
-
-                        lastBytes = bytes;
-                        lastTime = DateTime.Now;
                     }
 
                     await FileSystemProvider.Upload(OnProgressUpdate, pathToUpload, stream);
@@ -106,16 +98,18 @@ public partial class FileManager
                     stream?.Close();
                 }
             }
-
-            LeftCount = nextItem.Left;
-            UploadedCount++;
-
-            await toast.Update(
-                $"Uploading: {name}",
-                "N/A",
-                UploadedCount,
-                LeftCount
-            );
+            else
+            {
+                LeftCount = nextItem.Left;
+                UploadedCount++;
+                
+                await toast.Update(
+                    $"Uploading: {name}",
+                    -1,
+                    UploadedCount,
+                    LeftCount
+                );
+            }
         }
 
         // Reset state

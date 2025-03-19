@@ -2,18 +2,15 @@
 @using MoonCore.Blazor.Tailwind.Fm
 @using MoonCore.Blazor.Tailwind.Services
 @using MoonCore.Blazor.Tailwind.Toasts
-@using MoonCore.Blazor.Tailwind.Xhr
 @using MoonCore.Helpers
 
 @inject DownloadService DownloadService
 @inject ToastService ToastService
-@inject XmlHttpClient XmlHttpClient
 
 <button @onclick="DownloadViaUrl" class="btn btn-primary">Download via URL</button>
 <button @onclick="DownloadViaStream" class="btn btn-primary">Download via Stream</button>
-<button @onclick="DownloadViaXhr" class="btn btn-primary">Download via Xhr</button>
 
-<button @onclick="UploadViaXhrForms" class="btn btn-primary">Upload via Xhr forms</button>
+<button @onclick="UploadChunked" class="btn btn-primary">Upload chunked</button>
 
 @code
 {
@@ -23,25 +20,13 @@
         {
             parameters.Add("Work", async Task (DownloadToast toast) =>
             {
-                var lastTime = DateTime.Now;
-                var lastBytes = 0L;
-
                 await DownloadService.DownloadUrl("testy.bin", "http://localhost:5230/testy.bin", async (bytesDownloaded, end) =>
                 {
-                    var diffBytes = bytesDownloaded - lastBytes;
-                    var diffTime = DateTime.Now - lastTime;
-
                     await toast.Update(
-                        Formatter.TransferSpeed(diffBytes, diffTime),
-                        Formatter.FormatSize(bytesDownloaded)
+                        -1
                     );
 
-                    lastBytes = bytesDownloaded;
-                    lastTime = DateTime.Now;
-                }, headers =>
-                {
-                    headers.Add("TestyA", "TestyB");
-                });
+                }, headers => { headers.Add("TestyA", "TestyB"); });
             });
         });
     }
@@ -52,90 +37,55 @@
         {
             parameters.Add("Work", async Task (DownloadToast toast) =>
             {
-                var lastTime = DateTime.Now;
-                var lastBytes = 0L;
-
                 var fs = File.Open(PathBuilder.File("wwwroot", "testy.bin"), FileMode.Open, FileAccess.Read, FileShare.ReadWrite);
 
                 await DownloadService.DownloadStream("testy.bin", fs, async (bytesDownloaded, end) =>
                 {
-                    var diffBytes = bytesDownloaded - lastBytes;
-                    var diffTime = DateTime.Now - lastTime;
-
                     await toast.Update(
-                        Formatter.TransferSpeed(diffBytes, diffTime),
-                        Formatter.FormatSize(bytesDownloaded)
+                        -1
                     );
 
-                    lastBytes = bytesDownloaded;
-                    lastTime = DateTime.Now;
-                    
-                    if(end)
+                    if (end)
                         fs.Close();
                 });
             });
         });
     }
-
-    private async Task DownloadViaXhr()
+    
+    private async Task UploadChunked()
     {
-        var request = await XmlHttpClient.Create();
+        using var httpClient = new HttpClient();
+        var fs = File.Open(Path.Combine("wwwroot", "data.webm"), FileMode.Open, FileAccess.Read, FileShare.ReadWrite);
 
-        await request.Open("GET", "http://localhost:5230/testy.bin");
+        var size = fs.Length;
+        var chunkSize = ByteConverter.FromMegaBytes(50).Bytes;
         
-        await request.SetResponseType("blob");
+        var chunks = size / chunkSize;
+        chunks += size % chunkSize > 0 ? 1 : 0;
 
-        request.OnDownloadProgress += async ev =>
-        {
-            Console.WriteLine($"Progress: {ev.Loaded}/{ev.Total}");
-        };
+        Console.WriteLine($"Sending {chunks} chunks");
 
-        request.OnLoadend += async _ =>
+        for (var i = 0; i < chunks; i++)
         {
-            Console.WriteLine("Loaded :)");
-        };
+            Console.WriteLine($"Sending chunk: {i}");
 
-        request.OnReadyStateChange += async i =>
-        {
-            Console.WriteLine("Ready state: " + i);
+            var chunkPosition = chunkSize * i;
+
+            fs.Position = chunkPosition;
             
-            if (i != 4)
-                return;
+            var buffer = new byte[chunkSize];
+            var bytesRead = fs.Read(buffer);
+            var resizedBuffer = new byte[bytesRead];
+            Array.Copy(buffer, resizedBuffer, bytesRead);
 
-            Console.WriteLine("Ready");
-
-            var jsStream = await request.GetResponseStream();
-            var stream = await jsStream.OpenReadStreamAsync(long.MaxValue);
-
-            Console.WriteLine(stream.Length);
-        };
-
-        await request.Send();
-    }
-
-    private async Task UploadViaXhrForms()
-    {
-        var fs = File.Open(Path.Combine("wwwroot", "testy.bin"), FileMode.Open, FileAccess.Read, FileShare.ReadWrite);
-         
-        // xhr
-        var xhr = await XmlHttpClient.Create();
-
-        await xhr.Open("POST", "api/testy/upload");
-
-        xhr.OnUploadProgress += pe =>
-        {
-            Console.WriteLine($"pe: {pe.Loaded}");
-            return Task.CompletedTask;
-        };
-        
-        xhr.OnLoadend += async _ =>
-        {
-            Console.WriteLine("Uploaded");
+            var uploadForm = new MultipartFormDataContent();
             
-            fs.Close();
-            await fs.DisposeAsync();
-        };
-        
-        await xhr.SendFile(fs, "file", "file");
+            uploadForm.Add(new ByteArrayContent(resizedBuffer), "file", "file");
+
+            await httpClient.PostAsync(
+                $"http://localhost:5230/api/cu?path=testy.webm&totalSize={size}&chunkId={i}",
+                uploadForm
+            );
+        }
     }
 }
