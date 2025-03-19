@@ -87,21 +87,11 @@ public partial class FileManager
             parameters.Add("Title", name);
             parameters.Add("Work", async Task (DownloadToast toast) =>
             {
-                var lastBytes = 0L;
-                var lastTime = DateTime.Now;
-                
-                async Task OnProgressUpdate(long bytes)
+                async Task OnProgressUpdate(int percent)
                 {
-                    var diffBytes = bytes - lastBytes;
-                    var diffTime = DateTime.Now - lastTime;
-
                     await toast.Update(
-                        Formatter.TransferSpeed(diffBytes, diffTime),
-                        Formatter.FormatSize(bytes)
+                        percent
                     );
-                    
-                    lastBytes = bytes;
-                    lastTime = DateTime.Now;
                 }
 
                 await FileSystemProvider.Download(OnProgressUpdate, path, name);

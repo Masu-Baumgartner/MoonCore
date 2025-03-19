@@ -117,24 +117,29 @@ public class HostFileSystemProvider : IFileSystemProvider, ICompressFileSystemPr
         return Task.FromResult<Stream>(fs);
     }
 
-    public async Task Download(Func<long, Task> updateProgress, string path, string fileName)
+    public async Task Download(Func<int, Task> updateProgress, string path, string fileName)
     {
         var stream = await Read(path);
         
         await DownloadService.DownloadStream(
             fileName,
             stream,
-            (bytes, _) => updateProgress.Invoke(bytes) 
+            async (bytes, _) =>
+            {
+                var percent = bytes == 0 ? 0 : (float)bytes / stream.Length * 100;
+                await updateProgress.Invoke((int)percent);
+            }
         );
         
         stream.Close();
     }
 
-    public async Task Upload(Func<long, Task> updateProgress, string path, Stream stream)
+    public async Task Upload(Func<int, Task> updateProgress, string path, Stream stream)
     {
         var progressStream = new ProgressStream(stream, new Progress<long>(async bytes =>
         {
-            await updateProgress.Invoke(bytes);
+            var percent = bytes == 0 ? 0 : (float)bytes / stream.Length * 100;
+            await updateProgress.Invoke((int)percent);
         }));
         
         await Create(path, progressStream);
