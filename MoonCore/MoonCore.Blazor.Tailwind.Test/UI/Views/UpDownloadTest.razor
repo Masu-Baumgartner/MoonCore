@@ -2,18 +2,14 @@
 @using MoonCore.Blazor.Tailwind.Fm
 @using MoonCore.Blazor.Tailwind.Services
 @using MoonCore.Blazor.Tailwind.Toasts
-@using MoonCore.Blazor.Tailwind.Xhr
 @using MoonCore.Helpers
 
 @inject DownloadService DownloadService
 @inject ToastService ToastService
-@inject XmlHttpClient XmlHttpClient
 
 <button @onclick="DownloadViaUrl" class="btn btn-primary">Download via URL</button>
 <button @onclick="DownloadViaStream" class="btn btn-primary">Download via Stream</button>
-<button @onclick="DownloadViaXhr" class="btn btn-primary">Download via Xhr</button>
 
-<button @onclick="UploadViaXhrForms" class="btn btn-primary">Upload via Xhr forms</button>
 <button @onclick="UploadChunked" class="btn btn-primary">Upload chunked</button>
 
 @code
@@ -55,63 +51,7 @@
             });
         });
     }
-
-    private async Task DownloadViaXhr()
-    {
-        var request = await XmlHttpClient.Create();
-
-        await request.Open("GET", "http://localhost:5230/testy.bin");
-
-        await request.SetResponseType("blob");
-
-        request.OnDownloadProgress += async ev => { Console.WriteLine($"Progress: {ev.Loaded}/{ev.Total}"); };
-
-        request.OnLoadend += async _ => { Console.WriteLine("Loaded :)"); };
-
-        request.OnReadyStateChange += async i =>
-        {
-            Console.WriteLine("Ready state: " + i);
-
-            if (i != 4)
-                return;
-
-            Console.WriteLine("Ready");
-
-            var jsStream = await request.GetResponseStream();
-            var stream = await jsStream.OpenReadStreamAsync(long.MaxValue);
-
-            Console.WriteLine(stream.Length);
-        };
-
-        await request.Send();
-    }
-
-    private async Task UploadViaXhrForms()
-    {
-        var fs = File.Open(Path.Combine("wwwroot", "testy.bin"), FileMode.Open, FileAccess.Read, FileShare.ReadWrite);
-
-        // xhr
-        var xhr = await XmlHttpClient.Create();
-
-        await xhr.Open("POST", "api/testy/upload");
-
-        xhr.OnUploadProgress += pe =>
-        {
-            Console.WriteLine($"pe: {pe.Loaded}");
-            return Task.CompletedTask;
-        };
-
-        xhr.OnLoadend += async _ =>
-        {
-            Console.WriteLine("Uploaded");
-
-            fs.Close();
-            await fs.DisposeAsync();
-        };
-
-        await xhr.SendFile(fs, "file", "file");
-    }
-
+    
     private async Task UploadChunked()
     {
         using var httpClient = new HttpClient();

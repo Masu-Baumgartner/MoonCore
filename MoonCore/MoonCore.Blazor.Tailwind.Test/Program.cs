@@ -1,7 +1,5 @@
-using System.Security.Claims;
 using System.Text;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.IdentityModel.Tokens;
 using MoonCore.Blazor.Tailwind.Auth;
 using MoonCore.Blazor.Tailwind.Extensions;
@@ -9,7 +7,6 @@ using MoonCore.Blazor.Tailwind.LegacyForms;
 using MoonCore.Blazor.Tailwind.LegacyForms.Components;
 using MoonCore.Blazor.Tailwind.Test;
 using MoonCore.Blazor.Tailwind.Test.UI;
-using MoonCore.Blazor.Tailwind.Xhr;
 using MoonCore.Extended.JwtInvalidation;
 using MoonCore.Extensions;
 using MoonCore.Helpers;
@@ -34,8 +31,6 @@ builder.Logging.ClearProviders();
 builder.Logging.AddMoonCore();
 
 builder.Services.AddMoonCoreBlazorTailwind();
-
-builder.Services.AddScoped<XmlHttpClient>();
 
 builder.Services.AddScoped(sp =>
 {
