@@ -6,7 +6,9 @@ namespace MoonCore.Blazor.Tailwind.Services;
 public class DownloadService
 {
     private readonly IJSRuntime JsRuntime;
-    private Dictionary<int, Func<long, bool, Task>> Handlers = new();
+    private readonly Dictionary<int, DownloadHandler> Handlers = new();
+    private Dictionary<int, Func<long, long, Task>> ProgressHandlers = new();
+    private Dictionary<int, Func<bool, Task>> EndHandlers = new();
 
     public DownloadService(IJSRuntime jsRuntime)
     {
@@ -16,16 +18,18 @@ public class DownloadService
     public async Task DownloadUrl(
         string fileName,
         string url,
-        Func<long, bool, Task>? handler = null,
+        Func<long, long, Task>? onProgress = null,
+        Func<Task>? onEnd = null,
         Action<Dictionary<string, string>>? onConfigureHeaders = null
     )
     {
         var headers = new Dictionary<string, string>();
-        
-        if(onConfigureHeaders != null)
+
+        if (onConfigureHeaders != null)
             onConfigureHeaders.Invoke(headers);
-        
-        if (handler == null)
+
+        if (onProgress == null &&
+            onEnd == null) // Call it without any reporting if no handlers have been defined for it
         {
             await JsRuntime.InvokeVoidAsync(
                 "moonCoreDownloadService.downloadUrl",
@@ -38,6 +42,12 @@ public class DownloadService
         }
         else
         {
+            var handler = new DownloadHandler()
+            {
+                OnProgress = onProgress,
+                OnComplete = onEnd
+            };
+
             lock (Handlers)
                 Handlers[handler.GetHashCode()] = handler;
 
@@ -52,11 +62,16 @@ public class DownloadService
         }
     }
 
-    public async Task DownloadStream(string fileName, Stream stream, Func<long, bool, Task>? handler = null)
+    public async Task DownloadStream(
+        string fileName,
+        Stream stream,
+        Func<long, long, Task>? onProgress = null,
+        Func<Task>? onEnd = null
+    )
     {
         using var streamRef = new DotNetStreamReference(stream, true);
 
-        if (handler == null)
+        if (onProgress == null && onEnd == null)
         {
             await JsRuntime.InvokeVoidAsync(
                 "moonCoreDownloadService.download",
@@ -68,6 +83,12 @@ public class DownloadService
         }
         else
         {
+            var handler = new DownloadHandler()
+            {
+                OnProgress = onProgress,
+                OnComplete = onEnd
+            };
+
             lock (Handlers)
                 Handlers[handler.GetHashCode()] = handler;
 
@@ -82,9 +103,9 @@ public class DownloadService
     }
 
     [JSInvokable]
-    public async Task ReceiveReport(int id, long downloadedBytes, bool end)
+    public async Task ReceiveReport(int id, long loaded, long total, bool end)
     {
-        Func<long, bool, Task>? handler = null;
+        DownloadHandler? handler;
 
         lock (Handlers)
             handler = Handlers.GetValueOrDefault(id);
@@ -92,7 +113,11 @@ public class DownloadService
         if (handler == null)
             return;
 
-        await handler.Invoke(downloadedBytes, end);
+        if (handler.OnProgress != null)
+            await handler.OnProgress.Invoke(loaded, total);
+
+        if (end && handler.OnComplete != null)
+            await handler.OnComplete.Invoke();
 
         if (end)
         {
@@ -113,4 +138,10 @@ public class DownloadService
 
     public async Task DownloadString(string fileName, string content) =>
         await DownloadBytes(fileName, Encoding.UTF8.GetBytes(content));
+
+    private class DownloadHandler
+    {
+        public Func<long, long, Task>? OnProgress { get; set; }
+        public Func<Task>? OnComplete { get; set; }
+    }
 }

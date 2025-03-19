@@ -19,7 +19,7 @@ window.moonCoreDownloadService = {
                     const now = Date.now();
 
                     if (now - lastReportTime >= 500) { // Only log once per second
-                        await reportRef.invokeMethodAsync("ReceiveReport", id, receivedLength, false);
+                        await reportRef.invokeMethodAsync("ReceiveReport", id, receivedLength, -1, false);
                         lastReportTime = now;
                     }
                 }
@@ -31,7 +31,7 @@ window.moonCoreDownloadService = {
             this.downloadBlob(fileName, blob);
 
             if (reportRef)
-                await reportRef.invokeMethodAsync("ReceiveReport", id, receivedLength, true);
+                await reportRef.invokeMethodAsync("ReceiveReport", id, receivedLength, -1, true);
             
             resolve();
         });
@@ -56,13 +56,13 @@ window.moonCoreDownloadService = {
                     const now = Date.now();
 
                     if (now - lastReported >= 500) {
-                        await reportRef.invokeMethodAsync("ReceiveReport", id, ev.loaded, false);
+                        await reportRef.invokeMethodAsync("ReceiveReport", id, ev.loaded, ev.total, false);
                         lastReported = now;
                     }
                 };
 
                 loadRequest.onloadend = async ev => {
-                    await reportRef.invokeMethodAsync("ReceiveReport", id, ev.loaded, true);
+                    await reportRef.invokeMethodAsync("ReceiveReport", id, ev.loaded, ev.total, true);
                 }
             }
 
