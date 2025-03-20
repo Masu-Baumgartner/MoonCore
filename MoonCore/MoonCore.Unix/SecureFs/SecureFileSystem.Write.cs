@@ -6,14 +6,14 @@ namespace MoonCore.Unix.SecureFs;
 
 public partial class SecureFileSystem
 {
-    public void OpenFileWrite(string path, Action<FileStream> handle)
+    public void OpenFileWrite(string path, Action<FileStream> handle, OpenFlags openFlags = OpenFlags.O_RDWR | OpenFlags.O_CREAT | OpenFlags.O_TRUNC)
     {
         OpenEntrySafe(path, (parentFd, fileName) =>
         {
             var fd = OpenAt(
                 parentFd,
                 fileName,
-                OpenFlags.O_RDWR | OpenFlags.O_CREAT | OpenFlags.O_TRUNC,
+                openFlags,
                 FilePermissions.ACCESSPERMS
             );
 
