@@ -49,8 +49,10 @@
         });
     }
 
-    public async Task Update(int percent)
+    public async Task Update(string title, int percent)
     {
+        Title = title;
+        Percent = percent;
         await InvokeAsync(StateHasChanged);
     }
 }

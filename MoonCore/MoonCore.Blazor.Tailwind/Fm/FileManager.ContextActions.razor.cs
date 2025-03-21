@@ -90,6 +90,7 @@ public partial class FileManager
                 async Task OnProgressUpdate(int percent)
                 {
                     await toast.Update(
+                        name,
                         percent
                     );
                 }
