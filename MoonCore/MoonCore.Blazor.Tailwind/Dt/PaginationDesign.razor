@@ -1,0 +1,82 @@
+@typeparam TItem
+
+@if (!Pagination.DataTable.IsLoading)
+{
+    <nav class="flex flex-row justify-between items-start px-4 py-2 mt-1">
+    <span class="text-sm font-normal text-gray-400">
+        @{
+            var start = 0;
+            var end = 0;
+
+            if (Pagination.PagedData.TotalItems != 0)
+            {
+                start = Pagination.PagedData.CurrentPage * Pagination.PagedData.PageSize + 1;
+
+                var fullEnd = Pagination.Options.Page * Pagination.Options.PerPage + Pagination.Options.PerPage;
+
+                if (Pagination.PagedData.TotalItems < fullEnd)
+                    end = Pagination.PagedData.CurrentPage * Pagination.PagedData.PageSize + (Pagination.PagedData.TotalItems - start + 1);
+                else
+                    end = fullEnd;
+            }
+        }
+
+        Showing
+        <span class="font-semibold text-white">@(start)-@(end)</span>
+        of
+        <span class="font-semibold text-white">
+            @Pagination.PagedData.TotalItems
+        </span>
+    </span>
+        <div class="flex">
+            @if (Pagination.PagedData.CurrentPage == 0)
+            {
+                <button
+                    class="flex items-center justify-center px-3 h-8 text-sm font-medium border rounded-lg bg-gray-800 border-gray-700 text-gray-400 hover:bg-gray-700 hover:text-white disabled:border-gray-700 disabled:bg-gray-800 disabled:text-gray-600 disabled:cursor-not-allowed"
+                    disabled="disabled">
+                    Previous
+                </button>
+            }
+            else
+            {
+                <button @onclick="() => Navigate(-1)"
+                        class="flex items-center justify-center px-3 h-8 text-sm font-medium   border  rounded-lg   bg-gray-800 border-gray-700 text-gray-400 hover:bg-gray-700 hover:text-white">
+                    Previous
+                </button>
+            }
+
+            @if (Pagination.PagedData.CurrentPage == Pagination.PagedData.TotalPages || Pagination.PagedData.TotalItems == 0)
+            {
+                <button
+                    class="ms-3 lex items-center justify-center px-3 h-8 text-sm font-medium   border  rounded-lg   bg-gray-800 border-gray-700 text-gray-400 hover:bg-gray-700 hover:text-white disabled:border-gray-700 disabled:bg-gray-800 disabled:text-gray-600 disabled:cursor-not-allowed"
+                    disabled="disabled">
+                    Next
+                </button>
+            }
+            else
+            {
+                <button @onclick="() => Navigate(1)"
+                        class="ms-3 flex items-center justify-center px-3 h-8 text-sm font-medium   border  rounded-lg   bg-gray-800 border-gray-700 text-gray-400 hover:bg-gray-700 hover:text-white">
+                    Next
+                </button>
+            }
+        </div>
+    </nav>
+}
+
+@code
+{
+    [Parameter] public Pagination<TItem> Pagination { get; set; }
+
+    private async Task Navigate(int diff)
+    {
+        Pagination.Options.Page += diff;
+
+        if (Pagination.Options.Page < 0)
+            Pagination.Options.Page = 0;
+        else if (Pagination.Options.Page > Pagination.PagedData.TotalPages)
+            Pagination.Options.Page = Pagination.PagedData.TotalPages;
+
+        await Pagination.DataTable.Refresh();
+    }
+}

@@ -40,21 +40,21 @@
                 </button>
             </div>
         }
-        else if (SelectedEntries.Count > 0)
+        else if (SelectedEntries.Length > 0)
         {
             <div class="flex items-center text-base font-semibold">
                 <i class="icon-files text-lg me-3"></i>
-                <span class="me-1">@SelectedEntries.Count item(s) selected</span>
+                <span class="me-1">@SelectedEntries.Length item(s) selected</span>
             </div>
             <div class="flex flex-row gap-x-2">
                 @if (SelectionActionTemplate != null)
                 {
-                    @SelectionActionTemplate.Invoke(SelectedEntries.ToArray())
+                    @SelectionActionTemplate.Invoke(SelectedEntries)
                 }
 
                 @if (CompressProvider != null)
                 {
-                    <button @onclick="() => Compress(SelectedEntries.ToArray())" class="btn btn-success">
+                    <button @onclick="() => Compress(SelectedEntries)" class="btn btn-success">
                         <i class="icon-file-archive"></i>
                         <span class="hidden sm:block ms-2">Archive</span>
                     </button>
@@ -115,44 +115,19 @@ else
         </div>
 
         <FileList @ref="FileList"
-                   FileSystemProvider="FileSystemProvider"
-                   OnInteract="OnInteract"
-                   InitialPath="@CurrentPath"
-                   EnableHeadRounding="false"
-                   OnContextMenuRequested="(args, entry) => LaunchContextMenu(args, entry)">
-            <PreConfiguration>
-                <DataTableColumn TItem="FileSystemEntry" HeaderCss="w-8 ps-4" ColumnCss="ps-4">
-                    <HeaderTemplate>
-                        <div class="flex justify-center">
-                            @if (FileList.LoadedEntries.Length != 0 && FileList.LoadedEntries.Length == SelectedEntries.Count)
-                            {
-                                <input @onclick="() => SetAllSelection(false)" type="checkbox" class="form-checkbox" checked="checked">
-                            }
-                            else
-                            {
-                                <input @onclick="() => SetAllSelection(true)" type="checkbox" class="form-checkbox">
-                            }
-                        </div>
-                    </HeaderTemplate>
-                    <ColumnTemplate>
-                        <div class="flex justify-center">
-                            @if (SelectedEntries.Contains(context))
-                            {
-                                <input @onclick="() => SetSelection(context, false)" type="checkbox" class="form-checkbox" checked="checked">
-                            }
-                            else
-                            {
-                                <input @onclick="() => SetSelection(context, true)" type="checkbox" class="form-checkbox">
-                            }
-                        </div>
-                    </ColumnTemplate>
-                </DataTableColumn>
-            </PreConfiguration>
-            <PostConfiguration>
+                  FileSystemProvider="FileSystemProvider"
+                  OnInteract="OnInteract"
+                  InitialPath="@CurrentPath"
+                  ContainerCss="overflow-x-auto bg-gray-800"
+                  OnContextMenu="(args, entry) => LaunchContextMenu(args, entry)">
+            <Configuration>
+                <Selection TItem="FileSystemEntry" OnSelectionChanged="UpdateSelection"/>
+
                 <DataTableColumn TItem="FileSystemEntry" Field="@(x => x.Size)"
                                  Name="Size"
                                  HeaderCss="px-6 py-2 hidden md:table-cell"
-                                 ColumnCss="px-6 py-3 hidden md:table-cell">
+                                 ColumnCss="px-6 py-3 hidden md:table-cell"
+                                 Index="3">
                     <ColumnTemplate>
                         @if (context.IsFile)
                         {
@@ -167,21 +142,23 @@ else
                 <DataTableColumn TItem="FileSystemEntry" Field="@(x => x.CreatedAt)"
                                  Name="Created At"
                                  HeaderCss="px-6 py-2 hidden md:table-cell"
-                                 ColumnCss="px-6 py-3 hidden md:table-cell">
+                                 ColumnCss="px-6 py-3 hidden md:table-cell"
+                                 Index="4">
                     <ColumnTemplate>
                         @Formatter.FormatDate(context.CreatedAt)
                     </ColumnTemplate>
                 </DataTableColumn>
-                <DataTableColumn TItem="FileSystemEntry" ColumnCss="px-3">
+                <DataTableColumn TItem="FileSystemEntry" ColumnCss="px-3" Index="5">
                     <ColumnTemplate>
                         <div class="flex justify-end">
-                            <a @onclick="args => LaunchContextMenu(args, context, useOffset: true)" @onclick:preventDefault href="#">
+                            <a @onclick="args => LaunchContextMenu(args, context)"
+                               @onclick:preventDefault href="#">
                                 <i class="icon-ellipsis text-xl text-white"></i>
                             </a>
                         </div>
                     </ColumnTemplate>
                 </DataTableColumn>
-            </PostConfiguration>
+            </Configuration>
             <NoFilesTemplate>
                 <div class="p-5">
                     <StateDisplay Title="No files found"
@@ -248,8 +225,7 @@ else
 
         <a href="#" @onclick="() => Rename(ContextMenuEntry)" @onclick:preventDefault @onmousedown:preventDefault
            @onmousedown:stopPropagation
-           class="flex px-4 py-2 items-center hover:bg-gray-700 border-b border-gray-700" role="menuitem"
-           tabindex="-1">
+           class="flex px-4 py-2 items-center hover:bg-gray-700 border-b border-gray-700" role="menuitem" tabindex="-1">
             <i class="me-2 text-tertiary-500 icon-pencil-line text-lg"></i>
             <span class="text-sm">Rename</span>
         </a>
@@ -268,7 +244,7 @@ else
 
     protected override void OnInitialized()
     {
-        // Cast if possible, save so the ui doesnt need to try casting all the time
+        // Cast if possible, save so the ui doesn't need to try casting all the time
         CompressProvider = FileSystemProvider as ICompressFileSystemProvider;
     }
 
@@ -276,15 +252,12 @@ else
     {
         if (!firstRender)
             return;
-        
+
         await InvokeAsync(StateHasChanged);
     }
 
     private async Task OnInteract(FileSystemEntry entry)
     {
-        // We want to clear the selected entries no matter what we are doing
-        SelectedEntries.Clear();
-        
         if (entry.IsFile)
         {
             if (entry.Size > MaxEditorOpenSize)

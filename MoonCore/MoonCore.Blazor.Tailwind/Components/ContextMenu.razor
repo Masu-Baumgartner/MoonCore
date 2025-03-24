@@ -1,3 +1,7 @@
+@using MoonCore.Blazor.Tailwind.Services
+
+@inject WindowService WindowService
+
 @if (IsVisible)
 {
     <div @ref="Reference" @onfocusout="OnFocusOut" style="@($"top: {Y}px; left: {X}px")" class="fixed z-10 mt-2 w-40 rounded-md bg-gray-750 text-white shadow-lg focus:outline-none" role="menu" aria-orientation="vertical" aria-labelledby="menu-button" tabindex="-1">
@@ -10,6 +14,8 @@
 @code
 {
     [Parameter] public RenderFragment ChildContent { get; set; }
+    [Parameter] public int Height { get; set; } = 250;
+    [Parameter] public int Width { get; set; } = 170;
 
     private double X;
     private double Y;
@@ -36,8 +42,13 @@
         Cancellation = new();
         
         IsVisible = true;
-        X = x;
-        Y = y;
+
+        var windowSize = await WindowService.GetSize();
+        var windowWidth = windowSize[0];
+        var windowHeight = windowSize[1];
+        
+        X = (x + Width > windowWidth) ? windowWidth - Width : x;
+        Y = (y + Height > windowHeight) ? windowHeight - Height : y;
 
         await InvokeAsync(StateHasChanged);
     }

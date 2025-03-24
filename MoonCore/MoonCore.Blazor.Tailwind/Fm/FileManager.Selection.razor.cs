@@ -7,38 +7,14 @@ namespace MoonCore.Blazor.Tailwind.Fm;
 
 public partial class FileManager : ComponentBase
 {
-    private List<FileSystemEntry> SelectedEntries = new();
+    private FileSystemEntry[] SelectedEntries = [];
 
-    #region Select Impl
-
-    private async Task SetSelection(FileSystemEntry entry, bool toggle)
+    private async Task UpdateSelection(FileSystemEntry[] entries)
     {
-        if (toggle)
-        {
-            if(!SelectedEntries.Contains(entry))
-                SelectedEntries.Add(entry);
-        }
-        else
-        {
-            if (SelectedEntries.Contains(entry))
-                SelectedEntries.Remove(entry);
-        }
-
+        SelectedEntries = entries;
         await InvokeAsync(StateHasChanged);
     }
-
-    private async Task SetAllSelection(bool toggle)
-    {
-        SelectedEntries.Clear();
-        
-        if(toggle)
-            SelectedEntries.AddRange(FileList.LoadedEntries);
-
-        await InvokeAsync(StateHasChanged);
-    }
-
-    #endregion
-
+    
     private async Task DeleteSelection()
     {
         async Task DeleteSelectedItems(ProgressToast toast)
@@ -73,17 +49,16 @@ public partial class FileManager : ComponentBase
             await ToastService.Success($"Successfully deleted {deleted} files");
             
             // Reset state
-            await SetAllSelection(false);
             await FileList.Refresh();
         }
 
         await AlertService.ConfirmDanger(
             "Deleting multiple items",
-            $"Do you really want to delete {SelectedEntries.Count} item(s)",
+            $"Do you really want to delete {SelectedEntries.Length} item(s)",
             async () =>
             {
                 await ToastService.Progress(
-                    $"Deleting {SelectedEntries.Count} items",
+                    $"Deleting {SelectedEntries.Length} items",
                     "",
                     DeleteSelectedItems
                 );
@@ -114,7 +89,6 @@ public partial class FileManager : ComponentBase
                 finally
                 {
                     // Reset state
-                    await SetAllSelection(false);
                     await FileList.Refresh();
                 }
             });

@@ -24,7 +24,7 @@
            InitialPath="/"
            FileSystemProvider="FileSystemProvider"
            OnInteract="OnInteract">
-    <PostConfiguration>
+    <Configuration>
         <DataTableRow TItem="FileSystemEntry" Css="border-b border-gray-700">
             <Template>
                 @if (FileList.CurrentPath != "/")
@@ -67,7 +67,7 @@
                 @Formatter.FormatDate(context.CreatedAt)
             </ColumnTemplate>
         </DataTableColumn>
-    </PostConfiguration>
+    </Configuration>
     <NoFilesTemplate>
         <StateDisplay Title="No folders found"
                       Description="No folders in the selected directory found"

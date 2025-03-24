@@ -20,12 +20,14 @@
         {
             parameters.Add("Work", async Task (DownloadToast toast) =>
             {
-                await DownloadService.DownloadUrl("testy.bin", "http://localhost:5230/testy.bin", async (bytesDownloaded, end) =>
+                await DownloadService.DownloadUrl("testy.bin", "http://localhost:5230/testy.bin", async (loaded, total) =>
                 {
+                    var percent = total == 0 ? 0 : (int)Math.Round((float)loaded / total * 100);
+                    
                     await toast.Update(
-                        -1
+                        "testy.bin",
+                        percent
                     );
-
                 }, 
                 onConfigureHeaders: headers => { headers.Add("TestyA", "TestyB"); });
             });
@@ -40,10 +42,13 @@
             {
                 var fs = File.Open(PathBuilder.File("wwwroot", "testy.bin"), FileMode.Open, FileAccess.Read, FileShare.ReadWrite);
 
-                await DownloadService.DownloadStream("testy.bin", fs, async (_, _) =>
+                await DownloadService.DownloadStream("testy.bin", fs, async (loaded, _) =>
                 {
+                    var percent = fs.Length == 0 ? 0 : (int)Math.Round((float)loaded / fs.Length * 100);
+                    
                     await toast.Update(
-                        -1
+                        "testy.bin",
+                        percent
                     );
                 },
                 onEnd: () =>

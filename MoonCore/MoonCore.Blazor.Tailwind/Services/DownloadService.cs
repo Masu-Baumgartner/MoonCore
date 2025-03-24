@@ -32,7 +32,7 @@ public class DownloadService
             onEnd == null) // Call it without any reporting if no handlers have been defined for it
         {
             await JsRuntime.InvokeVoidAsync(
-                "moonCoreDownloadService.downloadUrl",
+                "moonCore.downloadService.downloadUrl",
                 fileName,
                 url,
                 null,
@@ -52,7 +52,7 @@ public class DownloadService
                 Handlers[handler.GetHashCode()] = handler;
 
             await JsRuntime.InvokeVoidAsync(
-                "moonCoreDownloadService.downloadUrl",
+                "moonCore.downloadService.downloadUrl",
                 fileName,
                 url,
                 DotNetObjectReference.Create(this),
@@ -74,7 +74,7 @@ public class DownloadService
         if (onProgress == null && onEnd == null)
         {
             await JsRuntime.InvokeVoidAsync(
-                "moonCoreDownloadService.download",
+                "moonCore.downloadService.download",
                 fileName,
                 streamRef,
                 null,
@@ -93,7 +93,7 @@ public class DownloadService
                 Handlers[handler.GetHashCode()] = handler;
 
             await JsRuntime.InvokeVoidAsync(
-                "moonCoreDownloadService.download",
+                "moonCore.downloadService.download",
                 fileName,
                 streamRef,
                 handler.GetHashCode(),

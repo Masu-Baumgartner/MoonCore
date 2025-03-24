@@ -1,4 +1,4 @@
-﻿namespace MoonCore.Blazor.Tailwind.Dt;
+namespace MoonCore.Blazor.Tailwind.Dt;
 
 public class PaginationOptions
 {

@@ -19,5 +19,6 @@ public static class ServiceCollectionExtensions
         collection.AddScoped<DownloadService>();
         collection.AddScoped<HotKeyService>();
         collection.AddScoped<CodeEditorService>();
+        collection.AddScoped<WindowService>();
     }
 }

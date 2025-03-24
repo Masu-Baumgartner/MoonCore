@@ -16,7 +16,7 @@
                EntryFilter="EntriesFilter"
                OnInteract="OnInteract"
                FileSystemProvider="FileSystemProvider">
-        <PreConfiguration>
+        <Configuration>
             <DataTableRow TItem="FileSystemEntry" Css="border-b border-gray-700">
                 <Template>
                     @if (FileList.CurrentPath != "/")
@@ -35,7 +35,7 @@
                     }
                 </Template>
             </DataTableRow>
-        </PreConfiguration>
+        </Configuration>
         <NoFilesTemplate>
             <div class="p-5">
                 <StateDisplay Title="No folders found"

@@ -9,14 +9,10 @@ public partial class FileManager
     private ContextMenu ContextMenu;
     private FileSystemEntry ContextMenuEntry;
 
-    private async Task LaunchContextMenu(MouseEventArgs eventArgs, FileSystemEntry entry, bool useOffset = false)
+    private async Task LaunchContextMenu(MouseEventArgs eventArgs, FileSystemEntry entry)
     {
         ContextMenuEntry = entry;
-
-        if (useOffset)
-            await ContextMenu.Show(eventArgs.ClientX - 150, eventArgs.ClientY - 10);
-        else
-            await ContextMenu.Show(eventArgs.ClientX, eventArgs.ClientY);
+        await ContextMenu.Show(eventArgs.ClientX, eventArgs.ClientY);
     }
 
     private async Task Download(FileSystemEntry entry)
@@ -31,7 +27,7 @@ public partial class FileManager
         else if (CompressProvider != null) // If we have a compress provider, we can help the user out a bit by compressing and then downloading the folder
         {
             var compressType = CompressProvider.CompressTypes.FirstOrDefault();
-            
+
             if (compressType == null) // Just to make sure
             {
                 await ToastService.Danger("Folder downloads are not supported");
@@ -78,10 +74,10 @@ public partial class FileManager
     private async Task DownloadInternal(string path, string name, bool runBlocking = false)
     {
         TaskCompletionSource? tsc = null;
-        
-        if(runBlocking)
+
+        if (runBlocking)
             tsc = new TaskCompletionSource();
-        
+
         await ToastService.Launch<DownloadToast>(parameters =>
         {
             parameters.Add("Title", name);
@@ -90,6 +86,7 @@ public partial class FileManager
                 async Task OnProgressUpdate(int percent)
                 {
                     await toast.Update(
+                        name,
                         percent
                     );
                 }
@@ -117,9 +114,8 @@ public partial class FileManager
                 );
 
                 await ToastService.Success("Successfully moved item");
-                
+
                 // Reset state
-                await SetAllSelection(false);
                 await FileList.Refresh();
             });
 
@@ -142,7 +138,6 @@ public partial class FileManager
                     );
 
                     // Reset state
-                    await SetAllSelection(false);
                     await FileList.Refresh();
                 });
             });
@@ -160,7 +155,6 @@ public partial class FileManager
                     );
 
                     // Reset state
-                    await SetAllSelection(false);
                     await FileList.Refresh();
                 });
             });
@@ -177,9 +171,8 @@ public partial class FileManager
                 await ToastService.Progress("Deleting", string.Empty, async _ =>
                 {
                     await FileSystemProvider.Delete(PathBuilder.JoinPaths(CurrentPath, entry.Name));
-                    
+
                     // Reset state
-                    await SetAllSelection(false);
                     await FileList.Refresh();
                 });
             }

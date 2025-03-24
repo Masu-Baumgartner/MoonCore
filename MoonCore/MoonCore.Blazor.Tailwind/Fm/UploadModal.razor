@@ -38,7 +38,7 @@
             return;
 
         await JsRuntime.InvokeVoidAsync(
-            "moonCoreFileManager.setup",
+            "moonCore.fileManager.setup",
             "dropzone",
             DotNetObjectReference.Create(this)
         );
@@ -53,7 +53,7 @@
 
     private async Task OnChanged()
     {
-        await JsRuntime.InvokeVoidAsync("moonCoreFileManager.addFilesToCache", "file-select");
+        await JsRuntime.InvokeVoidAsync("moonCore.fileManager.addFilesToCache", "file-select");
         await Hide();
     }
 }

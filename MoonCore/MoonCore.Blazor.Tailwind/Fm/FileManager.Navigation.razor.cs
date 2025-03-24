@@ -7,8 +7,6 @@ public partial class FileManager
     
     private async Task OnPathBreadcrumbClick(string path)
     {
-        await SetAllSelection(false);
-        
         CurrentPath = await FileList.Navigate(path);
         await InvokeAsync(StateHasChanged);
     }
