@@ -6,7 +6,7 @@
 @inherits LayoutComponentBase
 
 <div>
-    <AppSidebar />
+    <AppSidebar/>
 
     <div class="lg:pl-72">
         <AppHeader/>
@@ -17,13 +17,20 @@
             </div>
         </main>
 
-        <ToastLauncher />
-        <ModalLauncher />
+        <ToastLauncher/>
+        <ModalLauncher/>
     </div>
 </div>
 
-<div id="blazor-error-ui">
-    An unhandled error has occurred.
-    <a href="" class="reload">Reload</a>
-    <a class="dismiss">🗙</a>
+<div id="blazor-error-ui" class="fixed bottom-0 left-0 w-full z-50">
+    <div class="bg-danger-600 text-white p-4 flex flex-row justify-between items-center">
+        <div class="flex items-center">
+            <i class="icon-bomb text-lg text-white me-2"></i>
+            <span>An unhandled error has occurred.</span>
+        </div>
+        <div>
+            <a href="#" class="reload text-white underline mr-4">Reload</a>
+            <a href="#" class="dismiss hidden">🗙</a>
+        </div>
+    </div>
 </div>

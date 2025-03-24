@@ -42,7 +42,7 @@ public partial class FileManager
         while (true)
         {
             var nextItem = await JsRuntime.InvokeAsync<TransferData?>(
-                "moonCoreFileManager.getNextFromCache",
+                "moonCore.fileManager.getNextFromCache",
                 []
             );
 
@@ -113,7 +113,6 @@ public partial class FileManager
         }
 
         // Reset state
-        await SetAllSelection(false);
         await FileList.Refresh();
     }
 

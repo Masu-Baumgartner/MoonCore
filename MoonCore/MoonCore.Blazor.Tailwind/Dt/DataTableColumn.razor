@@ -1,10 +1,11 @@
-﻿@typeparam TItem
+@typeparam TItem
 
 @code
 {
     [CascadingParameter(Name = "DataTable")]
     public DataTable<TItem> DataTable { get; set; }
 
+    [Parameter] public int Index { get; set; }
     [Parameter] public Func<TItem, object?>? Field { get; set; }
     [Parameter] public string HeaderCss { get; set; } = "py-2 px-3 font-semibold text-left";
     [Parameter] public RenderFragment? HeaderTemplate { get; set; }

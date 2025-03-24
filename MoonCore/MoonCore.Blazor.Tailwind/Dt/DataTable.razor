@@ -1,8 +1,9 @@
-﻿@using MoonCore.Blazor.Tailwind.States
-@using MoonCore.Exceptions
-@using MoonCore.Models
+@using Microsoft.Extensions.Logging
+@using MoonCore.Blazor.Tailwind.States
 
 @typeparam TItem
+
+@inject ILogger<DataTable<TItem>> Logger
 
 @if (Configuration != null)
 {
@@ -11,17 +12,22 @@
     </CascadingValue>
 }
 
+@if (Header != null)
+{
+    @Header
+}
+
 @* Add option for rounded-lg in the element below *@
 
-<div class="overflow-x-auto bg-gray-800 @(EnableHeaderRounding ? "rounded-lg" : "")">
+<div class="@ContainerCss">
     <table class="table-auto w-full text-gray-300">
-        
+
         @* Header *@
         <thead class="text-xs uppercase text-gray-500 bg-gray-700/50 text-left">
-        
+
         <tr>
 
-            @foreach (var column in Columns)
+            @foreach (var column in SortedColumns)
             {
                 <th scope="col" class="@column.HeaderCss">
                     @if (column.HeaderTemplate != null)
@@ -34,334 +40,115 @@
                     }
                 </th>
             }
-            
+
         </tr>
-        
+
         </thead>
-        
+
         @* Body *@
         <tbody class="text-sm divide-y divide-gray-700/60">
-        
+
         @if (IsLoading)
         {
-            <tr>
-                <td scope="row" class="p-2 text-left font-normal" colspan="@Columns.Count">
-                    <div class="w-full flex justify-center items-center p-5">
-                        <div role="status">
-                            <svg aria-hidden="true"
-                                 class="inline w-10 h-10 animate-spin text-slate-600 fill-primary-600"
-                                 viewBox="0 0 100 101" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                <path
-                                    d="M100 50.5908C100 78.2051 77.6142 100.591 50 100.591C22.3858 100.591 0 78.2051 0 50.5908C0 22.9766 22.3858 0.59082 50 0.59082C77.6142 0.59082 100 22.9766 100 50.5908ZM9.08144 50.5908C9.08144 73.1895 27.4013 91.5094 50 91.5094C72.5987 91.5094 90.9186 73.1895 90.9186 50.5908C90.9186 27.9921 72.5987 9.67226 50 9.67226C27.4013 9.67226 9.08144 27.9921 9.08144 50.5908Z"
-                                    fill="currentColor"/>
-                                <path
-                                    d="M93.9676 39.0409C96.393 38.4038 97.8624 35.9116 97.0079 33.5539C95.2932 28.8227 92.871 24.3692 89.8167 20.348C85.8452 15.1192 80.8826 10.7238 75.2124 7.41289C69.5422 4.10194 63.2754 1.94025 56.7698 1.05124C51.7666 0.367541 46.6976 0.446843 41.7345 1.27873C39.2613 1.69328 37.813 4.19778 38.4501 6.62326C39.0873 9.04874 41.5694 10.4717 44.0505 10.1071C47.8511 9.54855 51.7191 9.52689 55.5402 10.0491C60.8642 10.7766 65.9928 12.5457 70.6331 15.2552C75.2735 17.9648 79.3347 21.5619 82.5849 25.841C84.9175 28.9121 86.7997 32.2913 88.1811 35.8758C89.083 38.2158 91.5421 39.6781 93.9676 39.0409Z"
-                                    fill="currentFill"/>
-                            </svg>
-                            <span class="sr-only">Loading...</span>
+            if (LoadingIndicator == null)
+            {
+                <tr>
+                    <td scope="row" class="p-2 text-left font-normal" colspan="@Columns.Count">
+                        <div class="w-full flex justify-center items-center p-5">
+                            <div class="loader-spinner"></div>
                         </div>
-                    </div>
-                </td>
-            </tr>
+                    </td>
+                </tr>
+            }
+            else
+            {
+                @LoadingIndicator
+            }
         }
         else
         {
-            if (LoadException == null)
-                {
-                    if (LoadedData.Items.Length == 0)
-                    {
-                        <tr>
-                            <td scope="row" class="p-2 text-left font-normal" colspan="@Columns.Count">
-                                @if (NoItemsTemplate == null)
-                                {
-                                    <div class="p-5">
-                                        <StateDisplay Type="StateType.Custom"
-                                                      IconColor="text-info-500"
-                                                      Icon="icon-hexagon"
-                                                      Title="No items found"
-                                                      Description="No items could be found"/>
-                                    </div>
-                                }
-                                else
-                                {
-                                    @NoItemsTemplate
-                                }
-                            </td>
-                        </tr>
-                    }
-                    else
-                    {
-                        foreach (var row in Rows)
-                        {
-                            <tr class="@row.Css">
-                                @row.Template
-                            </tr>
-                        }
-                        
-                        for (var i = 0; i < LoadedData.Items.Length; i++)
-                        {
-                            var item = LoadedData.Items[i];
-
-                            <tr @oncontextmenu="args => InvokeContextMenuRequest(args, item)"
-                                @oncontextmenu:preventDefault>
-                                @foreach (var column in Columns)
-                                {
-                                    <td scope="row" class="@column.ColumnCss">
-                                        @if (column.ColumnTemplate == null)
-                                        {
-                                            if (column.Field != null)
-                                            {
-                                                var val = column.Field.Invoke(item);
-
-                                                @(val?.ToString() ?? "null")
-                                            }
-                                        }
-                                        else
-                                        {
-                                            @column.ColumnTemplate.Invoke(item)
-                                        }
-                                    </td>
-                                }
-                            </tr>
-                        }
-                    }
-                }
-                else
+            if (LoadingException != null)
+            {
+                if (ExceptionIndicator == null)
                 {
                     <tr>
                         <td scope="row" class="p-2 text-left font-normal" colspan="@Columns.Count">
                             <div class="p-5">
-                                <ErrorStateDisplay Exception="LoadException"/>
+                                <ErrorStateDisplay Exception="LoadingException"/>
                             </div>
                         </td>
                     </tr>
                 }
+                else
+                {
+                    @ExceptionIndicator.Invoke(LoadingException)
+                }
+            }
+            else
+            {
+                if (Items.Length == 0)
+                {
+                    <tr>
+                        <td scope="row" class="p-2 text-left font-normal" colspan="@Columns.Count">
+                            @if (NoItemsIndicator == null)
+                            {
+                                <div class="p-5">
+                                    <StateDisplay Type="StateType.Custom"
+                                                  IconColor="text-info-500"
+                                                  Icon="icon-hexagon"
+                                                  Title="No items found"
+                                                  Description="No items could be found"/>
+                                </div>
+                            }
+                            else
+                            {
+                                @NoItemsIndicator
+                            }
+                        </td>
+                    </tr>
+                }
+                else
+                {
+                    foreach (var row in SortedRows)
+                    {
+                        <tr class="@row.Css">
+                            @row.Template
+                        </tr>
+                    }
+
+                    foreach (var item in Items)
+                    {
+                        <tr class="@RowCss"
+                            @oncontextmenu="e => InvokeContextMenu(e, item)"
+                            @oncontextmenu:preventDefault>
+                            @foreach (var column in SortedColumns)
+                            {
+                                <td scope="row" class="@column.ColumnCss">
+                                    @if (column.ColumnTemplate == null)
+                                    {
+                                        if (column.Field != null)
+                                        {
+                                            var val = column.Field.Invoke(item);
+
+                                            @(val?.ToString() ?? "null")
+                                        }
+                                    }
+                                    else
+                                    {
+                                        @column.ColumnTemplate.Invoke(item)
+                                    }
+                                </td>
+                            }
+                        </tr>
+                    }
+                }
+            }
         }
-        
         </tbody>
-        
     </table>
 </div>
 
-@if (!IsLoading && EnablePagination)
+@if (Footer != null)
 {
-    <nav class="flex flex-row justify-between items-start px-4 py-2 mt-1">
-    <span class="text-sm font-normal text-gray-400">
-        @{
-            var start = 0;
-            var end = 0;
-
-            if (LoadedData.TotalItems != 0)
-            {
-                start = LoadedData.CurrentPage * LoadedData.PageSize + 1;
-
-                var fullEnd = PaginationOptions.Page * PaginationOptions.PerPage + PaginationOptions.PerPage;
-
-                if (LoadedData.TotalItems < fullEnd)
-                    end = LoadedData.CurrentPage * LoadedData.PageSize + (LoadedData.TotalItems - start + 1);
-                else
-                    end = fullEnd;
-            }
-        }
-
-        Showing
-        <span class="font-semibold text-white">@(start)-@(end)</span>
-        of
-        <span class="font-semibold text-white">
-            @LoadedData.TotalItems
-        </span>
-    </span>
-        <div class="flex">
-            @if (LoadedData.CurrentPage == 0)
-            {
-                <button
-                    class="flex items-center justify-center px-3 h-8 text-sm font-medium border rounded-lg bg-gray-800 border-gray-700 text-gray-400 hover:bg-gray-700 hover:text-white disabled:border-gray-700 disabled:bg-gray-800 disabled:text-gray-600 disabled:cursor-not-allowed"
-                    disabled="disabled">
-                    Previous
-                </button>
-            }
-            else
-            {
-                <button @onclick="() => NavigatePage(-1)"
-                        class="flex items-center justify-center px-3 h-8 text-sm font-medium   border  rounded-lg   bg-gray-800 border-gray-700 text-gray-400 hover:bg-gray-700 hover:text-white">
-                    Previous
-                </button>
-            }
-
-            @if (LoadedData.CurrentPage == LoadedData.TotalPages || LoadedData.TotalItems == 0)
-            {
-                <button
-                    class="ms-3 lex items-center justify-center px-3 h-8 text-sm font-medium   border  rounded-lg   bg-gray-800 border-gray-700 text-gray-400 hover:bg-gray-700 hover:text-white disabled:border-gray-700 disabled:bg-gray-800 disabled:text-gray-600 disabled:cursor-not-allowed"
-                    disabled="disabled">
-                    Next
-                </button>
-            }
-            else
-            {
-                <button @onclick="() => NavigatePage(1)"
-                        class="ms-3 flex items-center justify-center px-3 h-8 text-sm font-medium   border  rounded-lg   bg-gray-800 border-gray-700 text-gray-400 hover:bg-gray-700 hover:text-white">
-                    Next
-                </button>
-            }
-        </div>
-    </nav>
-}
-
-@code
-{
-    protected override async Task OnAfterRenderAsync(bool firstRender)
-    {
-        if (!firstRender)
-            return;
-
-        await Refresh();
-    }
-
-    #region Configuration
-
-    [Parameter] public RenderFragment? Configuration { get; set; }
-
-    private readonly List<DataTableColumn<TItem>> Columns = new();
-    private readonly List<DataTableRow<TItem>> Rows = new();
-
-    public void AddColumn(DataTableColumn<TItem> column)
-        => Columns.Add(column);
-
-    public void AddRow(DataTableRow<TItem> row)
-        => Rows.Add(row);
-
-    #endregion
-
-    #region Loading
-
-    [Parameter] public IEnumerable<TItem>? Items { get; set; }
-    [Parameter] public Func<IEnumerable<TItem>>? LoadItems { get; set; }
-    [Parameter] public Func<Task<IEnumerable<TItem>>>? LoadItemsAsync { get; set; }
-
-    // Paginated
-    [Parameter] public Func<PaginationOptions, IPagedData<TItem>>? LoadItemsPaginated { get; set; }
-    [Parameter] public Func<PaginationOptions, Task<IPagedData<TItem>>>? LoadItemsPaginatedAsync { get; set; }
-    
-    // Design
-    [Parameter] public RenderFragment? NoItemsTemplate { get; set; }
-
-    private bool IsLoading = true;
-    private Exception? LoadException;
-
-    protected override void OnInitialized()
-    {
-        if (Items == null && LoadItems == null && LoadItemsAsync == null && LoadItemsPaginated != null && LoadItemsPaginatedAsync != null)
-            throw new ArgumentNullException(nameof(LoadItems), "Specify either Items, LoadItems or LoadItemsAsync or the paginated variants");
-
-        if (LoadItemsPaginated != null || LoadItemsPaginatedAsync != null)
-            EnablePagination = true;
-
-        PaginationOptions.PerPage = PageSize;
-        LoadedData = PagedData<TItem>.Create([], 0, 0);
-    }
-
-    private async Task Load()
-    {
-        if (EnablePagination)
-        {
-            if (LoadItemsPaginated != null)
-                LoadedData = LoadItemsPaginated.Invoke(PaginationOptions);
-            else if (LoadItemsPaginatedAsync != null)
-                LoadedData = await LoadItemsPaginatedAsync.Invoke(PaginationOptions);
-        }
-        else
-        {
-            TItem[] items;
-
-            if (Items != null)
-            {
-                items = Items
-                    .ToArray();
-            }
-            else if (LoadItems != null)
-            {
-                items = LoadItems
-                    .Invoke()
-                    .ToArray();
-            }
-            else //if (LoadItemsAsync != null)
-            {
-                var itemSource = await LoadItemsAsync!.Invoke();
-                items = itemSource.ToArray();
-            }
-
-            LoadedData = PagedData<TItem>.Create(items, 0, items.Length);
-        }
-    }
-
-    public async Task Refresh()
-    {
-        // Reset state
-        LoadException = null;
-
-        // Set loading state
-        IsLoading = true;
-        await InvokeAsync(StateHasChanged);
-
-        try
-        {
-            await Load();
-        }
-        catch (Exception e)
-        {
-            // Special handling for 401s
-            if (e is HttpApiException httpApiException && httpApiException.Status == 401)
-                throw;
-            
-            // Normal handling
-            LoadException = e;
-
-            IsLoading = false;
-            await InvokeAsync(StateHasChanged);
-            return;
-        }
-
-        IsLoading = false;
-        await InvokeAsync(StateHasChanged);
-    }
-
-    #endregion
-
-    #region Pagination
-    
-    // Pagination
-    [Parameter] public int PageSize { get; set; } = 15;
-    
-    private bool EnablePagination = false;
-    public IPagedData<TItem> LoadedData { get; private set; }
-    private PaginationOptions PaginationOptions = new();
-
-    private async Task NavigatePage(int diff)
-    {
-        PaginationOptions.Page += diff;
-
-        if (PaginationOptions.Page < 0)
-            PaginationOptions.Page = 0;
-        else if (PaginationOptions.Page > LoadedData.TotalPages)
-            PaginationOptions.Page = LoadedData.TotalPages;
-
-        await Refresh();
-    }
-
-    #endregion
-
-    #region Misc (Context Menu, Design)
-
-    [Parameter] public Func<MouseEventArgs, TItem, Task>? OnContextMenuRequested { get; set; }
-    [Parameter] public bool EnableHeaderRounding { get; set; } = true;
-
-    private async Task InvokeContextMenuRequest(MouseEventArgs eventArgs, TItem item)
-    {
-        if(OnContextMenuRequested == null)
-            return;
-
-        await OnContextMenuRequested.Invoke(eventArgs, item);
-    }
-
-    #endregion
+    @Footer
 }

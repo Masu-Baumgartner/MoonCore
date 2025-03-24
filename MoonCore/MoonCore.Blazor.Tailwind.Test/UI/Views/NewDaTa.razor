@@ -1,0 +1,41 @@
+@page "/newdata"
+
+@using Bogus
+@using MoonCore.Blazor.Tailwind.Dt
+@using MoonCore.Blazor.Tailwind.Test.Models
+@using MoonCore.Models
+    
+<DataTable TItem="DemoDataModel">
+    <Configuration>
+        <Selection TItem="DemoDataModel" />
+        
+        <DataTableColumn TItem="DemoDataModel" Field="@(x => x.Id)" Name="Id"/>
+        <DataTableColumn TItem="DemoDataModel" Field="@(x => x.Email)" Name="Email"/>
+        <DataTableColumn TItem="DemoDataModel" Field="@(x => x.Name)" Name="Username"/>
+        <DataTableColumn TItem="DemoDataModel" Field="@(x => x.Flag)" Name="Flag"/>
+
+        <Pagination TItem="DemoDataModel" ItemSource="ItemSource"/>
+    </Configuration>
+</DataTable>
+@code
+{
+    private DemoDataModel[] Items;
+
+    protected override void OnInitialized()
+    {
+        var faker = new Faker<DemoDataModel>()
+            .RuleFor(x => x.Id, x => x.UniqueIndex)
+            .RuleFor(x => x.Email, x => x.Person.Email)
+            .RuleFor(x => x.Flag, x => x.Random.Bool())
+            .RuleFor(x => x.Name, x => x.Person.UserName);
+
+        Items = faker
+            .Generate(100)
+            .ToArray();
+    }
+
+    private async Task<IPagedData<DemoDataModel>> ItemSource(PaginationOptions options)
+    {
+        return PagedData<DemoDataModel>.Create(Items, options.Page, options.PerPage);
+    }
+}

@@ -31,7 +31,7 @@ public class HotKeyService
 
             // And let the client know
             await JsRuntime.InvokeVoidAsync(
-                "moonCoreKeyBinds.registerHotkey",
+                "moonCore.keyBinds.registerHotkey",
                 hotKey.Key,
                 GetModifierString(modifierKey),
                 hotKey.GetHashCode().ToString(),
@@ -60,7 +60,7 @@ public class HotKeyService
         {
             // Let the client know that we no longer need that hot key as all listeners are gone for it 
             await JsRuntime.InvokeVoidAsync(
-                "moonCoreKeyBinds.unregisterHotkey",
+                "moonCore.keyBinds.unregisterHotkey",
                 hotKey.Key,
                 GetModifierString(modifierKey)
             );
