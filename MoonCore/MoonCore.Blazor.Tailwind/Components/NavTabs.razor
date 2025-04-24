@@ -1,28 +1,21 @@
-<div class="mx-2 relative">
-    <ul class="relative text-sm font-medium flex flex-nowrap -mx-4 sm:-mx-6 lg:-mx-8 overflow-x-scroll no-scrollbar">
-
+<div class="flex">
+    <div class="tabs">
         @for (var i = 0; i < Names.Length; i++)
         {
             @if (i == Index)
             {
-                <li class="mr-6 last:mr-0 first:pl-4 sm:first:pl-6 lg:first:pl-8 last:pr-4 sm:last:pr-6 lg:last:pr-8">
-                    <a href="@(Links[i])"
-                       class="block pb-3 text-white whitespace-nowrap border-b-2 border-primary-500">
-                        @Names[i]
-                    </a>
-                </li>
+                <a href="@(Links[i])" class="tabs-segment tabs-segment-active">
+                    @Names[i]
+                </a>
             }
             else
             {
-                <li class="mr-6 last:mr-0 first:pl-4 sm:first:pl-6 lg:first:pl-8 last:pr-4 sm:last:pr-6 lg:last:pr-8">
-                    <a href="@(Links[i])"
-                       class="block pb-3 text-gray-400 hover:text-white whitespace-nowrap hover:border-b-2 hover:border-primary-500">
-                        @Names[i]
-                    </a>
-                </li>
+                <a href="@(Links[i])" class="tabs-segment">
+                    @Names[i]
+                </a>
             }
         }
-    </ul>
+    </div>
 </div>
 
 @code

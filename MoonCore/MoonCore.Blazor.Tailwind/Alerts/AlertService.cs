@@ -1,5 +1,4 @@
 using MoonCore.Blazor.Tailwind.Alerts.Components;
-using MoonCore.Blazor.Tailwind.LegacyForms;
 using MoonCore.Blazor.Tailwind.Modals.Components;
 using MoonCore.Blazor.Tailwind.Modals;
 
@@ -35,18 +34,6 @@ public class AlertService
         {
             buildAttr.Add("Title", title);
             buildAttr.Add("Text", text);
-        });
-    }
-
-    public async Task FormAlert<T>(string title, Action<FormConfiguration<T>> onConfigure, Func<T, Task> onSubmit, T? initialModel = null)
-        where T : class
-    {
-        await ModalService.Launch<FormAlert<T>>(buildAttr =>
-        {
-            buildAttr.Add("Title", title);
-            buildAttr.Add("OnConfigureForm", onConfigure);
-            buildAttr.Add("OnSubmit", onSubmit);
-            buildAttr.Add("FormModel", initialModel);
         });
     }
 }

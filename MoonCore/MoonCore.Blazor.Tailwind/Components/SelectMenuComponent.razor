@@ -21,7 +21,7 @@
         <ul class="absolute z-10 mt-1 max-h-56 w-full overflow-auto rounded-md bg-gray-800 py-1 text-base shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none sm:text-sm" tabindex="-1" role="listbox">
             @if (AllowNone)
             {
-                <li @onclick="() => Select(default)" class="relative cursor-default select-none py-2 pl-3 pr-3 text-gray-300 hover:bg-primary-600 hover:text-white">
+                <li @onclick="() => Select(default)" class="relative cursor-default select-none py-2 pl-3 pr-3 text-gray-300 hover:bg-primary hover:text-white">
                     <div class="flex items-center justify-between">
                         <span class="block truncate">
                             None
@@ -34,7 +34,7 @@
 
             @foreach (var item in Items)
             {
-                <li @onclick="() => Select(item)" class="relative cursor-default select-none py-2 pl-3 pr-3 text-gray-300 hover:bg-primary-600 hover:text-white">
+                <li @onclick="() => Select(item)" class="relative cursor-default select-none py-2 pl-3 pr-3 text-gray-300 hover:bg-primary hover:text-white">
                     <div class="flex items-center justify-between">
                         <span class="block truncate">
                             @DisplayProperty.Invoke(item)

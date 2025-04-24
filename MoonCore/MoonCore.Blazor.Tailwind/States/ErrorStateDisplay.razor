@@ -8,7 +8,7 @@
             @Title
         </div>
 
-        <div class="text-base text-secondary-600">
+        <div class="text-base text-secondary">
             @Description
         </div>
     </div>
@@ -21,7 +21,7 @@
     private string Title;
     private string Description;
     private string Icon;
-    private string IconColor = "text-secondary-500";
+    private string IconColor = "text-secondary";
 
     protected override void OnParametersSet()
     {
@@ -35,31 +35,31 @@
             {
                 Title = "Forbidden";
                 Icon = "icon-ban";
-                IconColor = "text-warning-500";
+                IconColor = "text-warning";
             }
             else if (httpApiException.Status == 400)
             {
                 Title = "Bad Request";
                 Icon = "icon-puzzle";
-                IconColor = "text-danger-500";
+                IconColor = "text-danger";
             }
             else if (httpApiException.Status == 500)
             {
                 Title = "Internal Server Error";
                 Icon = "icon-server-crash";
-                IconColor = "text-danger-500";
+                IconColor = "text-danger";
             }
             else if (httpApiException.Status == 502)
             {
                 Title = "Bad Gateway";
                 Icon = "icon-cable";
-                IconColor = "text-danger-500";
+                IconColor = "text-danger";
             }
             else
             {
                 Title = "API Error";
                 Icon = "icon-mail-warning";
-                IconColor = "text-warning-500";
+                IconColor = "text-warning";
             }
         }
         else if (Exception is HttpRequestException httpRequestException)
@@ -69,14 +69,14 @@
                 Title = "No Connection";
                 Icon = "icon-cable";
                 Description = "Unable to connect to the requested resource";
-                IconColor = "text-danger-500";
+                IconColor = "text-danger";
             }
             else
             {
                 Title = "Request Error";
                 Icon = "icon-cable";
                 Description = httpRequestException.Message;
-                IconColor = "text-danger-500";
+                IconColor = "text-danger";
             }
         }
         else
@@ -84,7 +84,7 @@
             Title = "Application Error";
             Description = "An unhandled error occured in the application";
             Icon = "icon-flame";
-            IconColor = "text-danger-500";
+            IconColor = "text-danger";
         }
     }
 }

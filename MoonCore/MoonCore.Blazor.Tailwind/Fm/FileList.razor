@@ -1,6 +1,7 @@
 ﻿@using MoonCore.Blazor.Tailwind.Dt
 @using MoonCore.Blazor.Tailwind.States
 @using MoonCore.Helpers
+@using MoonCore.Blazor.Tailwind.Components
 
 <DataTable @ref="DataTable"
            TItem="FileSystemEntry"
@@ -18,11 +19,11 @@
                 <div class="flex justify-center items-center">
                     @if (context.IsFile)
                     {
-                        <i class="icon-file-text text-2xl text-warning-500"></i>
+                        <i class="icon-file-text text-2xl text-warning"></i>
                     }
                     else
                     {
-                        <i class="icon-folder text-2xl text-primary-500"></i>
+                        <i class="icon-folder text-2xl text-primary"></i>
                     }
                 </div>
             </ColumnTemplate>
@@ -47,11 +48,11 @@
         }
         else
         {
-            <StateDisplay Title="No files found"
-                          Description="No files or folders found"
-                          Icon="icon-folder-open"
-                          IconColor="text-primary-500"
-                          Type="StateType.Custom"/>
+            <IconAlert Title="No files found"
+                       Color="text-primary"
+                       Icon="icon-folder-open">
+                No files or folders found
+            </IconAlert>
         }
     </NoItemsIndicator>
 </DataTable>

@@ -16,12 +16,14 @@
         }
         else
         {
-            <div class="m-10">
-                <StateDisplay Type="StateType.Custom"
-                              Icon="icon-loader"
-                              IconColor="text-tertiary-500"
-                              Title="Loading"
-                              Description="Preparing application"/>
+            <div class="flex h-screen justify-center items-center">
+                <div class="sm:max-w-lg">
+                    <IconAlert Title="Loading"
+                               Color="text-primary"
+                               Icon="icon-loader">
+                        Preparing application
+                    </IconAlert>
+                </div>
             </div>
         }
     }
@@ -41,11 +43,13 @@
                         <NotFound>
                             <PageTitle>Not found</PageTitle>
                             <LayoutView Layout="@DefaultLayout">
-                                <StateDisplay Type="StateType.Custom"
-                                              Icon="icon-telescope"
-                                              IconColor="text-tertiary-500"
-                                              Title="Page not found"
-                                              Description="The requested page could not be found"/>
+                                <div class="mt-10">
+                                    <IconAlert Title="Page not found"
+                                               Icon="icon-telescope"
+                                               Color="text-primary">
+                                        The requested page could not be found
+                                    </IconAlert>
+                                </div>
                             </LayoutView>
                         </NotFound>
                     </Router>
@@ -57,12 +61,14 @@
                     }
                     else
                     {
-                        <div class="m-10">
-                            <StateDisplay Type="StateType.Custom"
-                                          Icon="icon-arrow-up-down"
-                                          IconColor="text-tertiary-500"
-                                          Title="Checking authentication state"
-                                          Description="Loading authentication state from identity provider"/>
+                        <div class="flex h-screen justify-center items-center">
+                            <div class="sm:max-w-lg">
+                                <IconAlert Title="Checking authentication state"
+                                           Color="text-primary"
+                                           Icon="icon-arrow-up-down">
+                                    Loading authentication state from identity provider
+                                </IconAlert>
+                            </div>
                         </div>
                     }
                 </Authorizing>

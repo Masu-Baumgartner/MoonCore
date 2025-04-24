@@ -1,5 +1,6 @@
 @using Microsoft.Extensions.Logging
 @using MoonCore.Blazor.Tailwind.States
+@using MoonCore.Blazor.Tailwind.Components
 
 @typeparam TItem
 
@@ -93,11 +94,11 @@
                             @if (NoItemsIndicator == null)
                             {
                                 <div class="p-5">
-                                    <StateDisplay Type="StateType.Custom"
-                                                  IconColor="text-info-500"
-                                                  Icon="icon-hexagon"
-                                                  Title="No items found"
-                                                  Description="No items could be found"/>
+                                    <IconAlert Title="No items found"
+                                               Icon="icon-hexagon"
+                                               Color="text-info">
+                                        No items could be found
+                                    </IconAlert>
                                 </div>
                             }
                             else
