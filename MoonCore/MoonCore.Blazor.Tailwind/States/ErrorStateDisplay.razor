@@ -1,18 +1,11 @@
 @using MoonCore.Exceptions
+@using MoonCore.Blazor.Tailwind.Components
 
-<div class="flex items-center justify-center">
-    <div class="flex flex-col text-center">
-        <i class="@Icon @IconColor text-2xl"></i>
-
-        <div class="text-lg font-semibold">
-            @Title
-        </div>
-
-        <div class="text-base text-secondary">
-            @Description
-        </div>
-    </div>
-</div>
+<IconAlert Icon="@Icon"
+           Color="@IconColor"
+           Title="@Title">
+    @Description
+</IconAlert>
 
 @code
 {
@@ -21,7 +14,7 @@
     private string Title;
     private string Description;
     private string Icon;
-    private string IconColor = "text-secondary";
+    private string IconColor;
 
     protected override void OnParametersSet()
     {

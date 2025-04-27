@@ -2,26 +2,18 @@
     @ChildContent
 </CascadingValue>
 
-<ul class="flex flex-wrap -m-1">
+<div class="tabs">
     @foreach (var tab in TabList)
     {
-        <li class="m-1">
-            @if (tab == CurrentTab)
+        <a @onclick="() => SwitchTab(tab)" @onclick:preventDefault href="#" class="tabs-segment @(tab == CurrentTab ? "tabs-segment-active" : "")">
+            @if (!string.IsNullOrEmpty(tab.Icon))
             {
-                <a @onclick:preventDefault href="#" class="inline-flex items-center justify-center text-sm font-medium leading-5 rounded-full px-3 py-1 border border-transparent shadow-sm bg-gray-100 text-gray-800 transition">
-                    @tab.Name
-                </a>
-                
+                <i class="@tab.Icon me-1"></i>
             }
-            else
-            {
-                <a @onclick="() => SwitchTab(tab)" @onclick:preventDefault href="#" class="inline-flex items-center justify-center text-sm font-medium leading-5 rounded-full px-3 py-1 border border-gray-700/60 hover:border-gray-600 shadow-sm bg-gray-800 text-gray-400 transition">
-                    @tab.Name
-                </a>
-            }
-        </li>
+            @tab.Name
+        </a>
     }
-</ul>
+</div>
 
 @if (CurrentTab != null)
 {

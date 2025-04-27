@@ -2,8 +2,8 @@
 
 public class UiConstants
 {
-    public static readonly string[] ComponentsNames = ["Buttons", "Cards", "Icon Alerts"];
-    public static readonly string[] ComponentsLinks = ["/components", "/components/cards", "/components/iconAlerts"];
+    public static readonly string[] ComponentsNames = ["Buttons", "Cards", "Icon Alerts", "Lazy Loaders"];
+    public static readonly string[] ComponentsLinks = ["/components", "/components/cards", "/components/iconAlerts", "/components/lazyLoaders"];
     
     public static readonly string[] FeedbackNames = ["Alerts", "Toasts"];
     public static readonly string[] FeedbackLinks = ["/feedback", "/feedback/toasts"];
