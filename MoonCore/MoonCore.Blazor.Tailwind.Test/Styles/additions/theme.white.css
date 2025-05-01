@@ -15,8 +15,8 @@
 
     /* Full Colors (Inverted) */
 
-    --color-light: rgb(0 0 0);         /* Inverted to black */
-    --color-dark: rgb(255 255 255);   /* Inverted to white */
+    --color-white: rgb(0 0 0);         /* Inverted to black */
+    --color-black: rgb(255 255 255);   /* Inverted to white */
 
     /* Special light mode stuff */
     --color-diffcolor: rgb(255 255 255);
