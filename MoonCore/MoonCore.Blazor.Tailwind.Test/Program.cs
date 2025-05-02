@@ -3,17 +3,11 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using MoonCore.Blazor.Tailwind.Auth;
 using MoonCore.Blazor.Tailwind.Extensions;
-using MoonCore.Blazor.Tailwind.LegacyForms;
-using MoonCore.Blazor.Tailwind.LegacyForms.Components;
 using MoonCore.Blazor.Tailwind.Test;
 using MoonCore.Blazor.Tailwind.Test.UI;
 using MoonCore.Extended.JwtInvalidation;
 using MoonCore.Extensions;
 using MoonCore.Helpers;
-
-FormComponentRepository.Set<int, IntComponent>();
-FormComponentRepository.Set<string, StringComponent>();
-FormComponentRepository.Set<bool, SwitchComponent>();
 
 var builder = WebApplication.CreateBuilder(args);
 

@@ -10,8 +10,6 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MoonCore.Unix", "MoonCore.U
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MoonCore.Extended", "MoonCore.Extended\MoonCore.Extended.csproj", "{1A6D4A21-4D18-4193-BA3E-8736899F316A}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MoonCore.Blazor.Bootstrap", "MoonCore.Blazor.Bootstrap\MoonCore.Blazor.Bootstrap.csproj", "{0BCB4FE4-53D8-4AD3-A0B7-7EADB1AC4D8E}"
-EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MoonCore.Blazor.Tailwind", "MoonCore.Blazor.Tailwind\MoonCore.Blazor.Tailwind.csproj", "{F11E0089-C572-4B46-AB6C-87BB8157E3B8}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MoonCore.PluginFramework", "MoonCore.PluginFramework\MoonCore.PluginFramework.csproj", "{B945469E-4FF0-447D-89DB-3B9290FBC396}"
@@ -46,10 +44,6 @@ Global
 		{1A6D4A21-4D18-4193-BA3E-8736899F316A}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{1A6D4A21-4D18-4193-BA3E-8736899F316A}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{1A6D4A21-4D18-4193-BA3E-8736899F316A}.Release|Any CPU.Build.0 = Release|Any CPU
-		{0BCB4FE4-53D8-4AD3-A0B7-7EADB1AC4D8E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{0BCB4FE4-53D8-4AD3-A0B7-7EADB1AC4D8E}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{0BCB4FE4-53D8-4AD3-A0B7-7EADB1AC4D8E}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{0BCB4FE4-53D8-4AD3-A0B7-7EADB1AC4D8E}.Release|Any CPU.Build.0 = Release|Any CPU
 		{F11E0089-C572-4B46-AB6C-87BB8157E3B8}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{F11E0089-C572-4B46-AB6C-87BB8157E3B8}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{F11E0089-C572-4B46-AB6C-87BB8157E3B8}.Release|Any CPU.ActiveCfg = Release|Any CPU

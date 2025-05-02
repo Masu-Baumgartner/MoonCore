@@ -1,5 +1,6 @@
 @using Microsoft.Extensions.Logging
 @using MoonCore.Blazor.Tailwind.States
+@using MoonCore.Blazor.Tailwind.Components
 
 @typeparam TItem
 
@@ -20,10 +21,10 @@
 @* Add option for rounded-lg in the element below *@
 
 <div class="@ContainerCss">
-    <table class="table-auto w-full text-gray-300">
+    <table class="table-auto w-full text-gray-100">
 
         @* Header *@
-        <thead class="text-xs uppercase text-gray-500 bg-gray-700/50 text-left">
+        <thead class="text-xs uppercase text-gray-300 bg-gray-700/50 text-left">
 
         <tr>
 
@@ -93,11 +94,11 @@
                             @if (NoItemsIndicator == null)
                             {
                                 <div class="p-5">
-                                    <StateDisplay Type="StateType.Custom"
-                                                  IconColor="text-info-500"
-                                                  Icon="icon-hexagon"
-                                                  Title="No items found"
-                                                  Description="No items could be found"/>
+                                    <IconAlert Title="No items found"
+                                               Icon="icon-hexagon"
+                                               Color="text-info">
+                                        No items could be found
+                                    </IconAlert>
                                 </div>
                             }
                             else

@@ -1,0 +1,32 @@
+@page "/forms/selection"
+@using Bogus
+@using MoonCore.Blazor.Tailwind.Components
+@using MoonCore.Blazor.Tailwind.Input2
+@using MoonCore.Blazor.Tailwind.Test.Models
+
+<div class="mb-5">
+    <NavTabs Index="1" Names="UiConstants.FormsNames" Links="UiConstants.FormsLinks" />
+</div>
+
+<DropdownList TItem="DemoDataModel"
+              TDisplay="string"
+              DisplayProperty="@(x => x.Email)"
+              ItemSource="ItemSource"/>
+
+@code
+{
+    private Task<DemoDataModel[]> ItemSource()
+    {
+        var faker = new Faker<DemoDataModel>()
+            .RuleFor(x => x.Id, x => x.UniqueIndex)
+            .RuleFor(x => x.Email, x => x.Person.Email)
+            .RuleFor(x => x.Flag, x => x.Random.Bool())
+            .RuleFor(x => x.Name, x => x.Person.UserName);
+
+        var items = faker
+            .Generate(20)
+            .ToArray();
+
+        return Task.FromResult(items);
+    }
+}

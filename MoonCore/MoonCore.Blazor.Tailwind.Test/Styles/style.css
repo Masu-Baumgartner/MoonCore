@@ -1,16 +1,23 @@
-@import "tailwindcss/base";
-@import "tailwindcss/components";
+@import "./additions/fonts.css";
+@import "tailwindcss";
+@import "./additions/theme.css" layer(theme);
 
-@import "additions/theme.css";
-@import "additions/fonts.css";
-@import "additions/buttons.css";
-@import "additions/cards.css";
-@import "additions/forms.css";
-@import "additions/progress.css";
-@import "additions/scrollbar.css";
-@import "additions/loaders.css";
+/* @import "./additions/theme.white.css"; */
 
-@import "tailwindcss/utilities";
+@import "./additions/buttons.css" layer(components);
+@import "./additions/cards.css" layer(components);
+@import "./additions/forms.css" layer(components);
+@import "./additions/progress.css" layer(components);
+@import "./additions/scrollbar.css" layer(components);
+@import "./additions/loaders.css" layer(components);
+@import "./additions/tabs.css"  layer(components);
+
+@plugin "@tailwindcss/forms";
+
+@source "../**/*.razor";
+@source "../**/*.cs";
+@source "../../MoonCore.Blazor.Tailwind/**/*.razor";
+@source "../../MoonCore.Blazor.Tailwind/**/*.cs";
 
 #blazor-error-ui {
     display: none;

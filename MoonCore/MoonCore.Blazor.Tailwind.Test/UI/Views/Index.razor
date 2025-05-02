@@ -58,7 +58,7 @@
 
         <h3 class="my-3">Buttons</h3>
 
-        <div class="space-x-2">
+        <div class="space-y-2">
             <button class="btn btn-xs btn-primary">Extra small</button>
             <button class="btn btn-sm btn-primary">Small</button>
             <button class="btn btn-primary">Normal</button>
@@ -110,48 +110,18 @@
     </div>
     <div class="col-span-1">
 
-        <h3 class="my-3">Outline Buttons</h3>
-
-        <div class="space-x-2 my-1">
-            <button class="btn btn-xs btn-outline-primary">Extra small</button>
-            <button class="btn btn-sm btn-outline-primary">Small</button>
-            <button class="btn btn-outline-primary">Normal</button>
-            <button class="btn btn-lg btn-outline-primary">Large</button>
-        </div>
-
-        <div class="space-x-2 my-1">
-            <button class="btn btn-xs btn-outline-tertiary">Extra small</button>
-            <button class="btn btn-sm btn-outline-tertiary">Small</button>
-            <button class="btn btn-outline-tertiary">Normal</button>
-            <button class="btn btn-lg btn-outline-tertiary">Large</button>
-        </div>
-
-        <div class="space-x-2 my-1">
-            <button class="btn btn-xs btn-outline-info">Extra small</button>
-            <button class="btn btn-sm btn-outline-info">Small</button>
-            <button class="btn btn-outline-info">Normal</button>
-            <button class="btn btn-lg btn-outline-info">Large</button>
-        </div>
-
-        <div class="space-x-2 my-1">
-            <button class="btn btn-xs btn-outline-success">Extra small</button>
-            <button class="btn btn-sm btn-outline-success">Small</button>
-            <button class="btn btn-outline-success">Normal</button>
-            <button class="btn btn-lg btn-outline-success">Large</button>
-        </div>
-
-        <div class="space-x-2 my-1">
-            <button class="btn btn-xs btn-outline-warning">Extra small</button>
-            <button class="btn btn-sm btn-outline-warning">Small</button>
-            <button class="btn btn-outline-warning">Normal</button>
-            <button class="btn btn-lg btn-outline-warning">Large</button>
-        </div>
-
-        <div class="space-x-2 my-1">
-            <button class="btn btn-xs btn-outline-danger">Extra small</button>
-            <button class="btn btn-sm btn-outline-danger">Small</button>
-            <button class="btn btn-outline-danger">Normal</button>
-            <button class="btn btn-lg btn-outline-danger">Large</button>
+        <div class="flex">
+            <div class="tabs">
+                <div class="tabs-segment tabs-segment-active">
+                    Overview
+                </div>
+                <div class="tabs-segment">
+                    Servers
+                </div>
+                <div class="tabs-segment">
+                    Nodes
+                </div>
+            </div>
         </div>
 
     </div>
@@ -254,12 +224,12 @@
 
     <div class="col-span-1">
         <Tabs>
-            <Tab Name="Tab 1 Testy">
+            <Tab Name="Tab 1 Testy" Icon="icon-cookie">
                 <div class="card card-body">
                     <h3>Tab 1</h3>
                 </div>
             </Tab>
-            <Tab Name="Tab 2 Ytset">
+            <Tab Name="Tab 2 Ytset" Icon="icon-apple">
                 <div class="card card-body">
                     <h3>Tab 2</h3>
                 </div>
@@ -275,7 +245,7 @@
 
     <div class="col-span-1">
 
-        <RoundedIconAlert Icon="bi bi-collection" Title="Testy" Color="from-primary-700 to-primary-600">
+        <RoundedIconAlert Icon="bi bi-collection" Title="Testy" Color="from-primary to-primary">
             Everything is looking good. Including you :3
         </RoundedIconAlert>
 

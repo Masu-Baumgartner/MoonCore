@@ -1,0 +1,51 @@
+﻿@page "/dataTables/pagination"
+
+@using Bogus
+@using MoonCore.Blazor.Tailwind.Components
+@using MoonCore.Blazor.Tailwind.Dt
+@using MoonCore.Blazor.Tailwind.Test.Models
+@using MoonCore.Models
+
+<div class="mb-5">
+    <NavTabs Index="1" Names="UiConstants.DataTablesNames" Links="UiConstants.DataTablesLinks"/>
+</div>
+
+<DataTable TItem="DemoDataModel">
+    <Configuration>
+        <DataTableColumn TItem="DemoDataModel" Field="@(x => x.Id)" Name="Id"/>
+        <DataTableColumn TItem="DemoDataModel" Field="@(x => x.Email)" Name="Email"/>
+        <DataTableColumn TItem="DemoDataModel" Field="@(x => x.Name)" Name="Username"/>
+        <DataTableColumn TItem="DemoDataModel" Field="@(x => x.Flag)" Name="Flag"/>
+
+        <Pagination TItem="DemoDataModel" ItemSource="ItemSource"/>
+    </Configuration>
+</DataTable>
+
+@code
+{
+    private DemoDataModel[]? Items;
+
+    private Task<IPagedData<DemoDataModel>> ItemSource(PaginationOptions options)
+    {
+        if (Items == null)
+        {
+            var faker = new Faker<DemoDataModel>()
+                .RuleFor(x => x.Id, x => x.UniqueIndex)
+                .RuleFor(x => x.Email, x => x.Person.Email)
+                .RuleFor(x => x.Flag, x => x.Random.Bool())
+                .RuleFor(x => x.Name, x => x.Person.UserName);
+
+            Items = faker
+                .Generate(100)
+                .ToArray();
+        }
+
+        var pagedData = PagedData<DemoDataModel>.Create(
+            Items,
+            options.Page,
+            options.PerPage
+        );
+
+        return Task.FromResult<IPagedData<DemoDataModel>>(pagedData);
+    }
+}

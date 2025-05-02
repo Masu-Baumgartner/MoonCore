@@ -15,7 +15,7 @@
         <PackageReadmeFile>README.md</PackageReadmeFile>
         <RepositoryType>git</RepositoryType>
         <PackageTags>mooncore</PackageTags>
-        <Version>1.4.0</Version>
+        <Version>1.4.2</Version>
         <IsPackable>true</IsPackable>
         <StaticWebAssetsEnabled>false</StaticWebAssetsEnabled>
     </PropertyGroup>
@@ -50,6 +50,18 @@
       <UpToDateCheckInput Remove="Components\Toasts\BaseToast.razor" />
       <UpToDateCheckInput Remove="Components\Toasts\TextToast.razor" />
       <UpToDateCheckInput Remove="Components\Toasts\ToastLaunchPoint.razor" />
+      <UpToDateCheckInput Remove="LegacyForms\BaseFormComponent.razor" />
+      <UpToDateCheckInput Remove="LegacyForms\Components\EnumComponent.razor" />
+      <UpToDateCheckInput Remove="LegacyForms\Components\IdSearchSelectComponent.razor" />
+      <UpToDateCheckInput Remove="LegacyForms\Components\IdSelectComponent.razor" />
+      <UpToDateCheckInput Remove="LegacyForms\Components\IntComponent.razor" />
+      <UpToDateCheckInput Remove="LegacyForms\Components\SearchSelectComponent.razor" />
+      <UpToDateCheckInput Remove="LegacyForms\Components\SelectComponent.razor" />
+      <UpToDateCheckInput Remove="LegacyForms\Components\StringComponent.razor" />
+      <UpToDateCheckInput Remove="LegacyForms\Components\SwitchComponent.razor" />
+      <UpToDateCheckInput Remove="LegacyForms\Components\TagComponent.razor" />
+      <UpToDateCheckInput Remove="LegacyForms\GeneratedForm.razor" />
+      <UpToDateCheckInput Remove="LegacyCrud\Crud.razor" />
     </ItemGroup>
 
     <ItemGroup>

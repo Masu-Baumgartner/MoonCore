@@ -23,7 +23,7 @@
                     {
                         <td class="w-12 px-2">
                             <div class="flex justify-center">
-                                <i class="icon-corner-left-up text-2xl text-primary-500"></i>
+                                <i class="icon-corner-left-up text-2xl text-primary"></i>
                             </div>
                         </td>
                         <td class="px-1 py-3" colspan="99">
@@ -38,11 +38,11 @@
         </Configuration>
         <NoFilesTemplate>
             <div class="p-5">
-                <StateDisplay Title="No folders found"
-                              Description="No folders in the selected directory found"
-                              Icon="icon-folder-open"
-                              IconColor="text-primary-500"
-                              Type="StateType.Custom"/>
+                <IconAlert Title="No folders found"
+                           Color="text-primary"
+                           Icon="icon-folder-open">
+                    No folders in the selected directory found
+                </IconAlert>
             </div>
         </NoFilesTemplate>
     </FileList>

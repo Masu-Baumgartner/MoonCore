@@ -1,0 +1,46 @@
+@typeparam TItem
+@typeparam TDisplay
+
+<div class="relative inline-block text-left">
+    @if (IsLoading)
+    {
+        <button type="button" class="btn btn-secondary" disabled="disabled">
+            Loading
+            <div class="-mr-1 ml-2 flex">
+                <i class="icon-loader-circle animate-spin"></i>
+            </div>
+        </button>
+    }
+    else
+    {
+        <button type="button" class="btn btn-secondary">
+            Select Item
+            <i></i>
+        </button>
+    }
+
+    <!-- Dropdown Items -->
+    <div class="absolute z-10 mt-2 w-56 rounded-md shadow-lg bg-gray-700 ring-1 ring-black ring-opacity-5">
+        <ul class="max-h-60 overflow-y-auto py-1 text-sm text-gray-700" role="listbox">
+            <!-- Replace these items dynamically as needed -->
+            <li class="cursor-pointer select-none px-4 py-2 hover:bg-gray-100" role="option">Item 1</li>
+            <li class="cursor-pointer select-none px-4 py-2 hover:bg-gray-100" role="option">Item 2</li>
+            <li class="cursor-pointer select-none px-4 py-2 hover:bg-gray-100" role="option">Item 3</li>
+            <li class="cursor-pointer select-none px-4 py-2 hover:bg-gray-100" role="option">Item 4</li>
+            <li class="cursor-pointer select-none px-4 py-2 hover:bg-gray-100" role="option">Item 5</li>
+            <li class="cursor-pointer select-none px-4 py-2 hover:bg-gray-100" role="option">Item 6</li>
+            <li class="cursor-pointer select-none px-4 py-2 hover:bg-gray-100" role="option">Item 7</li>
+            <li class="cursor-pointer select-none px-4 py-2 hover:bg-gray-100" role="option">Item 8</li>
+            <li class="cursor-pointer select-none px-4 py-2 hover:bg-gray-100" role="option">Item 9</li>
+            <li class="cursor-pointer select-none px-4 py-2 hover:bg-gray-100" role="option">Item 10</li>
+        </ul>
+    </div>
+</div>
+
+@code
+{
+    [Parameter] public Func<TItem, TDisplay> DisplayProperty { get; set; }
+    [Parameter] public Func<Task<TItem[]>> ItemSource { get; set; }
+
+    private bool IsLoading = true;
+}

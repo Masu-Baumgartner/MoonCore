@@ -1,0 +1,48 @@
+@page "/components/iconAlerts"
+
+@using MoonCore.Blazor.Tailwind.States
+@using MoonCore.Blazor.Tailwind.Components
+
+<div class="mb-5">
+    <NavTabs Index="2" Names="UiConstants.ComponentsNames" Links="UiConstants.ComponentsLinks" />
+</div>
+
+<div class="grid grid-cols-3 gap-8">
+    
+    <IconAlert Title="Information"
+               Color="text-info"
+               Icon="icon-info">
+        Information lore ipsum test test test
+    </IconAlert>
+    
+    <IconAlert Title="Warning"
+               Color="text-warning"
+               Icon="icon-triangle-alert">
+        Warning lore ipsum test test test
+    </IconAlert>
+
+    <IconAlert Title="Success"
+               Color="text-success"
+               Icon="icon-circle-check-big">
+        Success lore ipsum test test test
+    </IconAlert>
+
+    <IconAlert Title="Error"
+               Color="text-danger"
+               Icon="icon-circle-alert">
+        Error lore ipsum test test test
+    </IconAlert>
+    
+    <IconAlert Title="Empty"
+               Color="text-gray-500"
+               Icon="icon-square-dashed">
+        Empty lore ipsum test test test
+    </IconAlert>
+    
+    <IconAlert Title="Installation ongoing"
+               Color="text-primary"
+               Icon="icon-cloud-cog">
+        Preparing your server. Please be patient
+    </IconAlert>
+    
+</div>
