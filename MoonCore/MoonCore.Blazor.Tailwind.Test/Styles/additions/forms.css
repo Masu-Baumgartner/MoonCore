@@ -12,7 +12,7 @@ input[type="search"]::-webkit-search-results-decoration {
 .form-select,
 .form-checkbox,
 .form-radio {
-    @apply bg-gray-950/75 border-2 focus:ring-0 focus:ring-offset-0 disabled:bg-gray-700/30 disabled:border-gray-700 disabled:hover:border-gray-700;
+    @apply bg-gray-700/60 border-2 focus:ring-0 focus:ring-offset-0 disabled:bg-gray-700/30 disabled:border-gray-700 disabled:hover:border-gray-700;
 }
 
 .form-checkbox {
