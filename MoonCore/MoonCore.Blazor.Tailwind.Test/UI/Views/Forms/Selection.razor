@@ -5,17 +5,35 @@
 @using MoonCore.Blazor.Tailwind.Test.Models
 
 <div class="mb-5">
-    <NavTabs Index="1" Names="UiConstants.FormsNames" Links="UiConstants.FormsLinks" />
+    <NavTabs Index="1" Names="UiConstants.FormsNames" Links="UiConstants.FormsLinks"/>
 </div>
 
-<DropdownList TItem="DemoDataModel"
-              TDisplay="string"
-              DisplayProperty="@(x => x.Email)"
-              ItemSource="ItemSource"/>
+<div class="my-5">
+    Selected item: @(SelectedItem == null ? "Nothing" : SelectedItem.Email)
+</div>
+
+<div class="grid grid-cols-3 gap-5">
+    <div class="col-span-1">
+        <DropdownList TItem="DemoDataModel"
+                      @bind-Value="SelectedItem"
+                      DisplayProperty="@(x => x.Email)"
+                      ItemSource="ItemSource"/>
+    </div>
+    <div class="col-span-1">
+        <DropdownSearchList TItem="DemoDataModel"
+                            @bind-Value="SelectedItem"
+                            DisplayProperty="@(x => x.Email)"
+                            ItemSource="ItemSearchSource"/>
+    </div>
+</div>
 
 @code
 {
-    private Task<DemoDataModel[]> ItemSource()
+    private DemoDataModel? SelectedItem;
+
+    private DemoDataModel[] Data;
+
+    protected override void OnInitialized()
     {
         var faker = new Faker<DemoDataModel>()
             .RuleFor(x => x.Id, x => x.UniqueIndex)
@@ -23,10 +41,24 @@
             .RuleFor(x => x.Flag, x => x.Random.Bool())
             .RuleFor(x => x.Name, x => x.Person.UserName);
 
-        var items = faker
+        Data = faker
             .Generate(20)
             .ToArray();
+    }
 
-        return Task.FromResult(items);
+    private Task<DemoDataModel[]> ItemSource()
+        => Task.FromResult(Data);
+
+    private Task<DemoDataModel[]> ItemSearchSource(string term)
+    {
+        if (string.IsNullOrEmpty(term))
+            return Task.FromResult(Data.Take(10).ToArray());
+
+        return Task.FromResult(
+            Data
+                .Where(x => x.Email.Contains(term, StringComparison.InvariantCultureIgnoreCase))
+                .Take(10)
+                .ToArray()
+        );
     }
 }
