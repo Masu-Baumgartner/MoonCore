@@ -1,0 +1,1 @@
+﻿A source generated plugin hook system
