@@ -1,9 +1,13 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk.Razor">
 
     <PropertyGroup>
-        <TargetFramework>net8.0</TargetFramework>
+        <TargetFramework>net9.0</TargetFramework>
         <ImplicitUsings>enable</ImplicitUsings>
         <Nullable>enable</Nullable>
+        
+    </PropertyGroup>
+
+    <PropertyGroup Label="Nuget Settings">
         <Title>MoonCore.Extended</Title>
         <Authors>Masu Baumgartner</Authors>
         <Description>Contains specific utilities to extend mooncore</Description>
@@ -14,7 +18,7 @@
         <RepositoryType>git</RepositoryType>
         <PackageTags>mooncore</PackageTags>
         <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
-        <Version>1.3.2</Version>
+        <Version>1.3.3</Version>
         <PackageReadmeFile>README.md</PackageReadmeFile>
     </PropertyGroup>
 
@@ -33,18 +37,12 @@
     <ItemGroup>
         <PackageReference Include="BCrypt.Net-Next" Version="4.0.3" />
         <PackageReference Include="Ben.Demystifier" Version="0.4.1" />
-        <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="8.0.12" />
-        <PackageReference Include="Microsoft.EntityFrameworkCore" Version="8.0.11" />
-        <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="8.0.11">
+        <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="9.0.5" />
+        <PackageReference Include="Microsoft.EntityFrameworkCore" Version="9.0.5" />
+        <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="9.0.5">
           <PrivateAssets>all</PrivateAssets>
           <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>
-        <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="8.0.11" />
+        <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="9.0.4" />
     </ItemGroup>
-    
-    <ItemGroup>
-      <UpToDateCheckInput Remove="Helpers\OAuth2\LocalPages\Login.razor" />
-      <UpToDateCheckInput Remove="Helpers\OAuth2\LocalPages\Register.razor" />
-    </ItemGroup>
-
 </Project>

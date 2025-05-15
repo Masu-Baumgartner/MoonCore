@@ -1,10 +1,12 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
-        <TargetFramework>net8.0</TargetFramework>
+        <TargetFramework>net9.0</TargetFramework>
         <Nullable>enable</Nullable>
         <ImplicitUsings>enable</ImplicitUsings>
-        <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+    </PropertyGroup>
+    
+    <PropertyGroup Label="Nuget Settings">
         <Title>MoonCore</Title>
         <Authors>Masu Baumgartner</Authors>
         <Description>A core library for all moonlight panel like applications</Description>
@@ -14,8 +16,9 @@
         <RepositoryUrl>https://github.com/Masu-Baumgartner/MoonCore</RepositoryUrl>
         <RepositoryType>git</RepositoryType>
         <PackageTags>moonlight</PackageTags>
-        <Version>1.8.5</Version>
+        <Version>1.8.6</Version>
         <PackageReadmeFile>README.md</PackageReadmeFile>
+        <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
     </PropertyGroup>
 
     <ItemGroup>
@@ -24,13 +27,13 @@
 
     <ItemGroup>
         <PackageReference Include="Crayon" Version="2.0.69" />
-        <PackageReference Include="Microsoft.AspNetCore.Components.Web" Version="8.0.6"/>
-        <PackageReference Include="Microsoft.AspNetCore.Hosting.Abstractions" Version="2.2.0"/>
-        <PackageReference Include="Microsoft.AspNetCore.Server.Kestrel" Version="2.2.0"/>
-        <PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="8.0.0"/>
-        <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="8.0.0"/>
-        <PackageReference Include="Microsoft.Extensions.Logging" Version="8.0.0"/>
-        <PackageReference Include="Microsoft.Extensions.Logging.Configuration" Version="8.0.0"/>
+        <PackageReference Include="Microsoft.AspNetCore.Components.Web" Version="9.0.5"/>
+        <PackageReference Include="Microsoft.AspNetCore.Hosting.Abstractions" Version="2.3.0"/>
+        <PackageReference Include="Microsoft.AspNetCore.Server.Kestrel" Version="2.3.0"/>
+        <PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="9.0.5"/>
+        <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="9.0.5"/>
+        <PackageReference Include="Microsoft.Extensions.Logging" Version="9.0.5"/>
+        <PackageReference Include="Microsoft.Extensions.Logging.Configuration" Version="9.0.5"/>
     </ItemGroup>
 
 </Project>
