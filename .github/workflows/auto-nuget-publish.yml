@@ -24,7 +24,7 @@ jobs:
       - name: Setup .NET
         uses: actions/setup-dotnet@v3
         with:
-          dotnet-version: 8.0 # Use the .NET version your projects require
+          dotnet-version: 9.0 # Use the .NET version your projects require
 
       # Step 3: Execute setup script
       - name: Process and Publish Projects
