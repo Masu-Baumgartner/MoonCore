@@ -3,11 +3,11 @@
 <div class="relative inline-block text-left w-full">
     @if (IsLoading)
     {
-        <button type="button" class="btn btn-secondary w-full" disabled="disabled">
-            Loading
-            <div class="-mr-1 ml-2 flex">
-                <i class="icon-loader-circle animate-spin"></i>
+        <button type="button" class="btn btn-secondary w-full flex" disabled="disabled">
+            <div class="flex">
+                <i class="animate-spin icon-loader me-2"></i>
             </div>
+            <span>Loading</span>
         </button>
     }
     else

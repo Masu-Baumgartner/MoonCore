@@ -46,19 +46,22 @@
             .ToArray();
     }
 
-    private Task<DemoDataModel[]> ItemSource()
-        => Task.FromResult(Data);
-
-    private Task<DemoDataModel[]> ItemSearchSource(string term)
+    private async Task<DemoDataModel[]> ItemSource()
     {
-        if (string.IsNullOrEmpty(term))
-            return Task.FromResult(Data.Take(10).ToArray());
+        await Task.Delay(1000);
+        return Data;
+    }
 
-        return Task.FromResult(
-            Data
+    private async Task<DemoDataModel[]> ItemSearchSource(string term)
+    {
+        await Task.Delay(1000);
+
+        if (string.IsNullOrEmpty(term))
+            return Data.Take(10).ToArray();
+
+        return Data
                 .Where(x => x.Email.Contains(term, StringComparison.InvariantCultureIgnoreCase))
                 .Take(10)
-                .ToArray()
-        );
+                .ToArray();
     }
 }
