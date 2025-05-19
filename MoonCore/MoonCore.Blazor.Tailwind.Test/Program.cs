@@ -1,5 +1,6 @@
 using System.Text;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.IdentityModel.Tokens;
 using MoonCore.Blazor.Tailwind.Auth;
 using MoonCore.Blazor.Tailwind.Extensions;
@@ -97,6 +98,14 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme).AddJw
         ValidateAudience = true,
         ClockSkew = TimeSpan.Zero
     };
+});
+
+builder.Services.AddSingleton<IAuthorizationPolicyProvider, TestyPolicyProvider>();
+builder.Services.AddSingleton<IAuthorizationHandler, PermissionClaimHandler>();
+
+builder.Services.Configure<PermissionOptions>(options =>
+{
+    
 });
 
 builder.Services.AddAuthorization();

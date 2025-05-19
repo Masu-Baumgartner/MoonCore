@@ -51,7 +51,8 @@ public class CoolestAuthStateManager : AuthenticationStateManager
             {
                 Identity = new ClaimsPrincipal(new ClaimsIdentity(new List<Claim>()
                     {
-                        new("Name", "MyCoolName")
+                        new("Name", "MyCoolName"),
+                        new("permissions", "only.unprivileged.*")
                     },
                     "myCoolAuth"
                 ));
@@ -61,7 +62,7 @@ public class CoolestAuthStateManager : AuthenticationStateManager
                 Identity = new ClaimsPrincipal(new ClaimsIdentity(new List<Claim>()
                     {
                         new("Name", "MyCoolName"),
-                        new("permissions", "*"),
+                        new("permissions", "privileged.*"),
                     },
                     "myCoolAuth"
                 ));

@@ -37,9 +37,19 @@
                         <Found Context="routeData">
                             <LayoutView Layout="@DefaultLayout">
                                 <ErrorHandler CustomHandler="OnHandleException">
-                                    <RoutePermissionView PermissionLoader="PermissionLoader" RouteData="routeData">
-                                        <RouteView RouteData="@routeData"/>
-                                    </RoutePermissionView>
+                                    <AuthorizeRouteView RouteData="routeData" Context="_">
+                                        <NotAuthorized>
+                                            <div class="flex justify-center items-center">
+                                                <div class="sm:max-w-lg">
+                                                    <IconAlert Title="Permission denied"
+                                                               Color="text-danger"
+                                                               Icon="icon-ban">
+                                                        <div>You are missing the required permission(s)</div>
+                                                    </IconAlert>
+                                                </div>
+                                            </div>
+                                        </NotAuthorized>
+                                    </AuthorizeRouteView>
                                 </ErrorHandler>
                             </LayoutView>
                         </Found>
