@@ -1,0 +1,50 @@
+@page "/auth"
+
+@using System.Security.Claims
+@using Microsoft.AspNetCore.Components.Authorization
+@using MoonCore.Blazor.Tailwind.Components
+
+<div class="mb-5">
+    <NavTabs Index="0" Names="UiConstants.AuthNames" Links="UiConstants.AuthLinks" />
+</div>
+
+@if (Identity.Identity?.IsAuthenticated ?? false)
+{
+    <IconAlert Color="text-success"
+               Title="Welcome"
+               Icon="icon-hand">
+        <div class="mt-2">
+            You are logged in
+        </div>
+        
+        <div class="mt-3">
+            <ul>
+                @foreach (var claim in Identity.Claims)
+                {
+                    <li>@claim.Type - @claim.Value</li>
+                }
+            </ul>
+        </div>
+    </IconAlert>
+}
+else
+{
+    <IconAlert Color="text-danger"
+               Title="Not authentication"
+               Icon="icon-log-in">
+        You are not logged in
+    </IconAlert>
+}
+
+@code
+{
+    [CascadingParameter] public Task<AuthenticationState> AuthState { get; set; }
+    
+    private ClaimsPrincipal Identity;
+
+    protected override async Task OnInitializedAsync()
+    {
+        var authState = await AuthState;
+        Identity = authState.User;
+    }
+}

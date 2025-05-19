@@ -13,4 +13,7 @@ public class UiConstants
     
     public static readonly string[] FormsNames = ["Basic", "Item Selection"];
     public static readonly string[] FormsLinks = ["/forms", "/forms/selection"];
+    
+    public static readonly string[] AuthNames = ["Overview", "Privileged"];
+    public static readonly string[] AuthLinks = ["/auth", "/auth/privileged"];
 }
