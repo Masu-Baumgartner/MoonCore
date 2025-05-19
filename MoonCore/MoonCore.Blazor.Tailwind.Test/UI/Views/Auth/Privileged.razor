@@ -1,9 +1,9 @@
 @page "/auth/privileged"
 
-@using Microsoft.AspNetCore.Authorization
+@using MoonCore.Attributes
 @using MoonCore.Blazor.Tailwind.Components
 
-@attribute [Authorize(Roles = "Testy")]
+@attribute [RequirePermission("test.testy.get")]
 
 <div class="mb-5">
     <NavTabs Index="1" Names="UiConstants.AuthNames" Links="UiConstants.AuthLinks" />

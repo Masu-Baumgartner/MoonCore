@@ -61,7 +61,7 @@ public class CoolestAuthStateManager : AuthenticationStateManager
                 Identity = new ClaimsPrincipal(new ClaimsIdentity(new List<Claim>()
                     {
                         new("Name", "MyCoolName"),
-                        new("Permissions", "Admin"),
+                        new("permissions", "*"),
                     },
                     "myCoolAuth"
                 ));
