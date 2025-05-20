@@ -1,7 +1,5 @@
-﻿using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Microsoft.AspNetCore.Authorization;
+﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using MoonCore.Extended.PermFilter;
 
 namespace MoonCore.Blazor.Tailwind.Test.Http.Controllers;
 
@@ -18,7 +16,6 @@ public class ResourceController : Controller
 
     [HttpGet]
     [Authorize]
-    [RequirePermission("testy")]
     public async Task<string> Get()
     {
         Logger.LogInformation("Accessed resource using token");
