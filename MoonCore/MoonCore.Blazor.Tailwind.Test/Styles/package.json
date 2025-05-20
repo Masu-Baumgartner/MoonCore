@@ -5,6 +5,7 @@
     "tailwindcss": "^4.1.4"
   },
   "scripts": {
-    "tailwind": "npx tailwindcss -i style.css -o ../wwwroot/css/style.min.css --watch"
+    "tailwind": "npx tailwindcss -i style.css -o ../wwwroot/css/style.min.css --watch",
+    "mappings": "dotnet mooncore tw-extract ../wwwroot/css/style.min.css --output ../../MoonCore.Blazor.Tailwind/Styles/mappings/mooncore.map"
   }
 }
