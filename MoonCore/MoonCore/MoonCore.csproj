@@ -16,7 +16,7 @@
         <RepositoryUrl>https://github.com/Masu-Baumgartner/MoonCore</RepositoryUrl>
         <RepositoryType>git</RepositoryType>
         <PackageTags>moonlight</PackageTags>
-        <Version>1.8.6</Version>
+        <Version>1.8.7</Version>
         <PackageReadmeFile>README.md</PackageReadmeFile>
         <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
     </PropertyGroup>
@@ -27,6 +27,7 @@
 
     <ItemGroup>
         <PackageReference Include="Crayon" Version="2.0.69" />
+        <PackageReference Include="Microsoft.AspNetCore.Components.Authorization" Version="9.0.5" />
         <PackageReference Include="Microsoft.AspNetCore.Components.Web" Version="9.0.5"/>
         <PackageReference Include="Microsoft.AspNetCore.Hosting.Abstractions" Version="2.3.0"/>
         <PackageReference Include="Microsoft.AspNetCore.Server.Kestrel" Version="2.3.0"/>

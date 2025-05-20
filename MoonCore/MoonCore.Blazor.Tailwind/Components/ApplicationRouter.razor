@@ -1,4 +1,5 @@
 ﻿@using System.Reflection
+@using System.Security.Claims
 @using Microsoft.AspNetCore.Components.Authorization
 @using Microsoft.AspNetCore.Components.Routing
 @using MoonCore.Blazor.Tailwind.States
@@ -36,7 +37,19 @@
                         <Found Context="routeData">
                             <LayoutView Layout="@DefaultLayout">
                                 <ErrorHandler CustomHandler="OnHandleException">
-                                    <RouteView RouteData="@routeData"/>
+                                    <AuthorizeRouteView RouteData="routeData" Context="_">
+                                        <NotAuthorized>
+                                            <div class="flex justify-center items-center">
+                                                <div class="sm:max-w-lg">
+                                                    <IconAlert Title="Permission denied"
+                                                               Color="text-danger"
+                                                               Icon="icon-ban">
+                                                        <div>You are missing the required permission(s)</div>
+                                                    </IconAlert>
+                                                </div>
+                                            </div>
+                                        </NotAuthorized>
+                                    </AuthorizeRouteView>
                                 </ErrorHandler>
                             </LayoutView>
                         </Found>
@@ -93,6 +106,7 @@
     [Parameter] public IEnumerable<Assembly> AdditionalAssemblies { get; set; } = [];
     [Parameter] public Type DefaultLayout { get; set; }
     [Parameter] public bool DisableBlazorServerSideSafeMode { get; set; } = false;
+    [Parameter] public Func<ClaimsPrincipal, string[]>? PermissionLoader { get; set; }
 
     [Parameter] public RenderFragment? LoginTemplate { get; set; }
     [Parameter] public RenderFragment? AuthenticatingTemplate { get; set; }

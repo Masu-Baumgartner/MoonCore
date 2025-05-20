@@ -1,1 +1,0 @@
-TailwindExporter.exe ../wwwroot/css/style.min.css ../../MoonCore.Blazor.Tailwind/Styles/mappings/mooncore.map

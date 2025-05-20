@@ -1,5 +1,6 @@
 using System.Text;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.IdentityModel.Tokens;
 using MoonCore.Blazor.Tailwind.Auth;
 using MoonCore.Blazor.Tailwind.Extensions;
@@ -8,6 +9,7 @@ using MoonCore.Blazor.Tailwind.Test.UI;
 using MoonCore.Extended.JwtInvalidation;
 using MoonCore.Extensions;
 using MoonCore.Helpers;
+using MoonCore.Permissions;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -97,6 +99,12 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme).AddJw
         ValidateAudience = true,
         ClockSkew = TimeSpan.Zero
     };
+});
+
+builder.Services.AddAuthorizationPermissions(options =>
+{
+    options.Prefix = "permissions:";
+    options.ClaimName = "permissions";
 });
 
 builder.Services.AddAuthorization();

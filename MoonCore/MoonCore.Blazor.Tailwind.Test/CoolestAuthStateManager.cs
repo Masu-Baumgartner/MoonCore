@@ -9,18 +9,17 @@ namespace MoonCore.Blazor.Tailwind.Test;
 
 public class CoolestAuthStateManager : AuthenticationStateManager
 {
-    private bool IsLoggedIn = true;
     private readonly ILogger<CoolestAuthStateManager> Logger;
     private readonly NavigationManager Navigation;
-    private readonly HttpApiClient HttpApiClient;
+
+    private ClaimsPrincipal? Identity;
 
     public string AccessToken { get; private set; } = "unset";
 
-    public CoolestAuthStateManager(ILogger<CoolestAuthStateManager> logger, NavigationManager navigation, HttpApiClient httpApiClient)
+    public CoolestAuthStateManager(ILogger<CoolestAuthStateManager> logger, NavigationManager navigation)
     {
         Logger = logger;
         Navigation = navigation;
-        HttpApiClient = httpApiClient;
     }
 
     public override async Task<AuthenticationState> GetAuthenticationStateAsync()
@@ -34,42 +33,45 @@ public class CoolestAuthStateManager : AuthenticationStateManager
 
     private AuthenticationState GetState()
     {
-        if (IsLoggedIn)
-        {
-            return new AuthenticationState(new ClaimsPrincipal(new ClaimsIdentity(new List<Claim>()
-                {
-                    new("Name", "MyCoolName")
-                },
-                "myCoolAuth"
-            )));
-        }
-        else
-        {
+        if (Identity == null)
             return new AuthenticationState(new ClaimsPrincipal(new ClaimsIdentity()));
-        }
+
+        return new AuthenticationState(
+            Identity
+        );
     }
 
     public override async Task HandleLogin()
     {
         Logger.LogInformation("Login");
 
-        if (Navigation.Uri.Contains("?code="))
+        if (Navigation.Uri.Contains("?auth="))
         {
-            var uri = new Uri(Navigation.Uri);
-            var queryParser = new QueryStringBuilder(uri.Query);
-            var codeParam = queryParser["code"]!;
-            
-            var authCompleteData = await HttpApiClient.PostJson<AuthCompleteModel>("auth/complete", new FormUrlEncodedContent(new []
+            if (Navigation.Uri.Contains("?auth=user"))
             {
-                new KeyValuePair<string, string>("code", codeParam)
-            }));
+                Identity = new ClaimsPrincipal(new ClaimsIdentity(new List<Claim>()
+                    {
+                        new("Name", "MyCoolName"),
+                        new("permissions", "only.unprivileged.*")
+                    },
+                    "myCoolAuth"
+                ));
+            }
+            else if (Navigation.Uri.Contains("?auth=admin"))
+            {
+                Identity = new ClaimsPrincipal(new ClaimsIdentity(new List<Claim>()
+                    {
+                        new("Name", "MyCoolName"),
+                        new("permissions", "privileged.*"),
+                    },
+                    "myCoolAuth"
+                ));
+            }
+            else
+            {
+                Identity = null;
+            }
             
-            Logger.LogInformation("Received complete data with valid access token for {seconds} seconds", authCompleteData.ExpiresIn);
-            Logger.LogInformation("Access token: {accessToken}", authCompleteData.AccessToken);
-            
-            AccessToken = authCompleteData.AccessToken;
-            IsLoggedIn = true;
-        
             NotifyAuthenticationStateChanged(
                 Task.FromResult(GetState())
             );
@@ -78,13 +80,7 @@ public class CoolestAuthStateManager : AuthenticationStateManager
         }
         else
         {
-            var authStartData = await HttpApiClient.GetJson<AuthStartModel>("auth/start");
-            var oauth2Endpoint = authStartData.Endpoint;
-
-            oauth2Endpoint += $"?client_id={authStartData.ClientId}" +
-                              $"&redirect_uri={authStartData.RedirectUri}";
-            
-            Navigation.NavigateTo(oauth2Endpoint, true);
+            Navigation.NavigateTo("/authDemo", true);
         }
     }
 
@@ -92,7 +88,7 @@ public class CoolestAuthStateManager : AuthenticationStateManager
     {
         Logger.LogInformation("Logout");
 
-        IsLoggedIn = false;
+        Identity = null;
         
         NotifyAuthenticationStateChanged(
             Task.FromResult(GetState())

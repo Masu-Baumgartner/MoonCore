@@ -1,0 +1,80 @@
+@using System.Security.Claims
+@using Microsoft.AspNetCore.Components.Authorization
+@using MoonCore.Attributes
+@using MoonCore.Helpers
+
+@if (PermissionLoader == null || IsAllowed)
+{
+    @ChildContent
+}
+else
+{
+    <div class="flex justify-center items-center">
+        <div class="sm:max-w-lg">
+            <IconAlert Title="Permission denied"
+                       Color="text-danger"
+                       Icon="icon-ban">
+                <div>You are missing one or more the required permission(s)</div>
+                <div class="mt-2 font-bold">
+                    @string.Join(", ", RequiredPermissions)
+                </div>
+            </IconAlert>
+        </div>
+    </div>
+}
+
+@code
+{
+    [CascadingParameter] public Task<AuthenticationState> AuthState { get; set; }
+    [Parameter] public RenderFragment ChildContent { get; set; }
+    [Parameter] public RouteData RouteData { get; set; }
+    [Parameter] public Func<ClaimsPrincipal, string[]>? PermissionLoader { get; set; }
+
+    private bool IsAllowed = false;
+    private string[] RequiredPermissions;
+
+    protected override async Task OnParametersSetAsync()
+    {
+        IsAllowed = await Check();
+        await InvokeAsync(StateHasChanged);
+    }
+
+    private async Task<bool> Check()
+    {
+        if (PermissionLoader == null)
+            return true;
+        
+        var targetAttribute = typeof(RequirePermissionAttribute);
+
+        var attributes = RouteData.PageType.GetCustomAttributes(true);
+
+        if (attributes.Length == 0)
+            return true;
+
+        var permissionAttributes = attributes
+            .Where(x => x.GetType() == targetAttribute)
+            .Select(x => (x as RequirePermissionAttribute)!)
+            .ToArray();
+
+        if (permissionAttributes.Length == 0)
+            return true;
+
+        RequiredPermissions = permissionAttributes
+            .Select(x => x.Permission)
+            .ToArray();
+
+        var authState = await AuthState;
+        var permissions = PermissionLoader.Invoke(authState.User);
+
+        if (permissions.Length == 0)
+            return false;
+
+        foreach (var requiredPermission in RequiredPermissions)
+        {
+            if (!PermissionHelper.HasPermission(permissions, requiredPermission))
+                return false;
+        }
+
+        return true;
+    }
+}
