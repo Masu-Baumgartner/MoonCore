@@ -1,7 +1,6 @@
 @page "/auth"
 
 @using System.Security.Claims
-@using Microsoft.AspNetCore.Authentication
 @using Microsoft.AspNetCore.Authorization
 @using Microsoft.AspNetCore.Components.Authorization
 @using MoonCore.Blazor.Tailwind.Components
@@ -44,7 +43,7 @@ else
 
 <div class="mt-5">
     <WButton OnClick="CheckForPerm">
-        Check for <b>only.unprivileged.debug</b>
+        Check for <b class="ms-1">only.unprivileged.debug</b>
     </WButton>
 </div>
 

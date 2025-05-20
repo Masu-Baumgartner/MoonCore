@@ -1,6 +1,6 @@
 using Microsoft.AspNetCore.Authorization;
 
-namespace MoonCore.Blazor.Tailwind.Test;
+namespace MoonCore.Permissions;
 
 public class PermissionRequirement : IAuthorizationRequirement
 {

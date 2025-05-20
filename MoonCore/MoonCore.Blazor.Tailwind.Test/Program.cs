@@ -9,6 +9,7 @@ using MoonCore.Blazor.Tailwind.Test.UI;
 using MoonCore.Extended.JwtInvalidation;
 using MoonCore.Extensions;
 using MoonCore.Helpers;
+using MoonCore.Permissions;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -100,12 +101,10 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme).AddJw
     };
 });
 
-builder.Services.AddSingleton<IAuthorizationPolicyProvider, TestyPolicyProvider>();
-builder.Services.AddSingleton<IAuthorizationHandler, PermissionClaimHandler>();
-
-builder.Services.Configure<PermissionOptions>(options =>
+builder.Services.AddAuthorizationPermissions(options =>
 {
-    
+    options.Prefix = "permissions:";
+    options.ClaimName = "permissions";
 });
 
 builder.Services.AddAuthorization();
