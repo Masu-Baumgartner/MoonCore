@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.Extensions.Logging;
+using MoonCore.Exceptions;
 
 namespace MoonCore.Blazor.Tailwind.Dt;
 
@@ -74,6 +75,10 @@ public partial class DataTable<TItem>
         }
         catch (Exception e)
         {
+            // Dont handle unauthenticated errors
+            if (e is HttpApiException httpApiException && httpApiException.Status == 401)
+                throw;
+            
             Logger.LogError("An error occured while loading items from source: {e}", e);
             LoadingException = e;
         }
