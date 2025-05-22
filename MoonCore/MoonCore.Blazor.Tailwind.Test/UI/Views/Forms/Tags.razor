@@ -1,0 +1,19 @@
+@page "/forms/tags"
+
+@using MoonCore.Blazor.Tailwind.Components
+@using MoonCore.Blazor.Tailwind.Input2
+
+<div class="mb-5">
+    <NavTabs Index="2" Names="UiConstants.FormsNames" Links="UiConstants.FormsLinks" />
+</div>
+
+<div class="mb-5">
+    Current tags: @string.Join(", ", CurrentTags)
+</div>
+
+<InputTag @bind-Value="CurrentTags" />
+
+@code
+{
+    private string[] CurrentTags = ["multiple", "example", "tags"];
+}
