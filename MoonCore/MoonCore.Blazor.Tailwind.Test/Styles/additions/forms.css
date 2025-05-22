@@ -42,7 +42,7 @@ input[type="search"]::-webkit-search-results-decoration {
 
 /* Switch element */
 .form-switch {
-    @apply relative select-none;
+    @apply relative select-none bg-gray-700/60 rounded-xl;
     width: 44px;
 }
 

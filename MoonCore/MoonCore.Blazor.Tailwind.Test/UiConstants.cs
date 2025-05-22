@@ -11,8 +11,8 @@ public class UiConstants
     public static readonly string[] DataTablesNames = ["Basic", "Pagination", "Selection", "Loading"];
     public static readonly string[] DataTablesLinks = ["/dataTables", "/dataTables/pagination", "/dataTables/selection", "/dataTables/loading"];
     
-    public static readonly string[] FormsNames = ["Basic", "Item Selection"];
-    public static readonly string[] FormsLinks = ["/forms", "/forms/selection"];
+    public static readonly string[] FormsNames = ["Basic", "Item Selection", "Tags"];
+    public static readonly string[] FormsLinks = ["/forms", "/forms/selection", "/forms/tags"];
     
     public static readonly string[] AuthNames = ["Overview", "Privileged"];
     public static readonly string[] AuthLinks = ["/auth", "/auth/privileged"];

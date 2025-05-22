@@ -3,7 +3,7 @@
 <div class="relative inline-block text-left w-full">
     @if (IsLoading)
     {
-        <button type="button" class="btn btn-secondary w-full flex" disabled="disabled">
+        <button type="button" class="btn btn-secondary bg-gray-700/60 w-full flex" disabled="disabled">
             <div class="flex">
                 <i class="animate-spin icon-loader me-2"></i>
             </div>
@@ -12,7 +12,7 @@
     }
     else
     {
-        <button @onclick="() => ToggleOpen(!IsOpen)" type="button" class="btn btn-secondary w-full flex items-center">
+        <button @onclick="() => ToggleOpen(!IsOpen)" type="button" class="btn btn-secondary bg-gray-700/60 w-full flex items-center">
             @if (_value == null)
             {
                 <span class="me-2">Nothing selected</span>
