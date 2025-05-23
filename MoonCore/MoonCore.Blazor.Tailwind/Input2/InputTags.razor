@@ -1,12 +1,12 @@
-<div class="form-input p-1 text-sm flex w-full items-center">
+<div class="form-input p-1 text-sm flex flex-wrap w-full gap-y-1">
     @foreach (var tag in InternalTags)
     {
-        <a href="#"
+        <div href="#"
            @onclick:preventDefault
            @onclick="() => RemoveTag(tag)"
-           class="bg-primary rounded-lg py-1 px-2 me-1">
+           class="bg-primary rounded-lg py-0.5 px-1.5 me-1 cursor-pointer flex items-center">
             @tag
-        </a>
+        </div>
     }
     <input @onkeyup="OnKeyUp"
            @bind="InputField"
@@ -61,23 +61,18 @@
     private async Task OnKeyUp(KeyboardEventArgs keyboardEventArgs)
     {
         if (keyboardEventArgs.Code != "Space" && keyboardEventArgs.Code != "Enter")
-        {
-            Console.WriteLine("No: " + keyboardEventArgs.Code);
             return;
-        }
-
-        Console.WriteLine(keyboardEventArgs.Code);
         
-        InputField = InputField.Trim();
+        var value = InputField.Trim();
 
-        if (string.IsNullOrEmpty(InputField))
+        if (string.IsNullOrEmpty(value))
             return;
 
-        if (InternalTags.Contains(InputField))
+        if (InternalTags.Contains(value))
             return;
 
         InternalTags.Add(
-            InputField
+            value
         );
         
         InputField = "";
