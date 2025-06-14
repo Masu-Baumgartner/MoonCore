@@ -1,0 +1,56 @@
+@if (IsWorking)
+{
+    <button type="button" class="cursor-not-allowed @CssClasses" disabled="disabled">
+        <span class="loading loading-spinner loading-sm"></span>
+        @WorkingText
+    </button>
+}
+else
+{
+    <button @onclick="Click" type="button" class="@CssClasses">
+        @ChildContent
+    </button>
+}
+
+@code
+{
+    [Parameter] public string CssClasses { get; set; } = "btn btn-primary";
+    [Parameter] public RenderFragment ChildContent { get; set; }
+    [Parameter] public Func<WButton, Task> OnClick { get; set; }
+
+    private bool IsWorking = false;
+    private string WorkingText = "Processing";
+
+    private async Task Click()
+    {
+        if(IsWorking)
+            return;
+        
+        IsWorking = true;
+        WorkingText = "Processing";
+        await InvokeAsync(StateHasChanged);
+        
+        try
+        {
+            await OnClick.Invoke(this);
+            
+            // Reset states
+            IsWorking = false;
+            await InvokeAsync(StateHasChanged);
+        }
+        catch (Exception)
+        {
+            // Reset states
+            IsWorking = false;
+            await InvokeAsync(StateHasChanged);
+
+            throw;
+        }
+    }
+
+    public async Task UpdateLoadingText(string text)
+    {
+        WorkingText = text;
+        await InvokeAsync(StateHasChanged);
+    }
+}

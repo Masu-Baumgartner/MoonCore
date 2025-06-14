@@ -1,0 +1,20 @@
+@typeparam TItem
+
+@code
+{
+    [CascadingParameter(Name = "DataTable")]
+    public DataTable<TItem> DataTable { get; set; }
+
+    [Parameter] public int Index { get; set; }
+    [Parameter] public Func<TItem, object?>? Field { get; set; }
+    [Parameter] public string HeaderCss { get; set; } = "py-2 px-3 font-semibold text-left";
+    [Parameter] public RenderFragment? HeaderTemplate { get; set; }
+    [Parameter] public string ColumnCss { get; set; } = "py-1.5 px-3 text-left font-normal";
+    [Parameter] public RenderFragment<TItem>? ColumnTemplate { get; set; }
+    [Parameter] public string Name { get; set; } = "";
+
+    protected override void OnInitialized()
+    {
+        DataTable.AddColumn(this);
+    }
+}

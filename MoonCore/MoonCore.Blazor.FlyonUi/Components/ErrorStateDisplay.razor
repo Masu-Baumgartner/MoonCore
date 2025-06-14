@@ -1,0 +1,89 @@
+@using MoonCore.Exceptions
+@using MoonCore.Blazor.FlyonUi.Components
+
+<IconAlert Icon="@Icon"
+           Color="@IconColor"
+           Title="@Title">
+    @Description
+</IconAlert>
+
+@code
+{
+    [Parameter] public Exception Exception { get; set; }
+
+    private string Title;
+    private string Description;
+    private string Icon;
+    private string IconColor;
+
+    protected override void OnParametersSet()
+    {
+        if (Exception is HttpApiException httpApiException)
+        {
+            Description = string.IsNullOrEmpty(httpApiException.Detail)
+                ? httpApiException.Title
+                : $"{httpApiException.Title}: {httpApiException.Detail}";
+
+            if (httpApiException.Status == 403)
+            {
+                Title = "Forbidden";
+                Icon = "icon-ban";
+                IconColor = "text-warning";
+            }
+            else if (httpApiException.Status == 404)
+            {
+                Title = "Not found";
+                Icon = "icon-package-open";
+                IconColor = "text-info";
+            }
+            else if (httpApiException.Status == 400)
+            {
+                Title = "Bad Request";
+                Icon = "icon-puzzle";
+                IconColor = "text-error";
+            }
+            else if (httpApiException.Status == 500)
+            {
+                Title = "Internal Server Error";
+                Icon = "icon-server-crash";
+                IconColor = "text-error";
+            }
+            else if (httpApiException.Status == 502)
+            {
+                Title = "Bad Gateway";
+                Icon = "icon-cable";
+                IconColor = "text-error";
+            }
+            else
+            {
+                Title = "API Error";
+                Icon = "icon-mail-warning";
+                IconColor = "text-warning";
+            }
+        }
+        else if (Exception is HttpRequestException httpRequestException)
+        {
+            if (httpRequestException.Message.Contains("Failed to fetch", StringComparison.InvariantCultureIgnoreCase))
+            {
+                Title = "No Connection";
+                Icon = "icon-cable";
+                Description = "Unable to connect to the requested resource";
+                IconColor = "text-error";
+            }
+            else
+            {
+                Title = "Request Error";
+                Icon = "icon-cable";
+                Description = httpRequestException.Message;
+                IconColor = "text-error";
+            }
+        }
+        else
+        {
+            Title = "Application Error";
+            Description = "An unhandled error occured in the application";
+            Icon = "icon-flame";
+            IconColor = "text-error";
+        }
+    }
+}

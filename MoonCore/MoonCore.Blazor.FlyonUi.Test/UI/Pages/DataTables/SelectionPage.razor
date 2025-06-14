@@ -1,0 +1,59 @@
+@page "/datatables/selection"
+@using Bogus
+@using MoonCore.Blazor.FlyonUi.Components
+@using MoonCore.Blazor.FlyonUi.DataTables
+
+<NavTabs Index="2" Names="UiConstants.DataTablesNames" Links="UiConstants.DataTablesLinks"/>
+
+<div class="mt-5 card card-body">
+    <p>Selected: @(string.Join(", ", SelectedItems.Select(x => x.Username)))</p>
+</div>
+
+<div class="mt-5">
+    <DataTable TItem="TestModel" ItemSource="ItemSource">
+        <Configuration>
+            <Selection TItem="TestModel" OnSelectionChanged="OnSelectionChanged"/>
+
+            <DataTableColumn TItem="TestModel" Field="@(x => x.Id)" Name="Id"/>
+            <DataTableColumn TItem="TestModel" Field="@(x => x.Username)" Name="Username"/>
+            <DataTableColumn TItem="TestModel" Field="@(x => x.Email)" Name="Email"/>
+        </Configuration>
+    </DataTable>
+</div>
+
+@code
+{
+    private static readonly List<TestModel> Models = new();
+
+    private TestModel[] SelectedItems = [];
+
+    private Task<TestModel[]> ItemSource()
+    {
+        if (Models.Count == 0)
+        {
+            var faker = new Faker<TestModel>()
+                .RuleFor(x => x.Email, x => x.Person.Email)
+                .RuleFor(x => x.Username, x => x.Person.UserName)
+                .RuleFor(x => x.Id, x => x.UniqueIndex);
+
+            Models.AddRange(
+                faker.Generate(25)
+            );
+        }
+
+        return Task.FromResult(Models.ToArray());
+    }
+
+    record TestModel
+    {
+        public string Username { get; set; }
+        public int Id { get; set; }
+        public string Email { get; set; }
+    }
+
+    private async Task OnSelectionChanged(TestModel[] selection)
+    {
+        SelectedItems = selection;
+        await InvokeAsync(StateHasChanged);
+    }
+}

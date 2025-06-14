@@ -1,0 +1,53 @@
+<CascadingValue TValue="Tabs" Value="@this" IsFixed="true">
+    @ChildContent
+</CascadingValue>
+
+<nav class="tabs bg-base-200 rounded-field w-fit space-x-1 overflow-x-auto p-1" role="tablist">
+    
+    @foreach (var tab in TabList)
+    {
+        <button @onclick="() => SwitchTab(tab)" type="button" class="btn btn-text active-tab:bg-primary active-tab:text-base-content hover:text-primary hover:bg-transparent @(CurrentTab == tab ? "active" : "")" data-tab="dummy" role="tab" aria-selected="true" >
+            @if (!string.IsNullOrEmpty(tab.Icon))
+            {
+                <i class="@tab.Icon"></i>
+            }
+            @tab.Name
+        </button>
+    }
+</nav>
+
+@if (CurrentTab != null)
+{
+    <div class="mt-5">
+        @CurrentTab.ChildContent
+    </div>
+}
+
+@code
+{
+    [Parameter] public RenderFragment ChildContent { get; set; }
+
+    private readonly List<Tab> TabList = new();
+    private Tab? CurrentTab = null;
+
+    public void AddTab(Tab tab)
+    {
+        if (!TabList.Contains(tab))
+            TabList.Add(tab);
+    }
+
+    public async Task SwitchTab(Tab tab)
+    {
+        CurrentTab = tab;
+        await InvokeAsync(StateHasChanged);
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (!firstRender)
+            return;
+
+        CurrentTab = TabList.FirstOrDefault();
+        await InvokeAsync(StateHasChanged);
+    }
+}

@@ -1,11 +1,9 @@
 ﻿using System.Security.Claims;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Authorization;
-using MoonCore.Blazor.Tailwind.Auth;
-using MoonCore.Blazor.Tailwind.Test.Models;
-using MoonCore.Helpers;
+using MoonCore.Blazor.FlyonUi.Auth;
 
-namespace MoonCore.Blazor.Tailwind.Test;
+namespace MoonCore.Blazor.FlyonUi.Test;
 
 public class CoolestAuthStateManager : AuthenticationStateManager
 {

@@ -1,0 +1,43 @@
+@page "/components"
+
+@using MoonCore.Blazor.FlyonUi.Components
+
+<NavTabs Index="0" Names="UiConstants.ComponentNames" Links="UiConstants.ComponentLinks" Icons="UiConstants.ComponentIcons" />
+
+<div class="mt-5">
+    <WButton OnClick="OnClick">i am a fucking cool worker button</WButton>
+</div>
+
+<div class="mt-5">
+    <button class="btn">Default</button>
+    <button class="btn btn-primary">Primary</button>
+    <button class="btn btn-secondary">Secondary</button>
+    <button class="btn btn-accent">Accent</button>
+    <button class="btn btn-info">Info</button>
+    <button class="btn btn-success">Success</button>
+    <button class="btn btn-warning">Warning</button>
+    <button class="btn btn-error">Error</button>
+</div>
+
+<div class="mt-5">
+    <button class="btn btn-error">
+        <i class="icon-trash"></i>
+        <span>Delete</span>
+    </button>
+</div>
+
+@code
+{
+    private async Task OnClick(WButton button)
+    {
+        await Task.Delay(TimeSpan.FromSeconds(3));
+
+        await button.UpdateLoadingText("Doing something longer");
+
+        await Task.Delay(TimeSpan.FromSeconds(4));
+
+        await button.UpdateLoadingText("Finishing up");
+
+        await Task.Delay(TimeSpan.FromSeconds(3));
+    }
+}

@@ -1,0 +1,154 @@
+@using Microsoft.Extensions.Logging
+@using MoonCore.Blazor.FlyonUi.Components
+
+@typeparam TItem
+
+@inject ILogger<DataTable<TItem>> Logger
+
+@if (Configuration != null)
+{
+    <CascadingValue TValue="DataTable<TItem>" Name="DataTable" Value="@this" IsFixed="true">
+        @Configuration
+    </CascadingValue>
+}
+
+@if (Header != null)
+{
+    @Header
+}
+
+@* Add option for rounded-lg in the element below *@
+
+<div class="@ContainerCss">
+    <table class="table bg-base-100">
+
+        @* Header *@
+        <thead>
+
+        <tr class="bg-base-200/50 *:first:rounded-tl-lg *:last:rounded-tr-lg border-0 text-xs leading-3.5">
+
+            @foreach (var column in SortedColumns)
+            {
+                <th scope="col" class="@column.HeaderCss">
+                    @if (column.HeaderTemplate != null)
+                    {
+                        @column.HeaderTemplate
+                    }
+                    else
+                    {
+                        @column.Name
+                    }
+                </th>
+            }
+
+        </tr>
+
+        </thead>
+
+        @* Body *@
+        <tbody class="text-sm divide-y divide-base-150/60">
+
+        @if (IsLoading)
+        {
+            if (LoadingIndicator == null)
+            {
+                <tr>
+                    <td scope="row" class="p-2 text-left font-normal" colspan="@Columns.Count">
+                        <div class="w-full flex justify-center items-center p-5">
+                            <div class="loader-spinner"></div>
+                        </div>
+                    </td>
+                </tr>
+            }
+            else
+            {
+                @LoadingIndicator
+            }
+        }
+        else
+        {
+            if (LoadingException != null)
+            {
+                if (ExceptionIndicator == null)
+                {
+                    <tr>
+                        <td scope="row" class="p-2 text-left font-normal" colspan="@Columns.Count">
+                            <div class="p-5">
+                                <ErrorStateDisplay Exception="LoadingException"/>
+                            </div>
+                        </td>
+                    </tr>
+                }
+                else
+                {
+                    @ExceptionIndicator.Invoke(LoadingException)
+                }
+            }
+            else
+            {
+                if (Items.Length == 0)
+                {
+                    <tr>
+                        <td scope="row" class="p-2 text-left font-normal" colspan="@Columns.Count">
+                            @if (NoItemsIndicator == null)
+                            {
+                                <div class="p-5">
+                                    <IconAlert Title="No items found"
+                                               Icon="icon-package-open"
+                                               Color="text-info">
+                                        No items could be found
+                                    </IconAlert>
+                                </div>
+                            }
+                            else
+                            {
+                                @NoItemsIndicator
+                            }
+                        </td>
+                    </tr>
+                }
+                else
+                {
+                    foreach (var row in SortedRows)
+                    {
+                        <tr class="@row.Css">
+                            @row.Template
+                        </tr>
+                    }
+
+                    foreach (var item in Items)
+                    {
+                        <tr class="@RowCss"
+                            @oncontextmenu="e => InvokeContextMenu(e, item)"
+                            @oncontextmenu:preventDefault>
+                            @foreach (var column in SortedColumns)
+                            {
+                                <td scope="row" class="@column.ColumnCss">
+                                    @if (column.ColumnTemplate == null)
+                                    {
+                                        if (column.Field != null)
+                                        {
+                                            var val = column.Field.Invoke(item);
+
+                                            @(val?.ToString() ?? "null")
+                                        }
+                                    }
+                                    else
+                                    {
+                                        @column.ColumnTemplate.Invoke(item)
+                                    }
+                                </td>
+                            }
+                        </tr>
+                    }
+                }
+            }
+        }
+        </tbody>
+    </table>
+</div>
+
+@if (Footer != null)
+{
+    @Footer
+}
