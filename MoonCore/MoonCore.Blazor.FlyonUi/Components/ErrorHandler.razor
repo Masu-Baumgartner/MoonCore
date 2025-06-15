@@ -10,7 +10,7 @@
 @if (Exception != null)
 {
     <div class="mt-5">
-        <ErrorStateDisplay Exception="Exception" />
+        <ErrorStateDisplay Exception="Exception"/>
     </div>
 }
 else if (MissingPermissionName != null)
@@ -104,7 +104,7 @@ else
             // Dont handle unauthenticated errors
             if (httpApiException.Status == 401)
                 throw exception;
-            
+
             if (httpApiException.Status == 403)
             {
                 // This checks if the last exception was a 403 with the same details.
@@ -121,7 +121,12 @@ else
                     MissingPermissionName = httpApiException.Detail;
                 }
                 else
-                    AddMessage("You are missing the required permissions(s): " + httpApiException.Detail);
+                {
+                    if (string.IsNullOrEmpty(httpApiException.Detail))
+                        AddMessage("You are missing the required permissions(s)");
+                    else
+                        AddMessage("You are missing the required permissions(s): " + httpApiException.Detail);
+                }
             }
             else
             {
@@ -134,7 +139,7 @@ else
         else
         {
             Exception = exception;
-            
+
             Logger.LogError("An unhandled error has been captured: {e}", exception);
         }
 
@@ -147,7 +152,7 @@ else
         // Note:
         // This fixes a weird behavior when a error in a component render call happens, e.g. missing parameter
         // Without this, it would not show the error, just nothing
-        
+
         // Disabled for testing
         //Task.Run(async () => { await InvokeAsync(StateHasChanged); });
     }

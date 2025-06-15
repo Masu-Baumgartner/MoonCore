@@ -1,0 +1,31 @@
+﻿@using System.Diagnostics
+@using Microsoft.Extensions.Logging
+
+@inherits ErrorBoundaryBase
+
+@inject ILogger<CrashHandler> Logger
+
+@if (CurrentException == null)
+{
+    @ChildContent
+}
+else
+{
+    <div class="m-10">
+        <IconAlert Title="Critical Application Error"
+                   Color="text-error"
+                   Icon="icon-flame">
+            @CurrentException.ToStringDemystified()
+        </IconAlert>
+    </div>
+}
+
+@code
+{
+    protected override Task OnErrorAsync(Exception exception)
+    {
+        Logger.LogCritical("An unhandled error occured: {e}", exception);
+
+        return Task.CompletedTask;
+    }
+}

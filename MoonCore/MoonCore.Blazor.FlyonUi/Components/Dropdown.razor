@@ -2,7 +2,7 @@
     <a href="#" @onclick="Toggle" @onclick:preventDefault>
         @Activator
     </a>
-    <div @ref="Reference" @onfocusout="OnFocusOut" class="dropdown-menu dropdown-open:opacity-100 @(Show ? "block" : "hidden") absolute right-0 z-10 mt-12 w-56 origin-top-left" role="menu" aria-orientation="vertical" aria-labelledby="dropdown-default">
+    <div @ref="Reference" @onfocusout="OnFocusOut" class="dropdown-menu dropdown-open:opacity-100 block absolute @Align z-10 mt-12 w-56 origin-top-left" role="menu" aria-orientation="vertical" aria-labelledby="dropdown-default">
         @Content
     </div>
 </div>
@@ -11,6 +11,7 @@
 {
     [Parameter] public RenderFragment Activator { get; set; }
     [Parameter] public RenderFragment Content { get; set; }
+    [Parameter] public string Align { get; set; } = "left-0";
 
     private bool Show = false;
     private double X;
@@ -25,12 +26,9 @@
         await Reference.FocusAsync();
     }
 
-    private async Task Toggle(MouseEventArgs eventArgs)
+    private async Task Toggle()
     {
         Show = !Show;
-        X = eventArgs.ClientX - 130;
-        Y = eventArgs.ClientY - 10;
-        
         await InvokeAsync(StateHasChanged);
     }
     
