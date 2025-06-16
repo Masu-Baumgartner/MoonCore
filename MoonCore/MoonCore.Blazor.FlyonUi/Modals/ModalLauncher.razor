@@ -1,0 +1,75 @@
+@using MoonCore.Blazor.FlyonUi.Modals.Components
+@using MoonCore.Helpers
+
+@inject ModalService ModalService
+
+@if (Modals.Count > 0)
+{
+    var modal = Modals.Last();
+
+    <div @onclick="HandleOutOfFocusClick"
+         class="overlay-backdrop transition duration-300 fixed inset-0 bg-base-300/60 overflow-y-auto z-50"></div>
+
+    <div class="overlay modal overlay-open:opacity-100 overlay-open:duration-300 modal-middle open opened z-50" role="dialog"
+         tabindex="-1" aria-overlay="true">
+        <div class="modal-dialog overlay-open:opacity-100 overlay-open:duration-300 @modal.Size">
+            <div class="modal-content">
+                @modal.Component
+            </div>
+        </div>
+    </div>
+
+    @* class="sm:max-w-md sm:max-w-lg sm:max-w-xl sm:max-w-2xl sm:max-w-3xl sm:max-w-4xl sm:max-w-5xl sm:max-w-6xl sm:max-w-7xl" *@
+}
+
+@code
+{
+    private List<ModalItem> Modals = new();
+
+    protected override void OnInitialized()
+    {
+        ModalService.SetLauncher(this);
+    }
+
+    public async Task<ModalItem> Launch<T>(Action<Dictionary<string, object>>? onConfigure = null, string size = "max-w-lg", bool allowUnfocusHide = false) where T : BaseModal
+    {
+        var item = new ModalItem()
+        {
+            Size = size,
+            AllowUnfocusHide = allowUnfocusHide
+        };
+
+        item.Component = ComponentHelper.FromType<T>(buildAttr =>
+        {
+            buildAttr.Add("Launcher", this);
+            buildAttr.Add("ModalItem", item);
+
+            onConfigure?.Invoke(buildAttr);
+        });
+
+        Modals.Add(item);
+
+        await InvokeAsync(StateHasChanged);
+
+        return item;
+    }
+
+    private async Task HandleOutOfFocusClick()
+    {
+        var modal = Modals.LastOrDefault();
+
+        if (modal == null)
+            return;
+
+        if (!modal.AllowUnfocusHide)
+            return;
+
+        await Close(modal);
+    }
+
+    public async Task Close(ModalItem item)
+    {
+        Modals.Remove(item);
+        await InvokeAsync(StateHasChanged);
+    }
+}

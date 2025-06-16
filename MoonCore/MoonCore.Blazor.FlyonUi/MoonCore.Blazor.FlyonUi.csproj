@@ -25,6 +25,8 @@
       <AdditionalFiles Include="DataTables\Pagination.razor" />
       <AdditionalFiles Include="DataTables\PaginationDesign.razor" />
       <AdditionalFiles Include="DataTables\Selection.razor" />
+      <AdditionalFiles Include="Modals\Components\BaseModal.razor" />
+      <AdditionalFiles Include="Modals\ModalLauncher.razor" />
     </ItemGroup>
 
     <ItemGroup>
