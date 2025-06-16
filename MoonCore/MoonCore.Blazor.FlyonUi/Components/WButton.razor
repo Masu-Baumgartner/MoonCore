@@ -7,7 +7,7 @@
 }
 else
 {
-    <button @onclick="Click" type="button" class="@CssClasses">
+    <button @onclick="Click" type="@Type" class="@CssClasses">
         @ChildContent
     </button>
 }
@@ -16,14 +16,16 @@ else
 {
     [Parameter] public string CssClasses { get; set; } = "btn btn-primary";
     [Parameter] public RenderFragment ChildContent { get; set; }
-    [Parameter] public Func<WButton, Task> OnClick { get; set; }
+    [Parameter] public Func<WButton, Task>? OnClick { get; set; }
 
-    private bool IsWorking = false;
+    [Parameter] public bool IsWorking { get; set; } = false;
+    [Parameter] public string Type { get; set; } = "button";
+
     private string WorkingText = "Processing";
 
     private async Task Click()
     {
-        if(IsWorking)
+        if(IsWorking || OnClick == null)
             return;
         
         IsWorking = true;

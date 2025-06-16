@@ -8,4 +8,7 @@ public static class UiConstants
     
     public static readonly string[] DataTablesNames = ["Default", "Pagination", "Selection"];
     public static readonly string[] DataTablesLinks = ["/datatables", "/datatables/pagination", "/datatables/selection"];
+    
+    public static readonly string[] FormsNames = ["Handle Form", "Form Components", "Selections"];
+    public static readonly string[] FormsLinks = ["/forms", "/forms/components", "/forms/selections"];
 }

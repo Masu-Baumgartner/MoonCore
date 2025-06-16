@@ -4,12 +4,16 @@
 <IconAlert Icon="@Icon"
            Color="@IconColor"
            Title="@Title">
-    @Description
+    <div>
+        @Description
+    </div>
+    @ChildContent
 </IconAlert>
 
 @code
 {
-    [Parameter] public Exception Exception { get; set; }
+    [Parameter] public required Exception Exception { get; set; }
+    [Parameter] public RenderFragment? ChildContent { get; set; }
 
     private string Title;
     private string Description;

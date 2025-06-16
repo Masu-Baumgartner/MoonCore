@@ -1,0 +1,161 @@
+@using System.ComponentModel.DataAnnotations
+@using MoonCore.Blazor.FlyonUi.Exceptions
+@using MoonCore.Exceptions
+
+@if (SubmitException != null)
+{
+    <div class="flex justify-center items-center">
+        <ErrorStateDisplay Exception="SubmitException">
+            <button @onclick="ReturnToForm" class="btn btn-sm btn-primary mt-2">
+                <i class="icon-undo-2"></i>
+                Return
+            </button>
+        </ErrorStateDisplay>
+    </div>
+}
+else
+{
+    <div>
+        @if (ErrorMessages.Count == 1)
+        {
+            <div class="alert alert-error flex items-center gap-4 text-sm mb-3" role="alert">
+                <i class="icon-triangle-alert shrink-0 text-lg"></i>
+                <p>@ErrorMessages[0]</p>
+            </div>
+        }
+        else if (ErrorMessages.Count > 1)
+        {
+            <div class="alert alert-error flex items-start gap-4 mb-3">
+                <span class="icon-triangle-alert text-lg"></span>
+                <div class="flex flex-col gap-1">
+                    <h5 class="text-base font-semibold">Error(s) occured while processing your data</h5>
+                    <ul class="mt-1.5 list-inside list-disc text-sm">
+                        @foreach (var message in ErrorMessages)
+                        {
+                            <li>@message</li>
+                        }
+                    </ul>
+                </div>
+            </div>
+        }
+    </div>
+
+    <form action="#" @onsubmit="Submit" @onsubmit:preventDefault>
+        @ChildContent.Invoke(this)
+    </form>
+}
+
+@code
+{
+    [Parameter] public RenderFragment<HandleForm> ChildContent { get; set; }
+    [Parameter] public required object Model { get; set; }
+    [Parameter] public required Func<Task> OnValidSubmit { get; set; }
+
+    public bool IsSubmitting { get; set; } = false;
+
+    private Exception? SubmitException;
+    private readonly List<string> ErrorMessages = [];
+    
+    public async Task<bool> Submit()
+    {
+        // Prevent multiple submits at the same time
+        if (IsSubmitting)
+            return false;
+        
+        // Resetting state
+        SubmitException = null;
+        ErrorMessages.Clear();
+        IsSubmitting = true;
+
+        await InvokeAsync(StateHasChanged);
+
+        var wasSuccessful = await InternalSubmit();
+
+        IsSubmitting = false;
+        await InvokeAsync(StateHasChanged);
+
+        return wasSuccessful;
+    }
+
+    private async Task<bool> InternalSubmit()
+    {
+        // Exit early if form model is invalid
+        if (!ValidateFormModel())
+            return false;
+
+        try
+        {
+            await OnValidSubmit.Invoke();
+            return true;
+        }
+        catch (Exception e)
+        {
+            if (e is DisplayException displayException)
+            {
+                ErrorMessages.Add(displayException.Message);
+                return false;
+            }
+            else if (e is HttpApiException httpApiException)
+            {
+                // Pass through unauthenticated exception to parents
+                // as we don't want to handle them
+                if (httpApiException.Status == 401)
+                    throw;
+
+                // We only want to create error messages of responses
+                // which are of the type "BadRequest". All other
+                // status codes should be handled by our error state display
+                if (httpApiException.Status != 400)
+                {
+                    SubmitException = e;
+                    return false;
+                }
+
+                // If no form errors are specified we want to create an
+                // error message out of the base problem details
+                if (httpApiException.Errors == null || httpApiException.Errors.Count == 0)
+                {
+                    ErrorMessages.Add(
+                        string.IsNullOrEmpty(httpApiException.Detail) ? httpApiException.Title : httpApiException.Title + ": " + httpApiException.Detail
+                    );
+                    
+                    return false;
+                }
+
+                // Create text error messages out of the problem details errors
+                ErrorMessages.AddRange(httpApiException.Errors
+                    .Select(x => $"{x.Key}: {string.Join(", ", x.Value)}")
+                );
+
+                return false;
+            }
+            else
+            {
+                SubmitException = e;
+                return false;
+            }
+        }
+    }
+
+    private async Task ReturnToForm()
+    {
+        SubmitException = null;
+        await InvokeAsync(StateHasChanged);
+    }
+
+    private bool ValidateFormModel()
+    {
+        var context = new ValidationContext(Model, null, null);
+        var results = new List<ValidationResult>();
+
+        if (Validator.TryValidateObject(Model, context, results, true))
+            return true;
+
+        ErrorMessages.AddRange(
+            results
+                .Select(x => $"{string.Join(", ", x.MemberNames)}: {x.ErrorMessage}")
+        );
+
+        return false;
+    }
+}

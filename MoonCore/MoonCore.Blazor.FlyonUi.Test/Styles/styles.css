@@ -84,4 +84,8 @@
     .checkbox {
         @apply border-base-content/30 bg-base-100;
     }
+    
+    .input {
+        @apply !border-base-content/20 border-2 ring-0! outline-0! focus:border-primary! focus-within:border-primary! bg-base-200/50;
+    }
 }
