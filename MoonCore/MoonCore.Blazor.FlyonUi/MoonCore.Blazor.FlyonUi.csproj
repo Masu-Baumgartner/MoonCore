@@ -21,6 +21,11 @@
     </ItemGroup>
 
     <ItemGroup>
+      <AdditionalFiles Include="Alerts\Components\ConfirmDangerAlert.razor" />
+      <AdditionalFiles Include="Alerts\Components\DangerAlert.razor" />
+      <AdditionalFiles Include="Alerts\Components\InfoAlert.razor" />
+      <AdditionalFiles Include="Alerts\Components\SuccessAlert.razor" />
+      <AdditionalFiles Include="Alerts\Components\WarningAlert.razor" />
       <AdditionalFiles Include="Auth\DefaultLoginTemplate.razor" />
       <AdditionalFiles Include="DataTables\Pagination.razor" />
       <AdditionalFiles Include="DataTables\PaginationDesign.razor" />

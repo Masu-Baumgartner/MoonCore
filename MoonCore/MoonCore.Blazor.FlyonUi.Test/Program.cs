@@ -1,5 +1,7 @@
+using MoonCore.Blazor.FlyonUi.Alerts;
 using MoonCore.Blazor.FlyonUi.Test.UI;
 using MoonCore.Blazor.FlyonUi.Auth;
+using MoonCore.Blazor.FlyonUi.Modals;
 using MoonCore.Blazor.FlyonUi.Test;
 using MoonCore.Extensions;
 
@@ -16,6 +18,9 @@ builder.Services.AddAuthenticationStateManager<CoolestAuthStateManager>();
 
 builder.Services.AddAuthorizationCore();
 builder.Services.AddCascadingAuthenticationState();
+
+builder.Services.AddScoped<ModalService>();
+builder.Services.AddScoped<AlertService>();
 
 var app = builder.Build();
 
