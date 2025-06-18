@@ -1,0 +1,16 @@
+{
+  "name": "styles",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "tailwind": "npx @tailwindcss/cli -i ./styles.css -o ../wwwroot/style.min.css --watch"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@tailwindcss/cli": "^4.1.10",
+    "flyonui": "^2.2.0",
+    "tailwindcss": "^4.1.10"
+  }
+}

@@ -1,0 +1,38 @@
+@using MoonCore.Helpers
+@using MoonCore.Models
+
+@typeparam TItem
+
+@code
+{
+    [CascadingParameter(Name = "DataTable")]
+    public DataTable<TItem> DataTable { get; set; }
+
+    [Parameter] public Func<PaginationOptions, Task<IPagedData<TItem>>> ItemSource { get; set; }
+    [Parameter] public int PageSize { get; set; } = 15;
+
+    internal PaginationOptions Options;
+    internal IPagedData<TItem> PagedData = new PagedData<TItem>();
+    
+    protected override void OnInitialized()
+    {
+        Options = new()
+        {
+            Page = 0,
+            PerPage = PageSize
+        };
+        
+        DataTable.ItemSource = Load;
+
+        DataTable.Footer += ComponentHelper.FromType<PaginationDesign<TItem>>(parameters =>
+        {
+            parameters.Add("Pagination", this);
+        });
+    }
+
+    private async Task<TItem[]> Load()
+    {
+        PagedData = await ItemSource.Invoke(Options);
+        return PagedData.Items;
+    }
+}

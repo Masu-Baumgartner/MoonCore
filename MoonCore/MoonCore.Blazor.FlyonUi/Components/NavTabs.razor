@@ -1,0 +1,23 @@
+<div class="flex">
+    <nav class="tabs bg-base-200 rounded-field w-fit space-x-1 overflow-x-auto p-1" role="tablist">
+        @for (var i = 0; i < Names.Length; i++)
+        {
+            <a href="@(Links[i])" class="btn btn-text active-tab:bg-primary active-tab:text-base-content hover:text-primary hover:bg-transparent @(i == Index ? "active" : "")" data-tab="dummy" role="tab" aria-selected="true" >
+                @if (Icons != null)
+                {
+                    <i class="@(Icons[i])"></i>
+                }
+                
+                @Names[i]
+            </a>
+        }
+    </nav>
+</div>
+
+@code
+{
+    [Parameter] public string[] Names { get; set; } = [];
+    [Parameter] public string[] Links { get; set; } = [];
+    [Parameter] public string[]? Icons { get; set; } = null;
+    [Parameter] public int Index { get; set; }
+}

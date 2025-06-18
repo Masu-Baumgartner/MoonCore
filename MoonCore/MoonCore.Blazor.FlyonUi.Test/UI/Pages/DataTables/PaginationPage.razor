@@ -1,0 +1,51 @@
+@page "/datatables/pagination"
+
+@using Bogus
+@using MoonCore.Blazor.FlyonUi.Components
+@using MoonCore.Blazor.FlyonUi.DataTables
+@using MoonCore.Models
+
+<NavTabs Index="1" Names="UiConstants.DataTablesNames" Links="UiConstants.DataTablesLinks" />
+
+<div class="mt-5">
+    <DataTable TItem="TestModel">
+        <Configuration>
+            <DataTableColumn TItem="TestModel" Field="@(x => x.Id)" Name="Id"/>
+            <DataTableColumn TItem="TestModel" Field="@(x => x.Username)" Name="Username"/>
+            <DataTableColumn TItem="TestModel" Field="@(x => x.Email)" Name="Email"/>
+            
+            <Pagination TItem="TestModel" ItemSource="ItemSource" />
+        </Configuration>
+    </DataTable>
+</div>
+
+@code
+{
+    private static readonly List<TestModel> Models = new();
+
+    private Task<IPagedData<TestModel>> ItemSource(PaginationOptions options)
+    {
+        if (Models.Count == 0)
+        {
+            var faker = new Faker<TestModel>()
+                .RuleFor(x => x.Email, x => x.Person.Email)
+                .RuleFor(x => x.Username, x => x.Person.UserName)
+                .RuleFor(x => x.Id, x => x.UniqueIndex);
+
+            Models.AddRange(
+                faker.Generate(100)
+            );
+        }
+
+        var pagedData = PagedData<TestModel>.Create(Models, options.Page, options.PerPage);
+
+        return Task.FromResult<IPagedData<TestModel>>(pagedData);
+    }
+
+    record TestModel
+    {
+        public string Username { get; set; }
+        public int Id { get; set; }
+        public string Email { get; set; }
+    }
+}

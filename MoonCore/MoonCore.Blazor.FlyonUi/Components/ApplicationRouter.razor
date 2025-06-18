@@ -1,0 +1,152 @@
+﻿@using System.Reflection
+@using System.Security.Claims
+@using Microsoft.AspNetCore.Components.Authorization
+@using Microsoft.AspNetCore.Components.Routing
+@using MoonCore.Blazor.FlyonUi.Auth
+@using MoonCore.Exceptions
+
+@inject AuthenticationStateManager AuthenticationStateManager
+
+<CrashHandler>
+    @if (IsLoading)
+    {
+        if (LoadingTemplate != null)
+        {
+            @LoadingTemplate
+        }
+        else
+        {
+            <div class="flex h-screen justify-center items-center">
+                <div class="sm:max-w-lg">
+                    <IconAlert Title="Loading"
+                               Color="text-primary"
+                               Icon="icon-loader">
+                        Preparing application
+                    </IconAlert>
+                </div>
+            </div>
+        }
+    }
+    else
+    {
+        <CascadingAuthenticationState>
+            <AuthorizeView>
+                <Authorized>
+                    <Router AppAssembly="AppAssembly" AdditionalAssemblies="AdditionalAssemblies">
+                        <Found Context="routeData">
+                            <LayoutView Layout="@DefaultLayout">
+                                <ErrorHandler CustomHandler="OnHandleException">
+                                    <AuthorizeRouteView RouteData="routeData" Context="_">
+                                        <NotAuthorized>
+                                            <div class="flex justify-center items-center mt-10">
+                                                <div class="sm:max-w-lg">
+                                                    <IconAlert Title="Permission denied"
+                                                               Color="text-error"
+                                                               Icon="icon-ban">
+                                                        <div>You are missing the required permission(s)</div>
+                                                    </IconAlert>
+                                                </div>
+                                            </div>
+                                        </NotAuthorized>
+                                    </AuthorizeRouteView>
+                                </ErrorHandler>
+                            </LayoutView>
+                        </Found>
+                        <NotFound>
+                            <LayoutView Layout="DefaultLayout">
+                                @if (NotFoundTemplate == null)
+                                {
+                                    <PageTitle>Not found</PageTitle>
+
+                                    <div class="mt-10">
+                                        <IconAlert Title="Page not found"
+                                                   Icon="icon-search"
+                                                   Color="text-primary">
+                                            The requested page could not be found
+                                        </IconAlert>
+                                    </div>
+                                }
+                                else
+                                {
+                                    @NotFoundTemplate
+                                }
+                            </LayoutView>
+                        </NotFound>
+                    </Router>
+                </Authorized>
+                <Authorizing>
+                    @if (AuthenticatingTemplate != null)
+                    {
+                        @AuthenticatingTemplate
+                    }
+                    else
+                    {
+                        <div class="flex h-screen justify-center items-center">
+                            <div class="sm:max-w-lg">
+                                <IconAlert Title="Checking authentication state"
+                                           Color="text-primary"
+                                           Icon="icon-arrow-up-down">
+                                    Loading authentication state from identity provider
+                                </IconAlert>
+                            </div>
+                        </div>
+                    }
+                </Authorizing>
+                <NotAuthorized>
+                    @if (LoginTemplate != null)
+                    {
+                        @LoginTemplate
+                    }
+                    else
+                    {
+                        <DefaultLoginTemplate/>
+                    }
+                </NotAuthorized>
+            </AuthorizeView>
+        </CascadingAuthenticationState>
+    }
+</CrashHandler>
+
+@code
+{
+    [Parameter] public Assembly AppAssembly { get; set; }
+    [Parameter] public IEnumerable<Assembly> AdditionalAssemblies { get; set; } = [];
+    [Parameter] public Type DefaultLayout { get; set; }
+    [Parameter] public bool DisableBlazorServerSideSafeMode { get; set; } = false;
+
+    [Parameter] public RenderFragment? LoginTemplate { get; set; }
+    [Parameter] public RenderFragment? AuthenticatingTemplate { get; set; }
+    [Parameter] public RenderFragment? LoadingTemplate { get; set; }
+    [Parameter] public RenderFragment? NotFoundTemplate { get; set; }
+
+    private bool IsLoading = true;
+
+    protected override void OnInitialized()
+    {
+        if (DisableBlazorServerSideSafeMode)
+            IsLoading = false;
+    }
+
+    // We need this loading state to prevent blazor server from calling the authentication stuff twice
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (DisableBlazorServerSideSafeMode || !firstRender)
+            return;
+
+        IsLoading = false;
+        await InvokeAsync(StateHasChanged);
+    }
+
+    private async Task<bool> OnHandleException(Exception exception, ErrorHandler errorHandler)
+    {
+        if (exception is not HttpApiException httpApiException)
+            return false;
+
+        if (httpApiException.Status != 401)
+            return false;
+
+        await AuthenticationStateManager.Logout();
+
+        return true;
+    }
+}

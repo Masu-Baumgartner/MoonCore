@@ -1,0 +1,56 @@
+<Project Sdk="Microsoft.NET.Sdk.Razor">
+
+    <PropertyGroup>
+        <TargetFramework>net9.0</TargetFramework>
+        <Nullable>enable</Nullable>
+        <ImplicitUsings>enable</ImplicitUsings>
+    </PropertyGroup>
+
+    <PropertyGroup Label="Nuget Settings">
+        <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+        <Title>MoonCore.Blazor.FlyonUi</Title>
+        <Authors>Masu Baumgartner</Authors>
+        <Description>A port of mooncore.blazor.tailwind to flyonui</Description>
+        <Copyright>Masu Baumgartner</Copyright>
+        <PackageProjectUrl>https://github.com/Masu-Baumgartner/MoonCore</PackageProjectUrl>
+        <PackageLicenseUrl>https://github.com/Masu-Baumgartner/MoonCore</PackageLicenseUrl>
+        <RepositoryUrl>https://github.com/Masu-Baumgartner/MoonCore</RepositoryUrl>
+        <RepositoryType>git</RepositoryType>
+        <PackageTags>mooncore</PackageTags>
+        <PackageReadmeFile>README.md</PackageReadmeFile>
+        <Version>1.0.0</Version>
+    </PropertyGroup>
+
+
+    <ItemGroup>
+        <SupportedPlatform Include="browser"/>
+    </ItemGroup>
+
+    <ItemGroup>
+        <PackageReference Include="Microsoft.AspNetCore.Components.Web" Version="9.0.6"/>
+    </ItemGroup>
+
+    <ItemGroup>
+        <None Include="README.md" Pack="true" PackagePath="\"/>
+        <None Include="Styles/mappings/*" Pack="true" PackagePath="Styles/mappings/" />
+        <None Include="MoonCore.Blazor.FlyonUi.targets" Pack="true" PackagePath="build\MoonCore.Blazor.FlyonUi.targets" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <AdditionalFiles Include="Alerts\Components\ConfirmDangerAlert.razor" />
+      <AdditionalFiles Include="Alerts\Components\InfoAlert.razor" />
+      <AdditionalFiles Include="Alerts\Components\SuccessAlert.razor" />
+      <AdditionalFiles Include="Alerts\Components\WarningAlert.razor" />
+      <AdditionalFiles Include="Auth\DefaultLoginTemplate.razor" />
+      <AdditionalFiles Include="DataTables\Pagination.razor" />
+      <AdditionalFiles Include="DataTables\PaginationDesign.razor" />
+      <AdditionalFiles Include="DataTables\Selection.razor" />
+      <AdditionalFiles Include="Modals\Components\BaseModal.razor" />
+      <AdditionalFiles Include="Modals\ModalLauncher.razor" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <ProjectReference Include="..\MoonCore.Blazor\MoonCore.Blazor.csproj" />
+    </ItemGroup>
+
+</Project>

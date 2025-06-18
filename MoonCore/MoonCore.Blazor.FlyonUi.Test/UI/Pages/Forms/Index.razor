@@ -1,0 +1,76 @@
+@page "/forms"
+
+@using System.ComponentModel.DataAnnotations
+@using MoonCore.Blazor.FlyonUi.Components
+@using MoonCore.Exceptions
+
+<NavTabs Index="0" Names="UiConstants.FormsNames" Links="UiConstants.FormsLinks" />
+
+<div class="mt-5">
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-5">
+        <div class="col-span-1 card card-body">
+            <HandleForm Model="Form1" OnValidSubmit="HandleForm1">
+                <div>
+                    <label class="label-text" for="name1">Name</label>
+                    <input @bind="Form1.Name" type="text" placeholder="John Doe" autocomplete="off" class="input" id="name1" />
+                    <span class="helper-text">Please write your name</span>
+                </div>
+
+                <div class="mt-2">
+                    <label class="label-text" for="password1">Password</label>
+                    <input @bind="Form1.Password" type="password" class="input" id="password1" />
+                    <span class="helper-text">Please write your password</span>
+                </div>
+                
+                <div class="mt-2">
+                    <WButton IsWorking="context.IsSubmitting" Type="submit">Submit</WButton>
+                </div>
+            </HandleForm>
+        </div>
+        <div class="col-span-1">
+            <HandleForm Model="Form2" OnValidSubmit="HandleForm2">
+                <div>
+                    <label class="label-text" for="name2">Name</label>
+                    <input @bind="Form2.Name" type="text" placeholder="John Doe" autocomplete="off" class="input" id="name2" />
+                    <span class="helper-text">Please write your name</span>
+                </div>
+
+                <div class="mt-2">
+                    <label class="label-text" for="password2">Password</label>
+                    <input @bind="Form2.Password" type="password" class="input" id="password2" />
+                    <span class="helper-text">Please write your password</span>
+                </div>
+                
+                <div class="mt-2">
+                    <WButton IsWorking="context.IsSubmitting" Type="submit">I will fail</WButton>
+                </div>
+            </HandleForm>
+        </div>
+    </div>
+</div>
+
+@code
+{
+    private DemoModel Form1 = new();
+    private DemoModel Form2 = new();
+
+    private async Task HandleForm1()
+    {
+        await Task.Delay(TimeSpan.FromSeconds(2));
+    }
+    
+    private async Task HandleForm2()
+    {
+        await Task.Delay(TimeSpan.FromSeconds(1));
+        throw new HttpApiException("Whoops", 502, "This was definitely not on prupose");
+    }
+    
+    record DemoModel
+    {
+        [MinLength(8, ErrorMessage = "The name must be at least 8 characters long")]
+        public string Name { get; set; }
+        
+        [MinLength(8, ErrorMessage = "The password must be at least 8 characters long")]
+        public string Password { get; set; }
+    }
+}

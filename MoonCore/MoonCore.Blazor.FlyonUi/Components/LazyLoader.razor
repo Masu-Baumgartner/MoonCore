@@ -1,0 +1,85 @@
+@using MoonCore.Blazor.FlyonUi.Exceptions
+@using MoonCore.Exceptions
+
+@if (IsLoading)
+{
+    <div class="@(EnableDefaultSpacing ? "mt-5" : "")">
+        <div class="text-center">
+            <div class="mb-3 flex justify-center">
+                <span class="loading loading-spinner loading-xl"></span>
+            </div>
+            <p class="font-normal text-lg text-base-content">@(LoadingText)</p>
+        </div>
+    </div>
+}
+else
+{
+    if (LoadingException != null)
+    {
+        <div class="@(EnableDefaultSpacing ? "mt-5" : "")">
+            <ErrorStateDisplay Exception="LoadingException"/>
+        </div>
+    }
+    else
+    {
+        @ChildContent
+    }
+}
+
+@code
+{
+    [Parameter] public RenderFragment ChildContent { get; set; }
+    [Parameter] public Func<LazyLoader, Task> Load { get; set; }
+    [Parameter] public bool EnableDefaultSpacing { get; set; } = true;
+
+    private bool IsLoading = true;
+    private Exception? LoadingException;
+
+    private string LoadingText = "";
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (!firstRender)
+            return;
+
+        await DoLoad();
+    }
+
+    private async Task DoLoad()
+    {
+        try
+        {
+            await Load.Invoke(this);
+        }
+        catch (HttpApiException apiException)
+        {
+            // Redirect unauthenticated status errors directly to the next layer
+            if (apiException.Status == 401)
+                throw;
+
+            LoadingException = apiException;
+        }
+        catch (DisplayException displayException)
+        {
+            LoadingException = displayException;
+        }
+
+        IsLoading = false;
+        await InvokeAsync(StateHasChanged);
+    }
+
+    public async Task UpdateText(string text)
+    {
+        LoadingText = text;
+        await InvokeAsync(StateHasChanged);
+    }
+
+    public async Task Reload()
+    {
+        LoadingException = null;
+        IsLoading = true;
+        await InvokeAsync(StateHasChanged);
+
+        await DoLoad();
+    }
+}

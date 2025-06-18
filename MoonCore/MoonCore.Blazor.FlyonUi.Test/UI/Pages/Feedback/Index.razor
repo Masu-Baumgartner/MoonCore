@@ -1,0 +1,44 @@
+﻿@page "/feedback"
+@using MoonCore.Blazor.FlyonUi.Alerts
+@using MoonCore.Blazor.FlyonUi.Components
+
+@inject AlertService AlertService
+
+<NavTabs Index="0" Names="UiConstants.FeedbackNames" Links="UiConstants.FeedbackLinks" />
+
+<div class="mt-5">
+    <div class="flex flex-row">
+        <button @onclick="Info" class="btn btn-info me-2">Info</button>
+        <button @onclick="Error" class="btn btn-error me-2">Error</button>
+        <button @onclick="Success" class="btn btn-success me-2">Success</button>
+        <button @onclick="Warning" class="btn btn-warning me-2">Warning</button>
+        <button @onclick="ConfirmDanger" class="btn">Confirm danger</button>
+    </div>
+</div>
+
+@code
+{
+    private async Task Info()
+        => await AlertService.Info("Important information", "Hey this is an important information");
+    
+    private async Task Error()
+        => await AlertService.Error("Critical error", "Something went wrong");
+    
+    private async Task Success()
+        => await AlertService.Success("Successfully did something", "Successfully failed task");
+    
+    private async Task Warning()
+        => await AlertService.Warning("Irrelevant warning", "Nothing to worry about");
+
+    private async Task ConfirmDanger()
+    {
+        await AlertService.ConfirmDanger(
+            "Destructive action",
+            "You are about to doing something destructive",
+            async () =>
+            {
+                await AlertService.Success("Destruction successful", "Whoops :>");
+            }
+        );
+    }
+}

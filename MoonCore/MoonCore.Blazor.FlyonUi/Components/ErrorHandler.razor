@@ -1,0 +1,180 @@
+@using Microsoft.Extensions.Logging
+@using MoonCore.Blazor.FlyonUi.Exceptions
+@using MoonCore.Exceptions
+
+@inherits ErrorBoundaryBase
+
+@inject NavigationManager Navigation
+@inject ILogger<ErrorHandler> Logger
+
+@if (Exception != null)
+{
+    <div class="mt-5">
+        <ErrorStateDisplay Exception="Exception"/>
+    </div>
+}
+else if (MissingPermissionName != null)
+{
+    if (CustomMissingPermission != null)
+    {
+        @CustomMissingPermission.Invoke(MissingPermissionName)
+    }
+    else
+    {
+        <IconAlert Title="Permission denied" Icon="icon-lock" Color="text-error">
+            You are missing the required permission to access this resource / perform actions on it
+        </IconAlert>
+    }
+}
+else
+{
+    if (DisplayMessages.Count > 0)
+    {
+        <div class="flex flex-col space-y-1 mb-5">
+            @foreach (var message in DisplayMessages)
+            {
+                <div class="alert alert-error flex items-center gap-4" role="alert">
+                    <i class="icon-triangle-alert shrink-0 text-lg"></i>
+                    <p>@message</p>
+                </div>
+            }
+        </div>
+    }
+
+    @ChildContent
+}
+
+@code
+{
+    // General
+    private Exception? Exception;
+    private Exception? LastException;
+
+    // Display
+    private List<string> DisplayMessages = new();
+
+    // Missing Permission
+    private string? MissingPermissionName;
+    [Parameter] public RenderFragment<string>? CustomMissingPermission { get; set; }
+
+    // Custom error screen
+    [Parameter] public Func<Exception, ErrorHandler, Task<bool>>? CustomHandler { get; set; }
+    [Parameter] public RenderFragment? CustomErrorScreen { get; set; }
+
+    protected override void OnAfterRender(bool firstRender)
+    {
+        if (!firstRender)
+            return;
+
+        Navigation.LocationChanged += async (_, _) =>
+        {
+            if (Exception == null && MissingPermissionName == null && CustomErrorScreen == null)
+                return;
+
+            Exception = null;
+            MissingPermissionName = null;
+            CustomErrorScreen = null;
+
+            await InvokeAsync(StateHasChanged);
+        };
+    }
+
+    protected override async Task OnErrorAsync(Exception exception)
+    {
+        if (CustomHandler != null && await CustomHandler.Invoke(exception, this))
+        {
+            // Do no nothing here. Just let it continue to the normal handling
+        }
+        else if (exception is DisplayException displayException)
+        {
+            DisplayMessages.Add(displayException.Message);
+
+            Task.Run(async () =>
+            {
+                await Task.Delay(TimeSpan.FromSeconds(5));
+
+                if (DisplayMessages.Contains(displayException.Message))
+                    DisplayMessages.Remove(displayException.Message);
+
+                await InvokeAsync(StateHasChanged);
+            });
+        }
+        else if (exception is HttpApiException httpApiException)
+        {
+            // Dont handle unauthenticated errors
+            if (httpApiException.Status == 401)
+                throw exception;
+
+            if (httpApiException.Status == 403)
+            {
+                // This checks if the last exception was a 403 with the same details.
+                // This handles missing permission errors on page initialisation
+                // and prevents endless loops
+                if (
+                    !string.IsNullOrEmpty(httpApiException.Detail) &&
+                    LastException != null &&
+                    LastException is HttpApiException lastApiException &&
+                    lastApiException.Status == 403 &&
+                    !string.IsNullOrEmpty(lastApiException.Detail) &&
+                    httpApiException.Detail == lastApiException.Detail)
+                {
+                    MissingPermissionName = httpApiException.Detail;
+                }
+                else
+                {
+                    if (string.IsNullOrEmpty(httpApiException.Detail))
+                        AddMessage("You are missing the required permissions(s)");
+                    else
+                        AddMessage("You are missing the required permissions(s): " + httpApiException.Detail);
+                }
+            }
+            else
+            {
+                if (string.IsNullOrEmpty(httpApiException.Detail))
+                    AddMessage($"API Error: {httpApiException.Title}");
+                else
+                    AddMessage($"API Error: {httpApiException.Title}: {httpApiException.Detail}");
+            }
+        }
+        else
+        {
+            Exception = exception;
+
+            Logger.LogError("An unhandled error has been captured: {e}", exception);
+        }
+
+        // Save exception after handling as last error
+        LastException = exception;
+
+        // Continue error handling
+        Recover();
+
+        // Note:
+        // This fixes a weird behavior when a error in a component render call happens, e.g. missing parameter
+        // Without this, it would not show the error, just nothing
+
+        // Disabled for testing
+        //Task.Run(async () => { await InvokeAsync(StateHasChanged); });
+    }
+
+    private void AddMessage(string message)
+    {
+        DisplayMessages.Add(message);
+
+        Task.Run(async () =>
+        {
+            await Task.Delay(TimeSpan.FromSeconds(5));
+
+            if (DisplayMessages.Contains(message))
+                DisplayMessages.Remove(message);
+
+            await InvokeAsync(StateHasChanged);
+        });
+    }
+
+    private async Task RecoverCrash()
+    {
+        Exception = null;
+        await InvokeAsync(StateHasChanged);
+    }
+}

@@ -1,0 +1,48 @@
+<div class="dropdown relative inline-flex @(Show ? "open" : "")">
+    <a href="#" @onclick="Toggle" @onclick:preventDefault>
+        @Activator
+    </a>
+    <div @ref="Reference" @onfocusout="OnFocusOut" class="dropdown-menu dropdown-open:opacity-100 block absolute @Align z-10 mt-12 w-56 origin-top-left" role="menu" aria-orientation="vertical" aria-labelledby="dropdown-default">
+        @Content
+    </div>
+</div>
+
+@code
+{
+    [Parameter] public RenderFragment Activator { get; set; }
+    [Parameter] public RenderFragment Content { get; set; }
+    [Parameter] public string Align { get; set; } = "left-0";
+
+    private bool Show = false;
+    private double X;
+    private double Y;
+    private ElementReference Reference;
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if(!Show)
+            return;
+
+        await Reference.FocusAsync();
+    }
+
+    private async Task Toggle()
+    {
+        Show = !Show;
+        await InvokeAsync(StateHasChanged);
+    }
+    
+    private async Task OnFocusOut()
+    {
+        try
+        {
+            await Task.Delay(150);
+            
+            Show = false;
+            await InvokeAsync(StateHasChanged);
+        }
+        catch (TaskCanceledException)
+        {
+        }
+    }
+}

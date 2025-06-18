@@ -1,0 +1,28 @@
+﻿@inherits MoonCore.Blazor.FlyonUi.Modals.Components.BaseModal
+
+<div class="flex flex-col justify-center">
+    <div class="text-lg mb-3">@Text</div>
+    
+    @for (var i = 0; i < FillerCount; i++)
+    {
+        <div class="my-3">Filler</div>
+    }
+    
+    @if (HandleNext != null)
+    {
+        <button @onclick="HandleNext" class="btn btn-primary">Next layer</button>
+    }
+    else
+    {
+        <div>
+            No next layer
+        </div>
+    }
+</div>
+
+@code
+{
+    [Parameter] public Func<Task>? HandleNext { get; set; } = null;
+    [Parameter] public string Text { get; set; }
+    [Parameter] public int FillerCount { get; set; }
+}

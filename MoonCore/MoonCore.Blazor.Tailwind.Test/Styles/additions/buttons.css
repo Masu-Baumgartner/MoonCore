@@ -91,3 +91,19 @@
 .btn-success:disabled {
     @apply bg-success/80 text-gray-300;
 }
+
+.btn-group {
+    @apply inline-flex rounded-md shadow-xs;
+}
+
+.btn-group > :first-child {
+    @apply rounded-none rounded-s-lg;
+}
+
+.btn-group > :last-child {
+    @apply rounded-none rounded-e-lg;
+}
+
+.btn-group > :not(:first-child):not(:last-child) {
+    @apply rounded-none border-x border-y-0 border-white/10;
+}

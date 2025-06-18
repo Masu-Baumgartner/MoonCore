@@ -1,0 +1,76 @@
+@typeparam TItem
+
+<DataTableColumn TItem="TItem" HeaderCss="w-4 px-1.5" ColumnCss="px-1.5" Index="int.MinValue">
+    <HeaderTemplate>
+        <div class="flex justify-center ms-1">
+            @if (DataTable.Items.Length != 0 && DataTable.Items.Length == SelectedItems.Count)
+            {
+                <input @onclick="() => ToggleAll(false)" type="checkbox" class="checkbox checkbox-primary checkbox-xs"
+                       checked="checked">
+            }
+            else
+            {
+                <input @onclick="() => ToggleAll(true)" type="checkbox" class="checkbox checkbox-primary checkbox-xs">
+            }
+        </div>
+    </HeaderTemplate>
+    <ColumnTemplate>
+        <div class="flex justify-center ms-1">
+            @if (SelectedItems.Contains(context))
+            {
+                <input @onclick="() => ToggleOne(context, false)" type="checkbox"
+                       class="checkbox checkbox-primary checkbox-xs" checked="checked">
+            }
+            else
+            {
+                <input @onclick="() => ToggleOne(context, true)" type="checkbox"
+                       class="checkbox checkbox-primary checkbox-xs">
+            }
+        </div>
+    </ColumnTemplate>
+</DataTableColumn>
+
+@code
+{
+    [CascadingParameter(Name = "DataTable")]
+    public DataTable<TItem> DataTable { get; set; }
+    
+    [Parameter] public Func<TItem[], Task>? OnSelectionChanged { get; set; }
+
+    private readonly List<TItem> SelectedItems = new();
+
+    protected override void OnInitialized()
+    {
+        DataTable.OnRefreshing += async () =>
+        {
+            SelectedItems.Clear();
+            
+            if(OnSelectionChanged != null)
+                await OnSelectionChanged.Invoke(SelectedItems.ToArray());
+        };
+    }
+
+    private async Task ToggleAll(bool toggle)
+    {
+        SelectedItems.Clear();
+        
+        if(toggle)
+            SelectedItems.AddRange(DataTable.Items);
+
+        await DataTable.NotifyStateHasChanged();
+       
+        if(OnSelectionChanged != null)
+            await OnSelectionChanged.Invoke(SelectedItems.ToArray());
+    }
+    
+    private async Task ToggleOne(TItem item, bool toggle)
+    {
+        if(toggle && !SelectedItems.Contains(item))
+            SelectedItems.Add(item);
+        else if (!toggle && SelectedItems.Contains(item))
+            SelectedItems.Remove(item);
+        
+        if(OnSelectionChanged != null)
+            await OnSelectionChanged.Invoke(SelectedItems.ToArray());
+    }
+}

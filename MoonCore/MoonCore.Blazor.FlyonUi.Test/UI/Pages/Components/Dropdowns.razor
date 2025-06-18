@@ -1,0 +1,28 @@
+@page "/components/dropdowns"
+@using MoonCore.Blazor.FlyonUi.Components
+
+<NavTabs Index="3" Names="UiConstants.ComponentNames" Links="UiConstants.ComponentLinks" Icons="UiConstants.ComponentIcons" />
+
+<div class="mt-5">
+    <Dropdown>
+        <Activator>
+            <div class="dropdown-toggle btn btn-primary" aria-haspopup="menu" aria-expanded="false" aria-label="Dropdown">
+                Dropdown
+                <span class="icon-chevron-down dropdown-open:rotate-180 size-4"></span>
+            </div>
+        </Activator>
+        <Content>
+            <ul>
+                <li><a class="dropdown-item" href="#">My Profile</a></li>
+                <li><a class="dropdown-item" href="#">Settings</a></li>
+                <li><a class="dropdown-item" href="#">Billing</a></li>
+                <li><a class="dropdown-item" href="#">FAQs</a></li>
+            </ul>
+        </Content>
+    </Dropdown>
+</div>
+
+@code
+{
+    
+}
