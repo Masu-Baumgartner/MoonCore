@@ -6,6 +6,21 @@
         <ImplicitUsings>enable</ImplicitUsings>
     </PropertyGroup>
 
+    <PropertyGroup Label="Nuget Settings">
+        <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+        <Title>MoonCore.Blazor.FlyonUi</Title>
+        <Authors>Masu Baumgartner</Authors>
+        <Description>A port of mooncore.blazor.tailwind to flyonui</Description>
+        <Copyright>Masu Baumgartner</Copyright>
+        <PackageProjectUrl>https://github.com/Masu-Baumgartner/MoonCore</PackageProjectUrl>
+        <PackageLicenseUrl>https://github.com/Masu-Baumgartner/MoonCore</PackageLicenseUrl>
+        <RepositoryUrl>https://github.com/Masu-Baumgartner/MoonCore</RepositoryUrl>
+        <RepositoryType>git</RepositoryType>
+        <PackageTags>mooncore</PackageTags>
+        <PackageReadmeFile>README.md</PackageReadmeFile>
+        <Version>1.0.0</Version>
+    </PropertyGroup>
+
 
     <ItemGroup>
         <SupportedPlatform Include="browser"/>
@@ -16,13 +31,13 @@
     </ItemGroup>
 
     <ItemGroup>
-      <_ContentIncludedByDefault Remove="wwwroot\background.png" />
-      <_ContentIncludedByDefault Remove="wwwroot\exampleJsInterop.js" />
+        <None Include="README.md" Pack="true" PackagePath="\"/>
+        <None Include="Styles/mappings/*" Pack="true" PackagePath="Styles/mappings/" />
+        <None Include="MoonCore.Blazor.FlyonUi.targets" Pack="true" PackagePath="build\MoonCore.Blazor.FlyonUi.targets" />
     </ItemGroup>
 
     <ItemGroup>
       <AdditionalFiles Include="Alerts\Components\ConfirmDangerAlert.razor" />
-      <AdditionalFiles Include="Alerts\Components\DangerAlert.razor" />
       <AdditionalFiles Include="Alerts\Components\InfoAlert.razor" />
       <AdditionalFiles Include="Alerts\Components\SuccessAlert.razor" />
       <AdditionalFiles Include="Alerts\Components\WarningAlert.razor" />
