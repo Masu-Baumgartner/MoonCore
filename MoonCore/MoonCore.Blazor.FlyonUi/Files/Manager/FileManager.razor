@@ -1,0 +1,72 @@
+﻿@using MoonCore.Blazor.FlyonUi.Files.View
+@using MoonCore.Blazor.FlyonUi.DataTables
+
+<FileManagerHeader/>
+
+<div class="mt-5">
+    <FileView InitialPath="/" Load="Load" ShowDate="true" ShowSize="true" OnClick="OnClick" CustomClickLink="CustomClickLink">
+        <ChildContent>
+            <Selection TItem="FileEntry" OnSelectionChanged="OnSelectionChanged" />
+            <DataTableColumn TItem="FileEntry" Index="int.MaxValue">
+                <ColumnTemplate>
+                    <div class="flex justify-end me-1.5">
+                        <a @onclick:preventDefault href="#">
+                            <i class="icon-ellipsis text-lg"></i>
+                        </a>
+                    </div>
+                </ColumnTemplate>
+            </DataTableColumn>
+        </ChildContent>
+    </FileView>
+</div>
+
+@code
+{
+    private async Task<FileEntry[]> Load(string arg)
+    {
+        return [
+            new FileEntry()
+            {
+                Name = "folder1",
+                IsFolder = true,
+                Size = 0
+            },
+            new FileEntry()
+            {
+                Name = "folder2",
+                IsFolder = true,
+                Size = 0
+            },
+            new FileEntry()
+            {
+                Name = "file1",
+                IsFolder = false,
+                Size = 0
+            },
+            new FileEntry()
+            {
+                Name = "file2",
+                IsFolder = false,
+                Size = 0
+            },
+            new FileEntry()
+            {
+                Name = "file3",
+                IsFolder = false,
+                Size = 0
+            }
+        ];
+    }
+
+    private Task OnClick(FileEntry arg)
+    {
+        return Task.CompletedTask;
+    }
+
+    private string CustomClickLink(FileEntry arg) => $"/files?path=/{arg.Name}";
+
+    private Task OnSelectionChanged(FileEntry[] arg)
+    {
+        return Task.CompletedTask;
+    }
+}

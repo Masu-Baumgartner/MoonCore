@@ -54,6 +54,7 @@
     </ItemGroup>
 
     <ItemGroup>
+      <Folder Include="Files\Api\" />
       <Folder Include="Styles\mappings\" />
     </ItemGroup>
 

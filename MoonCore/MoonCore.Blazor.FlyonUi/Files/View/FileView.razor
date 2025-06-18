@@ -1,0 +1,141 @@
+﻿@using MoonCore.Blazor.FlyonUi.DataTables
+@using MoonCore.Helpers
+@using MoonCore.Blazor.FlyonUi.Components
+
+<DataTable @ref="Table" TItem="FileEntry" ItemSource="ItemSource">
+    <Configuration>
+        @if (ShowIcons)
+        {
+            <DataTableColumn TItem="FileEntry"
+                             Index="0"
+                             HeaderCss="w-12 px-2"
+                             ColumnCss="w-12 px-2">
+                <ColumnTemplate>
+                    <div class="flex justify-center">
+                        @if (context.IsFolder)
+                        {
+                            <i class="icon-folder text-primary text-2xl"></i>
+                        }
+                        else
+                        {
+                            <i class="icon-file text-warning text-2xl"></i>
+                        }
+                    </div>
+                </ColumnTemplate>
+            </DataTableColumn>
+        }
+        
+        <DataTableColumn TItem="FileEntry"
+                         Name="Name"
+                         Field="@(x => x.Name)"
+                         Index="1">
+            <ColumnTemplate>
+                @if (OnClick == null)
+                {
+                    <span>@context.Name</span>
+                }
+                else
+                {
+                    <a @onclick="() => HandleClick(context)"
+                       @onclick:preventDefault
+                       href="@(CustomClickLink == null ? "#" : CustomClickLink.Invoke(context))">
+                        @context.Name
+                    </a>
+                }
+            </ColumnTemplate>
+        </DataTableColumn>
+
+        @if (ShowSize)
+        {
+            <DataTableColumn TItem="FileEntry"
+                             Name="Size"
+                             Field="@(x => x.Size)"
+                             Index="2"
+                             HeaderCss="hidden md:table-cell"
+                             ColumnCss="hidden md:table-cell">
+                <ColumnTemplate>
+                    @if (context.IsFolder)
+                    {
+                        <span>-</span>
+                    }
+                    else
+                    {
+                        <span>
+                            @Formatter.FormatSize(context.Size)
+                        </span>
+                    }
+                </ColumnTemplate>
+            </DataTableColumn>
+        }
+        
+        @if (ShowDate)
+        {
+            <DataTableColumn TItem="FileEntry"
+                             Name="Updated at"
+                             Field="@(x => x.UpdatedAt)"
+                             Index="3"
+                             HeaderCss="hidden md:table-cell"
+                             ColumnCss="hidden md:table-cell">
+                <ColumnTemplate>
+                    <span>
+                        @Formatter.FormatDate(context.UpdatedAt)
+                    </span>
+                </ColumnTemplate>
+            </DataTableColumn>
+        }
+        
+        @if (ChildContent != null)
+        {
+            @ChildContent
+        }
+    </Configuration>
+    <NoItemsIndicator>
+        @if (NoFilesContent == null)
+        {
+            <div class="p-5">
+                <IconAlert Title="No files/folders found"
+                           Icon="icon-file-stack"
+                           Color="text-info">
+                    No files and folders found in that directory
+                </IconAlert>
+            </div>
+        }
+        else
+        {
+            @NoFilesContent
+        }
+    </NoItemsIndicator>
+</DataTable>
+
+@code
+{
+    [Parameter] public Func<string, Task<FileEntry[]>> Load { get; set; }
+    [Parameter] public Func<FileEntry, Task>? OnClick { get; set; }
+    [Parameter] public Func<FileEntry, string>? CustomClickLink { get; set; }
+    [Parameter] public RenderFragment? ChildContent { get; set; }
+    [Parameter] public RenderFragment? NoFilesContent { get; set; }
+    [Parameter] public string Path { get; set; }
+    [Parameter] public string InitialPath { get; set; }
+
+    [Parameter] public bool ShowIcons { get; set; } = true;
+    [Parameter] public bool ShowDate { get; set; } = false;
+    [Parameter] public bool ShowSize { get; set; } = false;
+
+    private DataTable<FileEntry> Table;
+
+    protected override void OnInitialized()
+    {
+        Path = InitialPath;
+    }
+
+    private async Task<FileEntry[]> ItemSource()
+        => await Load.Invoke(Path);
+
+    private async Task HandleClick(FileEntry entry)
+    {
+        if (OnClick != null)
+            await OnClick.Invoke(entry);
+    }
+
+    public async Task Refresh(bool silent = false) => await Table.Refresh(silent: silent);
+}
