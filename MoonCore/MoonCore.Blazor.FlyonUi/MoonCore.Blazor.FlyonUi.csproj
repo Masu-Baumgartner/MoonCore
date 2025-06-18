@@ -53,4 +53,8 @@
       <ProjectReference Include="..\MoonCore.Blazor\MoonCore.Blazor.csproj" />
     </ItemGroup>
 
+    <ItemGroup>
+      <Folder Include="Styles\mappings\" />
+    </ItemGroup>
+
 </Project>
