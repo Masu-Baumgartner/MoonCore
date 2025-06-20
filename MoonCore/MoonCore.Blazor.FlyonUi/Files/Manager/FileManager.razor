@@ -1,16 +1,36 @@
 ﻿@using MoonCore.Blazor.FlyonUi.Files.View
 @using MoonCore.Blazor.FlyonUi.DataTables
+@using MoonCore.Helpers
 
-<FileManagerHeader/>
+<FileManagerHeader CurrentPath="@CurrentPath"
+                   OnBreadcrumbClick="SetPath"
+                   OnHomeClick="@(() => SetPath("/"))"
+                   OnRefreshClick="() => FileView.Refresh()"/>
 
 <div class="mt-5">
-    <FileView InitialPath="/" Load="Load" ShowDate="true" ShowSize="true" OnClick="OnClick" CustomClickLink="CustomClickLink">
+    <FileView @ref="FileView" Load="Load" ShowDate="true" ShowSize="true" OnClick="OnClick"
+              CustomClickLink="CustomClickLink">
         <ChildContent>
-            <Selection TItem="FileEntry" OnSelectionChanged="OnSelectionChanged" />
+            <DataTableRow TItem="FileEntry" Index="int.MinValue">
+                <Template>
+                    @if (CurrentPath != "/")
+                    {
+                        <td @onclick="GoUp" scope="row" colspan="99999"
+                            class="py-1.5 px-3 text-left font-normal cursor-pointer">
+                            <div class="flex flex-row items-center">
+                                <i class="icon-folder-up text-accent text-2xl me-5"></i>
+                                <div>Go up</div>
+                            </div>
+                        </td>
+                    }
+                </Template>
+            </DataTableRow>
+
+            <Selection TItem="FileEntry" OnSelectionChanged="OnSelectionChanged"/>
             <DataTableColumn TItem="FileEntry" Index="int.MaxValue">
                 <ColumnTemplate>
                     <div class="flex justify-end me-1.5">
-                        <a @onclick:preventDefault href="#">
+                        <a href="#" @onclick:preventDefault @onclick:stopPropagation>
                             <i class="icon-ellipsis text-lg"></i>
                         </a>
                     </div>
@@ -22,45 +42,39 @@
 
 @code
 {
-    private async Task<FileEntry[]> Load(string arg)
+    [Parameter] public IFileAccess FileAccess { get; set; }
+
+    private string CurrentPath = "/";
+    private FileView FileView;
+
+    private async Task<FileEntry[]> Load()
     {
-        return [
-            new FileEntry()
-            {
-                Name = "folder1",
-                IsFolder = true,
-                Size = 0
-            },
-            new FileEntry()
-            {
-                Name = "folder2",
-                IsFolder = true,
-                Size = 0
-            },
-            new FileEntry()
-            {
-                Name = "file1",
-                IsFolder = false,
-                Size = 0
-            },
-            new FileEntry()
-            {
-                Name = "file2",
-                IsFolder = false,
-                Size = 0
-            },
-            new FileEntry()
-            {
-                Name = "file3",
-                IsFolder = false,
-                Size = 0
-            }
-        ];
+        var items = await FileAccess.List(CurrentPath);
+
+        return items
+            .OrderByDescending(x => x.IsFolder)
+            .ThenBy(x => x.Name)
+            .ToArray();
     }
 
-    private Task OnClick(FileEntry arg)
+    private async Task OnClick(FileEntry fileEntry)
     {
-        return Task.CompletedTask;
+        if (fileEntry.IsFolder)
+        {
+            CurrentPath = UnixPath.Combine(CurrentPath, fileEntry.Name);
+
+            await FileView.Refresh();
+            await InvokeAsync(StateHasChanged);
+        }
+    }
+
+    private async Task GoUp()
+    {
+        CurrentPath = UnixPath.GetFullPath(
+            UnixPath.Combine(CurrentPath, "..")
+        );
+
+        await FileView.Refresh();
     }
 
     private string CustomClickLink(FileEntry arg) => $"/files?path=/{arg.Name}";
@@ -68,5 +82,13 @@
     private Task OnSelectionChanged(FileEntry[] arg)
     {
         return Task.CompletedTask;
+    }
+
+    private async Task SetPath(string path)
+    {
+        CurrentPath = path;
+        
+        await FileView.Refresh();
+        await InvokeAsync(StateHasChanged);
     }
 }

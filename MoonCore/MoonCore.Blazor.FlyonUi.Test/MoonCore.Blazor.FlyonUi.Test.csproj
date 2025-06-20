@@ -15,6 +15,11 @@
     <ItemGroup>
       <_ContentIncludedByDefault Remove="Components\Pages\Error.razor" />
       <_ContentIncludedByDefault Remove="Components\Pages\Home.razor" />
+      <_ContentIncludedByDefault Remove="testFs\ScTest.Test\bin\Debug\net8.0\ScTest.Test.deps.json" />
+      <_ContentIncludedByDefault Remove="testFs\ScTest.Test\bin\Debug\net8.0\ScTest.Test.runtimeconfig.json" />
+      <_ContentIncludedByDefault Remove="testFs\ScTest.Test\obj\project.assets.json" />
+      <_ContentIncludedByDefault Remove="testFs\ScTest.Test\obj\project.packagespec.json" />
+      <_ContentIncludedByDefault Remove="testFs\ScTest.Test\obj\ScTest.Test.csproj.nuget.dgspec.json" />
     </ItemGroup>
 
     <ItemGroup>
@@ -23,6 +28,10 @@
 
     <ItemGroup>
       <PackageReference Include="Bogus" Version="35.6.3" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <Folder Include="testFs\" />
     </ItemGroup>
 
 </Project>

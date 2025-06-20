@@ -2,7 +2,7 @@
 @using MoonCore.Helpers
 @using MoonCore.Blazor.FlyonUi.Components
 
-<DataTable @ref="Table" TItem="FileEntry" ItemSource="ItemSource">
+<DataTable @ref="Table" TItem="FileEntry" ItemSource="ItemSource" OnClick="OnClick">
     <Configuration>
         @if (ShowIcons)
         {
@@ -24,26 +24,11 @@
                 </ColumnTemplate>
             </DataTableColumn>
         }
-        
+
         <DataTableColumn TItem="FileEntry"
                          Name="Name"
                          Field="@(x => x.Name)"
-                         Index="1">
-            <ColumnTemplate>
-                @if (OnClick == null)
-                {
-                    <span>@context.Name</span>
-                }
-                else
-                {
-                    <a @onclick="() => HandleClick(context)"
-                       @onclick:preventDefault
-                       href="@(CustomClickLink == null ? "#" : CustomClickLink.Invoke(context))">
-                        @context.Name
-                    </a>
-                }
-            </ColumnTemplate>
-        </DataTableColumn>
+                         Index="1"/>
 
         @if (ShowSize)
         {
@@ -67,7 +52,7 @@
                 </ColumnTemplate>
             </DataTableColumn>
         }
-        
+
         @if (ShowDate)
         {
             <DataTableColumn TItem="FileEntry"
@@ -83,7 +68,7 @@
                 </ColumnTemplate>
             </DataTableColumn>
         }
-        
+
         @if (ChildContent != null)
         {
             @ChildContent
@@ -109,13 +94,11 @@
 
 @code
 {
-    [Parameter] public Func<string, Task<FileEntry[]>> Load { get; set; }
+    [Parameter] public Func<Task<FileEntry[]>> Load { get; set; }
     [Parameter] public Func<FileEntry, Task>? OnClick { get; set; }
     [Parameter] public Func<FileEntry, string>? CustomClickLink { get; set; }
     [Parameter] public RenderFragment? ChildContent { get; set; }
     [Parameter] public RenderFragment? NoFilesContent { get; set; }
-    [Parameter] public string Path { get; set; }
-    [Parameter] public string InitialPath { get; set; }
 
     [Parameter] public bool ShowIcons { get; set; } = true;
     [Parameter] public bool ShowDate { get; set; } = false;
@@ -123,19 +106,8 @@
 
     private DataTable<FileEntry> Table;
 
-    protected override void OnInitialized()
-    {
-        Path = InitialPath;
-    }
-
     private async Task<FileEntry[]> ItemSource()
-        => await Load.Invoke(Path);
-
-    private async Task HandleClick(FileEntry entry)
-    {
-        if (OnClick != null)
-            await OnClick.Invoke(entry);
-    }
+        => await Load.Invoke();
 
     public async Task Refresh(bool silent = false) => await Table.Refresh(silent: silent);
 }

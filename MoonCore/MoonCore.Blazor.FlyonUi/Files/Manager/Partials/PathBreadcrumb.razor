@@ -1,0 +1,43 @@
+﻿<div class="input grow">
+    <span class="icon-folder text-base-content/80 my-auto me-3 shrink-0"></span>
+    <div class="flex items-center grow">
+        @{
+            var path = Path;
+            var pathParts = path.Split("/", StringSplitOptions.RemoveEmptyEntries);
+        }
+
+        @for (var i = 0; i < pathParts.Length; i++)
+        {
+            var pathName = pathParts[i];
+            var currentPath = string.Join("/", pathParts.Take(i + 1));
+
+            if (i != 0)
+            {
+                <i class="text-base-content/60 mx-0.5 icon-chevron-right"></i>
+            }
+
+            if (pathParts.Length == 1 || i == pathParts.Length - 1 || OnClick == null)
+            {
+                <span class="text-sm font-medium text-base-content/70 ms-1 md:me-2">
+                    @pathName
+                </span>
+            }
+            else
+            {
+                <a href="@(CustomClickLink == null ? "#" : CustomClickLink.Invoke(currentPath))"
+                   @onclick="() => OnClick.Invoke(currentPath)"
+                   @onclick:preventDefault
+                   class="text-sm font-medium text-base-content/70 hover:text-base-content ms-1 md:me-2">
+                    @pathName
+                </a>
+            }
+        }
+    </div>
+</div>
+
+@code
+{
+    [Parameter] public string Path { get; set; }
+    [Parameter] public Func<string, Task>? OnClick { get; set; }
+    [Parameter] public Func<string, string>? CustomClickLink { get; set; }
+}

@@ -1,24 +1,32 @@
-﻿<div class="card card-body p-2">
-    <div class="grid grid-cols-1 lg:grid-cols-2">
+﻿@using MoonCore.Blazor.FlyonUi.Files.Manager.Partials
+
+<div class="card card-body p-2">
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-y-3 lg:gap-y-0">
         <div class="col-span-1">
             <div class="flex flex-row justify-start">
-                <button class="btn btn-square btn-secondary grow-0 me-2">
-                    <i class="icon-house"></i>
-                </button>
-                <button class="btn btn-square btn-secondary grow-0 me-2">
-                    <i class="icon-chevron-up"></i>
-                </button>
-                <button class="btn btn-square btn-primary grow-0 me-4">
-                    <i class="icon-refresh-cw"></i>
-                </button>
-                <div class="input grow">
-                    <span class="icon-folder text-base-content/80 my-auto me-3 shrink-0"></span>
-                    <input type="text" class="grow" value="/home/container" readonly="readonly"/>
+                @if (OnHomeClick != null)
+                {
+                    <button @onclick="OnHomeClick" class="btn btn-square btn-secondary grow-0 me-2">
+                        <i class="icon-house text-base"></i>
+                    </button>
+                }
+                
+                @if (OnRefreshClick != null)
+                {
+                    <button @onclick="OnRefreshClick" class="btn btn-square btn-primary grow-0 me-2">
+                        <i class="icon-refresh-cw"></i>
+                    </button>
+                }
+                
+                <div class="ms-1 grow">
+                    <PathBreadcrumb Path="@CurrentPath"
+                                    OnClick="OnBreadcrumbClick"
+                                    CustomClickLink="CustomBreadcrumbClickLink"/>
                 </div>
             </div>
         </div>
         <div class="col-span-1">
-            <div class="flex flex-row justify-end">
+            <div class="flex flex-row justify-center lg:justify-end">
                 <div class="btn btn-primary btn-outline text-base-content me-2">
                     <i class="icon-file-plus-2"></i>
                     File
@@ -38,5 +46,10 @@
 
 @code
 {
+    [Parameter] public string CurrentPath { get; set; }
+    [Parameter] public Func<string, Task>? OnBreadcrumbClick { get; set; }
+    [Parameter] public Func<string, string>? CustomBreadcrumbClickLink { get; set; }
     
+    [Parameter] public Func<Task>? OnHomeClick { get; set; }
+    [Parameter] public Func<Task>? OnRefreshClick { get; set; }
 }

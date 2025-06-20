@@ -1,4 +1,18 @@
 ﻿@page "/files/manager"
 @using MoonCore.Blazor.FlyonUi.Files.Manager
+@using MoonCore.Blazor.FlyonUi.Test.Services
 
-<FileManager />
+<FileManager FileAccess="FileAccess" />
+
+@code
+{
+    private IFileAccess FileAccess;
+
+    protected override void OnInitialized()
+    {
+        var path = Path.Combine("testFs");
+        
+        Directory.CreateDirectory(path);
+        FileAccess = new HostFileAccess(path);
+    }
+}

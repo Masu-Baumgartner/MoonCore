@@ -8,7 +8,7 @@ public interface IFileAccess
     public Task<FileEntry[]> List(string path);
     public Task Move(string oldPath, string newPath);
 
-    public Task<Stream> Read(string path);
+    public Task Read(string path, Func<Stream, Task> onHandleData);
     public Task Write(string path, Stream dataStream);
 
     public Task Delete(string path);
