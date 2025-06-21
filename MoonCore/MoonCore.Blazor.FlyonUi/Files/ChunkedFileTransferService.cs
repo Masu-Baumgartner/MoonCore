@@ -6,16 +6,20 @@ public class ChunkedFileTransferService
 {
     private readonly IJSRuntime JsRuntime;
 
+    public delegate Task UploadChunkCallback(int chunkId, ByteArrayContent content);
+
+    public delegate Task<byte[]> DownloadChunkCallback(int chunkId);
+
     public ChunkedFileTransferService(IJSRuntime jsRuntime)
     {
         JsRuntime = jsRuntime;
     }
 
     public async Task Upload(
-        Func<int, Task> updateProgress,
         Stream dataStream,
         long chunkSize,
-        Func<int, ByteArrayContent, Task> onHandle
+        UploadChunkCallback callback,
+        IProgress<int>? progress = null
     )
     {
         var size = dataStream.Length;
@@ -23,17 +27,30 @@ public class ChunkedFileTransferService
         var chunks = size / chunkSize;
         chunks += size % chunkSize > 0 ? 1 : 0;
 
+        var buffer = new byte[chunkSize];
+
         for (var chunkId = 0; chunkId < chunks; chunkId++)
         {
             var percent = (int)Math.Round((chunkId + 1f) / chunks * 100);
-            await updateProgress.Invoke(percent);
 
-            var buffer = new byte[chunkSize];
-            var bytesRead = await dataStream.ReadAsync(buffer);
+            progress?.Report(percent);
 
-            var content = new ByteArrayContent(buffer, 0, bytesRead);
+            var totalRead = 0;
 
-            await onHandle.Invoke(
+            while (totalRead < chunkSize)
+            {
+                var bytesToRead = (int)Math.Min(chunkSize - totalRead, buffer.Length - totalRead);
+                var bytesRead = await dataStream.ReadAsync(buffer, totalRead, bytesToRead);
+
+                if (bytesRead == 0)
+                    break; // EOF
+
+                totalRead += bytesRead;
+            }
+
+            var content = new ByteArrayContent(buffer, 0, totalRead);
+
+            await callback.Invoke(
                 chunkId,
                 content
             );
@@ -41,11 +58,11 @@ public class ChunkedFileTransferService
     }
 
     public async Task Download(
-        Func<int, Task> updateProgress,
         string name,
         long chunkSize,
         long size,
-        Func<int, Task<byte[]>> onHandle
+        DownloadChunkCallback callback,
+        IProgress<int>? progress = null
     )
     {
         var chunks = size / chunkSize;
@@ -58,9 +75,10 @@ public class ChunkedFileTransferService
         for (var chunkId = 0; chunkId < chunks; chunkId++)
         {
             var percent = (int)Math.Round((chunkId + 1f) / chunks * 100);
-            await updateProgress.Invoke(percent);
 
-            var data = await onHandle.Invoke(chunkId);
+            progress?.Report(percent);
+
+            var data = await callback.Invoke(chunkId);
 
             await JsRuntime.InvokeVoidAsync(
                 "moonCore.chunkedDownload.writeChunk",
@@ -68,7 +86,7 @@ public class ChunkedFileTransferService
                 data
             );
         }
-        
+
         await JsRuntime.InvokeVoidAsync("moonCore.chunkedDownload.finish", id);
     }
 }

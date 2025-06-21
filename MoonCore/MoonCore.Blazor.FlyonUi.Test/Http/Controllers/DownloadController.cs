@@ -27,12 +27,14 @@ public class DownloadController : Controller
         
         var positionToSkipTo = chunkSize * chunkId;
         fs.Position = positionToSkipTo;
-
-        var buffer = new byte[chunkSize];
-        var readBytes = await fs.ReadAsync(buffer, 0, chunkSize);
         
-        var content = new ByteArrayContent(buffer, 0, readBytes);
+        var remainingBytes = fs.Length - positionToSkipTo;
+        var bytesToRead = (int)Math.Min(chunkSize, remainingBytes);
 
-        await content.CopyToAsync(Response.Body);
+        var buffer = new byte[bytesToRead];
+        var readBytes = await fs.ReadAsync(buffer, 0, bytesToRead);
+
+        Response.ContentLength = readBytes;
+        await Response.Body.WriteAsync(buffer, 0, bytesToRead);
     }
 }

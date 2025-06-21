@@ -12,8 +12,17 @@
     </WButton>
 </div>
 
+<div class="mt-5">
+    <InputFile OnChange="Callback" type="file" class="input max-w-sm mx-2" aria-label="file-input"/>
+    <WButton OnClick="Upload" CssClasses="btn btn-primary">
+        Upload
+    </WButton>
+</div>
+
 @code
 {
+    private IBrowserFile File;
+
     private async Task OnClick(WButton button)
     {
         var fi = new FileInfo(
@@ -22,13 +31,53 @@
 
         var chunkSize = ByteConverter.FromMegaBytes(20).Bytes;
 
-        await FileTransferService.Download(async percent => { await button.UpdateLoadingText($"Progress: {percent}%"); },
+        await FileTransferService.Download(
             "data.bin",
             chunkSize,
             fi.Length,
             async chunkId => await HttpClient.GetByteArrayAsync(
                 $"http://localhost:5220/api/download?chunkId={chunkId}&chunkSize={chunkSize}"
-            )
+            ),
+            new Progress<int>(async percent => { await button.UpdateLoadingText($"Progress: {percent}%"); })
         );
     }
+
+    private async Task Upload(WButton button)
+    {
+        var chunkSize = ByteConverter.FromMegaBytes(20).Bytes;
+        await using var dataStream = File.OpenReadStream(File.Size);
+
+        try
+        {
+            await FileTransferService.Upload(
+                dataStream,
+                chunkSize,
+                async (chunkId, content) =>
+                {
+                    var multipartForm = new MultipartFormDataContent();
+                    multipartForm.Add(content, "file", "file");
+
+                    Console.WriteLine($"Uploaded: {chunkId}");
+
+                    await HttpClient.PostAsync(
+                        $"http://localhost:5220/api/upload?chunkId={chunkId}&chunkSize={chunkSize}&fileSize={File.Size}&fileName={File.Name}",
+                        multipartForm
+                    );
+                },
+                new Progress<int>(async percent => { await button.UpdateLoadingText($"Progress: {percent}%"); })
+            );
+        }
+        catch (Exception e)
+        {
+            Console.WriteLine(e);
+            throw;
+        }
+        finally
+        {
+            dataStream.Close();
+        }
+    }
+
+    private void Callback(InputFileChangeEventArgs eventArgs)
+        => File = eventArgs.File;
 }
