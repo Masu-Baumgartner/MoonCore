@@ -48,7 +48,6 @@
       <AdditionalFiles Include="Modals\Components\BaseModal.razor" />
       <AdditionalFiles Include="Modals\ModalLauncher.razor" />
       <AdditionalFiles Include="Toasts\Components\BaseToast.razor" />
-      <AdditionalFiles Include="Toasts\Components\DangerToast.razor" />
       <AdditionalFiles Include="Toasts\Components\InfoToast.razor" />
       <AdditionalFiles Include="Toasts\Components\ProgressToast.razor" />
       <AdditionalFiles Include="Toasts\Components\SuccessToast.razor" />
@@ -63,6 +62,7 @@
     <ItemGroup>
       <Folder Include="Files\Manager\Modals\" />
       <Folder Include="Styles\mappings\" />
+      <Folder Include="wwwroot\" />
     </ItemGroup>
 
 </Project>

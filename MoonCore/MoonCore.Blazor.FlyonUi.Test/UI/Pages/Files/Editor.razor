@@ -1,0 +1,15 @@
+@page "/files/editor"
+@using MoonCore.Blazor.FlyonUi.Ace
+
+<CodeEditor InitialContent="Testy" OnConfigure="OnConfigure">
+    
+</CodeEditor>
+
+@code
+{
+
+    private void OnConfigure(CodeEditorOptions options)
+    {
+        options.FontFamily = "Source Code Pro";
+    }
+}

@@ -1,0 +1,34 @@
+@page "/files/transfer"
+@using MoonCore.Blazor.FlyonUi.Files
+@using MoonCore.Blazor.FlyonUi.Components
+@using MoonCore.Helpers
+
+@inject ChunkedFileTransferService FileTransferService
+@inject HttpClient HttpClient
+
+<div class="mt-5">
+    <WButton OnClick="OnClick" CssClasses="btn btn-primary">
+        Download
+    </WButton>
+</div>
+
+@code
+{
+    private async Task OnClick(WButton button)
+    {
+        var fi = new FileInfo(
+            Path.Combine("testFs", "data.bin")
+        );
+
+        var chunkSize = ByteConverter.FromMegaBytes(20).Bytes;
+
+        await FileTransferService.Download(async percent => { await button.UpdateLoadingText($"Progress: {percent}%"); },
+            "data.bin",
+            chunkSize,
+            fi.Length,
+            async chunkId => await HttpClient.GetByteArrayAsync(
+                $"http://localhost:5220/api/download?chunkId={chunkId}&chunkSize={chunkSize}"
+            )
+        );
+    }
+}

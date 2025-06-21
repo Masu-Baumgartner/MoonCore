@@ -14,5 +14,5 @@ public interface IFileAccess
     public Task Delete(string path);
 
     public Task Upload(Func<int, Task> updateProgress, string path, Stream dataStream);
-    public Task Download(Func<int, Task> updateProgress, string path, string fileName);
+    public Task Download(Func<int, Task> updateProgress, string path, FileEntry fileEntry);
 }

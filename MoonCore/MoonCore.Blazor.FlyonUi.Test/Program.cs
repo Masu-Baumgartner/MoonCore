@@ -1,6 +1,8 @@
+using MoonCore.Blazor.FlyonUi.Ace;
 using MoonCore.Blazor.FlyonUi.Alerts;
 using MoonCore.Blazor.FlyonUi.Test.UI;
 using MoonCore.Blazor.FlyonUi.Auth;
+using MoonCore.Blazor.FlyonUi.Files;
 using MoonCore.Blazor.FlyonUi.Modals;
 using MoonCore.Blazor.FlyonUi.Test;
 using MoonCore.Blazor.FlyonUi.Toasts;
@@ -23,6 +25,11 @@ builder.Services.AddCascadingAuthenticationState();
 builder.Services.AddScoped<ModalService>();
 builder.Services.AddScoped<AlertService>();
 builder.Services.AddScoped<ToastService>();
+builder.Services.AddScoped<CodeEditorService>();
+builder.Services.AddScoped<ChunkedFileTransferService>();
+builder.Services.AddScoped<HttpClient>();
+
+builder.Services.AddControllers();
 
 var app = builder.Build();
 
@@ -38,5 +45,7 @@ app.UseAntiforgery();
 app.MapStaticAssets();
 app.MapRazorComponents<App>()
     .AddInteractiveServerRenderMode();
+
+app.MapControllers();
 
 app.Run();

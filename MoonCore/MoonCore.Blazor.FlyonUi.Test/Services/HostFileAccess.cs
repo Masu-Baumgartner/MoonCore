@@ -121,7 +121,7 @@ public class HostFileAccess : IFileAccess
         return Task.CompletedTask;
     }
 
-    public Task Download(Func<int, Task> updateProgress, string path, string fileName)
+    public Task Download(Func<int, Task> updateProgress, string path, FileEntry fileEntry)
     {
         return Task.CompletedTask;
     }
