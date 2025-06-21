@@ -47,6 +47,13 @@
       <AdditionalFiles Include="DataTables\Selection.razor" />
       <AdditionalFiles Include="Modals\Components\BaseModal.razor" />
       <AdditionalFiles Include="Modals\ModalLauncher.razor" />
+      <AdditionalFiles Include="Toasts\Components\BaseToast.razor" />
+      <AdditionalFiles Include="Toasts\Components\DangerToast.razor" />
+      <AdditionalFiles Include="Toasts\Components\InfoToast.razor" />
+      <AdditionalFiles Include="Toasts\Components\ProgressToast.razor" />
+      <AdditionalFiles Include="Toasts\Components\SuccessToast.razor" />
+      <AdditionalFiles Include="Toasts\Components\WarningToast.razor" />
+      <AdditionalFiles Include="Toasts\ToastLauncher.razor" />
     </ItemGroup>
 
     <ItemGroup>

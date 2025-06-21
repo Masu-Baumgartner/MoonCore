@@ -12,6 +12,6 @@ public static class UiConstants
     public static readonly string[] FormsNames = ["Handle Form", "Form Components", "Selections"];
     public static readonly string[] FormsLinks = ["/forms", "/forms/components", "/forms/selections"];
     
-    public static readonly string[] FeedbackNames = ["Alerts", "Modals"];
-    public static readonly string[] FeedbackLinks = ["/feedback", "/feedback/modals"];
+    public static readonly string[] FeedbackNames = ["Alerts", "Modals", "Toasts"];
+    public static readonly string[] FeedbackLinks = ["/feedback", "/feedback/modals", "/feedback/toasts"];
 }

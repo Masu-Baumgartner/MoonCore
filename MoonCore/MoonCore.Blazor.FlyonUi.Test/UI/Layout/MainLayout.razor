@@ -1,5 +1,6 @@
 ﻿@using MoonCore.Blazor.FlyonUi.Test.UI.Partials
 @using MoonCore.Blazor.FlyonUi.Modals
+@using MoonCore.Blazor.FlyonUi.Toasts
 @inherits LayoutComponentBase
 
 <div class="relative isolate flex min-h-svh w-full max-lg:flex-col bg-background">
@@ -17,9 +18,8 @@
     </main>
 
 </div>
-@*
-<ToastLauncher/>*@
 
+<ToastLauncher/>
 <ModalLauncher/>
 
 <div id="blazor-error-ui" class="fixed bottom-0 left-0 w-full z-50">

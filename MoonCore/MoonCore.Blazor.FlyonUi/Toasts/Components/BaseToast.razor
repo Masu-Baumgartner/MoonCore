@@ -1,0 +1,7 @@
+@code
+{
+    [Parameter] public ToastLauncher Launcher { get; set; }
+    [Parameter] public ToastItem ToastItem { get; set; }
+
+    public async Task Hide() => await Launcher.Close(ToastItem);
+}
