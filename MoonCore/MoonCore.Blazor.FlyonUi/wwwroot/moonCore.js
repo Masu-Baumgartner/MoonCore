@@ -73,5 +73,86 @@ window.moonCore = {
                 this.instances.delete(downloadId);
             }
         }
+    },
+    dropzone: {
+        items: [],
+        
+        init: function (element, dotNetHelper) {
+            // Check which features are supported by the browser
+            const supportsFileSystemAccessAPI =
+                'getAsFileSystemHandle' in DataTransferItem.prototype;
+            const supportsWebkitGetAsEntry =
+                'webkitGetAsEntry' in DataTransferItem.prototype;
+
+            // This is the drag and drop zone.
+            const elem = element;
+
+            // Prevent navigation.
+            elem.addEventListener('dragover', (e) => {
+                e.preventDefault();
+            });
+
+            elem.addEventListener('drop', async (e) => {
+                // Prevent navigation.
+                e.preventDefault();
+
+                if (!supportsFileSystemAccessAPI && !supportsWebkitGetAsEntry) {
+                    // Cannot handle directories.
+                    console.log("Cannot handle directories");
+                    return;
+                }
+
+                this.getAllWebkitFileEntries(e.dataTransfer.items).then(async value => {
+                    value.forEach(a => moonCore.dropzone.items.push(a));
+                });
+            });
+        },
+        getAllWebkitFileEntries: async function (dataTransferItemList) {
+            function readAllEntries(reader) {
+                return new Promise((resolve, reject) => {
+                    const entries = [];
+
+                    function readEntries() {
+                        reader.readEntries((batch) => {
+                            if (batch.length === 0) {
+                                resolve(entries);
+                            } else {
+                                entries.push(...batch);
+                                readEntries();
+                            }
+                        }, reject);
+                    }
+
+                    readEntries();
+                });
+            }
+
+            async function traverseEntry(entry) {
+                if (entry.isFile) {
+                    return [entry];
+                } else if (entry.isDirectory) {
+                    const reader = entry.createReader();
+                    const entries = await readAllEntries(reader);
+                    const subEntries = await Promise.all(entries.map(traverseEntry));
+                    return subEntries.flat();
+                }
+                return [];
+            }
+
+            const entries = [];
+
+            // Convert DataTransferItemList to entries
+            for (let i = 0; i < dataTransferItemList.length; i++) {
+                const item = dataTransferItemList[i];
+                const entry = item.webkitGetAsEntry();
+                if (entry) {
+                    entries.push(entry);
+                }
+            }
+
+            // Traverse all entries and collect file entries
+            const allFileEntries = await Promise.all(entries.map(traverseEntry));
+            return allFileEntries.flat();
+        }
     }
 }

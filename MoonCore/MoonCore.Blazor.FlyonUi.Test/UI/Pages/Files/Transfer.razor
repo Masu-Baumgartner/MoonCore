@@ -5,6 +5,7 @@
 
 @inject ChunkedFileTransferService FileTransferService
 @inject HttpClient HttpClient
+@inject DropHandlerService DropHandlerService
 
 <div class="mt-5">
     <WButton OnClick="OnClick" CssClasses="btn btn-primary">
@@ -17,6 +18,11 @@
     <WButton OnClick="Upload" CssClasses="btn btn-primary">
         Upload
     </WButton>
+</div>
+
+<div class="mt-5">
+    <button @onclick="() => DropHandlerService.Enable()" class="btn btn-success me-2">Enable</button>
+    <button @onclick="() => DropHandlerService.Disable()" class="btn btn-danger">Disable</button>
 </div>
 
 @code

@@ -1,0 +1,47 @@
+@using Microsoft.JSInterop
+
+@inject IJSRuntime JsRuntime
+
+<style>
+    .dropzone {
+        border: 2px dashed #999;
+        padding: 20px;
+        text-align: center;
+        background-color: #f9f9f9;
+    }
+    .dropzone:hover {
+        background-color: #f0f0f0;
+    }
+</style>
+
+<div @ref="dropZone"
+     class="dropzone">
+    Drop files or folders here
+</div>
+
+<ul>
+    @foreach (var file in droppedFiles)
+    {
+        <li>@file</li>
+    }
+</ul>
+
+@code {
+    private ElementReference dropZone;
+    private List<string> droppedFiles = new();
+
+    [JSInvokable]
+    public async Task HandleDroppedFiles(List<string> files)
+    {
+        droppedFiles = files;
+        StateHasChanged();
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            await JsRuntime.InvokeVoidAsync("moonCore.dropzone.init", dropZone, DotNetObjectReference.Create(this));
+        }
+    }
+}

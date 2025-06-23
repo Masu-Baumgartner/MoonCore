@@ -5,6 +5,7 @@ using MoonCore.Blazor.FlyonUi.Auth;
 using MoonCore.Blazor.FlyonUi.Files;
 using MoonCore.Blazor.FlyonUi.Modals;
 using MoonCore.Blazor.FlyonUi.Test;
+using MoonCore.Blazor.FlyonUi.Test.Services;
 using MoonCore.Blazor.FlyonUi.Toasts;
 using MoonCore.Extensions;
 
@@ -28,6 +29,7 @@ builder.Services.AddScoped<ToastService>();
 builder.Services.AddScoped<CodeEditorService>();
 builder.Services.AddScoped<ChunkedFileTransferService>();
 builder.Services.AddScoped<HttpClient>();
+builder.Services.AddScoped<DropHandlerService>();
 
 builder.Services.AddControllers();
 
