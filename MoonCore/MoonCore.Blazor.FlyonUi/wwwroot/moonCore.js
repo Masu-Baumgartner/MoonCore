@@ -76,8 +76,16 @@ window.moonCore = {
     },
     dropzone: {
         items: [],
-        
-        init: function (element, dotNetHelper) {
+        isInitialized: false,
+        isEnabled: false,
+
+        init: function (dotNetHelper) {
+
+            if (this.isInitialized)
+                return;
+
+            this.isInitialized = true;
+            
             // Check which features are supported by the browser
             const supportsFileSystemAccessAPI =
                 'getAsFileSystemHandle' in DataTransferItem.prototype;
@@ -85,14 +93,38 @@ window.moonCore = {
                 'webkitGetAsEntry' in DataTransferItem.prototype;
 
             // This is the drag and drop zone.
-            const elem = element;
+            const elem = document.body;
+
+            elem.addEventListener("dragenter", async () => {
+
+                if (!this.isEnabled)
+                    return;
+
+                await dotNetHelper.invokeMethodAsync("OnDragEnter");
+            });
+
+            elem.addEventListener("dragleave", async () => {
+
+                if (!this.isEnabled)
+                    return;
+
+                await dotNetHelper.invokeMethodAsync("OnDragLeave");
+            });
 
             // Prevent navigation.
             elem.addEventListener('dragover', (e) => {
+
+                if (!this.isEnabled)
+                    return;
+
                 e.preventDefault();
             });
 
             elem.addEventListener('drop', async (e) => {
+
+                if (!this.isEnabled)
+                    return;
+
                 // Prevent navigation.
                 e.preventDefault();
 
@@ -102,11 +134,108 @@ window.moonCore = {
                     return;
                 }
 
-                this.getAllWebkitFileEntries(e.dataTransfer.items).then(async value => {
+                await this.getAllWebkitFileEntries(e.dataTransfer.items).then(async value => {
                     value.forEach(a => moonCore.dropzone.items.push(a));
                 });
+
+                await dotNetHelper.invokeMethodAsync("Trigger");
             });
         },
+        enable: function () {
+            this.isEnabled = true;
+            this.items = [];
+        },
+        disable: function () {
+            this.isEnabled = false;
+        },
+
+        peek: async function () {
+
+            if (this.items.length === 0)
+                return null;
+
+            const item = this.items[this.items.length-1];
+
+            if (!item)
+            {
+                console.log("No items to peek")
+                return null;
+            }
+
+            let file;
+            let path;
+
+            if (item instanceof File) {
+                file = item;
+                path = file.name;
+            } else {
+                file = await this.openFileEntry(item);
+                path = item.fullPath;
+            }
+
+            if (file.size === 0)
+            {
+                console.log("File is empty");
+                
+                return {
+                    shouldSkipToNext: true
+                };
+            }
+
+            const stream = await this.createStreamRef(file);
+
+            if (!stream)
+            {
+                console.log("Stream failed");
+                
+                return {
+                    shouldSkipToNext: true
+                };
+            }
+
+            return {
+                path: path,
+                stream: stream,
+                shouldSkipToNext: false
+            }
+        },
+
+        pop: function () {
+            this.items.pop();
+        },
+
+        openFileEntry: async function (fileEntry) {
+            const promise = new Promise(resolve => {
+                fileEntry.file(file => {
+                    resolve(file);
+                }, err => console.log(err));
+            });
+
+            return await promise;
+        },
+        createStreamRef: async function (processedFile) {
+
+            // Prevent uploads of empty files
+            if (processedFile.size <= 0) {
+                console.log("Skipping upload of '" + processedFile.name + "' as its empty");
+                return null;
+            }
+
+            const fileReader = new FileReader();
+
+            const readerPromise = new Promise(resolve => {
+                fileReader.addEventListener("loadend", ev => {
+                    resolve(fileReader.result)
+                });
+            });
+
+            fileReader.readAsArrayBuffer(processedFile);
+
+            const arrayBuffer = await readerPromise;
+
+            return DotNet.createJSStreamReference(arrayBuffer);
+        },
+
         getAllWebkitFileEntries: async function (dataTransferItemList) {
             function readAllEntries(reader) {
                 return new Promise((resolve, reject) => {

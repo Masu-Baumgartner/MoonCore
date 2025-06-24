@@ -4,39 +4,32 @@
 @inject IJSRuntime JsRuntime
 @inject DropHandlerService HandlerService
 
-@if (IsEnabled)
+@if (IsEnabled && IsActive)
 {
-    <div @ref="DropElement" class="overlay-backdrop pointer-events-none fixed inset-0 overflow-y-auto z-50 bg-base-300/30 @(IsActive ? "opacity-100" : "opacity-0")"
-         @ondragenter="OnDragStart"
-         @ondragleave="OnDragLeave">
-        @if (IsActive)
-        {
-            <div class="overlay modal modal-middle open opened opacity-100"
-                 role="dialog" tabindex="-1" aria-overlay="true">
-                <div class="modal-dialog opacity-100">
-                    <div class="modal-content bg-transparent">
-                        <div class="p-8 border-2 border-dashed border-base-content rounded-lg">
-                            <IconAlert Title="Drop files to upload" Color="text-base-content" Icon="icon-files">
-                                Drop your files and folders here in order to upload
-                            </IconAlert>
-                        </div>
+    <div class="overlay-backdrop pointer-events-none fixed inset-0 overflow-y-auto z-50 bg-base-300/45">
+        <div class="overlay modal modal-middle open opened opacity-100"
+             role="dialog" tabindex="-1" aria-overlay="true">
+            <div class="modal-dialog opacity-100">
+                <div class="modal-content bg-transparent">
+                    <div class="p-8 border-2 border-dashed border-base-content rounded-lg">
+                        <IconAlert Title="Drop files to upload" Color="text-base-content" Icon="icon-files">
+                            Drop your files and folders here in order to upload
+                        </IconAlert>
                     </div>
                 </div>
             </div>
-        }
-
+        </div>
     </div>
 }
 
 @code
 {
     public bool IsEnabled { get; set; } = false;
-    
+
     private bool IsInitialized = false;
     private bool IsActive => Counter != 0;
 
     private int Counter = 0;
-    private ElementReference DropElement;
 
     protected override void OnInitialized()
     {
@@ -45,36 +38,73 @@
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
-        if (IsEnabled && !IsInitialized)
-            await JsRuntime.InvokeVoidAsync("moonCore.dropzone.init", DropElement, DotNetObjectReference.Create(this));
+        if (!IsInitialized)
+        {
+            await JsRuntime.InvokeVoidAsync(
+                "moonCore.dropzone.init",
+                DotNetObjectReference.Create(this)
+            );
+            
+            IsInitialized = true;
+        }
     }
 
     public async Task Enable()
     {
         IsEnabled = true;
-        IsInitialized = false;
+        Counter = 0;
         await InvokeAsync(StateHasChanged);
+
+        await JsRuntime.InvokeVoidAsync("moonCore.dropzone.enable");
     }
 
     public async Task Disable()
     {
         IsEnabled = false;
         await InvokeAsync(StateHasChanged);
+        
+        await JsRuntime.InvokeVoidAsync("moonCore.dropzone.disable");
     }
 
-    #region Drag Handlers
+    public async Task<DropData?> PeekItem()
+    {
+        return await JsRuntime.InvokeAsync<DropData?>(
+            "moonCore.dropzone.peek"
+        );
+    }
     
-    private async Task OnDragStart()
+    public async Task PopItem()
+    {
+        await JsRuntime.InvokeVoidAsync(
+            "moonCore.dropzone.pop"
+        );
+    }
+
+    #region Handlers
+
+    [JSInvokable]
+    public async Task Trigger()
+    {
+        Counter = 0;
+        await InvokeAsync(StateHasChanged);
+
+        await HandlerService.TriggerDropped();
+    }
+
+    [JSInvokable]
+    public async Task OnDragEnter()
     {
         Counter++;
         await InvokeAsync(StateHasChanged);
     }
 
-    private async Task OnDragLeave()
+    [JSInvokable]
+    public async Task OnDragLeave()
     {
         Counter--;
         await InvokeAsync(StateHasChanged);
     }
-    
+
     #endregion
+
 }
