@@ -1,8 +1,14 @@
 ﻿@page "/files/manager"
+
 @using MoonCore.Blazor.FlyonUi.Files.Manager
 @using MoonCore.Blazor.FlyonUi.Test.Services
+@using MoonCore.Blazor.FlyonUi.Components
 
-<FileManager FileAccess="FileAccess" />
+<NavTabs Index="1" Names="UiConstants.FilesNames" Links="UiConstants.FilesLinks" />
+
+<div class="mt-5">
+    <FileManager FileAccess="FileAccess" />
+</div>
 
 @code
 {

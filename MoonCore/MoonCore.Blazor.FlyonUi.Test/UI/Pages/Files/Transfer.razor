@@ -12,6 +12,8 @@
 
 @implements IAsyncDisposable
 
+<NavTabs Index="2" Names="UiConstants.FilesNames" Links="UiConstants.FilesLinks" />
+
 <div class="mt-5">
     <WButton OnClick="OnClick" CssClasses="btn btn-primary">
         Download
@@ -19,7 +21,18 @@
 </div>
 
 <div class="mt-5">
-    <InputFile OnChange="Callback" type="file" class="input max-w-sm mx-2" aria-label="file-input"/>
+    <label class="btn btn-primary me-2" type="file" for="file-input">
+        <i class="icon-folder-open"></i>
+        @if (FileInput == null)
+        {
+            <span>Select file</span>
+        }
+        else
+        {
+            <span>@FileInput.Name @(Formatter.FormatSize(FileInput.Size))</span>
+        }
+    </label>
+    <InputFile OnChange="Callback" type="file" id="file-input" class="hidden"/>
     <WButton OnClick="Upload" CssClasses="btn btn-primary">
         Upload
     </WButton>
@@ -32,7 +45,7 @@
 
 @code
 {
-    private IBrowserFile FileInput;
+    private IBrowserFile? FileInput;
 
     protected override void OnInitialized()
     {

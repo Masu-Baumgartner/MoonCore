@@ -3,7 +3,7 @@
 <div class="card card-body p-2">
     <div class="grid grid-cols-1 lg:grid-cols-2 gap-y-3 lg:gap-y-0">
         <div class="col-span-1">
-            <div class="flex flex-row justify-start">
+            <div class="flex flex-row justify-center lg:justify-start">
                 @if (OnHomeClick != null)
                 {
                     <button @onclick="OnHomeClick" class="btn btn-square btn-secondary grow-0 me-2">
@@ -18,7 +18,7 @@
                     </button>
                 }
                 
-                <div class="ms-1 grow">
+                <div class="ms-1 grow hidden lg:flex">
                     <PathBreadcrumb Path="@CurrentPath"
                                     OnClick="OnBreadcrumbClick"
                                     CustomClickLink="CustomBreadcrumbClickLink"/>

@@ -14,4 +14,7 @@ public static class UiConstants
     
     public static readonly string[] FeedbackNames = ["Alerts", "Modals", "Toasts"];
     public static readonly string[] FeedbackLinks = ["/feedback", "/feedback/modals", "/feedback/toasts"];
+    
+    public static readonly string[] FilesNames = ["View", "Manager", "Transfer", "Editor"];
+    public static readonly string[] FilesLinks = ["/files", "/files/manager", "/files/transfer", "/files/editor"];
 }
