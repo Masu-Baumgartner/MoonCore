@@ -1,0 +1,59 @@
+@page "/forms/selections"
+@using MoonCore.Blazor.FlyonUi.Forms
+@using MoonCore.Exceptions
+
+<div class="max-w-sm">
+    <InputItem TItem="DemoItem" @bind-Value="SelectedItem" DisplayField="@(x => x.Name)" ItemSource="ItemSource" />
+</div>
+
+<div class="max-w-sm mt-1.5">
+    <InputItem TItem="DemoItem" @bind-Value="SelectedItem" DisplayField="@(x => x.Name)" ItemSource="FailingItemSource" />
+</div>
+
+@code
+{
+    private DemoItem[] Items;
+    private DemoItem? SelectedItem = null;
+
+    private async Task<DemoItem[]> ItemSource()
+    {
+        await Task.Delay(TimeSpan.FromSeconds(2));
+        
+        return Items;
+    }
+    
+    private async Task<DemoItem[]> FailingItemSource()
+    {
+        await Task.Delay(TimeSpan.FromSeconds(2));
+
+        throw new HttpApiException("Whoops i failed", 500);
+    }
+
+    protected override void OnInitialized()
+    {
+        Items =
+        [
+            new DemoItem()
+            {
+                Id = 1,
+                Name = "Item 1"
+            },
+            new DemoItem()
+            {
+                Id = 2,
+                Name = "Item 2"
+            },
+            new DemoItem()
+            {
+                Id = 3,
+                Name = "Item 3"
+            }
+        ];
+    }
+
+    record DemoItem
+    {
+        public int Id { get; set; }
+        public string Name { get; set; }
+    }
+}

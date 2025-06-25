@@ -1,0 +1,151 @@
+@using Microsoft.Extensions.Logging
+@typeparam TItem
+
+@inject ILogger<InputItem<TItem>> Logger
+
+<div class="advance-select relative active">
+    @if (IsLoading)
+    {
+        <button type="button" aria-expanded="true"
+                class="advance-select-toggle select-disabled:pointer-events-none select-disabled:opacity-40" disabled="disabled">
+            <span class="truncate italic">Loading</span>
+        </button>
+    }
+    else if (IsFailed)
+    {
+        <button type="button" aria-expanded="true"
+                class="advance-select-toggle select-disabled:pointer-events-none select-disabled:opacity-40" disabled="disabled">
+            <span class="truncate text-error">Failed to load</span>
+        </button>
+    }
+    else
+    {
+        <button @onclick="ToggleVisibility" type="button" aria-expanded="true"
+                class="advance-select-toggle">
+            @if (Value == null)
+            {
+                <span class="truncate">
+                    Select option...
+                </span>
+            }
+            else
+            {
+                <span class="truncate">
+                    @DisplayField.Invoke(Value)
+                </span>
+            }
+        </button>
+    }
+
+    @if (IsVisible && Items != null)
+    {
+        <div class="absolute advance-select-menu opened top-full mt-3" role="listbox" tabindex="-1"
+             aria-orientation="vertical">
+
+            @foreach (var item in Items)
+            {
+                <div @onclick="() => Select(item)"
+                     tabindex="0"
+                     class="cursor-pointer advance-select-option selected:select-active @(item!.Equals(Value) ? "selected" : "")">
+                    <div class="flex items-center w-full">
+                        <span>
+                            @DisplayField.Invoke(item)
+                        </span>
+                    </div>
+                </div>
+            }
+        </div>
+    }
+
+    @if (IsLoading)
+    {
+        <span class="loading loading-spinner loading-xs absolute top-1/2 end-3 -translate-y-1/2"></span>
+    }
+    else if (IsFailed)
+    {
+        <i class="icon-triangle-alert text-error absolute top-1/2 end-3 -translate-y-1/2"></i>
+    }
+    else
+    {
+        <i class="icon-chevrons-up-down text-base-content absolute top-1/2 end-3 -translate-y-1/2"></i>
+    }
+</div>
+
+@code
+{
+
+    #region Binder
+
+    [Parameter]
+    public TItem? Value
+    {
+        get => _value;
+        set
+        {
+            if (_value == null && value == null)
+                return;
+
+            if (_value?.Equals(value) ?? false)
+                return;
+
+            _value = value;
+            ValueChanged.InvokeAsync(value);
+        }
+    }
+
+    [Parameter] public EventCallback<TItem?> ValueChanged { get; set; }
+
+    private TItem? _value;
+
+    #endregion
+
+    [Parameter] public required Func<Task<TItem[]>> ItemSource { get; set; }
+    [Parameter] public required Func<TItem, object> DisplayField { get; set; }
+    [Parameter] public Func<TItem, object>? SearchField { get; set; }
+
+    private bool IsLoading;
+    private bool IsVisible;
+    private bool IsFailed;
+    private TItem[]? Items;
+
+    private async Task Select(TItem? item)
+    {
+        Value = item;
+
+        IsVisible = false;
+        await InvokeAsync(StateHasChanged);
+    }
+
+    private async Task ToggleVisibility()
+    {
+        IsVisible = !IsVisible;
+
+        if (IsVisible && Items == null)
+        {
+            IsLoading = true;
+            Task.Run(LoadItems);
+        }
+
+        await InvokeAsync(StateHasChanged);
+    }
+
+    private async Task LoadItems()
+    {
+        try
+        {
+            Items = await ItemSource.Invoke();
+        }
+        catch (Exception e)
+        {
+            Logger.LogError("An error occured while loading items: {e}", e);
+            
+            IsFailed = true;
+        }
+        finally
+        {
+            IsLoading = false;
+        }
+        
+        await InvokeAsync(StateHasChanged);
+    }
+}
