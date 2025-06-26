@@ -1,21 +1,28 @@
 ﻿using MoonCore.Blazor.FlyonUi.Files;
 using MoonCore.Blazor.FlyonUi.Files.Manager;
+using MoonCore.Helpers;
 
 namespace MoonCore.Blazor.FlyonUi.Test.Services;
 
 public class HostFileAccess : IFileAccess
 {
-    private string RootDirectory;
+    private readonly string RootDirectory;
+    private readonly ChunkedFileTransferService ChunkedFileTransferService;
+    private readonly long ChunkSize = ByteConverter.FromMegaBytes(20).Bytes;
+    private readonly HttpClient HttpClient;
 
-    public HostFileAccess(string rootDirectory)
+    public HostFileAccess(string rootDirectory, ChunkedFileTransferService chunkedFileTransferService,
+        HttpClient httpClientr)
     {
         RootDirectory = rootDirectory;
+        ChunkedFileTransferService = chunkedFileTransferService;
+        HttpClient = httpClientr;
     }
 
     public Task CreateFile(string path)
     {
         path = path.TrimStart('/');
-        
+
         var fs = File.Create(
             Path.Combine(RootDirectory, path)
         );
@@ -28,7 +35,7 @@ public class HostFileAccess : IFileAccess
     public Task CreateDirectory(string path)
     {
         path = path.TrimStart('/');
-        
+
         Directory.CreateDirectory(
             Path.Combine(RootDirectory, path)
         );
@@ -39,7 +46,7 @@ public class HostFileAccess : IFileAccess
     public Task<FileEntry[]> List(string path)
     {
         path = path.TrimStart('/');
-        
+
         var entries = Directory.GetFileSystemEntries(
             Path.Combine(
                 RootDirectory,
@@ -88,7 +95,7 @@ public class HostFileAccess : IFileAccess
     {
         oldPath = oldPath.TrimStart('/');
         newPath = newPath.TrimStart('/');
-        
+
         if (File.Exists(oldPath))
             File.Move(oldPath, newPath);
         else
@@ -100,7 +107,7 @@ public class HostFileAccess : IFileAccess
     public async Task Read(string path, Func<Stream, Task> onHandleData)
     {
         path = path.TrimStart('/');
-        
+
         var fs = File.Open(path, FileMode.Open, FileAccess.Read, FileShare.ReadWrite);
 
         await onHandleData.Invoke(fs);
@@ -111,7 +118,7 @@ public class HostFileAccess : IFileAccess
     public async Task Write(string path, Stream dataStream)
     {
         path = path.TrimStart('/');
-        
+
         var fs = File.Open(path, FileMode.Create, FileAccess.ReadWrite, FileShare.Read);
 
         await dataStream.CopyToAsync(fs);
@@ -122,7 +129,7 @@ public class HostFileAccess : IFileAccess
     public Task Delete(string path)
     {
         path = path.TrimStart('/');
-        
+
         if (File.Exists(path))
             File.Delete(path);
         else
@@ -131,17 +138,35 @@ public class HostFileAccess : IFileAccess
         return Task.CompletedTask;
     }
 
-    public Task Upload(Func<int, Task> updateProgress, string path, Stream dataStream)
+    public async Task Upload(string path, Stream dataStream, Func<int, Task> updateProgress)
     {
         path = path.TrimStart('/');
-        
-        return Task.CompletedTask;
+
+        await ChunkedFileTransferService.Upload(
+            dataStream,
+            ChunkSize,
+            async (chunkId, content) =>
+            {
+                var multipartForm = new MultipartFormDataContent();
+                multipartForm.Add(content, "file", "file");
+
+                await HttpClient.PostAsync(
+                    $"http://localhost:5220/api/upload" +
+                    $"?chunkId={chunkId}" +
+                    $"&chunkSize={ChunkSize}" +
+                    $"&fileSize={dataStream.Length}" +
+                    $"&fileName={path}",
+                    multipartForm
+                );
+            },
+            new Progress<int>(async void (percent) => { await updateProgress.Invoke(percent); })
+        );
     }
 
-    public Task Download(Func<int, Task> updateProgress, string path, FileEntry fileEntry)
+    public Task Download(string path, FileEntry fileEntry, Func<int, Task> updateProgress)
     {
         path = path.TrimStart('/');
-        
-        return Task.CompletedTask;
+
+        throw new NotImplementedException();
     }
 }

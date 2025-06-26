@@ -3,6 +3,9 @@
 @using MoonCore.Blazor.FlyonUi.Files.Manager
 @using MoonCore.Blazor.FlyonUi.Test.Services
 @using MoonCore.Blazor.FlyonUi.Components
+@using MoonCore.Blazor.FlyonUi.Files
+
+@inject ChunkedFileTransferService ChunkedFileTransferService
 
 <NavTabs Index="1" Names="UiConstants.FilesNames" Links="UiConstants.FilesLinks" />
 
@@ -19,6 +22,6 @@
         var path = Path.Combine("testFs");
         
         Directory.CreateDirectory(path);
-        FileAccess = new HostFileAccess(path);
+        FileAccess = new HostFileAccess(path, ChunkedFileTransferService, new());
     }
 }
