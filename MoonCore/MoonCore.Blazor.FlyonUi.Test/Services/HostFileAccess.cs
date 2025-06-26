@@ -14,6 +14,8 @@ public class HostFileAccess : IFileAccess
 
     public Task CreateFile(string path)
     {
+        path = path.TrimStart('/');
+        
         var fs = File.Create(
             Path.Combine(RootDirectory, path)
         );
@@ -25,6 +27,8 @@ public class HostFileAccess : IFileAccess
 
     public Task CreateDirectory(string path)
     {
+        path = path.TrimStart('/');
+        
         Directory.CreateDirectory(
             Path.Combine(RootDirectory, path)
         );
@@ -34,10 +38,12 @@ public class HostFileAccess : IFileAccess
 
     public Task<FileEntry[]> List(string path)
     {
+        path = path.TrimStart('/');
+        
         var entries = Directory.GetFileSystemEntries(
             Path.Combine(
                 RootDirectory,
-                path.TrimStart('/')
+                path
             )
         );
 
@@ -80,6 +86,9 @@ public class HostFileAccess : IFileAccess
 
     public Task Move(string oldPath, string newPath)
     {
+        oldPath = oldPath.TrimStart('/');
+        newPath = newPath.TrimStart('/');
+        
         if (File.Exists(oldPath))
             File.Move(oldPath, newPath);
         else
@@ -90,6 +99,8 @@ public class HostFileAccess : IFileAccess
 
     public async Task Read(string path, Func<Stream, Task> onHandleData)
     {
+        path = path.TrimStart('/');
+        
         var fs = File.Open(path, FileMode.Open, FileAccess.Read, FileShare.ReadWrite);
 
         await onHandleData.Invoke(fs);
@@ -99,6 +110,8 @@ public class HostFileAccess : IFileAccess
 
     public async Task Write(string path, Stream dataStream)
     {
+        path = path.TrimStart('/');
+        
         var fs = File.Open(path, FileMode.Create, FileAccess.ReadWrite, FileShare.Read);
 
         await dataStream.CopyToAsync(fs);
@@ -108,6 +121,8 @@ public class HostFileAccess : IFileAccess
 
     public Task Delete(string path)
     {
+        path = path.TrimStart('/');
+        
         if (File.Exists(path))
             File.Delete(path);
         else
@@ -118,11 +133,15 @@ public class HostFileAccess : IFileAccess
 
     public Task Upload(Func<int, Task> updateProgress, string path, Stream dataStream)
     {
+        path = path.TrimStart('/');
+        
         return Task.CompletedTask;
     }
 
     public Task Download(Func<int, Task> updateProgress, string path, FileEntry fileEntry)
     {
+        path = path.TrimStart('/');
+        
         return Task.CompletedTask;
     }
 }

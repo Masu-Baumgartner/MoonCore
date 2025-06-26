@@ -60,7 +60,6 @@
     </ItemGroup>
 
     <ItemGroup>
-      <Folder Include="Files\Manager\Modals\" />
       <Folder Include="Styles\mappings\" />
       <Folder Include="wwwroot\" />
     </ItemGroup>

@@ -1,8 +1,11 @@
 @page "/forms/selections"
 @using MoonCore.Blazor.FlyonUi.Forms
 @using MoonCore.Exceptions
+@using MoonCore.Blazor.FlyonUi.Components
 
-<div class="max-w-sm">
+<NavTabs Index="2" Names="UiConstants.FormsNames" Links="UiConstants.FormsLinks" />
+
+<div class="max-w-sm mt-5">
     <InputItem TItem="DemoItem" @bind-Value="SelectedItem" DisplayField="@(x => x.Name)" ItemSource="ItemSource" />
 </div>
 

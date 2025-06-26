@@ -1,11 +1,18 @@
 ﻿@using MoonCore.Blazor.FlyonUi.Files.View
 @using MoonCore.Blazor.FlyonUi.DataTables
+@using MoonCore.Blazor.FlyonUi.Files.Manager.Modals
 @using MoonCore.Helpers
+@using MoonCore.Blazor.FlyonUi.Files.Manager.Partials
+@using MoonCore.Blazor.FlyonUi.Modals
+
+@inject ModalService ModalService
 
 <FileManagerHeader CurrentPath="@CurrentPath"
                    OnBreadcrumbClick="SetPath"
                    OnHomeClick="@(() => SetPath("/"))"
-                   OnRefreshClick="() => FileView.Refresh()"/>
+                   OnRefreshClick="() => FileView.Refresh()"
+                   OnNewFileClick="CreateNewFile"
+                   OnNewFolderClick="CreateNewDirectory"/>
 
 <div class="mt-5">
     <FileView @ref="FileView" Load="Load" ShowDate="true" ShowSize="true" OnClick="OnClick"
@@ -90,5 +97,37 @@
         
         await FileView.Refresh();
         await InvokeAsync(StateHasChanged);
+    }
+
+    private async Task CreateNewFile()
+    {
+        await ModalService.Launch<CreateFileModal>(parameters =>
+        {
+            parameters.Add("OnSubmit", async (string fileName) =>
+            {
+                await FileAccess.CreateFile(UnixPath.Combine(
+                    CurrentPath,
+                    fileName
+                ));
+                
+                await FileView.Refresh();
+            });
+        });
+    }
+    
+    private async Task CreateNewDirectory()
+    {
+        await ModalService.Launch<CreateDirectoryModal>(parameters =>
+        {
+            parameters.Add("OnSubmit", async (string name) =>
+            {
+                await FileAccess.CreateDirectory(UnixPath.Combine(
+                    CurrentPath,
+                    name
+                ));
+                
+                await FileView.Refresh();
+            });
+        });
     }
 }

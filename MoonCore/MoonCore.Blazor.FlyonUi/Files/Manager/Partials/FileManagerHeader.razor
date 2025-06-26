@@ -4,19 +4,13 @@
     <div class="grid grid-cols-1 lg:grid-cols-2 gap-y-3 lg:gap-y-0">
         <div class="col-span-1">
             <div class="flex flex-row justify-center lg:justify-start">
-                @if (OnHomeClick != null)
-                {
-                    <button @onclick="OnHomeClick" class="btn btn-square btn-secondary grow-0 me-2">
-                        <i class="icon-house text-base"></i>
-                    </button>
-                }
+                <button @onclick="OnHomeClick" class="btn btn-square btn-secondary grow-0 me-2">
+                    <i class="icon-house text-base"></i>
+                </button>
                 
-                @if (OnRefreshClick != null)
-                {
-                    <button @onclick="OnRefreshClick" class="btn btn-square btn-primary grow-0 me-2">
-                        <i class="icon-refresh-cw"></i>
-                    </button>
-                }
+                <button @onclick="OnRefreshClick" class="btn btn-square btn-primary grow-0 me-2">
+                    <i class="icon-refresh-cw"></i>
+                </button>
                 
                 <div class="ms-1 grow hidden lg:flex">
                     <PathBreadcrumb Path="@CurrentPath"
@@ -27,11 +21,11 @@
         </div>
         <div class="col-span-1">
             <div class="flex flex-row justify-center lg:justify-end">
-                <div class="btn btn-primary btn-outline text-base-content me-2">
+                <button @onclick="OnNewFileClick" class="btn btn-primary btn-outline text-base-content me-2">
                     <i class="icon-file-plus-2"></i>
                     File
-                </div>
-                <div class="btn btn-primary btn-outline text-base-content me-2">
+                </button>
+                <div @onclick="OnNewFolderClick" class="btn btn-primary btn-outline text-base-content me-2">
                     <i class="icon-folder-plus"></i>
                     Folder
                 </div>
@@ -50,6 +44,9 @@
     [Parameter] public Func<string, Task>? OnBreadcrumbClick { get; set; }
     [Parameter] public Func<string, string>? CustomBreadcrumbClickLink { get; set; }
     
-    [Parameter] public Func<Task>? OnHomeClick { get; set; }
-    [Parameter] public Func<Task>? OnRefreshClick { get; set; }
+    [Parameter] public required Func<Task> OnHomeClick { get; set; }
+    [Parameter] public required Func<Task> OnRefreshClick { get; set; }
+    
+    [Parameter] public required Func<Task> OnNewFileClick { get; set; }
+    [Parameter] public required Func<Task> OnNewFolderClick { get; set; }
 }

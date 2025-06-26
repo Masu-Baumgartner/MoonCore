@@ -1,6 +1,9 @@
 @using System.ComponentModel.DataAnnotations
+@using Microsoft.Extensions.Logging
 @using MoonCore.Blazor.FlyonUi.Exceptions
 @using MoonCore.Exceptions
+
+@inject ILogger<HandleForm> Logger
 
 @if (SubmitException != null)
 {
@@ -131,6 +134,8 @@ else
             }
             else
             {
+                Logger.LogError("An unhandled error occured while handling form: {e}", e);
+                
                 SubmitException = e;
                 return false;
             }
