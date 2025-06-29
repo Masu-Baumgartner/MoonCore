@@ -1,0 +1,59 @@
+@if (IsVisible)
+{
+    <div @ref="Reference" class="dropdown-menu dropdown-open:opacity-100 min-w-60 block open focus-visible:outline-none" role="menu" aria-orientation="vertical"
+         aria-labelledby="default"
+         tabindex="0"
+         style="position: fixed; inset: 0px auto auto 0px; margin: 0px; transform: translate3d(@(X)px, @(Y)px, 0px);"
+         data-placement="top-start"
+         @onfocusout="OnFocusOut">
+        @ChildContent
+    </div>
+}
+
+@code
+{
+    [Parameter] public RenderFragment ChildContent { get; set; }
+    
+    private bool IsVisible = false;
+
+    private double X;
+    private double Y;
+
+    private ElementReference Reference;
+    private CancellationTokenSource? HideTaskCts = new();
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (IsVisible)
+            await Reference.FocusAsync();
+    }
+    
+    public async Task Trigger(MouseEventArgs eventArgs)
+    {
+        X = eventArgs.ClientX;
+        Y = eventArgs.ClientY;
+        IsVisible = true;
+
+        if (HideTaskCts is { IsCancellationRequested: false }) // Cancel when set but not cancled yet
+            await HideTaskCts.CancelAsync();
+        
+        await InvokeAsync(StateHasChanged);
+    }
+
+    private async Task OnFocusOut()
+    {
+        HideTaskCts = new();
+        
+        try
+        {
+            await Task.Delay(200, HideTaskCts.Token); // Allow the hiding of the menu being canceled when a new context menu is being opened
+
+            IsVisible = false;
+            await InvokeAsync(StateHasChanged);
+        }
+        catch (TaskCanceledException)
+        {
+            // Ignored
+        }
+    }
+}

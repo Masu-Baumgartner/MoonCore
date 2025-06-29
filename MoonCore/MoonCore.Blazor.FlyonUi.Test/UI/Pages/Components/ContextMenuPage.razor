@@ -1,0 +1,30 @@
+@page "/components/contextmenu"
+@using MoonCore.Blazor.FlyonUi.Components
+
+<ContextMenu @ref="Menu">
+    <button type="button" class="dropdown-item">
+        <i class="icon-cloud-download text-primary text-lg"></i>
+        Download
+    </button>
+    <button type="button" class="dropdown-item">
+        <i class="icon-folder-archive text-warning text-lg"></i>
+        Archive
+    </button>
+    <button type="button" class="dropdown-item">
+        <i class="icon-folder-pen text-accent text-lg"></i>
+        Rename
+    </button>
+    <button type="button" class="dropdown-item">
+        <i class="icon-trash-2 text-error text-lg"></i>
+        Delete
+    </button>
+</ContextMenu>
+
+<div class="bg-base-200/50 h-64 w-64 flex justify-center items-center" @oncontextmenu="e => Menu.Trigger(e)" @oncontextmenu:preventDefault>
+    Right click me
+</div>
+
+@code
+{
+    private ContextMenu Menu;
+}
