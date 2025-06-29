@@ -46,7 +46,7 @@
         
         try
         {
-            await Task.Delay(200, HideTaskCts.Token); // Allow the hiding of the menu being canceled when a new context menu is being opened
+            await Task.Delay(150, HideTaskCts.Token); // Allow the hiding of the menu being canceled when a new context menu is being opened
 
             IsVisible = false;
             await InvokeAsync(StateHasChanged);

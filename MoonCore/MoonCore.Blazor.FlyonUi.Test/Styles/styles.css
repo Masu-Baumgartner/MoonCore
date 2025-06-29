@@ -98,4 +98,8 @@
             @apply py-1.5;
         }
     }
+    
+    .dropdown-item {
+        @apply px-2.5 py-1.5;
+    }
 }
