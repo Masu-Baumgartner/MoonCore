@@ -1,0 +1,68 @@
+@page "/feedback/toasts"
+@using MoonCore.Blazor.FlyonUi.Toasts
+@using MoonCore.Blazor.FlyonUi.Components
+
+@inject ToastService ToastService
+
+<NavTabs Index="2" Names="UiConstants.FeedbackNames" Links="UiConstants.FeedbackLinks" />
+
+<div class="mt-5">
+    <button @onclick="Success" class="btn btn-success me-2">Success</button>
+    <button @onclick="Info" class="btn btn-info me-2">Info</button>
+    <button @onclick="Warning" class="btn btn-warning me-2">Warning</button>
+    <button @onclick="Error" class="btn btn-error me-2">Error</button>
+</div>
+
+<div class="mt-5">
+    <button @onclick="SuccessSmall" class="btn btn-success">Success Small</button>
+    <button @onclick="InfoSmall" class="btn btn-info">Info Small</button>
+    <button @onclick="WarningSmall" class="btn btn-warning">Warning Small</button>
+    <button @onclick="ErrorSmall" class="btn btn-error">Error Small</button>
+</div>
+
+<div class="mt-5">
+    <button @onclick="Progress" class="btn">Progress</button>
+</div>
+
+@code
+{
+    private async Task Success()
+        => await ToastService.Success("Successfully did something", "Successfully failed an unsuccessful task");
+    
+    private async Task Info()
+        => await ToastService.Info("Important information", "There is a bomb inside your walls");
+    
+    private async Task Warning()
+        => await ToastService.Warning("Useless warning", "This message is just pointless");
+    
+    private async Task Error()
+        => await ToastService.Error("Unhandled error", "Your windoof instance crashed");
+    
+    private async Task SuccessSmall()
+        => await ToastService.Success("Successfully failed an unsuccessful task");
+    
+    private async Task InfoSmall()
+        => await ToastService.Info("There is a bomb inside your walls");
+    
+    private async Task WarningSmall()
+        => await ToastService.Warning("This message is just pointless");
+    
+    private async Task ErrorSmall()
+        => await ToastService.Error("Your windoof instance crashed");
+
+    private async Task Progress()
+    {
+        await ToastService.Progress(
+            "Working on something",
+            "Doing one task",
+            async toast =>
+            {
+                await Task.Delay(TimeSpan.FromSeconds(2));
+
+                await toast.UpdateText("Doing another task");
+                
+                await Task.Delay(TimeSpan.FromSeconds(2));
+            }
+        );
+    }
+}

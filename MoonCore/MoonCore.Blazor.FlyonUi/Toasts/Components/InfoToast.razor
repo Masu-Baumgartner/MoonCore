@@ -1,0 +1,26 @@
+@inherits BaseToast
+
+<div class="flex-shrink-0">
+    <i class="icon-info text-2xl text-info"></i>
+</div>
+<div class="ml-3 w-0 flex-1 pt-0.5">
+    <p class="text-sm font-medium text-base-content">
+        @Title
+    </p>
+    <p class="mt-1 text-sm text-base-content/80">
+        @Text
+    </p>
+</div>
+<div class="ml-4 flex flex-shrink-0">
+    <button @onclick="Hide" type="button"
+            class="inline-flex rounded-md text-base-content/80 hover:text-base-content/60 focus:outline-none">
+        <span class="sr-only">Close</span>
+        <i class="bi bi-x-lg"></i>
+    </button>
+</div>
+
+@code
+{
+    [Parameter] public string Title { get; set; }
+    [Parameter] public string Text { get; set; }
+}

@@ -1,0 +1,65 @@
+@using Microsoft.JSInterop
+
+@inject CodeEditorService CodeEditorService
+
+@implements IAsyncDisposable
+
+<div class="rounded-lg w-full @CssClasses" style="height: @Height" id="@EditorId">
+    @(InitialContent)
+</div>
+
+@code
+{
+    [Parameter] public string InitialContent { get; set; }
+    [Parameter] public Action<CodeEditorOptions>? OnConfigure { get; set; }
+    [Parameter] public string Height { get; set; } = "60dvh";
+    [Parameter] public string CssClasses { get; set; } = "";
+    
+    private string EditorId;
+    private CodeEditorOptions Options;
+    private bool IsInitialized = false;
+
+    protected override void OnInitialized()
+    {
+        EditorId = "editor" + GetHashCode();
+        
+        Options = new()
+        {
+            Mode = "ace/mode/csharp",
+            Theme = "ace/theme/mooncore",
+            FontSize = 14
+        };
+
+        if(OnConfigure != null)
+            OnConfigure.Invoke(Options);
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if(!firstRender)
+            return;
+        
+        await CodeEditorService.Attach(EditorId, Options);
+        IsInitialized = true;
+    }
+
+    public async Task<string> GetValue()
+    {
+        return await CodeEditorService.GetValue(EditorId);
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        if(!IsInitialized)
+            return;
+        
+        try
+        {
+            await CodeEditorService.Destroy(EditorId);
+        }
+        catch (JSDisconnectedException)
+        {
+            // Ignore
+        }
+    }
+}

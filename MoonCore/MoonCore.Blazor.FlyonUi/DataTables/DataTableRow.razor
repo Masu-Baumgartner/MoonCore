@@ -6,7 +6,7 @@
     public DataTable<TItem> DataTable { get; set; }
     
     [Parameter] public int Index { get; set; }
-    [Parameter] public RenderFragment Template { get; set; }
+    [Parameter] public RenderFragment<TItem[]> Template { get; set; }
     [Parameter] public string Css { get; set; } = "";
 
     protected override void OnInitialized()

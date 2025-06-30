@@ -1,0 +1,47 @@
+@using MoonCore.Blazor.FlyonUi.Toasts.Components
+
+@inherits BaseToast
+
+<div class="flex-shrink-0 flex items-center">
+    <div class="inline-flex">
+        <i class="icon-cloud-upload animate-bounce text-2xl text-primary"></i>
+    </div>
+</div>
+<div class="ml-3 w-0 pt-0.5 flex-1">
+    <p class="text-sm font-medium text-base-content">
+        Uploading...
+    </p>
+    <p class="mt-1 text-sm text-base-content/80">
+        @if (string.IsNullOrEmpty(File))
+        {
+            <span>Preparing</span>
+        }
+        else
+        {
+            <span>@(Percent)% - @File</span>
+        }
+    </p>
+</div>
+
+@code
+{
+    [Parameter] public string? File { get; set; }
+    [Parameter] public int Percent { get; set; }
+    [Parameter] public Func<FileUploadToast, Task> Callback { get; set; }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (!firstRender)
+            return;
+
+        await Callback.Invoke(this);
+        await Hide();
+    }
+
+    public async Task UpdateStatus(string file, int percent)
+    {
+        File = file;
+        Percent = percent;
+        await InvokeAsync(StateHasChanged);
+    }
+}

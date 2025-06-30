@@ -1,0 +1,169 @@
+@page "/files/transfer"
+
+@using MoonCore.Blazor.FlyonUi.Files
+@using MoonCore.Blazor.FlyonUi.Components
+@using MoonCore.Blazor.FlyonUi.Toasts
+@using MoonCore.Helpers
+
+@inject ChunkedFileTransferService FileTransferService
+@inject HttpClient HttpClient
+@inject DropHandlerService DropHandlerService
+@inject ToastService ToastService
+
+@implements IAsyncDisposable
+
+<NavTabs Index="2" Names="UiConstants.FilesNames" Links="UiConstants.FilesLinks" />
+
+<div class="mt-5">
+    <WButton OnClick="OnClick" CssClasses="btn btn-primary">
+        Download
+    </WButton>
+</div>
+
+<div class="mt-5">
+    <label class="btn btn-primary me-2" type="file" for="file-input">
+        <i class="icon-folder-open"></i>
+        @if (FileInput == null)
+        {
+            <span>Select file</span>
+        }
+        else
+        {
+            <span>@FileInput.Name @(Formatter.FormatSize(FileInput.Size))</span>
+        }
+    </label>
+    <InputFile OnChange="Callback" type="file" id="file-input" class="hidden"/>
+    <WButton OnClick="Upload" CssClasses="btn btn-primary">
+        Upload
+    </WButton>
+</div>
+
+<div class="mt-5">
+    <button @onclick="() => DropHandlerService.Enable()" class="btn btn-success me-2">Enable</button>
+    <button @onclick="() => DropHandlerService.Disable()" class="btn btn-danger">Disable</button>
+</div>
+
+@code
+{
+    private IBrowserFile? FileInput;
+
+    protected override void OnInitialized()
+    {
+        DropHandlerService.OnDropped += Handle;
+    }
+
+    private async Task OnClick(WButton button)
+    {
+        var fi = new FileInfo(
+            Path.Combine("testFs", "data.bin")
+        );
+
+        var chunkSize = ByteConverter.FromMegaBytes(20).Bytes;
+
+        await FileTransferService.Download(
+            "data.bin",
+            chunkSize,
+            fi.Length,
+            async chunkId => await HttpClient.GetByteArrayAsync(
+                $"http://localhost:5220/api/download?chunkId={chunkId}&chunkSize={chunkSize}"
+            ),
+            new Progress<int>(async percent => { await button.UpdateLoadingText($"Progress: {percent}%"); })
+        );
+    }
+
+    private async Task Upload(WButton button)
+    {
+        var chunkSize = ByteConverter.FromMegaBytes(20).Bytes;
+        await using var dataStream = FileInput.OpenReadStream(FileInput.Size);
+
+        try
+        {
+            await FileTransferService.Upload(
+                dataStream,
+                chunkSize,
+                async (chunkId, content) =>
+                {
+                    var multipartForm = new MultipartFormDataContent();
+                    multipartForm.Add(content, "file", "file");
+
+                    Console.WriteLine($"Uploaded: {chunkId}");
+
+                    await HttpClient.PostAsync(
+                        $"http://localhost:5220/api/upload?chunkId={chunkId}&chunkSize={chunkSize}&fileSize={FileInput.Size}&fileName={FileInput.Name}",
+                        multipartForm
+                    );
+                },
+                new Progress<int>(async percent => { await button.UpdateLoadingText($"Progress: {percent}%"); })
+            );
+        }
+        catch (Exception e)
+        {
+            Console.WriteLine(e);
+            throw;
+        }
+        finally
+        {
+            dataStream.Close();
+        }
+    }
+
+    private void Callback(InputFileChangeEventArgs eventArgs)
+        => FileInput = eventArgs.File;
+
+    private async Task Handle()
+    {
+        await ToastService.Progress(
+            "Uploading files",
+            "Preparing", async toast =>
+            {
+                var uploadDir = Path.Combine("testFs", "dropUploads");
+        
+                Directory.CreateDirectory(
+                    uploadDir
+                );
+        
+                do
+                {
+                    var item = await DropHandlerService.PeekItem();
+            
+                    if(item == null)
+                        break;
+
+                    if (item.ShouldSkipToNext)
+                    {
+                        await DropHandlerService.PopItem();
+                        continue;
+                    }
+
+                    var path = Path.Combine(
+                        uploadDir,
+                        Path.Combine(item.Path.Split('/', StringSplitOptions.RemoveEmptyEntries))
+                    );
+
+                    var baseDirectory = Path.GetDirectoryName(path) ?? uploadDir;
+                    Directory.CreateDirectory(baseDirectory);
+
+                    await toast.UpdateText($"Uploading {Path.GetFileName(item.Path)}");
+
+                    await using var fs = File.Open(path, FileMode.Create, FileAccess.Write, FileShare.None);
+
+                    var stream = await item.Stream.OpenReadStreamAsync(item.Stream.Length);
+
+                    await stream.CopyToAsync(fs);
+                    await fs.FlushAsync();
+                    
+                    fs.Close();
+                    
+                    await DropHandlerService.PopItem();
+                } while (true);
+
+                await ToastService.Success("File upload successful");
+            }
+        );
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        DropHandlerService.OnDropped -= Handle;
+    }
+}

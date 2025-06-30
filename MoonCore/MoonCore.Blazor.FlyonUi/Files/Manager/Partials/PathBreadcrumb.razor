@@ -1,0 +1,54 @@
+﻿<div class="input grow">
+    <span class="icon-folder text-base-content/80 my-auto me-3 shrink-0"></span>
+    <div class="flex items-center grow">
+        @{
+            var path = Path;
+            var pathParts = path.Split("/", StringSplitOptions.RemoveEmptyEntries);
+
+            var isOverflow = pathParts.Length > 3;
+            var pathPrefix = isOverflow ? string.Join('/', pathParts.Take(pathParts.Length - 3)) : string.Empty;
+            var parts = isOverflow ? pathParts.TakeLast(3).ToArray() : pathParts;
+        }
+
+        @if (isOverflow)
+        {
+            <span class="text-sm font-medium text-base-content/70 ms-1">
+                ...
+            </span>
+        }
+
+        @for (var i = 0; i < parts.Length; i++)
+        {
+            var pathName = parts[i];
+            var itemPath = string.Join("/", parts.Take(i + 1));
+            var currentPath = isOverflow ? pathPrefix + "/" + itemPath : itemPath;
+
+            if (i != 0 || isOverflow)
+            {
+                <i class="text-base-content/60 mx-0.5 icon-chevron-right"></i>
+            }
+
+            if (parts.Length == 1 || i == parts.Length - 1 || OnClick == null)
+            {
+                <div class="text-sm font-medium text-base-content/70 ms-1">
+                    @pathName
+                </div>
+            }
+            else
+            {
+                <div @onclick="() => OnClick.Invoke(currentPath)"
+                     @onclick:preventDefault
+                     class="text-sm cursor-pointer font-medium text-base-content/70 hover:text-base-content ms-1">
+                    @pathName
+                </div>
+            }
+        }
+    </div>
+</div>
+
+@code
+{
+    [Parameter] public string Path { get; set; }
+    [Parameter] public Func<string, Task>? OnClick { get; set; }
+    [Parameter] public Func<string, string>? CustomClickLink { get; set; }
+}

@@ -1,0 +1,59 @@
+﻿@page "/files"
+
+@using MoonCore.Blazor.FlyonUi.Files
+@using MoonCore.Blazor.FlyonUi.Files.View
+@using MoonCore.Blazor.FlyonUi.Components
+
+<NavTabs Index="0" Names="UiConstants.FilesNames" Links="UiConstants.FilesLinks" />
+
+<div class="mt-5">
+    <FileView Load="Load" ShowDate="true" ShowSize="true" OnClick="OnClick" CustomClickLink="CustomClickLink">
+        
+    </FileView>
+</div>
+
+@code
+{
+    private async Task<FileEntry[]> Load()
+    {
+        return [
+            new FileEntry()
+            {
+                Name = "folder1",
+                IsFolder = true,
+                Size = 0
+            },
+            new FileEntry()
+            {
+                Name = "folder2",
+                IsFolder = true,
+                Size = 0
+            },
+            new FileEntry()
+            {
+                Name = "file1",
+                IsFolder = false,
+                Size = 0
+            },
+            new FileEntry()
+            {
+                Name = "file2",
+                IsFolder = false,
+                Size = 0
+            },
+            new FileEntry()
+            {
+                Name = "file3",
+                IsFolder = false,
+                Size = 0
+            }
+        ];
+    }
+
+    private Task OnClick(FileEntry arg)
+    {
+        return Task.CompletedTask;
+    }
+
+    private string CustomClickLink(FileEntry arg) => $"/files?path=/{arg.Name}";
+}

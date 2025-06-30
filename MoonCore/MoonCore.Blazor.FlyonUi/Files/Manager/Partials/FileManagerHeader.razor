@@ -1,0 +1,67 @@
+﻿@using Microsoft.AspNetCore.Components.Forms
+
+<div class="card card-body p-2">
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-y-3 lg:gap-y-0">
+        <div class="col-span-1">
+            <div class="flex flex-row justify-center lg:justify-start">
+                <button @onclick="OnHomeClick" class="btn btn-square btn-secondary grow-0 me-2">
+                    <i class="icon-house text-base"></i>
+                </button>
+                
+                <button @onclick="OnRefreshClick" class="btn btn-square btn-primary grow-0 me-2">
+                    <i class="icon-refresh-cw"></i>
+                </button>
+                
+                <div class="ms-1 grow hidden lg:flex">
+                    <PathBreadcrumb Path="@CurrentPath"
+                                    OnClick="OnBreadcrumbClick"
+                                    CustomClickLink="CustomBreadcrumbClickLink"/>
+                </div>
+            </div>
+        </div>
+        <div class="col-span-1">
+            <div class="flex flex-row justify-center lg:justify-end">
+                <button @onclick="OnNewFileClick" class="btn btn-primary btn-outline text-base-content me-2">
+                    <i class="icon-file-plus-2"></i>
+                    File
+                </button>
+                <div @onclick="OnNewFolderClick" class="btn btn-primary btn-outline text-base-content me-2">
+                    <i class="icon-folder-plus"></i>
+                    Folder
+                </div>
+                <label for="fm-upload" class="btn btn-primary text-base-content">
+                    <i class="icon-upload"></i>
+                    Upload
+                </label>
+                <InputFile OnChange="HandleUpload" class="hidden" id="fm-upload" multiple="" />
+            </div>
+        </div>
+    </div>
+</div>
+
+@code
+{
+    [Parameter] public string CurrentPath { get; set; }
+    [Parameter] public Func<string, Task>? OnBreadcrumbClick { get; set; }
+    [Parameter] public Func<string, string>? CustomBreadcrumbClickLink { get; set; }
+    
+    [Parameter] public required Func<Task> OnHomeClick { get; set; }
+    [Parameter] public required Func<Task> OnRefreshClick { get; set; }
+    
+    [Parameter] public required Func<Task> OnNewFileClick { get; set; }
+    [Parameter] public required Func<Task> OnNewFolderClick { get; set; }
+    
+    [Parameter] public required Func<IBrowserFile[], Task> OnFileSelected { get; set; }
+
+    private async Task HandleUpload(InputFileChangeEventArgs eventArgs)
+    {
+        if(eventArgs.FileCount == 0)
+            return;
+
+        var files = eventArgs.FileCount == 1
+            ? [eventArgs.File]
+            : eventArgs.GetMultipleFiles().ToArray();
+
+        await OnFileSelected.Invoke(files);
+    }
+}

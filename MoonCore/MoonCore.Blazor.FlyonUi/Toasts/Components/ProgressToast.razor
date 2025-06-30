@@ -1,0 +1,35 @@
+@inherits BaseToast
+
+<div class="flex-shrink-0 flex items-center">
+    <span class="loading loading-spinner loading-lg"></span>
+</div>
+<div class="ml-3 w-0 pt-0.5 flex-1">
+    <p class="text-sm font-medium text-base-content">
+        @Title
+    </p>
+    <p class="mt-1 text-sm text-base-content/80">
+        @Text
+    </p>
+</div>
+
+@code
+{
+    [Parameter] public string Title { get; set; }
+    [Parameter] public string Text { get; set; }
+    [Parameter] public Func<ProgressToast, Task> Work { get; set; }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (!firstRender)
+            return;
+
+        await Work.Invoke(this);
+        await Hide();
+    }
+
+    public async Task UpdateText(string text)
+    {
+        Text = text;
+        await InvokeAsync(StateHasChanged);
+    }
+}

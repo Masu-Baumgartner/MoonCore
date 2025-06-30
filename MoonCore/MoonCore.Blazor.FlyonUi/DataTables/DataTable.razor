@@ -86,6 +86,13 @@
             }
             else
             {
+                foreach (var row in SortedRows)
+                {
+                    <tr class="@row.Css">
+                        @row.Template.Invoke(Items)
+                    </tr>
+                }
+
                 if (Items.Length == 0)
                 {
                     <tr>
@@ -109,37 +116,42 @@
                 }
                 else
                 {
-                    foreach (var row in SortedRows)
-                    {
-                        <tr class="@row.Css">
-                            @row.Template
-                        </tr>
-                    }
-
                     foreach (var item in Items)
                     {
+                        @*
                         <tr class="@RowCss"
-                            @oncontextmenu="e => InvokeContextMenu(e, item)"
-                            @oncontextmenu:preventDefault>
-                            @foreach (var column in SortedColumns)
+                            
+                        @oncontextmenu="e => InvokeContextMenu(e, item)"
+                            
+                        @oncontextmenu:preventDefault>
+                            
+                        @foreach (var column in SortedColumns)
                             {
                                 <td scope="row" class="@column.ColumnCss">
-                                    @if (column.ColumnTemplate == null)
+                                    
+                        @if (column.ColumnTemplate == null)
                                     {
                                         if (column.Field != null)
                                         {
                                             var val = column.Field.Invoke(item);
 
-                                            @(val?.ToString() ?? "null")
+                                            
+
+                        @(val?.ToString() ?? "null")
                                         }
                                     }
                                     else
                                     {
-                                        @column.ColumnTemplate.Invoke(item)
+                                        
+                        @column.ColumnTemplate.Invoke(item)
                                     }
                                 </td>
                             }
-                        </tr>
+                        </tr>*@
+
+                        @* class="cursor-pointer" just to make sure tailwind builds it ^^ *@
+                        
+                        @CreateRow(item);
                     }
                 }
             }
