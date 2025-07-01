@@ -27,11 +27,14 @@
         if (IsVisible)
             await Reference.FocusAsync();
     }
-    
+
     public async Task Trigger(MouseEventArgs eventArgs)
+        => await Trigger(eventArgs.ClientX, eventArgs.ClientY);
+    
+    public async Task Trigger(double x, double y)
     {
-        X = eventArgs.ClientX;
-        Y = eventArgs.ClientY;
+        X = x;
+        Y = y;
         IsVisible = true;
 
         if (HideTaskCts is { IsCancellationRequested: false }) // Cancel when set but not cancled yet
