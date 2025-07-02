@@ -4,30 +4,30 @@ using Microsoft.Extensions.FileProviders;
 using Microsoft.Extensions.Primitives;
 using YamlDotNet.RepresentationModel;
 
-namespace MoonCore.YamlConfiguration;
+namespace MoonCore.Yaml;
 
 public class YamlConfigurationProvider : IConfigurationProvider
 {
     private readonly string Path;
     private readonly bool IsOptional;
+    private readonly string? Prefix;
     private IDictionary<string, string> Data = new Dictionary<string, string>();
 
-    private IDictionary<string, string> _data = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
-
-    public YamlConfigurationProvider(string path, bool isOptional)
+    public YamlConfigurationProvider(string path, bool isOptional, string? prefix = null)
     {
         Path = path;
         IsOptional = isOptional;
+        Prefix = prefix;
     }
 
     public bool TryGet(string key, out string? value)
     {
-        return _data.TryGetValue(key, out value);
+        return Data.TryGetValue(key, out value);
     }
 
     public void Set(string key, string? value)
     {
-        _data[key] = value ?? "";
+        Data[key] = value ?? "";
     }
 
     public IChangeToken GetReloadToken()
@@ -59,7 +59,7 @@ public class YamlConfigurationProvider : IConfigurationProvider
         if (yamlStream.Documents[0].RootNode is not YamlMappingNode rootMapping)
             return;
 
-        ProcessNode(rootMapping, null, data);
+        ProcessNode(rootMapping, Prefix, data);
 
         Data = data;
     }
@@ -109,7 +109,7 @@ public class YamlConfigurationProvider : IConfigurationProvider
     {
         var prefix = parentPath == null ? "" : parentPath + ":";
         
-        return _data
+        return Data
             .Where(kv => kv.Key.StartsWith(prefix, StringComparison.OrdinalIgnoreCase))
             .Select(kv => kv.Key.Substring(prefix.Length))
             .Select(segment => segment.Split(':')[0])

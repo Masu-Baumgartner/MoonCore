@@ -1,42 +1,15 @@
 ﻿using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Options;
-using MoonCore.EnvConfiguration;
-using MoonCore.Helpers;
 using MoonCore.Test;
+using MoonCore.Yaml;
 
-var sc = new ServiceCollection();
+await YamlDefaultGenerator.Generate<TestModel>("config.yml");
 
-var configurationBuilder = new ConfigurationBuilder();
+var cb = new ConfigurationBuilder();
 
-configurationBuilder.AddJsonFile(
-    PathBuilder.File(Directory.GetCurrentDirectory(), "config.json"),
-    optional: true
-);
+cb.AddYamlFile("config.yml", prefix: "xyz");
 
-configurationBuilder.AddEnvironmentVariables(prefix: "TESTY_", separator: "_");
+var config = cb.Build();
 
-var configuration = configurationBuilder.Build();
+var model = config.GetSection("xyz").Get<TestModel>();
 
-sc.AddSingleton<IConfiguration>(configuration);
-
-var sp = sc.BuildServiceProvider();
-
-var c = sp.GetRequiredService<IConfiguration>();
-
-var model = c.Get<Model>()!;
-
-var otherModel = sp.GetRequiredService<IOptions<OtherModel>>();
-
-Console.WriteLine(c.GetValue<string>("owo"));
-Console.WriteLine(c.GetValue<string>("test"));
-Console.WriteLine(c.GetSection("sec1").GetValue<string>("test"));
-Console.WriteLine(model.Abc);
-Console.WriteLine(otherModel.Value.Other);
-
-Console.WriteLine("---");
-
-foreach (var item in otherModel.Value.Abc)
-{
-    Console.WriteLine($"A: {item.A}");
-}
+config.GetHashCode();

@@ -1,4 +1,4 @@
-﻿namespace MoonCore.YamlConfiguration;
+﻿namespace MoonCore.Yaml;
 
 [AttributeUsage(AttributeTargets.Property)]
 public class YamlCommentAttribute : Attribute
