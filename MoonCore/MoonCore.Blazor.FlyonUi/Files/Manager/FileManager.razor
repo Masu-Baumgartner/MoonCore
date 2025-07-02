@@ -22,7 +22,10 @@
                    OnRefreshClick="() => FileView.Refresh()"
                    OnNewFileClick="CreateNewFile"
                    OnNewFolderClick="CreateNewDirectory"
-                   OnFileSelected="HandleFileUpload"/>
+                   OnFileSelected="HandleFileUpload"
+                   ShowSelectionItems="@(SelectedEntries.Length > 0)"
+                   OnDeleteClick="DeleteSelection"
+                   OnMoveClick="MoveSelection"/>
 
 <div class="mt-5">
     <FileView @ref="FileView" Load="Load" ShowDate="true" ShowSize="true" OnClick="OnClick"
@@ -69,6 +72,10 @@
     <button type="button" class="dropdown-item">
         <i class="icon-folder-pen text-accent text-lg"></i>
         Rename
+    </button>
+    <button @onclick="MoveViaContext" type="button" class="dropdown-item">
+        <i class="icon-folder-input text-primary text-lg"></i>
+        Move
     </button>
     <button @onclick="DeleteViaContext" type="button" class="dropdown-item">
         <i class="icon-trash-2 text-error text-lg"></i>

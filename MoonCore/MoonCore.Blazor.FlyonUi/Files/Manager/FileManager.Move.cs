@@ -1,58 +1,53 @@
-﻿using MoonCore.Exceptions;
+using MoonCore.Blazor.FlyonUi.Files.Manager.Modals;
+using MoonCore.Exceptions;
 using MoonCore.Helpers;
 
 namespace MoonCore.Blazor.FlyonUi.Files.Manager;
 
 public partial class FileManager
 {
-    private async Task DeleteViaContext()
+    private async Task MoveViaContext()
     {
         if (ContextEntry == null)
             return;
 
         if (SelectedEntries.Length != 0 && SelectedEntries.Contains(ContextEntry)) // Handle context menu on selection
-            await Delete(SelectedEntries);
+            await Move(SelectedEntries);
         else
-            await Delete([ContextEntry]);
+            await Move([ContextEntry]);
     }
 
-    private Task DeleteSelection()
-        => Delete(SelectedEntries);
+    private Task MoveSelection()
+        => Move(SelectedEntries);
 
-    private async Task Delete(FileEntry[] entries)
+    private async Task Move(FileEntry[] entries)
     {
-        // We need this as to delete can run while the file manager is used to navigate elsewhere
+        // We need this as to move can run while the file manager is used to navigate elsewhere
         var currentPwd = new string(CurrentPath);
 
-        var content = "Do you really want to delete: ";
-        content += string.Join(", ", entries.Take(4).Select(x => x.Name));
-
-        if (entries.Length > 4)
-            content += $", and {entries.Length - 4} more";
-
-        await AlertService.ConfirmDanger(
-            $"You you really want to delete {entries.Length} item(s)",
-            content,
-            async () =>
+        await ModalService.Launch<MoveModal>(parameters =>
+        {
+            parameters["Title"] = $"Select a location to move {entries.Length} item(s) to";
+            parameters["FileAccess"] = FileAccess;
+            parameters["InitialPath"] = CurrentPath;
+            parameters["OnSubmit"] = async (string path) =>
             {
                 await ToastService.Progress(
-                    $"Deleing {entries.Length} item(s)",
+                    $"Moving {entries.Length} items",
                     "Preparing",
                     async toast =>
                     {
                         var successfully = 0;
-
+                        
                         foreach (var entry in entries)
                         {
                             await toast.UpdateText(entry.Name);
 
                             try
                             {
-                                await FileAccess.Delete(
-                                    UnixPath.Combine(
-                                        currentPwd,
-                                        entry.Name
-                                    )
+                                await FileAccess.Move(
+                                    UnixPath.Combine(currentPwd, entry.Name),
+                                    UnixPath.Combine(path, entry.Name)
                                 );
 
                                 successfully++;
@@ -65,13 +60,13 @@ public partial class FileManager
                                 );
                             }
                         }
-
-                        await ToastService.Success($"Successfully deleted {successfully} item(s)");
+                        
+                        await ToastService.Success($"Successfully moved {successfully} item(s)");
 
                         await FileView.Refresh();
                     }
                 );
-            }
-        );
+            };
+        }, "max-w-xl");
     }
 }
