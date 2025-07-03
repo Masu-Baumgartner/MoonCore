@@ -1,4 +1,6 @@
-﻿namespace MoonCore.Blazor.FlyonUi.Files.Manager;
+﻿using MoonCore.Blazor.FlyonUi.Files.Manager.Abstractions;
+
+namespace MoonCore.Blazor.FlyonUi.Files.Manager;
 
 public partial class FileManager
 {
@@ -8,5 +10,16 @@ public partial class FileManager
     {
         SelectedEntries = entries;
         await InvokeAsync(StateHasChanged);
+    }
+
+    private async Task RunSelectionOperation(IFileOperation operation)
+    {
+        if(SelectedEntries.Length == 0)
+            return;
+
+        var workingDir = new string(CurrentPath);
+        var files = SelectedEntries.ToArray();
+
+        await operation.Execute(workingDir, files, FileAccess, this);
     }
 }

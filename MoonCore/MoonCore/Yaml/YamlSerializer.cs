@@ -13,7 +13,7 @@ public static class YamlSerializer
 
     private static readonly IDeserializer Deserializer = new DeserializerBuilder()
         .IgnoreUnmatchedProperties()
-        .WithNamingConvention(NullNamingConvention.Instance)
+        .WithNamingConvention(CamelCaseNamingConvention.Instance)
         .Build();
 
     public static string Serialize<T>(T item)

@@ -21,7 +21,7 @@ public record TestModel
     public record DatabaseData
     {
         [YamlMember(Description = "Connection details of your postgresql instance")]
-        public string Host { get; set; } = "localhost";
+        public string Host { get; set; }
         public int Port { get; set; } = 5432;
         public string Username { get; set; } = "postgres";
         public string Password { get; set; } = "postgres";

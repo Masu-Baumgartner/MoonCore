@@ -7,25 +7,30 @@
 @using MoonCore.Blazor.FlyonUi.Modals
 @using MoonCore.Blazor.FlyonUi.Toasts
 @using MoonCore.Blazor.FlyonUi.Components
+@using MoonCore.Blazor.FlyonUi.Files.Manager.Abstractions
 
 @inject ModalService ModalService
 @inject ToastService ToastService
 @inject ILogger<FileManager> Logger
 @inject DropHandlerService DropHandlerService
-@inject AlertService AlertService
+
+@inject IEnumerable<IFileOperation> InjectedOperations
+@inject IEnumerable<IFileOpenOperation> InjectedOpenOperations
+@inject IEnumerable<IToolbarOperation> InjectedToolbarOperations
 
 @implements IAsyncDisposable
+@implements IFileManager
 
 <FileManagerHeader CurrentPath="@CurrentPath"
                    OnBreadcrumbClick="SetPath"
                    OnHomeClick="@(() => SetPath("/"))"
                    OnRefreshClick="() => FileView.Refresh()"
-                   OnNewFileClick="CreateNewFile"
-                   OnNewFolderClick="CreateNewDirectory"
                    OnFileSelected="HandleFileUpload"
                    ShowSelectionItems="@(SelectedEntries.Length > 0)"
-                   OnDeleteClick="DeleteSelection"
-                   OnMoveClick="MoveSelection"/>
+                   FileOperations="FileOperations"
+                   OnSelectionClicked="RunSelectionOperation"
+                   ToolbarOperations="ToolbarOperations"
+                   OnToolbarClicked="RunToolbarOperation"/>
 
 <div class="mt-5">
     <FileView @ref="FileView" Load="Load" ShowDate="true" ShowSize="true" OnClick="OnClick"
@@ -61,26 +66,13 @@
 </div>
 
 <ContextMenu @ref="ContextMenu">
-    <button type="button" class="dropdown-item">
-        <i class="icon-cloud-download text-primary text-lg"></i>
-        Download
-    </button>
-    <button type="button" class="dropdown-item">
-        <i class="icon-folder-archive text-warning text-lg"></i>
-        Archive
-    </button>
-    <button type="button" class="dropdown-item">
-        <i class="icon-folder-pen text-accent text-lg"></i>
-        Rename
-    </button>
-    <button @onclick="MoveViaContext" type="button" class="dropdown-item">
-        <i class="icon-folder-input text-primary text-lg"></i>
-        Move
-    </button>
-    <button @onclick="DeleteViaContext" type="button" class="dropdown-item">
-        <i class="icon-trash-2 text-error text-lg"></i>
-        Delete
-    </button>
+    @foreach (var operation in FileOperations)
+    {
+        <button @onclick="_ => RunContextOperation(operation)" type="button" class="dropdown-item">
+            <i class="@(operation.Icon) @(operation.ContextCss) text-lg"></i>
+            @operation.Name
+        </button>
+    }
 </ContextMenu>
 
 @code
@@ -88,14 +80,21 @@
     
     [Parameter] public IFileAccess FileAccess { get; set; }
     [Parameter] public long UploadLimit { get; set; } = -1;
-
     
     public FileView FileView { get; private set; }
 
     private ContextMenu ContextMenu;
+
+    private IFileOperation[] FileOperations;
+    private IToolbarOperation[] ToolbarOperations;
+    private IFileOpenOperation[] OpenOperations;
     
     protected override async Task OnInitializedAsync()
     {
+        FileOperations = InjectedOperations.OrderByDescending(x => x.Order).ToArray();
+        OpenOperations = InjectedOpenOperations.OrderByDescending(x => x.Order).ToArray();
+        ToolbarOperations = InjectedToolbarOperations.OrderByDescending(x => x.Order).ToArray();
+        
         await InitializeUpload();
     }
 
@@ -119,5 +118,13 @@
         {
             // Ignored
         }
+    }
+
+    public Task Refresh()
+        => FileView.Refresh();
+
+    public Task CloseOpenScreen()
+    {
+        throw new NotImplementedException();
     }
 }

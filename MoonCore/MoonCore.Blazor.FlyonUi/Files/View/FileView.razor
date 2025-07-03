@@ -22,7 +22,14 @@
                         }
                         else
                         {
-                            <i class="icon-file text-warning text-2xl"></i>
+                            string icon;
+
+                            if (UseDynamicIcons)
+                                icon = FileIconHelper.GetByName(context.Name);
+                            else
+                                icon = "icon-file";
+                            
+                            <i class="@icon text-warning text-2xl"></i>
                         }
                     </div>
                 </ColumnTemplate>
@@ -107,6 +114,7 @@
     [Parameter] public Func<MouseEventArgs, FileEntry, Task>? OnContextMenu { get; set; }
 
     [Parameter] public bool ShowIcons { get; set; } = true;
+    [Parameter] public bool UseDynamicIcons { get; set; } = true;
     [Parameter] public bool ShowDate { get; set; } = false;
     [Parameter] public bool ShowSize { get; set; } = false;
 
