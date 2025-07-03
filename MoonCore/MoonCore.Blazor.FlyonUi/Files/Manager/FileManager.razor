@@ -1,6 +1,5 @@
 ﻿@using Microsoft.Extensions.Logging
 @using Microsoft.JSInterop
-@using MoonCore.Blazor.FlyonUi.Alerts
 @using MoonCore.Blazor.FlyonUi.Files.View
 @using MoonCore.Blazor.FlyonUi.DataTables
 @using MoonCore.Blazor.FlyonUi.Files.Manager.Partials
@@ -27,7 +26,7 @@
                    OnRefreshClick="() => FileView.Refresh()"
                    OnFileSelected="HandleFileUpload"
                    ShowSelectionItems="@(SelectedEntries.Length > 0)"
-                   FileOperations="FileOperations"
+                   SelectionOperations="SingleFileOperations"
                    OnSelectionClicked="RunSelectionOperation"
                    ToolbarOperations="ToolbarOperations"
                    OnToolbarClicked="RunToolbarOperation"/>
@@ -86,12 +85,14 @@
     private ContextMenu ContextMenu;
 
     private IFileOperation[] FileOperations;
+    private IFileOperation[] SingleFileOperations;
     private IToolbarOperation[] ToolbarOperations;
     private IFileOpenOperation[] OpenOperations;
     
     protected override async Task OnInitializedAsync()
     {
         FileOperations = InjectedOperations.OrderByDescending(x => x.Order).ToArray();
+        SingleFileOperations = FileOperations.Where(x => !x.OnlySingleFile).ToArray();
         OpenOperations = InjectedOpenOperations.OrderByDescending(x => x.Order).ToArray();
         ToolbarOperations = InjectedToolbarOperations.OrderByDescending(x => x.Order).ToArray();
         

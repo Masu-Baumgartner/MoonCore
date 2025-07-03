@@ -34,6 +34,8 @@ builder.Services.AddScoped<HttpClient>();
 builder.Services.AddScoped<DropHandlerService>();
 
 builder.Services.AddScoped<IFileOperation, DeleteOperation>();
+builder.Services.AddScoped<IFileOperation, MoveOperation>();
+builder.Services.AddScoped<IFileOperation, RenameOperation>();
 builder.Services.AddScoped<IToolbarOperation, CreateFileOperation>();
 builder.Services.AddScoped<IToolbarOperation, CreateFolderOperation>();
 

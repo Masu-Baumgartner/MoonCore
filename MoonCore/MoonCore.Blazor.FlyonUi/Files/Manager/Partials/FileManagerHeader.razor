@@ -20,12 +20,12 @@
             <div class="flex flex-row justify-center lg:justify-end">
                 @if (ShowSelectionItems)
                 {
-                    for (var i = 0; i < FileOperations.Length; i++)
+                    for (var i = 0; i < SelectionOperations.Length; i++)
                     {
-                        var operation = FileOperations[i];
+                        var operation = SelectionOperations[i];
 
                         <button @onclick="_ => OnSelectionClicked.Invoke(operation)"
-                                class="btn @(operation.ToolbarCss) text-base-content @(i != FileOperations.Length - 1 ? "me-2" : "")">
+                                class="btn @(operation.ToolbarCss) text-base-content @(i != SelectionOperations.Length - 1 ? "me-2" : "")">
                             <i class="@operation.Icon"></i>
                             @operation.Name
                         </button>
@@ -68,7 +68,7 @@
 
     [Parameter] public bool ShowSelectionItems { get; set; }
 
-    [Parameter] public IFileOperation[] FileOperations { get; set; }
+    [Parameter] public IFileOperation[] SelectionOperations { get; set; }
     [Parameter] public Func<IFileOperation, Task> OnSelectionClicked { get; set; }
 
     [Parameter] public IToolbarOperation[] ToolbarOperations { get; set; }

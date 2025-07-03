@@ -1,0 +1,47 @@
+@using System.ComponentModel.DataAnnotations
+@using MoonCore.Blazor.FlyonUi.Components
+
+@inherits MoonCore.Blazor.FlyonUi.Modals.Components.BaseModal
+
+<HandleForm @ref="HandleForm" Model="Form" OnValidSubmit="HandleSubmit">
+    <div class="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-primary">
+        <i class="icon-folder-pen text-primary-content text-xl"></i>
+    </div>
+    <div class="mt-3 text-center sm:mt-5">
+        <h3 class="text-lg font-semibold leading-6 text-base-content" id="modal-title">
+            Renaming @OldName
+        </h3>
+        <div class="mt-2">
+            <input class="input" @bind="Form.Name" placeholder="Enter a new name"/>
+        </div>
+    </div>
+    <div class="mt-5 sm:mt-6 flex justify-center">
+        <button @onclick="Hide" type="button" class="btn btn-secondary me-2">
+            Cancel
+        </button>
+        <WButton IsWorking="HandleForm.IsSubmitting" Type="submit">
+            Rename
+        </WButton>
+    </div>
+</HandleForm>
+
+@code
+{
+    [Parameter] public string OldName { get; set; } = "";
+    [Parameter] public required Func<string, Task> OnSubmit { get; set; }
+
+    private FormData Form = new();
+    private HandleForm HandleForm;
+
+    record FormData
+    {
+        [Required(ErrorMessage = "You need to provide a new name")]
+        public string Name { get; set; }
+    }
+
+    private async Task HandleSubmit()
+    {
+        await OnSubmit.Invoke(Form.Name);
+        await Hide();
+    }
+}
