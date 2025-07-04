@@ -1,0 +1,104 @@
+@using MoonCore.Blazor.FlyonUi.Components
+@using MoonCore.Blazor.FlyonUi.Files.View
+@using MoonCore.Helpers
+@using MoonCore.Blazor.FlyonUi.DataTables
+@using MoonCore.Blazor.FlyonUi.Files.Manager.Partials
+@inherits MoonCore.Blazor.FlyonUi.Modals.Components.BaseModal
+
+<div class="mt-3 text-center">
+    <h3 class="text-lg font-semibold leading-6 text-base-content" id="modal-title">
+        @Title
+    </h3>
+</div>
+<div class="mt-5">
+    <PathBreadcrumb Path="@Path" OnClick="SetPath"/>
+</div>
+<div class="mt-3 border-base-content/20 bg-base-200 border-2 rounded-lg overflow-y-auto">
+    <FileView @ref="FileView" Load="Load" OnClick="OnClick">
+        <DataTableRow TItem="FileEntry" Index="int.MinValue">
+            <Template>
+                @if (Path != "/")
+                {
+                    <td @onclick="GoUp" scope="row" colspan="99999"
+                        class="py-1.5 px-3 text-left font-normal cursor-pointer">
+                        <div class="flex flex-row items-center">
+                            <i class="icon-folder-up text-accent text-2xl me-5"></i>
+                            <div>Go up</div>
+                        </div>
+                    </td>
+                }
+            </Template>
+        </DataTableRow>
+    </FileView>
+</div>
+<div class="mt-5 flex justify-center">
+    <button @onclick="Hide" type="button" class="btn btn-secondary me-2">
+        Cancel
+    </button>
+    <WButton OnClick="_ => Submit()">
+        Select
+    </WButton>
+</div>
+
+@code
+{
+    [Parameter] public IFileAccess FileAccess { get; set; }
+    [Parameter] public string InitialPath { get; set; }
+    [Parameter] public Func<string, Task> OnSubmit { get; set; }
+    [Parameter] public string Title { get; set; } = "Select a location to move to";
+
+    private string Path;
+    private FileView FileView;
+
+    protected override Task OnInitializedAsync()
+    {
+        Path = InitialPath;
+        
+        return Task.CompletedTask;
+    }
+
+    private async Task<FileEntry[]> Load()
+    {
+        var items = await FileAccess.List(Path);
+
+        return items
+            .OrderByDescending(x => x.IsFolder)
+            .ThenBy(x => x.Name)
+            .ToArray();
+    }
+
+    private async Task OnClick(FileEntry entry)
+    {
+        if(!entry.IsFolder)
+            return;
+        
+        Path = UnixPath.Combine(Path, entry.Name);
+        
+        await FileView.Refresh();
+        await InvokeAsync(StateHasChanged);
+    }
+
+    private async Task SetPath(string path)
+    {
+        Path = path;
+        
+        await FileView.Refresh();
+        await InvokeAsync(StateHasChanged);
+    }
+    
+    private async Task GoUp()
+    {
+        Path = UnixPath.GetFullPath(
+            UnixPath.Combine(Path, "..")
+        );
+
+        await FileView.Refresh();
+        await InvokeAsync(StateHasChanged);
+    }
+
+    private async Task Submit()
+    {
+        await OnSubmit.Invoke(Path);
+        await Hide();
+    }
+}

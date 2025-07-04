@@ -13,10 +13,20 @@
     <InputItem TItem="DemoItem" @bind-Value="SelectedItem" DisplayField="@(x => x.Name)" ItemSource="FailingItemSource" />
 </div>
 
+<div class="max-w-sm mt-1.5">
+    <InputItem TItem="DemoItem" @bind-Value="SelectedItem" DisplayField="@(x => x.Name)" SearchField="@(x => x.Name)" ItemSource="ItemSource" />
+</div>
+
+<div class="max-w-sm mt-1.5">
+    <InputMultipleItem TItem="DemoItem" Value="SelectedItems" DisplayField="@(x => x.Name)" SearchField="@(x => x.Name)" ItemSource="ItemSource" />
+</div>
+
+
 @code
 {
     private DemoItem[] Items;
     private DemoItem? SelectedItem = null;
+    private List<DemoItem> SelectedItems = new();
 
     private async Task<DemoItem[]> ItemSource()
     {
@@ -50,6 +60,21 @@
             {
                 Id = 3,
                 Name = "Item 3"
+            },
+            new DemoItem()
+            {
+                Id = 4,
+                Name = "Item 4"
+            },
+            new DemoItem()
+            {
+                Id = 5,
+                Name = "Item 5"
+            },
+            new DemoItem()
+            {
+                Id = 6,
+                Name = "Item 6"
             }
         ];
     }

@@ -12,19 +12,20 @@ public class HostFileAccess : IFileAccess
     private readonly HttpClient HttpClient;
 
     public HostFileAccess(string rootDirectory, ChunkedFileTransferService chunkedFileTransferService,
-        HttpClient httpClientr)
+        HttpClient httpClient)
     {
         RootDirectory = rootDirectory;
         ChunkedFileTransferService = chunkedFileTransferService;
-        HttpClient = httpClientr;
+        HttpClient = httpClient;
     }
+
+    private string HandleRawPath(string path)
+        => Path.Combine(RootDirectory, path.TrimStart('/'));
 
     public Task CreateFile(string path)
     {
-        path = path.TrimStart('/');
-
         var fs = File.Create(
-            Path.Combine(RootDirectory, path)
+            HandleRawPath(path)
         );
 
         fs.Close();
@@ -34,10 +35,8 @@ public class HostFileAccess : IFileAccess
 
     public Task CreateDirectory(string path)
     {
-        path = path.TrimStart('/');
-
         Directory.CreateDirectory(
-            Path.Combine(RootDirectory, path)
+            HandleRawPath(path)
         );
 
         return Task.CompletedTask;
@@ -45,13 +44,8 @@ public class HostFileAccess : IFileAccess
 
     public Task<FileEntry[]> List(string path)
     {
-        path = path.TrimStart('/');
-
         var entries = Directory.GetFileSystemEntries(
-            Path.Combine(
-                RootDirectory,
-                path
-            )
+            HandleRawPath(path)
         );
 
         var result = new List<FileEntry>();
@@ -93,47 +87,53 @@ public class HostFileAccess : IFileAccess
 
     public Task Move(string oldPath, string newPath)
     {
-        oldPath = oldPath.TrimStart('/');
-        newPath = newPath.TrimStart('/');
+       var oldPathSafe = HandleRawPath(oldPath);
+       var newPathSafe = HandleRawPath(newPath);
 
-        if (File.Exists(oldPath))
-            File.Move(oldPath, newPath);
+        if (File.Exists(oldPathSafe))
+            File.Move(oldPathSafe, newPathSafe);
         else
-            Directory.Move(oldPath, newPath);
+            Directory.Move(oldPathSafe, newPathSafe);
 
         return Task.CompletedTask;
     }
 
     public async Task Read(string path, Func<Stream, Task> onHandleData)
     {
-        path = path.TrimStart('/');
+        var fs = File.Open(HandleRawPath(path), FileMode.Open, FileAccess.Read, FileShare.ReadWrite);
 
-        var fs = File.Open(path, FileMode.Open, FileAccess.Read, FileShare.ReadWrite);
-
-        await onHandleData.Invoke(fs);
-
-        fs.Close();
+        try
+        {
+            await onHandleData.Invoke(fs);
+        }
+        finally
+        {
+            fs.Close();
+        }
     }
 
     public async Task Write(string path, Stream dataStream)
     {
-        path = path.TrimStart('/');
+        var fs = File.Open(HandleRawPath(path), FileMode.Create, FileAccess.ReadWrite, FileShare.Read);
 
-        var fs = File.Open(path, FileMode.Create, FileAccess.ReadWrite, FileShare.Read);
-
-        await dataStream.CopyToAsync(fs);
-
-        fs.Close();
+        try
+        {
+            await dataStream.CopyToAsync(fs);
+        }
+        finally
+        {
+            fs.Close();
+        }
     }
 
     public Task Delete(string path)
     {
-        path = path.TrimStart('/');
+        var pathSafe = HandleRawPath(path);
 
-        if (File.Exists(path))
-            File.Delete(path);
+        if (File.Exists(pathSafe))
+            File.Delete(pathSafe);
         else
-            Directory.Delete(path, true);
+            Directory.Delete(pathSafe, true);
 
         return Task.CompletedTask;
     }

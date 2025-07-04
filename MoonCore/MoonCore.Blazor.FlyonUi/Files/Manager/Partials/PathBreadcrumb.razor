@@ -1,5 +1,16 @@
 ﻿<div class="input grow">
-    <span class="icon-folder text-base-content/80 my-auto me-3 shrink-0"></span>
+    @if (OnClick == null)
+    {
+        <div class="icon-house text-base-content/70 my-auto shrink-0"></div>
+    }
+    else
+    {
+        <a href="#"
+           @onclick="@(_ => OnClick.Invoke("/"))"
+           @onclick:preventDefault
+           class="icon-house text-base-content/70 hover:text-base-content my-auto shrink-0"></a>
+    }
+   
     <div class="flex items-center grow">
         @{
             var path = Path;
@@ -23,10 +34,7 @@
             var itemPath = string.Join("/", parts.Take(i + 1));
             var currentPath = isOverflow ? pathPrefix + "/" + itemPath : itemPath;
 
-            if (i != 0 || isOverflow)
-            {
-                <i class="text-base-content/60 mx-0.5 icon-chevron-right"></i>
-            }
+            <i class="text-base-content/60 mx-1 icon-chevron-right"></i>
 
             if (parts.Length == 1 || i == parts.Length - 1 || OnClick == null)
             {

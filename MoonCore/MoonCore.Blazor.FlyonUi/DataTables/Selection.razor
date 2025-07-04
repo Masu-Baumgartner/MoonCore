@@ -5,12 +5,12 @@
         <div class="flex justify-center ms-1">
             @if (DataTable.Items.Length != 0 && DataTable.Items.Length == SelectedItems.Count)
             {
-                <input @onclick="() => ToggleAll(false)" type="checkbox" class="checkbox checkbox-primary checkbox-xs"
+                <input @onclick="() => ToggleAll(false)" @onclick:stopPropagation type="checkbox" class="checkbox checkbox-primary checkbox-xs"
                        checked="checked">
             }
             else
             {
-                <input @onclick="() => ToggleAll(true)" type="checkbox" class="checkbox checkbox-primary checkbox-xs">
+                <input @onclick="() => ToggleAll(true)" @onclick:stopPropagation type="checkbox" class="checkbox checkbox-primary checkbox-xs">
             }
         </div>
     </HeaderTemplate>
@@ -18,12 +18,12 @@
         <div class="flex justify-center ms-1">
             @if (SelectedItems.Contains(context))
             {
-                <input @onclick="() => ToggleOne(context, false)" type="checkbox"
+                <input @onclick="() => ToggleOne(context, false)" @onclick:stopPropagation type="checkbox"
                        class="checkbox checkbox-primary checkbox-xs" checked="checked">
             }
             else
             {
-                <input @onclick="() => ToggleOne(context, true)" type="checkbox"
+                <input @onclick="() => ToggleOne(context, true)" @onclick:stopPropagation type="checkbox"
                        class="checkbox checkbox-primary checkbox-xs">
             }
         </div>

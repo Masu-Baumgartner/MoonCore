@@ -24,7 +24,7 @@
     {
         <button @onclick="ToggleVisibility" type="button" aria-expanded="true"
                 class="advance-select-toggle">
-            @if (Value == null)
+            @if (Value.Count == 0)
             {
                 <span class="truncate">
                     Select option...
@@ -33,7 +33,17 @@
             else
             {
                 <span class="truncate">
-                    @DisplayField.Invoke(Value)
+                    @{
+                        string displayValue;
+                        
+                        // Show the display field value of maximum the first 2 elements, then we just say + amount if more than 2
+                        displayValue = string.Join(", ", Value.Take(2).Select(x => DisplayField.Invoke(x).ToString()));
+
+                        if (Value.Count > 2)
+                            displayValue += $", +{Value.Count - 2}";
+                    }
+                    
+                    @displayValue
                 </span>
             }
         </button>
@@ -57,7 +67,7 @@
             {
                 <div @onclick="() => Select(item)"
                      tabindex="0"
-                     class="cursor-pointer advance-select-option selected:select-active @(item!.Equals(Value) ? "selected" : "")">
+                     class="cursor-pointer advance-select-option selected:select-active @(Value.Contains(item) ? "selected" : "")">
                     <div class="flex items-center w-full">
                         <span>
                             @DisplayField.Invoke(item)
@@ -84,34 +94,10 @@
     }
 </div>
 
+
 @code
 {
-
-    #region Binder
-
-    [Parameter]
-    public TItem? Value
-    {
-        get => _value;
-        set
-        {
-            if (_value == null && value == null)
-                return;
-
-            if (_value?.Equals(value) ?? false)
-                return;
-
-            _value = value;
-            ValueChanged.InvokeAsync(value);
-        }
-    }
-
-    [Parameter] public EventCallback<TItem?> ValueChanged { get; set; }
-
-    private TItem? _value;
-
-    #endregion
-
+    [Parameter] public IList<TItem> Value { get; set; }
     [Parameter] public required Func<Task<TItem[]>> ItemSource { get; set; }
     [Parameter] public required Func<TItem, object> DisplayField { get; set; }
     [Parameter] public Func<TItem, object>? SearchField { get; set; }
@@ -123,21 +109,20 @@
     private TItem[]? VisibleItems;
 
     private string SearchTerm = "";
-    
+
     private async Task OnFocusOut()
     {
         IsVisible = false;
         await InvokeAsync(StateHasChanged);
     }
 
-    private async Task Select(TItem? item)
+    private async Task Select(TItem item)
     {
-        if (Value?.Equals(item) ?? false) // Select using click on the same item again
-            Value = default;
+        if (Value.Contains(item))
+            Value.Remove(item);
         else
-            Value = item;
-
-        IsVisible = false;
+            Value.Add(item);
+        
         await InvokeAsync(StateHasChanged);
     }
 
