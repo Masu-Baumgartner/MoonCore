@@ -40,7 +40,7 @@
         {
             parameters.Add("Work", async Task (DownloadToast toast) =>
             {
-                var fs = File.Open(PathBuilder.File("wwwroot", "testy.bin"), FileMode.Open, FileAccess.Read, FileShare.ReadWrite);
+                var fs = File.Open(Path.Combine("wwwroot", "testy.bin"), FileMode.Open, FileAccess.Read, FileShare.ReadWrite);
 
                 await DownloadService.DownloadStream("testy.bin", fs, async (loaded, _) =>
                 {

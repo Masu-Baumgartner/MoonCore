@@ -1,14 +1,12 @@
 using System.Text;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.IdentityModel.Tokens;
 using MoonCore.Blazor.Tailwind.Auth;
 using MoonCore.Blazor.Tailwind.Extensions;
 using MoonCore.Blazor.Tailwind.Test;
 using MoonCore.Blazor.Tailwind.Test.UI;
-using MoonCore.Extended.JwtInvalidation;
-using MoonCore.Extensions;
 using MoonCore.Helpers;
+using MoonCore.Logging;
 using MoonCore.Permissions;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -24,7 +22,7 @@ builder.WebHost.ConfigureKestrel(options =>
 });
 
 builder.Logging.ClearProviders();
-builder.Logging.AddMoonCore();
+builder.Logging.AddAnsiConsole();
 
 builder.Services.AddMoonCoreBlazorTailwind();
 
@@ -70,22 +68,6 @@ Task.Run(async () =>
     Console.WriteLine("Invalidated");
 });
 
-builder.Services.AddJwtInvalidation(options =>
-{
-    options.InvalidateTimeProvider = async (_, principal) =>
-    {
-        var userIdClaim = principal.Claims.FirstOrDefault(x => x.Type == "userId");
-
-        if (userIdClaim == null)
-            return null;
-
-        if (!int.TryParse(userIdClaim.Value, out var userId))
-            return DateTime.UtcNow;
-
-        return expireTimes[userId];
-    };
-});
-
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme).AddJwtBearer(options =>
 {
     options.TokenValidationParameters = new()
@@ -123,8 +105,6 @@ app.UseStaticFiles();
 app.UseAntiforgery();
 
 app.UseAuthentication();
-
-app.UseJwtInvalidation();
 
 app.UseAuthorization();
 

@@ -6,7 +6,7 @@ namespace MoonCore.Extensions;
 
 public static class HttpResponseMessageExtensions
 {
-    private static JsonSerializerOptions Options = new()
+    private static readonly JsonSerializerOptions Options = new()
     {
         PropertyNameCaseInsensitive = true
     };

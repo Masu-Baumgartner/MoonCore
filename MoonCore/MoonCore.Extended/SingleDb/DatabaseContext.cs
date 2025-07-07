@@ -33,7 +33,7 @@ public abstract class DatabaseContext : DbContext
     {
         var prefixStr = $"{Prefix}_";
 
-        foreach (var entity in (modelBuilder.Model.GetEntityTypes()))
+        foreach (var entity in modelBuilder.Model.GetEntityTypes())
         {
             if (!entity.GetTableName()?.StartsWith(prefixStr) ?? false)
             {

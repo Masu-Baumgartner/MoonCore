@@ -2,8 +2,6 @@
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Authorization;
 using MoonCore.Blazor.Tailwind.Auth;
-using MoonCore.Blazor.Tailwind.Test.Models;
-using MoonCore.Helpers;
 
 namespace MoonCore.Blazor.Tailwind.Test;
 

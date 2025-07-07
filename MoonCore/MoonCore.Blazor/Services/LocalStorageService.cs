@@ -18,19 +18,24 @@ public class LocalStorageService
             await JsRuntime.InvokeAsync<string?>("localStorage.getItem", key)
         );
     }
-    public async Task<string> GetString(string key)
-        => await JsRuntime.InvokeAsync<string>("localStorage.getItem", key);
+
+    #region Set
 
     public async Task SetString(string key, string data)
         => await JsRuntime.InvokeVoidAsync("localStorage.setItem", key, data);
 
-    public async Task<T> Get<T>(string key)
-        => JsonSerializer.Deserialize<T>(await GetString(key))!;
-
     public async Task Set(string key, object data)
         => await SetString(key, JsonSerializer.Serialize(data));
 
-    public async Task<string> GetStringDefaulted(string key, string defaultValue)
+    #endregion
+    
+
+    #region Get
+    
+    public async Task<string> GetString(string key)
+        => await JsRuntime.InvokeAsync<string>("localStorage.getItem", key);
+
+    public async Task<string> GetString(string key, string defaultValue)
     {
         if(!await ContainsKey(key))
             return defaultValue;
@@ -38,11 +43,16 @@ public class LocalStorageService
         return await GetString(key);
     }
 
-    public async Task<T> GetDefaulted<T>(string key, T defaultValue)
+    public async Task<T> Get<T>(string key, T defaultValue)
     {
         if(!await ContainsKey(key))
             return defaultValue;
 
         return await Get<T>(key);
     }
+    
+    public async Task<T> Get<T>(string key)
+        => JsonSerializer.Deserialize<T>(await GetString(key))!;
+
+    #endregion
 }

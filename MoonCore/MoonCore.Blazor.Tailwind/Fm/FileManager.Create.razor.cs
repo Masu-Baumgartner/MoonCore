@@ -14,7 +14,7 @@ public partial class FileManager
                 try
                 {
                     await FileSystemProvider.Create(
-                        PathBuilder.JoinPaths(CurrentPath, fileName),
+                        UnixPath.Combine(CurrentPath, fileName),
                         new MemoryStream([])
                     );
 
@@ -41,7 +41,7 @@ public partial class FileManager
                 try
                 {
                     await FileSystemProvider.CreateDirectory(
-                        PathBuilder.JoinPaths(CurrentPath, folderName)
+                        UnixPath.Combine(CurrentPath, folderName)
                     );
 
                     await ToastService.Success("Successfully created folder");

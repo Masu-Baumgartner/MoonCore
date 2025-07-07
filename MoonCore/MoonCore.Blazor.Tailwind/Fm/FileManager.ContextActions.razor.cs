@@ -19,7 +19,7 @@ public partial class FileManager
     {
         if (entry.IsFile)
         {
-            var path = PathBuilder.JoinPaths(CurrentPath, entry.Name);
+            var path = UnixPath.Combine(CurrentPath, entry.Name);
             var name = Path.GetFileName(path);
 
             await DownloadInternal(path, name);
@@ -37,7 +37,7 @@ public partial class FileManager
             // We need the temp paths here as the user can navigate away later on, which would change the current path
             var tempArchiveFileName =
                 $"folderDownload.{DateTimeOffset.UtcNow.ToUnixTimeSeconds()}." + compressType.Extension;
-            var tempArchivePath = PathBuilder.JoinPaths(CurrentPath, tempArchiveFileName);
+            var tempArchivePath = UnixPath.Combine(CurrentPath, tempArchiveFileName);
             var downloadFileName = $"{entry.Name}.{compressType.Extension}";
 
             await ToastService.Progress(
@@ -48,7 +48,7 @@ public partial class FileManager
                     await CompressProvider.Compress(
                         compressType,
                         tempArchivePath,
-                        [PathBuilder.JoinPaths(CurrentPath, entry.Name)]
+                        [UnixPath.Combine(CurrentPath, entry.Name)]
                     );
 
                     // Reset state
@@ -109,8 +109,8 @@ public partial class FileManager
             parameters.Add("OnSubmit", async (string path) =>
             {
                 await FileSystemProvider.Move(
-                    PathBuilder.JoinPaths(CurrentPath, entry.Name),
-                    PathBuilder.JoinPaths(path, entry.Name)
+                    UnixPath.Combine(CurrentPath, entry.Name),
+                    UnixPath.Combine(path, entry.Name)
                 );
 
                 await ToastService.Success("Successfully moved item");
@@ -133,8 +133,8 @@ public partial class FileManager
                 parameters.Add("OnSubmit", async (string val) =>
                 {
                     await FileSystemProvider.Move(
-                        PathBuilder.JoinPaths(CurrentPath, entry.Name),
-                        PathBuilder.JoinPaths(CurrentPath, val)
+                        UnixPath.Combine(CurrentPath, entry.Name),
+                        UnixPath.Combine(CurrentPath, val)
                     );
 
                     // Reset state
@@ -150,8 +150,8 @@ public partial class FileManager
                 parameters.Add("OnSubmit", async (string val) =>
                 {
                     await FileSystemProvider.Move(
-                        PathBuilder.JoinPaths(CurrentPath, entry.Name),
-                        PathBuilder.JoinPaths(CurrentPath, val)
+                        UnixPath.Combine(CurrentPath, entry.Name),
+                        UnixPath.Combine(CurrentPath, val)
                     );
 
                     // Reset state
@@ -170,7 +170,7 @@ public partial class FileManager
             {
                 await ToastService.Progress("Deleting", string.Empty, async _ =>
                 {
-                    await FileSystemProvider.Delete(PathBuilder.JoinPaths(CurrentPath, entry.Name));
+                    await FileSystemProvider.Delete(UnixPath.Combine(CurrentPath, entry.Name));
 
                     // Reset state
                     await FileList.Refresh();

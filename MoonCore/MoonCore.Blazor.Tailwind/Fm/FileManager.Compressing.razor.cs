@@ -22,8 +22,8 @@ public partial class FileManager
                 {
                     await CompressProvider.Compress(
                         compressType,
-                        PathBuilder.JoinPaths(CurrentPath, fileName),
-                        entries.Select(x => PathBuilder.JoinPaths(CurrentPath, x.Name)).ToArray()
+                        UnixPath.Combine(CurrentPath, fileName),
+                        entries.Select(x => UnixPath.Combine(CurrentPath, x.Name)).ToArray()
                     );
 
                     await ToastService.Success("Successfully created archive", fileName);
@@ -76,7 +76,7 @@ public partial class FileManager
                 {
                     await CompressProvider.Decompress(
                         compressType,
-                        PathBuilder.JoinPaths(CurrentPath, entry.Name),
+                        UnixPath.Combine(CurrentPath, entry.Name),
                         destination
                     );
 

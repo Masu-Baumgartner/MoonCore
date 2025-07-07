@@ -1,15 +1,14 @@
-﻿using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.DependencyInjection;
+﻿using Microsoft.Extensions.DependencyInjection;
 using MoonCore.Extended.Extensions;
 using MoonCore.Extended.SingleDb;
 using MoonCore.Extended.Test;
-using MoonCore.Extensions;
+using MoonCore.Logging;
 
 var serviceCollection = new ServiceCollection();
 
 serviceCollection.AddLogging(builder =>
 {
-    builder.AddMoonCore();
+    builder.AddAnsiConsole();
 });
 
 serviceCollection.AddDatabaseMappings();

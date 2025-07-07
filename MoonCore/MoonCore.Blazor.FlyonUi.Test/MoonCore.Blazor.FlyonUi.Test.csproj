@@ -24,6 +24,7 @@
 
     <ItemGroup>
       <ProjectReference Include="..\MoonCore.Blazor.FlyonUi\MoonCore.Blazor.FlyonUi.csproj" />
+      <ProjectReference Include="..\MoonCore.Extended\MoonCore.Extended.csproj" />
     </ItemGroup>
 
     <ItemGroup>

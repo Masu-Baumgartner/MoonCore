@@ -8,19 +8,18 @@ public class FileLoggingProvider : ILoggerProvider
     private readonly TextWriter TextWriter;
     private readonly FileStream FileStream;
 
-    private int WriteFlushLimit;
-
-    public FileLoggingProvider(string path, int writeFlushLimit)
+    public FileLoggingProvider(string path)
     {
-        WriteFlushLimit = writeFlushLimit;
-        
-        FileStream = File.Open(path, FileMode.OpenOrCreate, FileAccess.Write, FileShare.Read);
-        TextWriter = new StreamWriter(FileStream, Encoding.UTF8, 1024);
+        FileStream = File.Open(path, FileMode.Append, FileAccess.Write, FileShare.Read);
+        TextWriter = new StreamWriter(FileStream, Encoding.UTF8)
+        {
+            AutoFlush = true
+        };
     }
     
     public ILogger CreateLogger(string categoryName)
     {
-        return new FileLogger(categoryName, TextWriter, WriteFlushLimit);
+        return new FileLogger(categoryName, TextWriter);
     }
 
     public void Dispose()

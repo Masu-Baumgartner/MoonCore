@@ -1,6 +1,5 @@
 using Microsoft.Win32.SafeHandles;
 using Mono.Unix.Native;
-using MoonCore.Unix.Exceptions;
 
 namespace MoonCore.Unix.SecureFs;
 

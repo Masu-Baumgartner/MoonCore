@@ -24,7 +24,7 @@ public class HostFileSystemProvider : IFileSystemProvider, ICompressFileSystemPr
     {
         var entries = new List<FileSystemEntry>();
 
-        var files = Directory.GetFiles(PathBuilder.Dir(BaseDirectory, path));
+        var files = Directory.GetFiles(Path.Combine(BaseDirectory, path));
 
         foreach (var file in files)
         {
@@ -40,7 +40,7 @@ public class HostFileSystemProvider : IFileSystemProvider, ICompressFileSystemPr
             });
         }
 
-        var directories = Directory.GetDirectories(PathBuilder.Dir(BaseDirectory, path));
+        var directories = Directory.GetDirectories(Path.Combine(BaseDirectory, path));
 
         foreach (var directory in directories)
         {
@@ -64,9 +64,9 @@ public class HostFileSystemProvider : IFileSystemProvider, ICompressFileSystemPr
         var baseDir = Path.GetDirectoryName(path);
 
         if (!string.IsNullOrEmpty(baseDir))
-            Directory.CreateDirectory(PathBuilder.Dir(BaseDirectory, baseDir));
+            Directory.CreateDirectory(Path.Combine(BaseDirectory, baseDir));
 
-        await using var fs = File.Create(PathBuilder.File(BaseDirectory, path));
+        await using var fs = File.Create(Path.Combine(BaseDirectory, path));
 
         await stream.CopyToAsync(fs);
 
@@ -77,18 +77,18 @@ public class HostFileSystemProvider : IFileSystemProvider, ICompressFileSystemPr
 
     public Task Move(string oldPath, string newPath)
     {
-        if (Directory.Exists(PathBuilder.Dir(BaseDirectory, oldPath)))
+        if (Directory.Exists(Path.Combine(BaseDirectory, oldPath)))
         {
             Directory.Move(
-                PathBuilder.Dir(BaseDirectory, oldPath),
-                PathBuilder.Dir(BaseDirectory, newPath)
+                Path.Combine(BaseDirectory, oldPath),
+                Path.Combine(BaseDirectory, newPath)
             );
         }
         else
         {
             File.Move(
-                PathBuilder.File(BaseDirectory, oldPath),
-                PathBuilder.File(BaseDirectory, newPath)
+                Path.Combine(BaseDirectory, oldPath),
+                Path.Combine(BaseDirectory, newPath)
             );
         }
 
@@ -97,23 +97,23 @@ public class HostFileSystemProvider : IFileSystemProvider, ICompressFileSystemPr
 
     public Task Delete(string path)
     {
-        if (Directory.Exists(PathBuilder.Dir(BaseDirectory, path)))
-            Directory.Delete(PathBuilder.Dir(BaseDirectory, path), true);
+        if (Directory.Exists(Path.Combine(BaseDirectory, path)))
+            Directory.Delete(Path.Combine(BaseDirectory, path), true);
         else
-            File.Delete(PathBuilder.File(BaseDirectory, path));
+            File.Delete(Path.Combine(BaseDirectory, path));
 
         return Task.CompletedTask;
     }
 
     public Task CreateDirectory(string path)
     {
-        Directory.CreateDirectory(PathBuilder.Dir(BaseDirectory, path));
+        Directory.CreateDirectory(Path.Combine(BaseDirectory, path));
         return Task.CompletedTask;
     }
 
     public Task<Stream> Read(string path)
     {
-        var fs = File.Open(PathBuilder.File(BaseDirectory, path), FileMode.Open, FileAccess.Read, FileShare.ReadWrite);
+        var fs = File.Open(Path.Combine(BaseDirectory, path), FileMode.Open, FileAccess.Read, FileShare.ReadWrite);
         return Task.FromResult<Stream>(fs);
     }
 
@@ -171,7 +171,7 @@ public class HostFileSystemProvider : IFileSystemProvider, ICompressFileSystemPr
 
     private async Task CompressTarGz(string path, string[] itemsToCompress)
     {
-        var destination = PathBuilder.File(BaseDirectory, path);
+        var destination = Path.Combine(BaseDirectory, path);
 
         await using var outStream = File.Create(destination);
         await using var gzoStream = new GZipOutputStream(outStream);
@@ -179,13 +179,13 @@ public class HostFileSystemProvider : IFileSystemProvider, ICompressFileSystemPr
 
         foreach (var itemName in itemsToCompress)
         {
-            var filePath = PathBuilder.File(BaseDirectory, itemName);
+            var filePath = Path.Combine(BaseDirectory, itemName);
             var fi = new FileInfo(filePath);
 
             if (fi.Exists)
                 await AddFileToTarGz(tarStream, filePath);
             else
-                await AddDirectoryToTarGz(tarStream, PathBuilder.Dir(BaseDirectory, itemName));
+                await AddDirectoryToTarGz(tarStream, Path.Combine(BaseDirectory, itemName));
         }
 
         await tarStream.FlushAsync();
@@ -238,20 +238,20 @@ public class HostFileSystemProvider : IFileSystemProvider, ICompressFileSystemPr
 
     private async Task CompressZip(string path, string[] itemsToCompress)
     {
-        var destination = PathBuilder.File(BaseDirectory, path);
+        var destination = Path.Combine(BaseDirectory, path);
         
         await using var outStream = File.Create(destination);
         await using var zipOutputStream = new ZipOutputStream(outStream);
         
         foreach (var itemName in itemsToCompress)
         {
-            var filePath = PathBuilder.File(BaseDirectory, itemName);
+            var filePath = Path.Combine(BaseDirectory, itemName);
             var fi = new FileInfo(filePath);
 
             if (fi.Exists)
                 await AddFileToZip(zipOutputStream, filePath);
             else
-                await AddDirectoryToZip(zipOutputStream, PathBuilder.Dir(BaseDirectory, itemName));
+                await AddDirectoryToZip(zipOutputStream, Path.Combine(BaseDirectory, itemName));
         }
 
         await zipOutputStream.FlushAsync();
@@ -310,7 +310,7 @@ public class HostFileSystemProvider : IFileSystemProvider, ICompressFileSystemPr
 
     private async Task DecompressTarGz(string path, string destination)
     {
-        var archivePath = PathBuilder.File(BaseDirectory, path);
+        var archivePath = Path.Combine(BaseDirectory, path);
 
         await using var fs = File.Open(archivePath, FileMode.Open, FileAccess.Read, FileShare.ReadWrite);
         await using var gzipInputStream = new GZipInputStream(fs);
@@ -323,7 +323,7 @@ public class HostFileSystemProvider : IFileSystemProvider, ICompressFileSystemPr
             if(entry == null)
                 break;
 
-            var fileDestination = PathBuilder.File(BaseDirectory, destination, entry.Name);
+            var fileDestination = Path.Combine(BaseDirectory, destination, entry.Name);
             var parentFolder = Path.GetDirectoryName(fileDestination);
 
             // Ensure parent directory exists, if it's not the base directory
@@ -348,7 +348,7 @@ public class HostFileSystemProvider : IFileSystemProvider, ICompressFileSystemPr
 
     private async Task DecompressZip(string path, string destination)
     {
-        var archivePath = PathBuilder.File(BaseDirectory, path);
+        var archivePath = Path.Combine(BaseDirectory, path);
 
         await using var fs = File.Open(archivePath, FileMode.Open, FileAccess.Read, FileShare.ReadWrite);
         await using var zipInputStream = new ZipInputStream(fs);
@@ -363,7 +363,7 @@ public class HostFileSystemProvider : IFileSystemProvider, ICompressFileSystemPr
             if(entry.IsDirectory)
                 continue;
 
-            var fileDestination = PathBuilder.File(BaseDirectory, destination, entry.Name);
+            var fileDestination = Path.Combine(BaseDirectory, destination, entry.Name);
             var parentFolder = Path.GetDirectoryName(fileDestination);
 
             // Ensure parent directory exists, if it's not the base directory
