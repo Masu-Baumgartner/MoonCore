@@ -11,8 +11,7 @@ using MoonCore.Blazor.FlyonUi.Modals;
 using MoonCore.Blazor.FlyonUi.Test;
 using MoonCore.Blazor.FlyonUi.Test.Services;
 using MoonCore.Blazor.FlyonUi.Toasts;
-using MoonCore.Extended.JwtExpire;
-using MoonCore.Extensions;
+using MoonCore.Extended.JwtInvalidation;
 using MoonCore.Logging;
 
 var builder = WebApplication.CreateBuilder(args);

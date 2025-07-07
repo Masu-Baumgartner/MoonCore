@@ -1,7 +1,7 @@
 ﻿using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace MoonCore.Extended.JwtExpire;
+namespace MoonCore.Extended.JwtInvalidation;
 
 public static class JwtInvalidateExtensions
 {

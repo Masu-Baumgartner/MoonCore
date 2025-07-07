@@ -1,6 +1,6 @@
 ﻿using System.Security.Claims;
 
-namespace MoonCore.Extended.JwtExpire;
+namespace MoonCore.Extended.JwtInvalidation;
 
 public interface IJwtInvalidateHandler
 {

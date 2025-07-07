@@ -4,7 +4,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.IdentityModel.Tokens;
 
-namespace MoonCore.Blazor.FlyonUi.Test.Controllers;
+namespace MoonCore.Blazor.FlyonUi.Test.Http.Controllers;
 
 [ApiController]
 [Route("api/auth")]
@@ -16,9 +16,9 @@ public class AuthController : Controller
     {
         var securityTokenDescriptor = new SecurityTokenDescriptor()
         {
-            Expires = DateTime.Now.AddMinutes(60),
-            IssuedAt = DateTime.Now,
-            NotBefore = DateTime.Now.AddMinutes(-1),
+            Expires = DateTime.UtcNow.AddMinutes(60),
+            IssuedAt = DateTime.UtcNow,
+            NotBefore = DateTime.UtcNow.AddMinutes(-1),
             Claims = new Dictionary<string, object>(),
             SigningCredentials = new SigningCredentials(
                 new SymmetricSecurityKey(
