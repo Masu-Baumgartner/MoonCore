@@ -4,14 +4,20 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "tailwind": "npx @tailwindcss/cli -i ./styles.css -o ../wwwroot/style.min.css --watch",
-    "mappings": "dotnet mooncore tw-extract ../wwwroot/style.min.css -o ../../MoonCore.Blazor.FlyonUi/Styles/mappings/mooncore.map"
+    "tailwind": "npx postcss styles.css -o ../wwwroot/style.min.css --config postcss.config.js --watch",
+    "tailwind-build": "npx postcss styles.css -o ../wwwroot/style.min.css --config postcss.config.js",
+    "mappings": "EXTRACT_CLASSES=true npx postcss styles.css -o ../wwwroot/style.min.css --config postcss.config.extract.js"
   },
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "@tailwindcss/cli": "^4.1.10",
+    "@tailwindcss/postcss": "^4.1.11",
     "flyonui": "^2.2.0",
-    "tailwindcss": "^4.1.10"
+    "tailwindcss": "^4.1.11",
+    "postcss": "^8.5.6",
+    "postcss-cli": "^11.0.1",
+    "postcss-selector-parser": "^7.1.0"
+  },
+  "devDependencies": {
   }
 }
