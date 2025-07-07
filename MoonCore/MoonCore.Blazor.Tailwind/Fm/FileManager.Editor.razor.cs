@@ -33,7 +33,7 @@ public partial class FileManager
 
     private async Task LoadEditor(LazyLoader _)
     {
-        var fs = await FileSystemProvider.Read(PathBuilder.JoinPaths(CurrentPath, EditorEntry.Name));
+        var fs = await FileSystemProvider.Read(UnixPath.Combine(CurrentPath, EditorEntry.Name));
         var sr = new StreamReader(fs, Encoding.UTF8);
 
         EditorInitialContent = await sr.ReadToEndAsync();
@@ -50,7 +50,7 @@ public partial class FileManager
             Encoding.UTF8.GetBytes(content)
         );
 
-        await FileSystemProvider.Create(PathBuilder.JoinPaths(CurrentPath, EditorEntry.Name), dataStream);
+        await FileSystemProvider.Create(UnixPath.Combine(CurrentPath, EditorEntry.Name), dataStream);
         await ToastService.Success("Successfully saved changes");
     }
 

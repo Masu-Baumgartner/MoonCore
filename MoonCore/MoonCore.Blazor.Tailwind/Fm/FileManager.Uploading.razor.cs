@@ -69,7 +69,7 @@ public partial class FileManager
 
                 try
                 {
-                    var pathToUpload = PathBuilder.JoinPaths(path, nextItem.Path);
+                    var pathToUpload = UnixPath.Combine(path, nextItem.Path);
                     stream = await nextItem.Stream.OpenReadStreamAsync(uploadSizeInBytes);
 
                     async Task OnProgressUpdate(int percent)

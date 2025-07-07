@@ -115,7 +115,7 @@
         if (path.StartsWith("/"))
             CurrentPath = path;
         else
-            CurrentPath = PathBuilder.FullPathUnix(CurrentPath, path);
+            CurrentPath = UnixPath.Combine(CurrentPath, path);
 
         await DataTable.Refresh();
         return CurrentPath;

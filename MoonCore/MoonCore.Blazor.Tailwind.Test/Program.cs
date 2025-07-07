@@ -9,6 +9,7 @@ using MoonCore.Blazor.Tailwind.Test.UI;
 using MoonCore.Extended.JwtInvalidation;
 using MoonCore.Extensions;
 using MoonCore.Helpers;
+using MoonCore.Logging;
 using MoonCore.Permissions;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -24,7 +25,7 @@ builder.WebHost.ConfigureKestrel(options =>
 });
 
 builder.Logging.ClearProviders();
-builder.Logging.AddMoonCore();
+builder.Logging.AddAnsiConsole();
 
 builder.Services.AddMoonCoreBlazorTailwind();
 

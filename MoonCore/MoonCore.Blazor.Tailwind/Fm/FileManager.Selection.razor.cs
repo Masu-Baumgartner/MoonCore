@@ -34,7 +34,7 @@ public partial class FileManager : ComponentBase
 
                 try
                 {
-                    await FileSystemProvider.Delete(PathBuilder.JoinPaths(currentPath, entry.Name));
+                    await FileSystemProvider.Delete(UnixPath.Combine(currentPath, entry.Name));
 
                     deleted++;
                 }
@@ -79,8 +79,8 @@ public partial class FileManager : ComponentBase
                     foreach (var entry in entries)
                     {
                         await FileSystemProvider.Move(
-                            PathBuilder.JoinPaths(CurrentPath, entry.Name),
-                            PathBuilder.JoinPaths(path, entry.Name)
+                            UnixPath.Combine(CurrentPath, entry.Name),
+                            UnixPath.Combine(path, entry.Name)
                         );
                     }
 
