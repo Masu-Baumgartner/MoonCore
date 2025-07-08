@@ -1,15 +1,22 @@
 ﻿using Microsoft.Extensions.Configuration;
-using MoonCore.Test;
-using MoonCore.Yaml;
 
-await YamlDefaultGenerator.Generate<TestModel>("config.yml");
 
-var cb = new ConfigurationBuilder();
+using var httpClient = new HttpClient();
 
-cb.AddYamlFile("config.yml", prefix: "xyz");
+Console.WriteLine("START");
 
-var config = cb.Build();
+var response = await httpClient.GetAsync("http://localhost:5220/api/stream", HttpCompletionOption.ResponseHeadersRead);
 
-var model = config.GetSection("xyz").Get<TestModel>();
+await using var stream = await response.Content.ReadAsStreamAsync();
+using var reader = new StreamReader(stream);
 
-config.GetHashCode();
+while (!reader.EndOfStream)
+{
+    var line = await reader.ReadLineAsync();
+    if (!string.IsNullOrWhiteSpace(line))
+    {
+        Console.WriteLine($"Received: {line}");
+    }
+}
+
+Console.WriteLine("END");
