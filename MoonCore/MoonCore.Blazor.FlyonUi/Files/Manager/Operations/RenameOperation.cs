@@ -6,19 +6,22 @@ using MoonCore.Helpers;
 
 namespace MoonCore.Blazor.FlyonUi.Files.Manager.Operations;
 
-public class RenameOperation : IFileOperation
+public class RenameOperation : ISingleFsOperation
 {
     public string Name => "Rename";
     public string Icon => "icon-folder-pen";
     public string ContextCss => "text-primary";
+
     public string ToolbarCss => "";
     public int Order => 0;
-    public bool OnlySingleFile => true;
 
-    public Func<FileEntry, bool>? Filter => _ => true;
+    public Func<FsEntry, bool>? Filter => _ => true;
 
     private readonly ToastService ToastService;
     private readonly ModalService ModalService;
+    
+    public bool CheckCompatability(IFsAccess access, IFileManager fileManager)
+        => true;
 
     public RenameOperation(ToastService toastService, ModalService modalService)
     {
@@ -26,16 +29,14 @@ public class RenameOperation : IFileOperation
         ModalService = modalService;
     }
 
-    public async Task Execute(string workingDir, FileEntry[] files, IFileAccess fileAccess, IFileManager fileManager)
+    public async Task Execute(string workingDir, FsEntry file, IFsAccess fsAccess, IFileManager fileManager)
     {
-        var file = files.First();
-
         await ModalService.Launch<RenameModal>(parameters =>
         {
             parameters["OldName"] = file.Name;
             parameters["OnSubmit"] = async (string newName) =>
             {
-                await fileAccess.Move(
+                await fsAccess.Move(
                     UnixPath.Combine(workingDir, file.Name),
                     UnixPath.Combine(workingDir, newName)
                 );

@@ -4,15 +4,15 @@ namespace MoonCore.Blazor.FlyonUi.Files.Manager;
 
 public partial class FileManager
 {
-    private FileEntry[] SelectedEntries = [];
+    private FsEntry[] SelectedEntries = [];
     
-    private async Task OnSelectionChanged(FileEntry[] entries)
+    private async Task OnSelectionChanged(FsEntry[] entries)
     {
         SelectedEntries = entries;
         await InvokeAsync(StateHasChanged);
     }
 
-    private async Task RunSelectionOperation(IFileOperation operation)
+    private async Task RunSelectionOperation(IMultiFsOperation operation)
     {
         if(SelectedEntries.Length == 0)
             return;
@@ -20,6 +20,6 @@ public partial class FileManager
         var workingDir = new string(CurrentPath);
         var files = SelectedEntries.ToArray();
 
-        await operation.Execute(workingDir, files, FileAccess, this);
+        await operation.Execute(workingDir, files, FsAccess, this);
     }
 }

@@ -10,18 +10,18 @@
 <NavTabs Index="1" Names="UiConstants.FilesNames" Links="UiConstants.FilesLinks" />
 
 <div class="mt-5">
-    <FileManager FileAccess="FileAccess" />
+    <FileManager FsAccess="FsAccess" />
 </div>
 
 @code
 {
-    private IFileAccess FileAccess;
+    private IFsAccess FsAccess;
 
     protected override void OnInitialized()
     {
         var path = Path.Combine("testFs");
         
         Directory.CreateDirectory(path);
-        FileAccess = new HostFileAccess(path, ChunkedFileTransferService, new());
+        FsAccess = new HostFsAccess(path, ChunkedFileTransferService, new());
     }
 }

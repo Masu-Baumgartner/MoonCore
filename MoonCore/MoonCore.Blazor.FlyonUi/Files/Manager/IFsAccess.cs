@@ -1,11 +1,11 @@
 ﻿namespace MoonCore.Blazor.FlyonUi.Files.Manager;
 
-public interface IFileAccess
+public interface IFsAccess
 {
     public Task CreateFile(string path);
     public Task CreateDirectory(string path);
 
-    public Task<FileEntry[]> List(string path);
+    public Task<FsEntry[]> List(string path);
     public Task Move(string oldPath, string newPath);
 
     public Task Read(string path, Func<Stream, Task> onHandleData);
@@ -13,6 +13,6 @@ public interface IFileAccess
 
     public Task Delete(string path);
 
-    public Task Upload(string path, Stream dataStream, Func<int, Task> updateProgress);
-    public Task Download(string path, FileEntry fileEntry, Func<int, Task> updateProgress);
+    public Task UploadChunk(string path, int chunkId, long chunkSize, long totalSize, byte[] data);
+    public Task<byte[]> DownloadChunk(string path, int chunkId, long chunkSize);
 }

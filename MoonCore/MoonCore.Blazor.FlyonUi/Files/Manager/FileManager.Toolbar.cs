@@ -8,6 +8,6 @@ public partial class FileManager
     {
         var workingDir = new string(CurrentPath);
 
-        await operation.Execute(workingDir, FileAccess, this);
+        await operation.Execute(workingDir, FsAccess, this);
     }
 }

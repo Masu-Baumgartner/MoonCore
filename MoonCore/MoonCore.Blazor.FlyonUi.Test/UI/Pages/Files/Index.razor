@@ -14,46 +14,56 @@
 
 @code
 {
-    private async Task<FileEntry[]> Load()
+    private async Task<FsEntry[]> Load()
     {
         return [
-            new FileEntry()
+            new FsEntry()
             {
                 Name = "folder1",
                 IsFolder = true,
-                Size = 0
+                Size = 0,
+                CreatedAt = DateTimeOffset.Now,
+                UpdatedAt = DateTimeOffset.Now
             },
-            new FileEntry()
+            new FsEntry()
             {
                 Name = "folder2",
                 IsFolder = true,
-                Size = 0
+                Size = 0,
+                CreatedAt = DateTimeOffset.Now,
+                UpdatedAt = DateTimeOffset.Now
             },
-            new FileEntry()
+            new FsEntry()
             {
                 Name = "file1",
                 IsFolder = false,
-                Size = 0
+                Size = 0,
+                CreatedAt = DateTimeOffset.Now,
+                UpdatedAt = DateTimeOffset.Now
             },
-            new FileEntry()
+            new FsEntry()
             {
                 Name = "file2",
                 IsFolder = false,
-                Size = 0
+                Size = 0,
+                CreatedAt = DateTimeOffset.Now,
+                UpdatedAt = DateTimeOffset.Now
             },
-            new FileEntry()
+            new FsEntry()
             {
                 Name = "file3",
                 IsFolder = false,
-                Size = 0
+                Size = 0,
+                CreatedAt = DateTimeOffset.Now,
+                UpdatedAt = DateTimeOffset.Now
             }
         ];
     }
 
-    private Task OnClick(FileEntry arg)
+    private Task OnClick(FsEntry arg)
     {
         return Task.CompletedTask;
     }
 
-    private string CustomClickLink(FileEntry arg) => $"/files?path=/{arg.Name}";
+    private string CustomClickLink(FsEntry arg) => $"/files?path=/{arg.Name}";
 }

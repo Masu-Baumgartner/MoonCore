@@ -6,16 +6,13 @@ using MoonCore.Helpers;
 
 namespace MoonCore.Blazor.FlyonUi.Files.Manager.Operations;
 
-public class DeleteOperation : IFileOperation
+public class DeleteOperation : IMultiFsOperation
 {
     public string Name => "Delete";
     public string Icon => "icon-trash-2";
     public string ContextCss => "text-error";
     public string ToolbarCss => "btn-error";
     public int Order => -10;
-    public bool OnlySingleFile => false;
-
-    public Func<FileEntry, bool>? Filter => _ => true;
 
     private readonly ToastService ToastService;
     private readonly AlertService AlertService;
@@ -25,8 +22,11 @@ public class DeleteOperation : IFileOperation
         ToastService = toastService;
         AlertService = alertService;
     }
+    
+    public bool CheckCompatability(IFsAccess access, IFileManager fileManager)
+        => true;
 
-    public async Task Execute(string workingDir, FileEntry[] files, IFileAccess fileAccess, IFileManager fileManager)
+    public async Task Execute(string workingDir, FsEntry[] files, IFsAccess fsAccess, IFileManager fileManager)
     {
         var content = "Do you really want to delete: ";
         content += string.Join(", ", files.Take(4).Select(x => x.Name));
@@ -52,7 +52,7 @@ public class DeleteOperation : IFileOperation
 
                             try
                             {
-                                await fileAccess.Delete(
+                                await fsAccess.Delete(
                                     UnixPath.Combine(
                                         workingDir,
                                         file.Name

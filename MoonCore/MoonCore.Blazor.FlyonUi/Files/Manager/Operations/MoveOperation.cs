@@ -7,15 +7,13 @@ using MoonCore.Helpers;
 
 namespace MoonCore.Blazor.FlyonUi.Files.Manager.Operations;
 
-public class MoveOperation : IFileOperation
+public class MoveOperation : IMultiFsOperation
 {
     public string Name => "Move";
     public string Icon => "icon-folder-input";
     public string ContextCss => "text-primary";
     public string ToolbarCss => "btn-primary";
     public int Order => 0;
-    public bool OnlySingleFile => false;
-    public Func<FileEntry, bool>? Filter => _ => true;
 
     private readonly ModalService ModalService;
     private readonly ToastService ToastService;
@@ -26,12 +24,15 @@ public class MoveOperation : IFileOperation
         ToastService = toastService;
     }
 
-    public async Task Execute(string workingDir, FileEntry[] files, IFileAccess fileAccess, IFileManager fileManager)
+    public bool CheckCompatability(IFsAccess access, IFileManager fileManager)
+        => true;
+
+    public async Task Execute(string workingDir, FsEntry[] files, IFsAccess fsAccess, IFileManager fileManager)
     {
         await ModalService.Launch<MoveModal>(parameters =>
         {
             parameters["Title"] = $"Select a location to move {files.Length} item(s) to";
-            parameters["FileAccess"] = fileAccess;
+            parameters["FsAccess"] = fsAccess;
             parameters["InitialPath"] = workingDir;
             parameters["OnSubmit"] = async (string path) =>
             {
@@ -48,7 +49,7 @@ public class MoveOperation : IFileOperation
 
                             try
                             {
-                                await fileAccess.Move(
+                                await fsAccess.Move(
                                     UnixPath.Combine(workingDir, file.Name),
                                     UnixPath.Combine(path, file.Name)
                                 );
