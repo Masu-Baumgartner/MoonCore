@@ -1,4 +1,6 @@
 ﻿using Microsoft.Extensions.Configuration;
+using MoonCore.Sse;
+using MoonCore.Test;
 
 
 using var httpClient = new HttpClient();
@@ -8,15 +10,9 @@ Console.WriteLine("START");
 var response = await httpClient.GetAsync("http://localhost:5220/api/stream", HttpCompletionOption.ResponseHeadersRead);
 
 await using var stream = await response.Content.ReadAsStreamAsync();
-using var reader = new StreamReader(stream);
+var sseReader = new SseReader<Testy>(stream);
 
-while (!reader.EndOfStream)
+await foreach (var item in sseReader)
 {
-    var line = await reader.ReadLineAsync();
-    if (!string.IsNullOrWhiteSpace(line))
-    {
-        Console.WriteLine($"Received: {line}");
-    }
+    Console.WriteLine(item.Data.Counter);
 }
-
-Console.WriteLine("END");
