@@ -6,4 +6,10 @@ public class MyCoolerPlugin : ICoolPlugin
     {
         Console.WriteLine(nameof(MyCoolerPlugin));
     }
+
+    public Task Kms()
+    {
+        Console.WriteLine("KMS 1");
+        return Task.CompletedTask;
+    }
 }

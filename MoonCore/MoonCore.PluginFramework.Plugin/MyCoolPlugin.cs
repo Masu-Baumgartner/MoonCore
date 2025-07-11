@@ -11,4 +11,10 @@ public class MyCoolPlugin : ICoolPlugin
     {
         Console.WriteLine(nameof(MyCoolPlugin));
     }
+
+    public Task Kms()
+    {
+        Console.WriteLine("BBBBBBB");
+        return Task.CompletedTask;
+    }
 }
