@@ -21,8 +21,6 @@ public class SseResult<T> : IResult
         
         await foreach (var item in Provider)
         {
-            Console.WriteLine("TEST");
-            
             var eventName = item.Event ?? "data";
             var json = JsonSerializer.Serialize(item.Data);
             
@@ -31,8 +29,6 @@ public class SseResult<T> : IResult
             await response.WriteAsync("\n");
             
             await response.Body.FlushAsync();
-            
-            Console.WriteLine("FLUSH");
         }
     }
 }
