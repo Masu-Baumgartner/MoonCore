@@ -4,7 +4,7 @@ namespace MoonCore.Blazor.FlyonUi.Files.Manager.Abstractions;
 
 public interface IFileOpenOperation
 {
-    public Func<FileEntry, bool> Filter { get; set; }
+    public Func<FsEntry, bool> Filter { get; set; }
     public int Order { get; }
-    public Task<RenderFragment> Open(string workingDir, FileEntry entry, IFileAccess fileAccess, IFileManager fileManager);
+    public Task<RenderFragment> Open(string workingDir, FsEntry entry, IFsAccess fsAccess, IFileManager fileManager);
 }

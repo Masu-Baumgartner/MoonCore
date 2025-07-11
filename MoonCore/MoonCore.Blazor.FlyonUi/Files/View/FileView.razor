@@ -3,14 +3,14 @@
 @using MoonCore.Blazor.FlyonUi.Components
 
 <DataTable @ref="Table"
-           TItem="FileEntry"
+           TItem="FsEntry"
            ItemSource="ItemSource"
            OnClick="OnClick"
            OnContextMenu="OnContextMenu">
     <Configuration>
         @if (ShowIcons)
         {
-            <DataTableColumn TItem="FileEntry"
+            <DataTableColumn TItem="FsEntry"
                              Index="0"
                              HeaderCss="w-12 px-2"
                              ColumnCss="w-12 px-2">
@@ -36,14 +36,14 @@
             </DataTableColumn>
         }
 
-        <DataTableColumn TItem="FileEntry"
+        <DataTableColumn TItem="FsEntry"
                          Name="Name"
                          Field="@(x => x.Name)"
                          Index="1"/>
 
         @if (ShowSize)
         {
-            <DataTableColumn TItem="FileEntry"
+            <DataTableColumn TItem="FsEntry"
                              Name="Size"
                              Field="@(x => x.Size)"
                              Index="2"
@@ -66,7 +66,7 @@
 
         @if (ShowDate)
         {
-            <DataTableColumn TItem="FileEntry"
+            <DataTableColumn TItem="FsEntry"
                              Name="Updated at"
                              Field="@(x => x.UpdatedAt)"
                              Index="3"
@@ -74,7 +74,7 @@
                              ColumnCss="hidden md:table-cell">
                 <ColumnTemplate>
                     <span>
-                        @Formatter.FormatDate(context.UpdatedAt)
+                        @Formatter.FormatDate(context.UpdatedAt.DateTime)
                     </span>
                 </ColumnTemplate>
             </DataTableColumn>
@@ -105,22 +105,22 @@
 
 @code
 {
-    [Parameter] public Func<Task<FileEntry[]>> Load { get; set; }
-    [Parameter] public Func<FileEntry, Task>? OnClick { get; set; }
-    [Parameter] public Func<FileEntry, string>? CustomClickLink { get; set; }
+    [Parameter] public Func<Task<FsEntry[]>> Load { get; set; }
+    [Parameter] public Func<FsEntry, Task>? OnClick { get; set; }
+    [Parameter] public Func<FsEntry, string>? CustomClickLink { get; set; }
     [Parameter] public RenderFragment? ChildContent { get; set; }
     [Parameter] public RenderFragment? NoFilesContent { get; set; }
     
-    [Parameter] public Func<MouseEventArgs, FileEntry, Task>? OnContextMenu { get; set; }
+    [Parameter] public Func<MouseEventArgs, FsEntry, Task>? OnContextMenu { get; set; }
 
     [Parameter] public bool ShowIcons { get; set; } = true;
     [Parameter] public bool UseDynamicIcons { get; set; } = true;
     [Parameter] public bool ShowDate { get; set; } = false;
     [Parameter] public bool ShowSize { get; set; } = false;
 
-    private DataTable<FileEntry> Table;
+    private DataTable<FsEntry> Table;
 
-    private async Task<FileEntry[]> ItemSource()
+    private async Task<FsEntry[]> ItemSource()
         => await Load.Invoke();
 
     public async Task Refresh(bool silent = false) => await Table.Refresh(silent: silent);

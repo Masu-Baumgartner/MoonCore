@@ -65,7 +65,7 @@
             chunkSize,
             fi.Length,
             async chunkId => await HttpClient.GetByteArrayAsync(
-                $"http://localhost:5220/api/download?chunkId={chunkId}&chunkSize={chunkSize}"
+                $"http://localhost:5220/api/download?chunkId={chunkId}&chunkSize={chunkSize}&path=test.bin"
             ),
             new Progress<int>(async percent => { await button.UpdateLoadingText($"Progress: {percent}%"); })
         );
@@ -83,8 +83,10 @@
                 chunkSize,
                 async (chunkId, content) =>
                 {
+                    var httpContent = new ByteArrayContent(content);
+                    
                     var multipartForm = new MultipartFormDataContent();
-                    multipartForm.Add(content, "file", "file");
+                    multipartForm.Add(httpContent, "file", "file");
 
                     Console.WriteLine($"Uploaded: {chunkId}");
 

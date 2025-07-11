@@ -3,6 +3,7 @@
 var pl = new MyCoolPluginLoader();
 
 pl.Initialize();
-pl.HelloWorld();
+
+pl.PrintName();
 
 await pl.Kms();

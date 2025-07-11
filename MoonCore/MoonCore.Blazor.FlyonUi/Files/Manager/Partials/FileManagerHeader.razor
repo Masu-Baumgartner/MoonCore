@@ -38,7 +38,7 @@
                         var operation = ToolbarOperations[i];
 
                         <button @onclick="_ => OnToolbarClicked.Invoke(operation)"
-                                class="btn @(operation.Css) text-base-content @(i != ToolbarOperations.Length - 1 ? "me-2" : "")">
+                                class="btn @(operation.ToolbarCss) text-base-content @(i != ToolbarOperations.Length - 1 ? "me-2" : "")">
                             <i class="@operation.Icon"></i>
                             @operation.Name
                         </button>
@@ -68,8 +68,8 @@
 
     [Parameter] public bool ShowSelectionItems { get; set; }
 
-    [Parameter] public IFileOperation[] SelectionOperations { get; set; }
-    [Parameter] public Func<IFileOperation, Task> OnSelectionClicked { get; set; }
+    [Parameter] public IMultiFsOperation[] SelectionOperations { get; set; }
+    [Parameter] public Func<IMultiFsOperation, Task> OnSelectionClicked { get; set; }
 
     [Parameter] public IToolbarOperation[] ToolbarOperations { get; set; }
     [Parameter] public Func<IToolbarOperation, Task> OnToolbarClicked { get; set; }

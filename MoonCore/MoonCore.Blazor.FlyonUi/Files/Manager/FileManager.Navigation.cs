@@ -6,9 +6,9 @@ public partial class FileManager
 {
     public string CurrentPath { get; set; } = "/";
     
-    private async Task<FileEntry[]> Load()
+    private async Task<FsEntry[]> Load()
     {
-        var items = await FileAccess.List(CurrentPath);
+        var items = await FsAccess.List(CurrentPath);
 
         return items
             .OrderByDescending(x => x.IsFolder)
@@ -16,11 +16,11 @@ public partial class FileManager
             .ToArray();
     }
     
-    private async Task OnClick(FileEntry fileEntry)
+    private async Task OnClick(FsEntry fsEntry)
     {
-        if (fileEntry.IsFolder)
+        if (fsEntry.IsFolder)
         {
-            CurrentPath = UnixPath.Combine(CurrentPath, fileEntry.Name);
+            CurrentPath = UnixPath.Combine(CurrentPath, fsEntry.Name);
 
             await FileView.Refresh();
             await InvokeAsync(StateHasChanged);
@@ -44,5 +44,5 @@ public partial class FileManager
         await InvokeAsync(StateHasChanged);
     }
 
-    private string CustomClickLink(FileEntry arg) => $"/files?path=/{arg.Name}";
+    private string CustomClickLink(FsEntry arg) => $"/files?path=/{arg.Name}";
 }

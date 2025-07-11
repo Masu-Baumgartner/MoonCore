@@ -9,7 +9,7 @@ public class CreateFolderOperation : IToolbarOperation
 {
     public string Name => "Folder";
     public string Icon => "icon-folder-plus";
-    public string Css => "btn-outline btn-primary";
+    public string ToolbarCss => "btn-outline btn-primary";
     public int Order => 0;
 
     private readonly ModalService ModalService;
@@ -18,14 +18,17 @@ public class CreateFolderOperation : IToolbarOperation
     {
         ModalService = modalService;
     }
+    
+    public bool CheckCompatability(IFsAccess access, IFileManager fileManager)
+        => true;
 
-    public async Task Execute(string workingDir, IFileAccess fileAccess, IFileManager fileManager)
+    public async Task Execute(string workingDir, IFsAccess fsAccess, IFileManager fileManager)
     {
         await ModalService.Launch<CreateDirectoryModal>(parameters =>
         {
             parameters.Add("OnSubmit", async (string name) =>
             {
-                await fileAccess.CreateDirectory(UnixPath.Combine(
+                await fsAccess.CreateDirectory(UnixPath.Combine(
                     workingDir,
                     name
                 ));

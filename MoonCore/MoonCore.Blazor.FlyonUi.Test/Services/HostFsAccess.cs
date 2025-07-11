@@ -1,17 +1,18 @@
 ﻿using MoonCore.Blazor.FlyonUi.Files;
 using MoonCore.Blazor.FlyonUi.Files.Manager;
+using MoonCore.Blazor.FlyonUi.Files.Manager.Abstractions;
 using MoonCore.Helpers;
 
 namespace MoonCore.Blazor.FlyonUi.Test.Services;
 
-public class HostFileAccess : IFileAccess
+public class HostFsAccess : IFsAccess, IArchiveAccess
 {
     private readonly string RootDirectory;
     private readonly ChunkedFileTransferService ChunkedFileTransferService;
     private readonly long ChunkSize = ByteConverter.FromMegaBytes(20).Bytes;
     private readonly HttpClient HttpClient;
 
-    public HostFileAccess(string rootDirectory, ChunkedFileTransferService chunkedFileTransferService,
+    public HostFsAccess(string rootDirectory, ChunkedFileTransferService chunkedFileTransferService,
         HttpClient httpClient)
     {
         RootDirectory = rootDirectory;
@@ -42,13 +43,13 @@ public class HostFileAccess : IFileAccess
         return Task.CompletedTask;
     }
 
-    public Task<FileEntry[]> List(string path)
+    public Task<FsEntry[]> List(string path)
     {
         var entries = Directory.GetFileSystemEntries(
             HandleRawPath(path)
         );
 
-        var result = new List<FileEntry>();
+        var result = new List<FsEntry>();
 
         foreach (var entry in entries)
         {
@@ -56,7 +57,7 @@ public class HostFileAccess : IFileAccess
 
             if (fi.Exists)
             {
-                result.Add(new FileEntry()
+                result.Add(new FsEntry()
                 {
                     Name = fi.Name,
                     IsFolder = false,
@@ -69,7 +70,7 @@ public class HostFileAccess : IFileAccess
             {
                 var di = new DirectoryInfo(entry);
 
-                result.Add(new FileEntry()
+                result.Add(new FsEntry()
                 {
                     Name = di.Name,
                     IsFolder = true,
@@ -87,8 +88,8 @@ public class HostFileAccess : IFileAccess
 
     public Task Move(string oldPath, string newPath)
     {
-       var oldPathSafe = HandleRawPath(oldPath);
-       var newPathSafe = HandleRawPath(newPath);
+        var oldPathSafe = HandleRawPath(oldPath);
+        var newPathSafe = HandleRawPath(newPath);
 
         if (File.Exists(oldPathSafe))
             File.Move(oldPathSafe, newPathSafe);
@@ -138,35 +139,55 @@ public class HostFileAccess : IFileAccess
         return Task.CompletedTask;
     }
 
-    public async Task Upload(string path, Stream dataStream, Func<int, Task> updateProgress)
+    public async Task UploadChunk(string path, int chunkId, long chunkSize, long totalSize, byte[] data)
     {
-        path = path.TrimStart('/');
+        var fixedPath = path.TrimStart('/');
 
-        await ChunkedFileTransferService.Upload(
-            dataStream,
-            ChunkSize,
-            async (chunkId, content) =>
-            {
-                var multipartForm = new MultipartFormDataContent();
-                multipartForm.Add(content, "file", "file");
+        using var byteArrayContent = new ByteArrayContent(data);
 
-                await HttpClient.PostAsync(
-                    $"http://localhost:5220/api/upload" +
-                    $"?chunkId={chunkId}" +
-                    $"&chunkSize={ChunkSize}" +
-                    $"&fileSize={dataStream.Length}" +
-                    $"&fileName={path}",
-                    multipartForm
-                );
-            },
-            new Progress<int>(async void (percent) => { await updateProgress.Invoke(percent); })
+        using var multipartForm = new MultipartFormDataContent();
+        multipartForm.Add(byteArrayContent, "file", "file");
+
+        await HttpClient.PostAsync(
+            $"http://localhost:5220/api/upload" +
+            $"?chunkId={chunkId}" +
+            $"&chunkSize={chunkSize}" +
+            $"&fileSize={totalSize}" +
+            $"&fileName={fixedPath}",
+            multipartForm
         );
     }
 
-    public Task Download(string path, FileEntry fileEntry, Func<int, Task> updateProgress)
+    public async Task<byte[]> DownloadChunk(string path, int chunkId, long chunkSize)
     {
-        path = path.TrimStart('/');
+        var fixedPath = path.TrimStart('/');
 
+        return await HttpClient.GetByteArrayAsync(
+            $"http://localhost:5220/api/download?chunkId={chunkId}&chunkSize={chunkSize}&path={fixedPath}"
+        );
+    }
+
+    public ArchiveFormat[] ArchiveFormats { get; } =
+    [
+        new()
+        {
+            Identifier = "zip",
+            DisplayName = "ZIP Archive",
+            Extensions =
+            [
+                ".zip"
+            ]
+        }
+    ];
+
+    public Task Archive(string path, ArchiveFormat format, string archiveRootPath, FsEntry[] files,
+        Func<int, Task>? onProgress = null)
+    {
+        return Task.CompletedTask;
+    }
+
+    public Task Unarchive(string path, ArchiveFormat format, string archiveRootPath, Func<int, Task>? onProgress = null)
+    {
         throw new NotImplementedException();
     }
 }

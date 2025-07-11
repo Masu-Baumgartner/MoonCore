@@ -1,7 +1,9 @@
-﻿namespace MoonCore.PluginFramework.Test;
+﻿using MoonCore.PluginFramework.Plugin;
+
+namespace MoonCore.PluginFramework.Test;
 
 [PluginLoader]
-public partial class MyCoolPluginLoader : IPlugin
+public partial class MyCoolPluginLoader : ICoolPlugin
 {
     
 }

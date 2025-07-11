@@ -1,15 +1,18 @@
 ﻿using Microsoft.Extensions.Configuration;
+using MoonCore.Sse;
 using MoonCore.Test;
-using MoonCore.Yaml;
 
-await YamlDefaultGenerator.Generate<TestModel>("config.yml");
 
-var cb = new ConfigurationBuilder();
+using var httpClient = new HttpClient();
 
-cb.AddYamlFile("config.yml", prefix: "xyz");
+Console.WriteLine("START");
 
-var config = cb.Build();
+var response = await httpClient.GetAsync("http://localhost:5220/api/stream", HttpCompletionOption.ResponseHeadersRead);
 
-var model = config.GetSection("xyz").Get<TestModel>();
+await using var stream = await response.Content.ReadAsStreamAsync();
+var sseReader = new SseReader<Testy>(stream);
 
-config.GetHashCode();
+await foreach (var item in sseReader)
+{
+    Console.WriteLine(item.Data.Counter);
+}

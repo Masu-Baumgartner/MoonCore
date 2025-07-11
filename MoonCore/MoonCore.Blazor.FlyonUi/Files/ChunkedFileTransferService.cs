@@ -6,7 +6,7 @@ public class ChunkedFileTransferService
 {
     private readonly IJSRuntime JsRuntime;
 
-    public delegate Task UploadChunkCallback(int chunkId, ByteArrayContent content);
+    public delegate Task UploadChunkCallback(int chunkId, byte[] content);
 
     public delegate Task<byte[]> DownloadChunkCallback(int chunkId);
 
@@ -48,7 +48,8 @@ public class ChunkedFileTransferService
                 totalRead += bytesRead;
             }
 
-            var content = new ByteArrayContent(buffer, 0, totalRead);
+            var content = new byte[totalRead];
+            Array.Copy(buffer, content, totalRead);
 
             await callback.Invoke(
                 chunkId,

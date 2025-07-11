@@ -49,13 +49,23 @@ public partial class FileManager
                                 : UploadLimit
                         );
 
-                        await FileAccess.Upload(
-                            UnixPath.Combine(pwdAtUpload, file.Name),
+                        await FileTransferService.Upload(
                             dataStream,
-                            async percent =>
+                            TransferChunkSize,
+                            async (id, content) =>
+                            {
+                                await FsAccess.UploadChunk(
+                                    UnixPath.Combine(pwdAtUpload, file.Name),
+                                    id,
+                                    TransferChunkSize,
+                                    dataStream.Length,
+                                    content
+                                );
+                            },
+                            new Progress<int>(async percent =>
                             {
                                 await toast.UpdateStatus(file.Name, percent);
-                            }
+                            })
                         );
 
                         succeeded++;
@@ -147,10 +157,23 @@ public partial class FileManager
                                 : UploadLimit
                         );
 
-                        await FileAccess.Upload(
-                            UnixPath.Combine(pwdAtUpload, item.Path),
+                        await FileTransferService.Upload(
                             dataStream,
-                            async percent => { await toast.UpdateStatus(fileName, percent); }
+                            TransferChunkSize,
+                            async (id, content) =>
+                            {
+                                await FsAccess.UploadChunk(
+                                    UnixPath.Combine(pwdAtUpload, item.Path),
+                                    id,
+                                    TransferChunkSize,
+                                    dataStream.Length,
+                                    content
+                                );
+                            },
+                            new Progress<int>(async percent =>
+                            {
+                                await toast.UpdateStatus(fileName, percent);
+                            })
                         );
 
                         succeeded++;

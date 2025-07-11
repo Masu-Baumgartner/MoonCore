@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using Microsoft.CodeAnalysis;
@@ -12,47 +13,35 @@ public class SrcGenerator : IIncrementalGenerator
 {
     public void Initialize(IncrementalGeneratorInitializationContext context)
     {
-        var classDeclarations = context.SyntaxProvider
-            .CreateSyntaxProvider(
-                predicate: (node, _) =>
-                    node is ClassDeclarationSyntax cds &&
-                    cds.AttributeLists.Count > 0, // Only handle classes which have attributes
-                transform: (ctx, _) =>
-                {
-                    var classSyntax = (ClassDeclarationSyntax)ctx.Node;
-                    var model = ctx.SemanticModel;
-                    var symbol = model.GetDeclaredSymbol(classSyntax);
-                    return symbol;
-                })
-            .Where(symbol =>
-            {
-                if (symbol == null)
-                    return false;
-                
-                return symbol.GetAttributes().Any(attr =>
-                    attr.AttributeClass?.Name == "PluginLoaderAttribute" ||
-                    attr.AttributeClass?.ContainingNamespace.ToDisplayString() == "MoonCore.PluginFramework"
-                );
-            });
-
-        var compilationAndClasses = context.CompilationProvider.Combine(classDeclarations.Collect());
-
-        context.RegisterSourceOutput(compilationAndClasses, (spc, source) =>
+        context.RegisterSourceOutput(context.CompilationProvider, (productionContext, compilation) =>
         {
-            var (compilation, classes) = source;
+            var pluginLoaderClasses = AnalyzeHelper
+                .GetTypesFromAssembly(compilation.Assembly)
+                .Where(x => x.TypeKind == TypeKind.Class)
+                .Where(x => x.Interfaces.Length == 1) // TODO: Optimize query
+                .Where(x => x.GetAttributes().Any(attr =>
+                        attr.AttributeClass?.Name == "PluginLoaderAttribute" ||
+                        attr.AttributeClass?.ContainingNamespace.ToDisplayString() == "MoonCore.PluginFramework"
+                    )
+                );
 
-            foreach (var lcSymbol in classes)
+            var externalReferencedClasses = AnalyzeHelper
+                .GetExternalTypes(compilation.SourceModule)
+                .Where(x => x.TypeKind == TypeKind.Class)
+                .ToArray();
+            
+            foreach (var plClass in pluginLoaderClasses)
             {
                 // Handle invalid symbols
-                if(lcSymbol is not INamedTypeSymbol loaderClass)
+                if(plClass is not INamedTypeSymbol pluginLoaderClass)
                     continue;
                 
-                // Try to find the interface the loader uses
-                var interfaceType = loaderClass.Interfaces.FirstOrDefault();
-                if (interfaceType == null) continue;
+                // Search for plugin interface
+                var pluginInterface = pluginLoaderClass.Interfaces[0];
 
                 var allImplementations = new List<INamedTypeSymbol>();
                 
+                // Search for internal implementations
                 foreach (var tree in compilation.SyntaxTrees)
                 {
                     var semanticModel = compilation.GetSemanticModel(tree);
@@ -71,20 +60,36 @@ public class SrcGenerator : IIncrementalGenerator
                             continue;
 
                         // Ignore the loader class itself
-                        if (SymbolEqualityComparer.Default.Equals(symbol, loaderClass))
+                        if (SymbolEqualityComparer.Default.Equals(symbol, pluginLoaderClass))
                             continue;
                         
                         // If the class doesn't implement the interface we want to continue 
-                        if(!symbol.AllInterfaces.Contains(interfaceType, SymbolEqualityComparer.Default))
+                        if(!symbol.AllInterfaces.Contains(pluginInterface, SymbolEqualityComparer.Default))
                             continue;
                         
                         allImplementations.Add(symbol);
                     }
                 }
 
-                // Now we can finally generate the classes
-                var sourceText = GeneratePartialClass(loaderClass, interfaceType, allImplementations);
-                spc.AddSource($"{loaderClass.Name}_PluginLoader.g.cs", SourceText.From(sourceText, Encoding.UTF8));
+                // Search for external implementations
+                foreach (var externalReferencedClass in externalReferencedClasses)
+                {
+                    if(externalReferencedClass is not INamedTypeSymbol symbol)
+                        continue;
+                    
+                    // Ignore the loader class itself
+                    if (SymbolEqualityComparer.Default.Equals(symbol, pluginLoaderClass))
+                        continue;
+                        
+                    // If the class doesn't implement the interface we want to continue 
+                    if(!symbol.AllInterfaces.Contains(pluginInterface, SymbolEqualityComparer.Default))
+                        continue;
+                        
+                    allImplementations.Add(symbol);
+                }
+                
+                var sourceText = GeneratePartialClass(pluginLoaderClass, pluginInterface, allImplementations);
+                productionContext.AddSource($"{pluginLoaderClass.Name}_PluginLoader.g.cs", SourceText.From(sourceText, Encoding.UTF8));
             }
         });
     }
@@ -107,7 +112,7 @@ public class SrcGenerator : IIncrementalGenerator
         // Declare the instances
         
         sb.AppendLine("    {");
-        sb.AppendLine($"        private {interfaceName}[] Instances;");
+        sb.AppendLine($"        public {interfaceName}[] Instances {{ get; private set; }}");
         
         // Create references to them when initializing
         

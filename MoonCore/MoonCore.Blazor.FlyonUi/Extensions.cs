@@ -23,9 +23,10 @@ public static class Extensions
 
     public static void AddFileManagerOperations(this IServiceCollection collection)
     {
-        collection.AddScoped<IFileOperation, DeleteOperation>();
-        collection.AddScoped<IFileOperation, MoveOperation>();
-        collection.AddScoped<IFileOperation, RenameOperation>();
+        collection.AddScoped<IMultiFsOperation, DeleteOperation>();
+        collection.AddScoped<IMultiFsOperation, MoveOperation>();
+        collection.AddScoped<IMultiFsOperation, DownloadOperation>();
+        collection.AddScoped<ISingleFsOperation, RenameOperation>();
         collection.AddScoped<IToolbarOperation, CreateFileOperation>();
         collection.AddScoped<IToolbarOperation, CreateFolderOperation>();
     }

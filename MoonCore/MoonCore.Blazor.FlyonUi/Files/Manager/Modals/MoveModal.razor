@@ -15,7 +15,7 @@
 </div>
 <div class="mt-3 border-base-content/20 bg-base-200 border-2 rounded-lg overflow-y-auto">
     <FileView @ref="FileView" Load="Load" OnClick="OnClick">
-        <DataTableRow TItem="FileEntry" Index="int.MinValue">
+        <DataTableRow TItem="FsEntry" Index="int.MinValue">
             <Template>
                 @if (Path != "/")
                 {
@@ -42,7 +42,7 @@
 
 @code
 {
-    [Parameter] public IFileAccess FileAccess { get; set; }
+    [Parameter] public IFsAccess FsAccess { get; set; }
     [Parameter] public string InitialPath { get; set; }
     [Parameter] public Func<string, Task> OnSubmit { get; set; }
     [Parameter] public string Title { get; set; } = "Select a location to move to";
@@ -57,9 +57,9 @@
         return Task.CompletedTask;
     }
 
-    private async Task<FileEntry[]> Load()
+    private async Task<FsEntry[]> Load()
     {
-        var items = await FileAccess.List(Path);
+        var items = await FsAccess.List(Path);
 
         return items
             .OrderByDescending(x => x.IsFolder)
@@ -67,7 +67,7 @@
             .ToArray();
     }
 
-    private async Task OnClick(FileEntry entry)
+    private async Task OnClick(FsEntry entry)
     {
         if(!entry.IsFolder)
             return;
