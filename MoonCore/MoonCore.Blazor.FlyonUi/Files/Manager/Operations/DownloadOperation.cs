@@ -47,8 +47,51 @@ public class DownloadOperation : IMultiFsOperation
                     {
                         if (entry.IsFolder)
                         {
-                            await ToastService.Error("The download of folders is not supported");
-                            continue;
+                            if (access is not IArchiveAccess archiveAccess || archiveAccess.ArchiveFormats.Length  == 0)
+                            {
+                                await ToastService.Error("The download of folders is not supported");
+                                continue;
+                            }
+                            
+                            await toast.UpdateStatus("Archiving", 0);
+
+                            var format = archiveAccess.ArchiveFormats.First();
+                            var tmpName = $"{DateTimeOffset.UtcNow.ToUnixTimeSeconds()}.tmp";
+                            var tmpPath = UnixPath.Combine(workingDir, tmpName);
+
+                            await archiveAccess.Archive(
+                                tmpPath,
+                                format,
+                                workingDir,
+                                [entry],
+                                async percent =>
+                                {
+                                    await toast.UpdateStatus("Archiving", percent);
+                                }
+                            );
+
+                            var files = await access.List(workingDir);
+                            var archiveFsEntry = files.FirstOrDefault(x => x.Name == tmpName);
+
+                            if (archiveFsEntry == null)
+                            {
+                                await ToastService.Error($"Unable to create download archive for: {entry.Name}");
+                                failed++;
+                                continue;
+                            }
+
+                            var downloadName = entry.Name + format.Extensions[0];
+
+                            await DownloadFile(
+                                tmpPath,
+                                downloadName,
+                                archiveFsEntry.Size,
+                                toast, access, fileManager
+                            );
+
+                            await toast.UpdateStatus("Removing download archive", 0);
+
+                            await access.Delete(tmpPath);
                         }
                         else
                         {

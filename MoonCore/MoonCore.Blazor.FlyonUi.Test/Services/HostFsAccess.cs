@@ -1,10 +1,11 @@
 ﻿using MoonCore.Blazor.FlyonUi.Files;
 using MoonCore.Blazor.FlyonUi.Files.Manager;
+using MoonCore.Blazor.FlyonUi.Files.Manager.Abstractions;
 using MoonCore.Helpers;
 
 namespace MoonCore.Blazor.FlyonUi.Test.Services;
 
-public class HostFsAccess : IFsAccess
+public class HostFsAccess : IFsAccess, IArchiveAccess
 {
     private readonly string RootDirectory;
     private readonly ChunkedFileTransferService ChunkedFileTransferService;
@@ -87,8 +88,8 @@ public class HostFsAccess : IFsAccess
 
     public Task Move(string oldPath, string newPath)
     {
-       var oldPathSafe = HandleRawPath(oldPath);
-       var newPathSafe = HandleRawPath(newPath);
+        var oldPathSafe = HandleRawPath(oldPath);
+        var newPathSafe = HandleRawPath(newPath);
 
         if (File.Exists(oldPathSafe))
             File.Move(oldPathSafe, newPathSafe);
@@ -141,9 +142,9 @@ public class HostFsAccess : IFsAccess
     public async Task UploadChunk(string path, int chunkId, long chunkSize, long totalSize, byte[] data)
     {
         var fixedPath = path.TrimStart('/');
-        
+
         using var byteArrayContent = new ByteArrayContent(data);
-        
+
         using var multipartForm = new MultipartFormDataContent();
         multipartForm.Add(byteArrayContent, "file", "file");
 
@@ -160,9 +161,33 @@ public class HostFsAccess : IFsAccess
     public async Task<byte[]> DownloadChunk(string path, int chunkId, long chunkSize)
     {
         var fixedPath = path.TrimStart('/');
-        
+
         return await HttpClient.GetByteArrayAsync(
             $"http://localhost:5220/api/download?chunkId={chunkId}&chunkSize={chunkSize}&path={fixedPath}"
         );
+    }
+
+    public ArchiveFormat[] ArchiveFormats { get; } =
+    [
+        new()
+        {
+            Identifier = "zip",
+            DisplayName = "ZIP Archive",
+            Extensions =
+            [
+                ".zip"
+            ]
+        }
+    ];
+
+    public Task Archive(string path, ArchiveFormat format, string archiveRootPath, FsEntry[] files,
+        Func<int, Task>? onProgress = null)
+    {
+        return Task.CompletedTask;
+    }
+
+    public Task Unarchive(string path, ArchiveFormat format, string archiveRootPath, Func<int, Task>? onProgress = null)
+    {
+        throw new NotImplementedException();
     }
 }

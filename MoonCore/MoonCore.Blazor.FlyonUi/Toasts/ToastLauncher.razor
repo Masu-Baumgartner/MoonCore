@@ -1,3 +1,4 @@
+@using System.Collections.Concurrent
 @using MoonCore.Blazor.FlyonUi.Toasts.Components
 @using MoonCore.Helpers
 
@@ -20,7 +21,7 @@
 
 @code
 {
-    private readonly List<ToastItem> Items = new();
+    private readonly ConcurrentList<ToastItem> Items = new();
 
     protected override void OnInitialized()
     {
