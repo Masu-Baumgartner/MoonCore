@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using Microsoft.CodeAnalysis;
@@ -12,6 +13,86 @@ public class SrcGenerator : IIncrementalGenerator
 {
     public void Initialize(IncrementalGeneratorInitializationContext context)
     {
+        context.RegisterSourceOutput(context.CompilationProvider, (productionContext, compilation) =>
+        {
+            var pluginLoaderClasses = AnalyzeHelper
+                .GetTypesFromAssembly(compilation.Assembly)
+                .Where(x => x.TypeKind == TypeKind.Class)
+                .Where(x => x.Interfaces.Length == 1) // TODO: Optimize query
+                .Where(x => x.GetAttributes().Any(attr =>
+                        attr.AttributeClass?.Name == "PluginLoaderAttribute" ||
+                        attr.AttributeClass?.ContainingNamespace.ToDisplayString() == "MoonCore.PluginFramework"
+                    )
+                );
+
+            var externalReferencedClasses = AnalyzeHelper
+                .GetExternalTypes(compilation.SourceModule)
+                .Where(x => x.TypeKind == TypeKind.Class)
+                .ToArray();
+            
+            foreach (var plClass in pluginLoaderClasses)
+            {
+                // Handle invalid symbols
+                if(plClass is not INamedTypeSymbol pluginLoaderClass)
+                    continue;
+                
+                // Search for plugin interface
+                var pluginInterface = pluginLoaderClass.Interfaces[0];
+
+                var allImplementations = new List<INamedTypeSymbol>();
+                
+                // Search for internal implementations
+                foreach (var tree in compilation.SyntaxTrees)
+                {
+                    var semanticModel = compilation.GetSemanticModel(tree);
+                    
+                    var classNodes = tree
+                        .GetRoot()
+                        .DescendantNodes()
+                        .OfType<ClassDeclarationSyntax>();
+
+                    foreach (var classNode in classNodes)
+                    {
+                        var symbol = semanticModel.GetDeclaredSymbol(classNode) as INamedTypeSymbol;
+                        
+                        // Dont handle invalid symbols
+                        if(symbol == null)
+                            continue;
+
+                        // Ignore the loader class itself
+                        if (SymbolEqualityComparer.Default.Equals(symbol, pluginLoaderClass))
+                            continue;
+                        
+                        // If the class doesn't implement the interface we want to continue 
+                        if(!symbol.AllInterfaces.Contains(pluginInterface, SymbolEqualityComparer.Default))
+                            continue;
+                        
+                        allImplementations.Add(symbol);
+                    }
+                }
+
+                // Search for external implementations
+                foreach (var externalReferencedClass in externalReferencedClasses)
+                {
+                    if(externalReferencedClass is not INamedTypeSymbol symbol)
+                        continue;
+                    
+                    // Ignore the loader class itself
+                    if (SymbolEqualityComparer.Default.Equals(symbol, pluginLoaderClass))
+                        continue;
+                        
+                    // If the class doesn't implement the interface we want to continue 
+                    if(!symbol.AllInterfaces.Contains(pluginInterface, SymbolEqualityComparer.Default))
+                        continue;
+                        
+                    allImplementations.Add(symbol);
+                }
+                
+                var sourceText = GeneratePartialClass(pluginLoaderClass, pluginInterface, allImplementations);
+                productionContext.AddSource($"{pluginLoaderClass.Name}_PluginLoader.g.cs", SourceText.From(sourceText, Encoding.UTF8));
+            }
+        });
+        /*
         var classDeclarations = context.SyntaxProvider
             .CreateSyntaxProvider(
                 predicate: (node, _) =>
@@ -86,7 +167,7 @@ public class SrcGenerator : IIncrementalGenerator
                 var sourceText = GeneratePartialClass(loaderClass, interfaceType, allImplementations);
                 spc.AddSource($"{loaderClass.Name}_PluginLoader.g.cs", SourceText.From(sourceText, Encoding.UTF8));
             }
-        });
+        });*/
     }
 
     private static string GeneratePartialClass(INamedTypeSymbol loaderClass, INamedTypeSymbol interfaceType, List<INamedTypeSymbol> implementations)
