@@ -1,0 +1,14 @@
+﻿@page "/forms/components"
+@using MoonCore.Blazor.FlyonUi.Components
+@using MoonCore.Blazor.FlyonUi.Forms
+
+<NavTabs Index="1" Names="UiConstants.FormsNames" Links="UiConstants.FormsLinks" />
+
+<div class="mt-5">
+    <InputTags Value="Tags" />
+</div>
+
+@code
+{
+    private readonly List<string> Tags = new();
+}
