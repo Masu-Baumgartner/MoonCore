@@ -5,10 +5,19 @@
 <NavTabs Index="1" Names="UiConstants.FormsNames" Links="UiConstants.FormsLinks" />
 
 <div class="mt-5">
-    <InputTags Value="Tags" />
+    Tags: @string.Join(", ", Tags)
+</div>
+
+<div class="mt-5">
+    <InputTags Value="Tags" OnValueChanged="OnValueChanged" />
 </div>
 
 @code
 {
     private readonly List<string> Tags = new();
+
+    private async Task OnValueChanged()
+    {
+        await InvokeAsync(StateHasChanged);
+    }
 }
