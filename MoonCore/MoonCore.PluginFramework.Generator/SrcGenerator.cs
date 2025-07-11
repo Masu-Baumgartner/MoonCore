@@ -112,7 +112,7 @@ public class SrcGenerator : IIncrementalGenerator
         // Declare the instances
         
         sb.AppendLine("    {");
-        sb.AppendLine($"        private {interfaceName}[] Instances;");
+        sb.AppendLine($"        public {interfaceName}[] Instances {{ get; private set; }}");
         
         // Create references to them when initializing
         
