@@ -85,8 +85,10 @@ border-base-content/40
 border-base-content/5
 border-dashed
 border-t
+border-transparent
 bottom-0
 bottom-full
+break-words
 btn
 btn-accent
 btn-active
@@ -160,14 +162,19 @@ fixed
 flex
 flex-1
 flex-col
+flex-grow
 flex-nowrap
 flex-row
 flex-shrink-0
+flex-wrap
 focus-visible:outline-none
+focus-within:border-primary
 focus:border-primary
 focus:outline-1
 focus:outline-none
 focus:outline-primary
+focus:ring-0
+font-bold
 font-inter
 font-medium
 font-normal
@@ -183,9 +190,11 @@ gap-6
 gap-x-1
 gap-x-2
 gap-x-3
+gap-y-1
 gap-y-3
 grid
 grid-cols-1
+grid-flow-col
 grow
 grow-0
 h-12
@@ -193,6 +202,7 @@ h-2
 h-32
 h-64
 h-8
+h-auto
 h-full
 h-screen
 helper-text
@@ -277,8 +287,11 @@ mb-0.5
 mb-1
 mb-2
 mb-3
+mb-4
 mb-5
 md:table-cell
+md:text-3xl
+me-1
 me-1.5
 me-2
 me-5
@@ -296,6 +309,7 @@ min-w-0
 min-w-28
 min-w-48
 min-w-60
+min-w-[100px]
 ml-3
 ml-4
 modal
@@ -326,6 +340,7 @@ opacity-100
 open
 origin-top-left
 outline
+outline-0
 overflow-hidden
 overflow-x-auto
 overflow-y-auto
@@ -341,6 +356,7 @@ p-6
 p-8
 pin-input
 pin-input-underline
+placeholder-base-content/60
 pointer-events-auto
 pointer-events-none
 progress
@@ -354,6 +370,7 @@ px-2
 px-3
 px-4
 px-5
+py-0.5
 py-1.5
 py-2
 py-2.5
@@ -362,6 +379,7 @@ radio
 range
 relative
 resize
+ring-0
 ring-1
 ring-white/10
 rounded-box
@@ -390,7 +408,12 @@ size-5
 size-8
 skeleton
 skeleton-animated
+sm:auto-cols-max
+sm:flex
+sm:items-center
 sm:items-end
+sm:justify-between
+sm:justify-end
 sm:max-w-2xl
 sm:max-w-3xl
 sm:max-w-4xl
@@ -400,6 +423,7 @@ sm:max-w-7xl
 sm:max-w-lg
 sm:max-w-md
 sm:max-w-xl
+sm:mb-0
 sm:mt-5
 sm:mt-6
 sm:p-6

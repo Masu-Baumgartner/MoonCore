@@ -1,0 +1,60 @@
+<div class="border-base-content/20 border-2 ring-0 outline-0 focus:border-primary focus-within:border-primary bg-base-200/50 rounded-lg flex flex-wrap items-center h-auto p-1 text-sm break-words w-full gap-y-1">
+    @foreach (var tag in Value)
+    {
+        <span href="#"
+              @onclick:preventDefault
+              @onclick="() => RemoveTag(tag)"
+              class="flex bg-primary rounded-lg py-0.5 px-1.5 me-1 cursor-pointer text-center">
+            @tag
+        </span>
+    }
+    
+    <input @onkeyup="OnKeyUp"
+           @bind="InputField"
+           @bind:event="oninput"
+           type="text"
+           class="flex-grow min-w-[100px] bg-transparent placeholder-base-content/60 focus:outline-none focus:ring-0 border-transparent text-sm p-1"
+           placeholder="Enter..." />
+</div>
+
+@code
+{
+    [Parameter]
+    public List<string> Value { get; set; } = new();
+    
+    [Parameter] public Func<Task>? OnValueChanged { get; set; }
+    
+    private string InputField = "";
+
+    private async Task RemoveTag(string tag)
+    {
+        Value.Remove(tag);
+        
+        await InvokeAsync(StateHasChanged);
+
+        if(OnValueChanged != null)
+            await OnValueChanged.Invoke();
+    }
+
+    private async Task OnKeyUp(KeyboardEventArgs keyboardEventArgs)
+    {
+        if (keyboardEventArgs.Code != "Space" && keyboardEventArgs.Code != "Enter")
+            return;
+        
+        var value = InputField.Trim();
+
+        if (string.IsNullOrEmpty(value))
+            return;
+
+        if (Value.Contains(value))
+            return;
+
+        Value.Add(value);
+        
+        InputField = "";
+        await InvokeAsync(StateHasChanged);
+        
+        if(OnValueChanged != null)
+            await OnValueChanged.Invoke();
+    }
+}
