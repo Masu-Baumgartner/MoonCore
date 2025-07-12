@@ -283,5 +283,19 @@ window.moonCore = {
             const allFileEntries = await Promise.all(entries.map(traverseEntry));
             return allFileEntries.flat();
         }
-    }
+    },
+    downloadHelper: {
+        downloadFileFromStream: async function (fileName, contentStreamReference) {
+            const arrayBuffer = await contentStreamReference.arrayBuffer();
+            const blob = new Blob([arrayBuffer]);
+            const url = URL.createObjectURL(blob);
+
+            const anchor = document.createElement('a');
+            anchor.href = url;
+            anchor.download = fileName || 'download';
+            anchor.click();
+
+            URL.revokeObjectURL(url);
+        }
+    },
 }

@@ -4,6 +4,7 @@ using MoonCore.Blazor.FlyonUi.Alerts;
 using MoonCore.Blazor.FlyonUi.Files;
 using MoonCore.Blazor.FlyonUi.Files.Manager.Abstractions;
 using MoonCore.Blazor.FlyonUi.Files.Manager.Operations;
+using MoonCore.Blazor.FlyonUi.Helpers;
 using MoonCore.Blazor.FlyonUi.Modals;
 using MoonCore.Blazor.FlyonUi.Toasts;
 
@@ -19,6 +20,7 @@ public static class Extensions
         collection.AddScoped<CodeEditorService>();
         collection.AddScoped<ChunkedFileTransferService>();
         collection.AddScoped<DropHandlerService>();
+        collection.AddScoped<DownloadService>();
     }
 
     public static void AddFileManagerOperations(this IServiceCollection collection)
