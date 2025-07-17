@@ -6,6 +6,14 @@
 <NavTabs Index="2" Names="UiConstants.FormsNames" Links="UiConstants.FormsLinks" />
 
 <div class="max-w-sm mt-5">
+    <select class="select">
+        <option>I</option>
+        <option>Dont</option>
+        <option>Care</option>
+    </select>
+</div>
+
+<div class="max-w-sm mt-5">
     <InputItem TItem="DemoItem" @bind-Value="SelectedItem" DisplayField="@(x => x.Name)" ItemSource="ItemSource" />
 </div>
 
@@ -44,39 +52,18 @@
 
     protected override void OnInitialized()
     {
-        Items =
-        [
-            new DemoItem()
+        var items = new List<DemoItem>();
+
+        for (var i = 0; i < 100; i++)
+        {
+            items.Add(new DemoItem()
             {
-                Id = 1,
-                Name = "Item 1"
-            },
-            new DemoItem()
-            {
-                Id = 2,
-                Name = "Item 2"
-            },
-            new DemoItem()
-            {
-                Id = 3,
-                Name = "Item 3"
-            },
-            new DemoItem()
-            {
-                Id = 4,
-                Name = "Item 4"
-            },
-            new DemoItem()
-            {
-                Id = 5,
-                Name = "Item 5"
-            },
-            new DemoItem()
-            {
-                Id = 6,
-                Name = "Item 6"
-            }
-        ];
+                Id = i,
+                Name = $"Item {i}"
+            });
+        }
+
+        Items = items.ToArray();
     }
 
     record DemoItem
