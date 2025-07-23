@@ -32,7 +32,7 @@
 
     <ItemGroup>
         <None Include="README.md" Pack="true" PackagePath="\"/>
-        <None Include="Styles/mappings/*" Pack="true" PackagePath="Styles/mappings/" />
+        <None Include="Styles/mappings/*" Pack="true" PackagePath="Styles/" />
         <None Include="MoonCore.Blazor.FlyonUi.targets" Pack="true" PackagePath="build\MoonCore.Blazor.FlyonUi.targets" />
     </ItemGroup>
 
