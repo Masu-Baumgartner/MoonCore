@@ -25,7 +25,7 @@
                         var operation = SelectionOperations[i];
 
                         <button @onclick="_ => OnSelectionClicked.Invoke(operation)"
-                                class="btn @(operation.ToolbarCss) text-base-content @(i != SelectionOperations.Length - 1 ? "me-2" : "")">
+                                class="btn @(operation.ToolbarCss) @(i != SelectionOperations.Length - 1 ? "me-2" : "")">
                             <i class="@operation.Icon"></i>
                             @operation.Name
                         </button>
@@ -38,13 +38,13 @@
                         var operation = ToolbarOperations[i];
 
                         <button @onclick="_ => OnToolbarClicked.Invoke(operation)"
-                                class="btn @(operation.ToolbarCss) text-base-content @(i != ToolbarOperations.Length - 1 ? "me-2" : "")">
+                                class="btn @(operation.ToolbarCss) @(i != ToolbarOperations.Length - 1 ? "me-2" : "")">
                             <i class="@operation.Icon"></i>
                             @operation.Name
                         </button>
                     }
                     
-                    <label for="fm-upload" class="btn btn-primary text-base-content ms-2">
+                    <label for="fm-upload" class="btn btn-primary ms-2">
                         <i class="icon-upload"></i>
                         Upload
                     </label>
