@@ -18,7 +18,7 @@
         <RepositoryType>git</RepositoryType>
         <PackageTags>mooncore</PackageTags>
         <PackageReadmeFile>README.md</PackageReadmeFile>
-        <Version>1.0.8</Version>
+        <Version>1.0.9</Version>
     </PropertyGroup>
 
 
@@ -32,7 +32,7 @@
 
     <ItemGroup>
         <None Include="README.md" Pack="true" PackagePath="\"/>
-        <None Include="Styles/mappings/*" Pack="true" PackagePath="Styles/mappings/" />
+        <None Include="Styles/mappings/*" Pack="true" PackagePath="Styles/" />
         <None Include="MoonCore.Blazor.FlyonUi.targets" Pack="true" PackagePath="build\MoonCore.Blazor.FlyonUi.targets" />
     </ItemGroup>
 

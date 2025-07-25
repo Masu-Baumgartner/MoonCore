@@ -1,0 +1,21 @@
+<div class="flex items-center @Spacing">
+    <div class="grow-0 flex items-center me-5 text-base-content">
+        <i class="@Icon text-xl me-2.5"></i>
+        <span class="font-semibold">
+            @ChildContent
+        </span>
+    </div>
+    <div class="grow border-b border-base-content/25"></div>
+</div>
+
+@code
+{
+    [Parameter]
+    public string Spacing { get; set; } = "mt-8 mb-4";
+    
+    [Parameter]
+    public string Icon { get; set; } = "icon-pentagon";
+    
+    [Parameter]
+    public RenderFragment ChildContent { get; set; }
+}
