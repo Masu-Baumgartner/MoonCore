@@ -42,7 +42,7 @@ public partial class FileManager : ComponentBase
                 {
                     await ToastService.Danger($"An error occured while deleting '{entry.Name}'");
                     
-                    Logger.LogError("An unhandled error occured while deleting file '{name}': {e}", entry.Name, e);
+                    Logger.LogError(e, "An unhandled error occured while deleting file '{name}'", entry.Name);
                 }
             }
 

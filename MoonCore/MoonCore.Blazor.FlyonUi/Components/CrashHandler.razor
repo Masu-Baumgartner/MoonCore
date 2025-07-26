@@ -24,7 +24,7 @@ else
 {
     protected override Task OnErrorAsync(Exception exception)
     {
-        Logger.LogCritical("An unhandled error occured: {e}", exception);
+        Logger.LogCritical(exception, "An unhandled error occured");
 
         return Task.CompletedTask;
     }

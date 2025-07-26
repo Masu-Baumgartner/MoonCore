@@ -91,7 +91,7 @@ public partial class FileManager
                 catch (Exception e)
                 {
                     await ToastService.Danger($"Unable to upload file {name}: An unknown error occured");
-                    Logger.LogError("Unable to upload receive file '{path}': {e}", name, e);
+                    Logger.LogError(e, "Unable to upload receive file '{path}'", name);
                 }
                 finally
                 {

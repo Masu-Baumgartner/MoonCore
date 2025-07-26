@@ -25,7 +25,7 @@ public partial class FileManager
                 }
                 catch (Exception e)
                 {
-                    Logger.LogError("Unable to create file '{fileName}': {e}", fileName, e);
+                    Logger.LogError(e, "Unable to create file '{fileName}'", fileName);
                     await ToastService.Danger($"Unable to create file: {fileName}");
                 }
             });
@@ -51,7 +51,7 @@ public partial class FileManager
                 }
                 catch (Exception e)
                 {
-                    Logger.LogError("Unable to create folder '{folderName}': {e}", folderName, e);
+                    Logger.LogError(e, "Unable to create folder '{folderName}'", folderName);
                     await ToastService.Danger($"Unable to create folder: {folderName}");
                 }
             });

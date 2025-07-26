@@ -73,9 +73,9 @@ public partial class FileManager
                     catch (Exception e)
                     {
                         Logger.LogError(
-                            "An unhandled error occured while uploading file {name}: {e}",
-                            file.Name,
-                            e
+                            e,
+                            "An unhandled error occured while uploading file {name}",
+                            file.Name
                         );
 
                         await ToastService.Error(
@@ -181,9 +181,9 @@ public partial class FileManager
                     catch (Exception e)
                     {
                         Logger.LogError(
-                            "An unhandled error occured while uploading file {name}: {e}",
-                            fileName,
-                            e
+                            e,
+                            "An unhandled error occured while uploading file {name}",
+                            fileName
                         );
 
                         await ToastService.Error(

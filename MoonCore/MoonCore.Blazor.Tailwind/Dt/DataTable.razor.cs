@@ -79,7 +79,7 @@ public partial class DataTable<TItem>
             if (e is HttpApiException httpApiException && httpApiException.Status == 401)
                 throw;
             
-            Logger.LogError("An error occured while loading items from source: {e}", e);
+            Logger.LogError(e, "An error occured while loading items from source");
             LoadingException = e;
         }
         finally

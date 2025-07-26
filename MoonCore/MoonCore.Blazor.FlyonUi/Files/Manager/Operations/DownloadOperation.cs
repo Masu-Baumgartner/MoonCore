@@ -108,9 +108,9 @@ public class DownloadOperation : IMultiFsOperation
                     catch (Exception e)
                     {
                         Logger.LogError(
-                            "An unhandled error occured while downloading item {name}: {e}",
-                            entry.Name,
-                            e
+                            e,
+                            "An unhandled error occured while downloading item {name}",
+                            entry.Name
                         );
 
                         await ToastService.Error(
