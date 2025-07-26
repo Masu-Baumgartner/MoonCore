@@ -33,10 +33,10 @@ public class ApiExceptionHandler : IExceptionHandler
                 if (httpRequestException.InnerException is SocketException)
                 {
                     logger.LogCritical(
-                        "An unhandled socket exception occured. [{method}] {path}: {e}",
+                        exception.Demystify(),
+                        "An unhandled socket exception occured. [{method}] {path}",
                         method,
-                        path,
-                        exception.Demystify()
+                        path
                     );
 
                     await Results.Problem(
@@ -49,10 +49,10 @@ public class ApiExceptionHandler : IExceptionHandler
                 else
                 {
                     logger.LogCritical(
-                        "An unhandled exception occured. [{method}] {path}: {e}",
+                        exception.Demystify(),
+                        "An unhandled exception occured. [{method}] {path}",
                         method,
-                        path,
-                        exception.Demystify()
+                        path
                     );
 
                     await Results.Problem(
@@ -66,10 +66,10 @@ public class ApiExceptionHandler : IExceptionHandler
             else
             {
                 logger.LogCritical(
-                    "An unhandled exception occured. [{method}] {path}: {e}",
+                    exception.Demystify(),
+                    "An unhandled exception occured. [{method}] {path}",
                     method,
-                    path,
-                    exception.Demystify()
+                    path
                 );
 
                 await Results.Problem(

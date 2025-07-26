@@ -102,4 +102,11 @@ public class ConcurrentList<T> : IList<T>
         try { InnerList.RemoveAt(index); }
         finally { ock.ExitWriteLock(); }
     }
+
+    public void RemoveRange(int index, int count)
+    {
+        ock.EnterWriteLock();
+        try { InnerList.RemoveRange(index, count); }
+        finally { ock.ExitWriteLock(); }
+    }
 }

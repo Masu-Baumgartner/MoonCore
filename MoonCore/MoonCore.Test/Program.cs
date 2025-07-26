@@ -1,18 +1,20 @@
-﻿using Microsoft.Extensions.Configuration;
-using MoonCore.Sse;
-using MoonCore.Test;
+﻿using Microsoft.Extensions.Logging;
+using MoonCore.Logging;
 
+var loggerFactory = new LoggerFactory();
 
-using var httpClient = new HttpClient();
+loggerFactory.AddAnsiConsole();
 
-Console.WriteLine("START");
+var logger = loggerFactory.CreateLogger<Program>();
 
-var response = await httpClient.GetAsync("http://localhost:5220/api/stream", HttpCompletionOption.ResponseHeadersRead);
-
-await using var stream = await response.Content.ReadAsStreamAsync();
-var sseReader = new SseReader<Testy>(stream);
-
-await foreach (var item in sseReader)
+try
 {
-    Console.WriteLine(item.Data.Counter);
+    var y = 69;
+    var x = 0;
+
+    var a = y / x;
+}
+catch (Exception e)
+{
+    logger.LogError(e, "An exception occurred");
 }

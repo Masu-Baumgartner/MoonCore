@@ -134,7 +134,7 @@ else
             }
             else
             {
-                Logger.LogError("An unhandled error occured while handling form: {e}", e);
+                Logger.LogError(e, "An unhandled error occured while handling form");
                 
                 SubmitException = e;
                 return false;

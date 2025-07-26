@@ -140,7 +140,7 @@ else
         {
             Exception = exception;
 
-            Logger.LogError("An unhandled error has been captured: {e}", exception);
+            Logger.LogError(exception, "An unhandled error has been captured");
         }
 
         // Save exception after handling as last error

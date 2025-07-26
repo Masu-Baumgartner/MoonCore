@@ -6,7 +6,7 @@
     
     @foreach (var tab in TabList)
     {
-        <button @onclick="() => SwitchTab(tab)" type="button" class="btn btn-text active-tab:bg-primary active-tab:text-base-content hover:text-primary hover:bg-transparent @(CurrentTab == tab ? "active" : "")" data-tab="dummy" role="tab" aria-selected="true" >
+        <button @onclick="() => SwitchTab(tab)" type="button" class="btn btn-text active-tab:bg-primary active-tab:text-primary-content hover:text-primary active-tab:hover:text-primary-content hover:bg-transparent @(CurrentTab == tab ? "active" : "")" data-tab="dummy" role="tab" aria-selected="true" >
             @if (!string.IsNullOrEmpty(tab.Icon))
             {
                 <i class="@tab.Icon"></i>

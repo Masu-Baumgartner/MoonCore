@@ -25,7 +25,8 @@ accordion-bordered
 accordion-toggle
 active
 active-tab:bg-primary
-active-tab:text-base-content
+active-tab:hover:text-primary-content
+active-tab:text-primary-content
 advance-select-menu
 advance-select-option
 advance-select-tag
