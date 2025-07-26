@@ -17,13 +17,23 @@ public class FileLogger : ILogger
 
     public bool IsEnabled(LogLevel logLevel) => true;
 
-    public void Log<TState>(LogLevel logLevel, EventId eventId, TState state, Exception? exception, Func<TState, Exception?, string> formatter)
+    public void Log<TState>(
+        LogLevel logLevel,
+        EventId eventId,
+        TState state,
+        Exception? exception,
+        Func<TState, Exception?, string> formatter
+    )
     {
         var message = formatter(state, exception);
 
         var shortName = LoggingConstants.ShortTextMappings[logLevel];
-        
+
         TextWriter.WriteLine($"{DateTime.Now:dd.MM.yy HH:mm:ss} {shortName} {CategoryName}: {message}");
+
+        if(exception != null)
+            TextWriter.WriteLine(exception.ToString());
+        
         TextWriter.Flush();
     }
 }
