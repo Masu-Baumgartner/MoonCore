@@ -3,8 +3,8 @@
 @inherits BaseToast
 
 <div class="flex-shrink-0 flex items-center">
-    <div class="inline-flex">
-        <i class="icon-cloud-upload animate-bounce text-2xl text-primary"></i>
+    <div class="radial-progress text-primary" style="--value: @(Percent); --size: 3.5rem" role="progressbar" aria-label="Primary Radial Progressbar">
+        @(Percent)%
     </div>
 </div>
 <div class="ml-3 w-0 pt-0.5 flex-1">
@@ -18,7 +18,7 @@
         }
         else
         {
-            <span>@(Percent)% - @File</span>
+            <span>@File</span>
         }
     </p>
 </div>

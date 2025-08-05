@@ -51,7 +51,7 @@
 
     @if (IsVisible && VisibleItems != null)
     {
-        <div class="absolute advance-select-menu opened top-full mt-3 z-50 max-h-52 overflow-y-auto pt-0 px-2.5" role="listbox" tabindex="-1"
+        <div class="absolute advance-select-menu opened top-full mt-3 z-50 max-h-52 overflow-y-auto pt-0 px-2.5 bg-base-150!" role="listbox" tabindex="-1"
              aria-orientation="vertical">
 
             @if (SearchField != null)
@@ -61,6 +61,10 @@
                            type="text" placeholder="Search..."
                            class="input">
                 </div>
+            }
+            else
+            {
+                <div class="mb-2"></div>
             }
 
             @foreach (var item in VisibleItems)

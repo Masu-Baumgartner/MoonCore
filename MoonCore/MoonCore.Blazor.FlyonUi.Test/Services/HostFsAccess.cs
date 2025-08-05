@@ -5,18 +5,14 @@ using MoonCore.Helpers;
 
 namespace MoonCore.Blazor.FlyonUi.Test.Services;
 
-public class HostFsAccess : IFsAccess, IArchiveAccess
+public class HostFsAccess : IFsAccess, IArchiveAccess, ICombineAccess
 {
     private readonly string RootDirectory;
-    private readonly ChunkedFileTransferService ChunkedFileTransferService;
-    private readonly long ChunkSize = ByteConverter.FromMegaBytes(20).Bytes;
     private readonly HttpClient HttpClient;
 
-    public HostFsAccess(string rootDirectory, ChunkedFileTransferService chunkedFileTransferService,
-        HttpClient httpClient)
+    public HostFsAccess(string rootDirectory, HttpClient httpClient)
     {
         RootDirectory = rootDirectory;
-        ChunkedFileTransferService = chunkedFileTransferService;
         HttpClient = httpClient;
     }
 
@@ -63,7 +59,8 @@ public class HostFsAccess : IFsAccess, IArchiveAccess
                     IsFolder = false,
                     Size = fi.Length,
                     CreatedAt = fi.CreationTimeUtc,
-                    UpdatedAt = fi.LastWriteTimeUtc
+                    UpdatedAt = fi.LastWriteTimeUtc,
+                    Permissions = FilePermissions.ReadWrite
                 });
             }
             else
@@ -76,7 +73,8 @@ public class HostFsAccess : IFsAccess, IArchiveAccess
                     IsFolder = true,
                     Size = 0,
                     CreatedAt = di.CreationTimeUtc,
-                    UpdatedAt = di.LastWriteTimeUtc
+                    UpdatedAt = di.LastWriteTimeUtc,
+                    Permissions = FilePermissions.ReadWrite
                 });
             }
         }
@@ -115,6 +113,7 @@ public class HostFsAccess : IFsAccess, IArchiveAccess
 
     public async Task Write(string path, Stream dataStream)
     {
+        /*
         var fs = File.Open(HandleRawPath(path), FileMode.Create, FileAccess.ReadWrite, FileShare.Read);
 
         try
@@ -124,7 +123,20 @@ public class HostFsAccess : IFsAccess, IArchiveAccess
         finally
         {
             fs.Close();
-        }
+        }*/
+        
+        var fixedPath = path.TrimStart('/');
+
+        using var byteArrayContent = new StreamContent(dataStream);
+
+        using var multipartForm = new MultipartFormDataContent();
+        multipartForm.Add(byteArrayContent, "file", "file");
+
+        await HttpClient.PostAsync(
+            $"http://localhost:5220/api/upload/single" +
+            $"?filePath={fixedPath}",
+            multipartForm
+        );
     }
 
     public Task Delete(string path)
@@ -189,5 +201,41 @@ public class HostFsAccess : IFsAccess, IArchiveAccess
     public Task Unarchive(string path, ArchiveFormat format, string archiveRootPath, Func<int, Task>? onProgress = null)
     {
         throw new NotImplementedException();
+    }
+
+    public async Task Combine(string destination, string[] files)
+    {
+        var fixedDestination = HandleRawPath(destination);
+        var fixedFiles = files.Select(HandleRawPath).ToArray();
+
+        await using var fs = File.Open(
+            fixedDestination,
+            FileMode.CreateNew,
+            FileAccess.ReadWrite,
+            FileShare.Read
+        );
+
+        try
+        {
+            foreach (var fixedFile in fixedFiles)
+            {
+                await using var partFs = File.Open(
+                    fixedFile,
+                    FileMode.Open,
+                    FileAccess.Read,
+                    FileShare.ReadWrite
+                );
+
+                await partFs.CopyToAsync(fs);
+                
+                partFs.Close();
+            }
+
+            await fs.FlushAsync();
+        }
+        finally
+        {
+            fs.Close();
+        }
     }
 }
