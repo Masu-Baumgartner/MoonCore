@@ -41,7 +41,7 @@ public partial class FileManager
                         continue;
                     }
 
-                    await toast.UpdateStatus(file.Name, 0);
+                    await toast.SetProgress(file.Name, 0);
 
                     try
                     {
@@ -153,7 +153,7 @@ public partial class FileManager
 
                     var fileName = UnixPath.GetFileName(item.Path);
 
-                    await toast.UpdateStatus(fileName, 0);
+                    await toast.SetProgress(fileName, 0);
 
                     try
                     {
@@ -176,7 +176,7 @@ public partial class FileManager
                                     content
                                 );
                             },
-                            new Progress<int>(async percent => { await toast.UpdateStatus(fileName, percent); })
+                            new Progress<int>(async percent => { await toast.SetProgress(fileName, percent); })
                         );
 
                         succeeded++;
@@ -240,7 +240,7 @@ public partial class FileManager
         {
             Logger.LogInformation("Start");
             
-            var workerCount = 8;
+            var workerCount = 1;
             var tasks = new List<Task>();
             var locker = new SemaphoreSlim(1);
             var id = Random.Shared.Next(0, 1024);
@@ -248,104 +248,109 @@ public partial class FileManager
             var counter = 0;
             double lastLoggedPercent = -1;
 
-            for (var i = 0; i < workerCount; i++)
+            try
             {
-                var threadIndex = i; // For logging
-
-                var task = Task.Run(async () =>
+                for (var i = 0; i < workerCount; i++)
                 {
-                    while (true)
+                    var threadIndex = i; // For logging
+
+                    var task = Task.Run(async () =>
                     {
-                        MemoryStream ms = new MemoryStream();
+                        while (true)
+                        {
+                            var ms = new MemoryStream();
                         
-                        int currentCount;
-                        long currentPosition;
-                        long totalLength = stream.Length;
+                            int currentCount;
+                            var totalLength = stream.Length;
 
-                        // Safely copy from stream
-                        await locker.WaitAsync();
-                        try
-                        {
-                            if (stream.Position >= stream.Length)
-                            {
-                                break;
-                            }
-
-                            await CopyStreamPart(stream, ms, transferLimit);
-
-                            // Skip empty parts
-                            if (ms.Length == 0)
-                            {
-                                break;
-                            }
-                            else
-                            {
-                                Logger.LogInformation("Part: {size}", ms.Length);
-                            }
-
-                            currentCount = counter++;
-                            currentPosition = stream.Position;
-
-                            // Log progress if at least 1% more completed
-                            var percent = (double)currentPosition / totalLength * 100;
-                            if (percent != lastLoggedPercent)
-                            {
-                                lastLoggedPercent = percent;
-                                
-                                await toast.UpdateStatus(name, (int)Math.Round(percent));
-                                
-                                Logger.LogInformation("Progress: {Percent}%", percent);
-                            }
-                        }
-                        finally
-                        {
-                            locker.Release();
-                        }
-
-                        ms.Position = 0;
-                        var partPath = UnixPath.Combine(uploadDir, $"{currentCount}.bin");
-
-                        var uploadTries = 0;
-                        const int maxUploadTries = 3;
-
-                        while (uploadTries < maxUploadTries)
-                        {
+                            // Safely copy from stream
+                            await locker.WaitAsync();
                             try
                             {
-                                await FsAccess.Write(partPath, ms);
-                                Logger.LogInformation("Thread {ThreadIndex}: Sent file to {Path}", threadIndex,
-                                    partPath);
-                                break;
-                            }
-                            catch (Exception e)
-                            {
-                                Logger.LogWarning(e, "Error uploading part {PartPath}, attempt {Attempt}", partPath,
-                                    uploadTries + 1);
-                                uploadTries++;
-                                if (uploadTries >= maxUploadTries)
+                                if (stream.Position >= stream.Length)
                                 {
-                                    Logger.LogError("Failed to upload {Path} after {Tries} attempts", partPath,
-                                        maxUploadTries);
+                                    break;
+                                }
+
+                                await CopyStreamPart(stream, ms, transferLimit);
+
+                                // Skip empty parts
+                                if (ms.Length == 0)
+                                {
+                                    break;
+                                }
+                                else
+                                {
+                                    Logger.LogInformation("Part: {size}", ms.Length);
+                                }
+
+                                currentCount = counter++;
+                                var currentPosition = stream.Position;
+
+                                // Log progress if at least 1% more completed
+                                var percent = (double)currentPosition / totalLength * 100;
+                                if (percent != lastLoggedPercent)
+                                {
+                                    lastLoggedPercent = percent;
+                                
+                                    await toast.SetProgress(name, (int)Math.Round(percent));
+                                
+                                    Logger.LogInformation("Progress: {Percent}%", percent);
+                                }
+                            }
+                            finally
+                            {
+                                locker.Release();
+                            }
+
+                            ms.Position = 0;
+                            var partPath = UnixPath.Combine(uploadDir, $"{currentCount}.bin");
+
+                            var uploadTries = 0;
+                            const int maxUploadTries = 3;
+
+                            while (uploadTries < maxUploadTries)
+                            {
+                                try
+                                {
+                                    await FsAccess.Write(partPath, ms);
+                                    Logger.LogInformation("Thread {ThreadIndex}: Sent file to {Path}", threadIndex,
+                                        partPath);
+                                    break;
+                                }
+                                catch (Exception e)
+                                {
+                                    Logger.LogWarning(e, "Error uploading part {PartPath}, attempt {Attempt}", partPath,
+                                        uploadTries + 1);
+                                    uploadTries++;
+                                    if (uploadTries >= maxUploadTries)
+                                    {
+                                        Logger.LogError("Failed to upload {Path} after {Tries} attempts", partPath,
+                                            maxUploadTries);
+                                    }
                                 }
                             }
                         }
-                    }
-                });
+                    });
 
-                tasks.Add(task);
-            }
+                    tasks.Add(task);
+                }
 
-            await Task.WhenAll(tasks);
-            locker.Dispose();
+                await Task.WhenAll(tasks);
+                locker.Dispose();
             
-            var paths = new List<string>();
+                var paths = new List<string>();
 
-            for (var i = 0; i < counter; i++)
-                paths.Add(UnixPath.Combine(uploadDir, $"{i}.bin"));
+                for (var i = 0; i < counter; i++)
+                    paths.Add(UnixPath.Combine(uploadDir, $"{i}.bin"));
 
-            await combineAccess.Combine(path, paths.ToArray());
-
-            await FsAccess.Delete(uploadDir);
+                await toast.SetCombining();
+                await combineAccess.Combine(path, paths.ToArray());
+            }
+            finally
+            {
+                await FsAccess.Delete(uploadDir);
+            }
 
             return true;
         }
