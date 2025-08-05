@@ -41,6 +41,6 @@ jobs:
       - name: Publish on version change
         uses: alirezanet/publish-nuget@v3.1.0
         with:
-          PROJECT_FILE_PATH: MoonCore/${{ matrix.project }}.csproj
+          PROJECT_FILE_PATH: MoonCore/${{ matrix.project }}/${{ matrix.project }}.csproj
           TAG_COMMIT: false
           NUGET_KEY: ${{secrets.NUGET_API_KEY}}
