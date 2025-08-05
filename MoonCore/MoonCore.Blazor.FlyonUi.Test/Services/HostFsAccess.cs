@@ -210,7 +210,7 @@ public class HostFsAccess : IFsAccess, IArchiveAccess, ICombineAccess
 
         await using var fs = File.Open(
             fixedDestination,
-            FileMode.CreateNew,
+            FileMode.Create,
             FileAccess.ReadWrite,
             FileShare.Read
         );
