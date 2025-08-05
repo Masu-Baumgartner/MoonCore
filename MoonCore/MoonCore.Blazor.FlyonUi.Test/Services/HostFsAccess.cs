@@ -8,15 +8,11 @@ namespace MoonCore.Blazor.FlyonUi.Test.Services;
 public class HostFsAccess : IFsAccess, IArchiveAccess, ICombineAccess
 {
     private readonly string RootDirectory;
-    private readonly ChunkedFileTransferService ChunkedFileTransferService;
-    private readonly long ChunkSize = ByteConverter.FromMegaBytes(20).Bytes;
     private readonly HttpClient HttpClient;
 
-    public HostFsAccess(string rootDirectory, ChunkedFileTransferService chunkedFileTransferService,
-        HttpClient httpClient)
+    public HostFsAccess(string rootDirectory, HttpClient httpClient)
     {
         RootDirectory = rootDirectory;
-        ChunkedFileTransferService = chunkedFileTransferService;
         HttpClient = httpClient;
     }
 
@@ -63,7 +59,8 @@ public class HostFsAccess : IFsAccess, IArchiveAccess, ICombineAccess
                     IsFolder = false,
                     Size = fi.Length,
                     CreatedAt = fi.CreationTimeUtc,
-                    UpdatedAt = fi.LastWriteTimeUtc
+                    UpdatedAt = fi.LastWriteTimeUtc,
+                    Permissions = FilePermissions.ReadWrite
                 });
             }
             else
@@ -76,7 +73,8 @@ public class HostFsAccess : IFsAccess, IArchiveAccess, ICombineAccess
                     IsFolder = true,
                     Size = 0,
                     CreatedAt = di.CreationTimeUtc,
-                    UpdatedAt = di.LastWriteTimeUtc
+                    UpdatedAt = di.LastWriteTimeUtc,
+                    Permissions = FilePermissions.ReadWrite
                 });
             }
         }

@@ -13,6 +13,7 @@ public class MoveOperation : IMultiFsOperation
     public string Icon => "icon-folder-input";
     public string ContextCss => "text-primary";
     public string ToolbarCss => "btn-primary";
+    public FilePermissions RequiredPermissions => FilePermissions.ReadWrite;
     public int Order => 0;
 
     private readonly ModalService ModalService;
