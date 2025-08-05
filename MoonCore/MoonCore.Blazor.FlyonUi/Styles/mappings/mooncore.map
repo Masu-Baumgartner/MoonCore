@@ -9,7 +9,9 @@
 !me-1.5
 !ms-auto
 !px-2.5
+!py-0.5
 !rounded-full
+!rounded-xs
 !text-sm
 !w-2.5
 *:[grid-area:1/1]
@@ -22,6 +24,7 @@
 absolute
 accordion
 accordion-bordered
+accordion-content
 accordion-toggle
 active
 active-tab:bg-primary
@@ -41,15 +44,6 @@ animate-bounce
 animate-ping
 aria-[current='page']:text-bg-soft-primary
 avatar
-avatar-away-bottom
-avatar-away-top
-avatar-busy-bottom
-avatar-busy-top
-avatar-offline-bottom
-avatar-offline-top
-avatar-online-bottom
-avatar-online-top
-avatar-placeholder
 badge
 badge-error
 badge-info
@@ -61,6 +55,7 @@ bg-background
 bg-background/60
 bg-base-100
 bg-base-150
+bg-base-150!
 bg-base-200
 bg-base-200/50
 bg-base-300
@@ -143,8 +138,10 @@ diff
 disabled
 divide-base-150/60
 divide-y
+divider
 drop-shadow
 dropdown
+dropdown-active
 dropdown-disabled
 dropdown-item
 dropdown-menu
@@ -158,6 +155,7 @@ ease-linear
 end-3
 file-upload-complete:progress-success
 fill-black
+fill-gray-200
 filter
 filter-reset
 fixed
@@ -304,7 +302,6 @@ menu-active
 menu-disabled
 menu-dropdown
 menu-dropdown-show
-menu-focus
 menu-horizontal
 menu-title
 min-h-0
@@ -322,6 +319,7 @@ modal-dialog
 modal-middle
 modal-title
 mr-4
+ms-0.5
 ms-1
 ms-2
 ms-3
@@ -359,7 +357,6 @@ p-5
 p-6
 p-8
 pin-input
-pin-input-underline
 placeholder-base-content/60
 pointer-events-auto
 pointer-events-none
@@ -381,6 +378,7 @@ py-1.5
 py-2
 py-2.5
 py-6
+radial-progress
 radio
 range
 relative
@@ -406,6 +404,7 @@ selected
 selected:select-active
 shadow-base-300/20
 shadow-lg
+shadow-md
 shadow-xs
 shrink-0
 size-10
