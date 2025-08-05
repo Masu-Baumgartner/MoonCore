@@ -1,0 +1,46 @@
+name: Auto Publish Packages
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        project:
+          - MoonCore
+          - MoonCore.Blazor
+          - MoonCore.Blazor.FlyonUi
+          - MoonCore.Blazor.Tailwind
+          - MoonCore.Extended
+          - MoonCore.Unix
+          - MoonCore.PluginFramework
+          - MoonCore.PluginFramework.Generator
+    
+    steps:
+      # Step 1: Clean environment
+      - name: Clean up Environment
+        run: |
+          rm -rf ./*
+          rm -rf ./.??*
+          
+      # Step 2: Checkout the code
+      - name: Checkout code
+        uses: actions/checkout@v3
+        
+      # Step 3: Setup .NET environment
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v3
+        with:
+          dotnet-version: 9.0
+      
+      # Step 4: Run the publishing action
+      - name: Publish on version change
+        uses: alirezanet/publish-nuget@v3.1.0
+        with:
+          PROJECT_FILE_PATH: MoonCore/${{ matrix.project }}.csproj
+          TAG_COMMIT: false
+          NUGET_KEY: ${{secrets.NUGET_API_KEY}}
