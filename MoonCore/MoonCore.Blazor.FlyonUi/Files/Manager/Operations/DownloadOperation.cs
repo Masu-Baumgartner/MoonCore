@@ -13,7 +13,6 @@ public class DownloadOperation : IMultiFsOperation
     public int Order => 0;
     public string ContextCss => "text-primary";
     public string ToolbarCss => "btn-primary";
-    public FilePermissions RequiredPermissions => FilePermissions.Read;
 
     private readonly ToastService ToastService;
     private readonly ILogger<DownloadOperation> Logger;

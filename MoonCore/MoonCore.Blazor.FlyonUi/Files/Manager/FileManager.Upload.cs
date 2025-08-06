@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Components.Forms;
 using Microsoft.Extensions.Logging;
+using Microsoft.JSInterop;
 using MoonCore.Blazor.FlyonUi.Files.Manager.Abstractions;
 using MoonCore.Blazor.FlyonUi.Files.Manager.Toasts;
 using MoonCore.Helpers;
@@ -18,6 +19,20 @@ public partial class FileManager
     private async Task LateInitializeUpload()
     {
         await DropHandlerService.Enable();
+    }
+
+    private async ValueTask DisposeUpload()
+    {
+        DropHandlerService.OnDropped -= HandleFileDrop;
+
+        try
+        {
+            await DropHandlerService.Disable();
+        }
+        catch (JSDisconnectedException)
+        {
+            // Ignored
+        }
     }
 
     private async Task HandleFileUpload(IBrowserFile[] files)
@@ -53,23 +68,6 @@ public partial class FileManager
 
                         var path = UnixPath.Combine(pwdAtUpload, file.Name);
 
-/*
-                        await FileTransferService.Upload(
-                            dataStream,
-                            TransferChunkSize,
-                            async (id, content) =>
-                            {
-                                await FsAccess.UploadChunk(
-                                    UnixPath.Combine(pwdAtUpload, file.Name),
-                                    id,
-                                    TransferChunkSize,
-                                    dataStream.Length,
-                                    content
-                                );
-                            },
-                            new Progress<int>(async percent => { await toast.UpdateStatus(file.Name, percent); })
-                        );*/
-
                         if (await Upload(path, dataStream, toast))
                             succeeded++;
                         else
@@ -104,125 +102,115 @@ public partial class FileManager
 
     private async Task HandleFileDrop()
     {
-        await ToastService.Launch<FileUploadToast>(parameters =>
+        await ToastService.Launch<FileUploadToast>(parameters => { parameters["Callback"] = UploadFromDropzone; });
+    }
+
+    private async Task UploadFromDropzone(FileUploadToast toast)
+    {
+        // We need this as the upload can run while the file manager is used to navigate elsewhere
+        var targetDir = new string(CurrentPath);
+
+        // Counters
+        var succeeded = 0;
+        var failed = 0;
+
+        var item = await DropHandlerService.PeekItem();
+
+        if (item == null)
         {
-            parameters["Callback"] = async (FileUploadToast toast) =>
+            Logger.LogWarning("Unable to load first item from dropzone. Exiting early");
+
+            await ToastService.Error("Unable to handle dropped files and/or folders. Please try again");
+            return;
+        }
+
+        while (true)
+        {
+            item = await DropHandlerService.PeekItem();
+
+            if (item == null)
+                break;
+
+            if (item.ShouldSkipToNext)
             {
-                // We need this as the upload can run while the file manager is used to navigate elsewhere
-                var pwdAtUpload = new string(CurrentPath);
+                await DropHandlerService.PopItem();
+                continue;
+            }
 
-                var failed = 0;
-                var succeeded = 0;
+            var fileName = UnixPath.GetFileName(item.Path);
 
-                var isFirstPeek = true;
+            if (UploadLimit != -1 && item.Stream.Length > UploadLimit)
+            {
+                await ToastService.Warning($"Unable to upload file as it exceeds the file upload limit: {fileName}");
+                await DropHandlerService.PopItem();
+                continue;
+            }
 
-                do
-                {
-                    var item = await DropHandlerService.PeekItem();
+            await toast.SetProgress(fileName, 0);
 
-                    if (isFirstPeek)
-                    {
-                        if (item == null)
-                        {
-                            await ToastService.Error(
-                                "Unable to handle dropped files and/or folders. Please try again"
-                            );
+            try
+            {
+                // Retrieve data stream
+                await using var dataStream = await item.Stream.OpenReadStreamAsync(item.Stream.Length);
 
-                            return;
-                        }
-                        else
-                            isFirstPeek = false;
-                    }
-
-                    if (item == null)
-                        break;
-
-                    if (item.ShouldSkipToNext)
-                    {
-                        await DropHandlerService.PopItem();
-                        continue;
-                    }
-
-                    if (UploadLimit != -1 && item.Stream.Length > UploadLimit)
-                    {
-                        await ToastService.Warning(
-                            $"Unable to upload file as it exceeds the file upload limit: {UnixPath.GetFileName(item.Path)}");
-                        await DropHandlerService.PopItem();
-                        continue;
-                    }
-
-                    var fileName = UnixPath.GetFileName(item.Path);
-
-                    await toast.SetProgress(fileName, 0);
-
-                    try
-                    {
-                        await using var dataStream = await item.Stream.OpenReadStreamAsync(
-                            UploadLimit == -1
-                                ? item.Stream.Length
-                                : UploadLimit
-                        );
-
-                        await FileTransferService.Upload(
-                            dataStream,
-                            TransferChunkSize,
-                            async (id, content) =>
-                            {
-                                await FsAccess.UploadChunk(
-                                    UnixPath.Combine(pwdAtUpload, item.Path),
-                                    id,
-                                    TransferChunkSize,
-                                    dataStream.Length,
-                                    content
-                                );
-                            },
-                            new Progress<int>(async percent => { await toast.SetProgress(fileName, percent); })
-                        );
-
-                        succeeded++;
-                    }
-                    catch (Exception e)
-                    {
-                        Logger.LogError(
-                            e,
-                            "An unhandled error occured while uploading file {name}",
-                            fileName
-                        );
-
-                        await ToastService.Error(
-                            "An error occured while uploading file",
-                            fileName
-                        );
-
-                        failed++;
-                    }
-                    finally
-                    {
-                        await DropHandlerService.PopItem();
-                    }
-                } while (true);
-
-                await ToastService.Info(
-                    "File upload completed",
-                    $"Successful: {succeeded} - Failed: {failed}"
+                if (await Upload(UnixPath.Combine(targetDir, item.Path), dataStream, toast))
+                    succeeded++;
+                else
+                    failed++;
+            }
+            catch (Exception e)
+            {
+                Logger.LogError(
+                    e,
+                    "An unhandled error occured while uploading file {name}",
+                    fileName
                 );
 
-                await FileView.Refresh();
-            };
-        });
+                await ToastService.Error(
+                    "An error occured while uploading file",
+                    fileName
+                );
+
+                failed++;
+            }
+            finally
+            {
+                await DropHandlerService.PopItem();
+            }
+        }
+
+        await ToastService.Info(
+            "File upload completed",
+            $"Successful: {succeeded} - Failed: {failed}"
+        );
+
+        await FileView.Refresh();
     }
 
     private async Task<bool> Upload(string path, Stream stream, FileUploadToast toast)
     {
         var name = UnixPath.GetFileName(path);
-        
-        var transferLimit = ByteConverter.FromMegaBytes(20).Bytes;
 
         var combineAccess = FsAccess as ICombineAccess;
 
-        if (combineAccess == null || stream.Length < transferLimit) // No chunked upload possible or required
+        if (stream.Length < TransferLimit) // If smaller than the transfer limit we won't even brother checking for chunking support
         {
-            if (stream.Length > transferLimit)
+            try
+            {
+                await FsAccess.Write(path, stream);
+            }
+            catch (Exception e)
+            {
+                Logger.LogInformation(e, "An unhandled error occured while uploading file: {name}", name);
+                return false;
+            }
+        }
+        else
+        {
+            // If the file is larger than the transfer limit we need to check for chunking support
+            // and handle the chunked upload
+            
+            if (combineAccess == null) // No chunked upload available => no way to upload the file as it exceeds regular limits
             {
                 await ToastService.Error(
                     "File upload limit exceeded",
@@ -231,22 +219,16 @@ public partial class FileManager
 
                 return false;
             }
-
-            await FsAccess.Write(path, stream);
-
-            return true;
-        }
-        else
-        {
-            Logger.LogInformation("Start");
             
-            var workerCount = 1;
-            var tasks = new List<Task>();
+            const int workerCount = 1;
+            const int maxUploadTries = 3;
             var locker = new SemaphoreSlim(1);
+            var tasks = new List<Task>();
             var id = Random.Shared.Next(0, 1024);
-            var uploadDir = Path.Combine("/", $".upload-{id}");
+            var uploadDir = UnixPath.Combine("/", $".upload-{id}");
             var counter = 0;
-            double lastLoggedPercent = -1;
+
+            var chunkPaths = new ConcurrentList<string>();
 
             try
             {
@@ -258,8 +240,8 @@ public partial class FileManager
                     {
                         while (true)
                         {
-                            var ms = new MemoryStream();
-                        
+                            using var ms = new MemoryStream();
+
                             int currentCount;
                             var totalLength = stream.Length;
 
@@ -272,31 +254,13 @@ public partial class FileManager
                                     break;
                                 }
 
-                                await CopyStreamPart(stream, ms, transferLimit);
+                                await CopyStreamPart(stream, ms, TransferLimit);
 
                                 // Skip empty parts
                                 if (ms.Length == 0)
-                                {
                                     break;
-                                }
-                                else
-                                {
-                                    Logger.LogInformation("Part: {size}", ms.Length);
-                                }
 
                                 currentCount = counter++;
-                                var currentPosition = stream.Position;
-
-                                // Log progress if at least 1% more completed
-                                var percent = (double)currentPosition / totalLength * 100;
-                                if (percent != lastLoggedPercent)
-                                {
-                                    lastLoggedPercent = percent;
-                                
-                                    await toast.SetProgress(name, (int)Math.Round(percent));
-                                
-                                    Logger.LogInformation("Progress: {Percent}%", percent);
-                                }
                             }
                             finally
                             {
@@ -306,29 +270,43 @@ public partial class FileManager
                             ms.Position = 0;
                             var partPath = UnixPath.Combine(uploadDir, $"{currentCount}.bin");
 
+                            chunkPaths.Add(partPath);
+
                             var uploadTries = 0;
-                            const int maxUploadTries = 3;
 
                             while (uploadTries < maxUploadTries)
                             {
                                 try
                                 {
                                     await FsAccess.Write(partPath, ms);
-                                    Logger.LogInformation("Thread {ThreadIndex}: Sent file to {Path}", threadIndex,
-                                        partPath);
                                     break;
                                 }
                                 catch (Exception e)
                                 {
-                                    Logger.LogWarning(e, "Error uploading part {PartPath}, attempt {Attempt}", partPath,
-                                        uploadTries + 1);
                                     uploadTries++;
-                                    if (uploadTries >= maxUploadTries)
-                                    {
-                                        Logger.LogError("Failed to upload {Path} after {Tries} attempts", partPath,
-                                            maxUploadTries);
-                                    }
+
+                                    Logger.LogWarning(
+                                        e,
+                                        "Thread {threadId}: Error uploading part {pathPart}, attempt {tryCounter}",
+                                        threadIndex,
+                                        partPath,
+                                        uploadTries
+                                    );
                                 }
+                            }
+
+                            try
+                            {
+                                await locker.WaitAsync();
+
+                                var currentPosition = stream.Position;
+
+                                var percent = (int)((double)currentPosition / totalLength * 100f);
+                                await toast.SetProgress(name, percent);
+                            }
+                            finally
+                            {
+                                locker.Release();
                             }
                         }
                     });
@@ -338,40 +316,36 @@ public partial class FileManager
 
                 await Task.WhenAll(tasks);
                 locker.Dispose();
-            
-                var paths = new List<string>();
-
-                for (var i = 0; i < counter; i++)
-                    paths.Add(UnixPath.Combine(uploadDir, $"{i}.bin"));
 
                 await toast.SetCombining();
-                await combineAccess.Combine(path, paths.ToArray());
+
+                await combineAccess.Combine(path, chunkPaths.ToArray());
             }
             finally
             {
                 await FsAccess.Delete(uploadDir);
             }
-
-            return true;
         }
+
+        return true;
     }
 
     private async Task CopyStreamPart(Stream input, Stream output, long length)
     {
         var buffer = new byte[80 * 1024]; // 80 KB buffer
-        long remaining = length;
+        var remaining = length;
 
         while (remaining > 0)
         {
-            int toRead = remaining > buffer.Length
+            var toRead = remaining > buffer.Length
                 ? buffer.Length
                 : (int)remaining;
 
-            int bytesRead = await input.ReadAsync(buffer, 0, toRead).ConfigureAwait(false);
+            var bytesRead = await input.ReadAsync(buffer, 0, toRead);
             if (bytesRead == 0)
                 break; // end of input stream
 
-            await output.WriteAsync(buffer, 0, bytesRead).ConfigureAwait(false);
+            await output.WriteAsync(buffer, 0, bytesRead);
             remaining -= bytesRead;
         }
     }

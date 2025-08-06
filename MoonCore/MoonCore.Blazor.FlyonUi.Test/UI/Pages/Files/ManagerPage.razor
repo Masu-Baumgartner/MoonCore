@@ -3,11 +3,12 @@
 @using MoonCore.Blazor.FlyonUi.Files.Manager
 @using MoonCore.Blazor.FlyonUi.Test.Services
 @using MoonCore.Blazor.FlyonUi.Components
+@using MoonCore.Blazor.FlyonUi.Files.Manager.Operations
 
 <NavTabs Index="1" Names="UiConstants.FilesNames" Links="UiConstants.FilesLinks" />
 
 <div class="mt-5">
-    <FileManager FsAccess="FsAccess" />
+    <FileManager FsAccess="FsAccess" OnConfigure="OnConfigure" EnableUpload="true" />
 </div>
 
 @code
@@ -20,5 +21,17 @@
         
         Directory.CreateDirectory(path);
         FsAccess = new HostFsAccess(path, new());
+    }
+
+    private void OnConfigure(FileManagerOptions options)
+    {
+        options.AddMultiOperation<DeleteOperation>();
+        options.AddMultiOperation<MoveOperation>();
+        options.AddMultiOperation<DownloadOperation>();
+        
+        options.AddSingleOperation<RenameOperation>();
+        
+        options.AddToolbarOperation<CreateFileOperation>();
+        options.AddToolbarOperation<CreateFolderOperation>();
     }
 }
