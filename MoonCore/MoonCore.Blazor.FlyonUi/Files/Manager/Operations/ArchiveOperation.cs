@@ -8,7 +8,6 @@ public class ArchiveOperation : IMultiFsOperation
     public string Icon => "icon-folder-archive";
     public string ContextCss => "text-success";
     public string ToolbarCss => "btn-success";
-    public FilePermissions RequiredPermissions => FilePermissions.ReadWrite;
     public int Order => 0;
 
     public bool CheckCompatability(IFsAccess access, IFileManager fileManager)

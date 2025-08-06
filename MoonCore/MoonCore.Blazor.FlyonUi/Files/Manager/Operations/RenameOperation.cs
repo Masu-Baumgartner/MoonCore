@@ -16,7 +16,6 @@ public class RenameOperation : ISingleFsOperation
     public int Order => 0;
 
     public Func<FsEntry, bool>? Filter => _ => true;
-    public FilePermissions RequiredPermissions => FilePermissions.ReadWrite;
 
     private readonly ToastService ToastService;
     private readonly ModalService ModalService;

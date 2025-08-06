@@ -77,7 +77,7 @@ public static class FileIconHelper
             // Text & documents
             "log" => "icon-file-text",
             "txt" => "icon-file-text",
-            "md" => "icon-file-markdown",
+            "md" => "icon-file-text",
             "csv" => "icon-file-spreadsheet",
             "tsv" => "icon-file-spreadsheet",
             "html" or "htm" => "icon-file-code",

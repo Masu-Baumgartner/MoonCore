@@ -12,7 +12,6 @@ public class DeleteOperation : IMultiFsOperation
     public string Icon => "icon-trash-2";
     public string ContextCss => "text-error";
     public string ToolbarCss => "btn-error";
-    public FilePermissions RequiredPermissions => FilePermissions.ReadWrite;
     public int Order => -10;
 
     private readonly ToastService ToastService;

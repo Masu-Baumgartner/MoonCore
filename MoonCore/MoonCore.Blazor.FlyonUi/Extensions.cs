@@ -25,11 +25,11 @@ public static class Extensions
 
     public static void AddFileManagerOperations(this IServiceCollection collection)
     {
-        collection.AddScoped<IMultiFsOperation, DeleteOperation>();
-        collection.AddScoped<IMultiFsOperation, MoveOperation>();
-        collection.AddScoped<IMultiFsOperation, DownloadOperation>();
-        collection.AddScoped<ISingleFsOperation, RenameOperation>();
-        collection.AddScoped<IToolbarOperation, CreateFileOperation>();
-        collection.AddScoped<IToolbarOperation, CreateFolderOperation>();
+        collection.AddScoped<DeleteOperation>();
+        collection.AddScoped<MoveOperation>();
+        collection.AddScoped<DownloadOperation>();
+        collection.AddScoped<RenameOperation>();
+        collection.AddScoped<CreateFileOperation>();
+        collection.AddScoped<CreateFolderOperation>();
     }
 }

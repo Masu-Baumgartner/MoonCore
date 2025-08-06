@@ -16,8 +16,6 @@ public class UnarchiveOperation : ISingleFsOperation
         );
     };
 
-    public FilePermissions RequiredPermissions => FilePermissions.ReadWrite;
-
     private ArchiveFormat[] Formats = [];
 
     public bool CheckCompatability(IFsAccess access, IFileManager fileManager)

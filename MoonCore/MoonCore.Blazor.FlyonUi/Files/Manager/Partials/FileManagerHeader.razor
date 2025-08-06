@@ -43,12 +43,15 @@
                             @operation.Name
                         </button>
                     }
-                    
-                    <label for="fm-upload" class="btn btn-primary ms-2">
-                        <i class="icon-upload"></i>
-                        Upload
-                    </label>
-                    <InputFile OnChange="HandleUpload" class="hidden" id="fm-upload" multiple=""/>
+
+                    if (EnableUpload)
+                    {
+                        <label for="fm-upload" class="btn btn-primary ms-2">
+                            <i class="icon-upload"></i>
+                            Upload
+                        </label>
+                        <InputFile OnChange="HandleUpload" class="hidden" id="fm-upload" multiple=""/>
+                    }
                 }
             </div>
         </div>
@@ -73,6 +76,8 @@
 
     [Parameter] public IToolbarOperation[] ToolbarOperations { get; set; }
     [Parameter] public Func<IToolbarOperation, Task> OnToolbarClicked { get; set; }
+    
+    [Parameter] public bool EnableUpload { get; set; }
 
     private async Task HandleUpload(InputFileChangeEventArgs eventArgs)
     {
