@@ -8,6 +8,7 @@ using MoonCore.Blazor.FlyonUi.Auth;
 using MoonCore.Blazor.FlyonUi.Files;
 using MoonCore.Blazor.FlyonUi.Files.Manager.Abstractions;
 using MoonCore.Blazor.FlyonUi.Files.Manager.Operations;
+using MoonCore.Blazor.FlyonUi.Helpers;
 using MoonCore.Blazor.FlyonUi.Modals;
 using MoonCore.Blazor.FlyonUi.Test;
 using MoonCore.Blazor.FlyonUi.Test.Services;
@@ -33,6 +34,7 @@ builder.Services.AddScoped<CodeEditorService>();
 builder.Services.AddScoped<ChunkedFileTransferService>();
 builder.Services.AddScoped<HttpClient>();
 builder.Services.AddScoped<DropHandlerService>();
+builder.Services.AddScoped<DownloadService>();
 
 builder.Services.AddFileManagerOperations();
 

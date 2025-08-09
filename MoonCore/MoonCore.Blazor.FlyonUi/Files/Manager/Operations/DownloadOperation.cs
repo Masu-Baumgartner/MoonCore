@@ -1,6 +1,7 @@
 ﻿using Microsoft.Extensions.Logging;
 using MoonCore.Blazor.FlyonUi.Files.Manager.Abstractions;
 using MoonCore.Blazor.FlyonUi.Files.Manager.Toasts;
+using MoonCore.Blazor.FlyonUi.Helpers;
 using MoonCore.Blazor.FlyonUi.Toasts;
 using MoonCore.Helpers;
 
@@ -15,25 +16,32 @@ public class DownloadOperation : IMultiFsOperation
     public string ToolbarCss => "btn-primary";
 
     private readonly ToastService ToastService;
+    private readonly DownloadService DownloadService;
     private readonly ILogger<DownloadOperation> Logger;
-    private readonly ChunkedFileTransferService FileTransferService;
+
 
     public DownloadOperation(
         ToastService toastService,
         ILogger<DownloadOperation> logger,
-        ChunkedFileTransferService fileTransferService
+        DownloadService downloadService
     )
     {
         ToastService = toastService;
         Logger = logger;
-        FileTransferService = fileTransferService;
+        DownloadService = downloadService;
     }
 
     public bool CheckCompatability(IFsAccess access, IFileManager fileManager)
-        => true;
+        => access is IDownloadUrlAccess;
 
     public async Task Execute(string workingDir, FsEntry[] entries, IFsAccess access, IFileManager fileManager)
     {
+        if (access is not IDownloadUrlAccess downloadUrlAccess)
+        {
+            await ToastService.Error("Unable to download any files/folders. Not supported operation");
+            return;
+        }
+        
         await ToastService.Launch<FileDownloadToast>(parameters =>
         {
             parameters["Callback"] = async (FileDownloadToast toast) =>
@@ -43,66 +51,21 @@ public class DownloadOperation : IMultiFsOperation
 
                 foreach (var entry in entries)
                 {
+                    await toast.UpdateStatus($"Starting download for {entry.Name}", 0);
+                    
+                    var entryPath = UnixPath.Combine(workingDir, entry.Name);
+                    
                     try
                     {
+                        string url;
+                        
                         if (entry.IsFolder)
-                        {
-                            if (access is not IArchiveAccess archiveAccess || archiveAccess.ArchiveFormats.Length  == 0)
-                            {
-                                await ToastService.Error("The download of folders is not supported");
-                                continue;
-                            }
-                            
-                            await toast.UpdateStatus("Archiving", 0);
-
-                            var format = archiveAccess.ArchiveFormats.First();
-                            var tmpName = $"{DateTimeOffset.UtcNow.ToUnixTimeSeconds()}.tmp";
-                            var tmpPath = UnixPath.Combine(workingDir, tmpName);
-
-                            await archiveAccess.Archive(
-                                tmpPath,
-                                format,
-                                workingDir,
-                                [entry],
-                                async percent =>
-                                {
-                                    await toast.UpdateStatus("Archiving", percent);
-                                }
-                            );
-
-                            var files = await access.List(workingDir);
-                            var archiveFsEntry = files.FirstOrDefault(x => x.Name == tmpName);
-
-                            if (archiveFsEntry == null)
-                            {
-                                await ToastService.Error($"Unable to create download archive for: {entry.Name}");
-                                failed++;
-                                continue;
-                            }
-
-                            var downloadName = entry.Name + format.Extensions[0];
-
-                            await DownloadFile(
-                                tmpPath,
-                                downloadName,
-                                archiveFsEntry.Size,
-                                toast, access, fileManager
-                            );
-
-                            await toast.UpdateStatus("Removing download archive", 0);
-
-                            await access.Delete(tmpPath);
-                        }
+                            url = await downloadUrlAccess.GetFolderUrl(entryPath);
                         else
-                        {
-                            await DownloadFile(
-                                UnixPath.Combine(workingDir, entry.Name),
-                                entry.Name,
-                                entry.Size,
-                                toast, access, fileManager
-                            );
-                        }
+                         url = await downloadUrlAccess.GetFileUrl(entryPath);
 
+                        await DownloadService.DownloadUrl(url);
+                        
                         succeeded++;
                     }
                     catch (Exception e)
@@ -123,35 +86,10 @@ public class DownloadOperation : IMultiFsOperation
                 }
 
                 await ToastService.Info(
-                    "File download completed",
+                    "File downloads started",
                     $"Successful: {succeeded} - Failed: {failed}"
                 );
             };
         });
-    }
-
-    private async Task DownloadFile(
-        string path,
-        string name,
-        long size,
-        FileDownloadToast toast,
-        IFsAccess access,
-        IFileManager fileManager
-    )
-    {
-        await FileTransferService.Download(
-            name,
-            fileManager.TransferChunkSize,
-            size,
-            async id =>
-            {
-                return await access.DownloadChunk(
-                    path,
-                    id,
-                    fileManager.TransferChunkSize
-                );
-            },
-            new Progress<int>(async percent => { await toast.UpdateStatus(name, percent); })
-        );
     }
 }
