@@ -5,7 +5,7 @@ using MoonCore.Helpers;
 
 namespace MoonCore.Blazor.FlyonUi.Test.Services;
 
-public class HostFsAccess : IFsAccess, IArchiveAccess, ICombineAccess
+public class HostFsAccess : IFsAccess, IArchiveAccess, ICombineAccess, IDownloadUrlAccess
 {
     private readonly string RootDirectory;
     private readonly HttpClient HttpClient;
@@ -124,7 +124,7 @@ public class HostFsAccess : IFsAccess, IArchiveAccess, ICombineAccess
         {
             fs.Close();
         }*/
-        
+
         var fixedPath = path.TrimStart('/');
 
         using var byteArrayContent = new StreamContent(dataStream);
@@ -227,7 +227,7 @@ public class HostFsAccess : IFsAccess, IArchiveAccess, ICombineAccess
                 );
 
                 await partFs.CopyToAsync(fs);
-                
+
                 partFs.Close();
             }
 
@@ -237,5 +237,19 @@ public class HostFsAccess : IFsAccess, IArchiveAccess, ICombineAccess
         {
             fs.Close();
         }
+    }
+
+    public Task<string> GetFileUrl(string path)
+    {
+        return Task.FromResult(
+            "http://localhost:5220/api/download/file?path=" + path
+        );
+    }
+
+    public Task<string> GetFolderUrl(string path)
+    {
+        return Task.FromResult(
+            "http://localhost:5220/api/download/folder?path=" + path
+        );
     }
 }

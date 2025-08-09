@@ -29,4 +29,9 @@ public class DownloadService
         using var dotNetStream = new DotNetStreamReference(stream);
         await JsRuntime.InvokeVoidAsync("moonCore.downloadHelper.downloadFileFromStream", fileName, dotNetStream);
     }
+    
+    public async Task DownloadUrl(string url)
+    {
+        await JsRuntime.InvokeVoidAsync("moonCore.downloadHelper.downloadFileFromUrl", url);
+    }
 }

@@ -296,6 +296,11 @@ window.moonCore = {
             anchor.click();
 
             URL.revokeObjectURL(url);
+        },
+        downloadFileFromUrl: async function (url) {
+            const anchor = document.createElement('a');
+            anchor.href = url;
+            anchor.click();
         }
     },
 }
