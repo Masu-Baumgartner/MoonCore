@@ -59,8 +59,7 @@ public class HostFsAccess : IFsAccess, IArchiveAccess, ICombineAccess, IDownload
                     IsFolder = false,
                     Size = fi.Length,
                     CreatedAt = fi.CreationTimeUtc,
-                    UpdatedAt = fi.LastWriteTimeUtc,
-                    Permissions = FilePermissions.ReadWrite
+                    UpdatedAt = fi.LastWriteTimeUtc
                 });
             }
             else
@@ -73,8 +72,7 @@ public class HostFsAccess : IFsAccess, IArchiveAccess, ICombineAccess, IDownload
                     IsFolder = true,
                     Size = 0,
                     CreatedAt = di.CreationTimeUtc,
-                    UpdatedAt = di.LastWriteTimeUtc,
-                    Permissions = FilePermissions.ReadWrite
+                    UpdatedAt = di.LastWriteTimeUtc
                 });
             }
         }
