@@ -7,5 +7,4 @@ public record FsEntry
     public required bool IsFolder { get; set; }
     public required DateTimeOffset CreatedAt { get; set; }
     public required DateTimeOffset UpdatedAt { get; set; }
-    public required FilePermissions Permissions { get; set; }
 }

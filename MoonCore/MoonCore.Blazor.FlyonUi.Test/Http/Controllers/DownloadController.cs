@@ -82,6 +82,10 @@ public class DownloadController : Controller
 
             await ArchiveZip(hostPath, rootPath, zipStream, HttpContext.RequestAborted);
         }
+        catch (ZipException)
+        {
+            // Ignored
+        }
         catch (TaskCanceledException)
         {
             // Ignored
