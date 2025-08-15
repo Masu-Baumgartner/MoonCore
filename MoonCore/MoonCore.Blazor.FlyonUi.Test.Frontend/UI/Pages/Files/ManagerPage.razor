@@ -1,0 +1,37 @@
+﻿@page "/files/manager"
+
+@using MoonCore.Blazor.FlyonUi.Files.Manager
+@using MoonCore.Blazor.FlyonUi.Components
+@using MoonCore.Blazor.FlyonUi.Files.Manager.Operations
+@using MoonCore.Blazor.FlyonUi.Test.Frontend.Services
+
+@inject HttpClient HttpClient
+
+<NavTabs Index="1" Names="UiConstants.FilesNames" Links="UiConstants.FilesLinks" />
+
+<div class="mt-5">
+    <FileManager FsAccess="FsAccess" OnConfigure="OnConfigure" EnableUpload="true" />
+</div>
+
+@code
+{
+    private IFsAccess FsAccess;
+
+    protected override void OnInitialized()
+    {
+        Console.WriteLine(HttpClient.BaseAddress);
+        FsAccess = new HostFsAccess(HttpClient);
+    }
+
+    private void OnConfigure(FileManagerOptions options)
+    {
+        options.AddMultiOperation<DeleteOperation>();
+        options.AddMultiOperation<MoveOperation>();
+        options.AddMultiOperation<DownloadOperation>();
+        
+        options.AddSingleOperation<RenameOperation>();
+        
+        options.AddToolbarOperation<CreateFileOperation>();
+        options.AddToolbarOperation<CreateFolderOperation>();
+    }
+}

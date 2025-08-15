@@ -41,7 +41,7 @@ public class DownloadOperation : IMultiFsOperation
             await ToastService.Error("Unable to download any files/folders. Not supported operation");
             return;
         }
-        
+
         await ToastService.Launch<FileDownloadToast>(parameters =>
         {
             parameters["Callback"] = async (FileDownloadToast toast) =>
@@ -52,20 +52,20 @@ public class DownloadOperation : IMultiFsOperation
                 foreach (var entry in entries)
                 {
                     await toast.UpdateStatus($"Starting download for {entry.Name}", 0);
-                    
+
                     var entryPath = UnixPath.Combine(workingDir, entry.Name);
-                    
+
                     try
                     {
                         string url;
-                        
+
                         if (entry.IsFolder)
                             url = await downloadUrlAccess.GetFolderUrl(entryPath);
                         else
-                         url = await downloadUrlAccess.GetFileUrl(entryPath);
+                            url = await downloadUrlAccess.GetFileUrl(entryPath);
 
                         await DownloadService.DownloadUrl(url);
-                        
+
                         succeeded++;
                     }
                     catch (Exception e)
