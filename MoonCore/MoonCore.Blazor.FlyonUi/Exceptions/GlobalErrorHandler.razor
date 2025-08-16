@@ -1,5 +1,6 @@
 @using MoonCore.Blazor.FlyonUi.Components
 @using MoonCore.Blazor.FlyonUi.Toasts
+@using MoonCore.Helpers
 
 @inject GlobalErrorService GlobalErrorService
 @inject ToastService ToastService
@@ -14,7 +15,9 @@
         @if (ExceptionIsRecoverable)
         {
             <div class="mt-3.5">
-                <button @onclick="RecoverException" type="button" class="btn btn-sm btn-primary">Recover</button>
+                <button @onclick="RecoverException" type="button" class="btn btn-sm btn-primary">
+                    Go back
+                </button>
             </div>
         }
     </ErrorStateDisplay>
@@ -51,6 +54,7 @@ else
     private string MessageContent;
     private string MessageTitle;
     private string MessageIcon;
+    private Debouncer MessageDebouncer = new(TimeSpan.FromSeconds(3));
 
     // Exception
     private bool ShouldShowException = false;
@@ -73,6 +77,8 @@ else
 
             await InvokeAsync(StateHasChanged);
         });
+        
+        GlobalErrorService.SetHandler(this);
     }
 
     public async Task HandleException(Exception ex, string title, bool isBlocking, bool isRecoverable)
@@ -87,6 +93,7 @@ else
             return;
         }
 
+        ShouldShowException = true;
         Exception = ex;
         ExceptionTitle = title;
         ExceptionIsRecoverable = isRecoverable;
@@ -101,8 +108,13 @@ else
         MessageIcon = icon;
 
         ShouldShowMessage = true;
-
         await InvokeAsync(StateHasChanged);
+        
+        MessageDebouncer.Debounce(async () =>
+        {
+            ShouldShowMessage = false;
+            await InvokeAsync(StateHasChanged);
+        });
     }
 
     private async Task DismissMessage()
@@ -119,7 +131,7 @@ else
 
     protected override async Task OnErrorAsync(Exception exception)
     {
-        await GlobalErrorService.HandleException(exception);
+        await GlobalErrorService.HandleException(exception, string.Empty, true);
         Recover();
     }
     

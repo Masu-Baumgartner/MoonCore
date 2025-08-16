@@ -1,6 +1,7 @@
 using Microsoft.Extensions.DependencyInjection;
 using MoonCore.Blazor.FlyonUi.Ace;
 using MoonCore.Blazor.FlyonUi.Alerts;
+using MoonCore.Blazor.FlyonUi.Exceptions;
 using MoonCore.Blazor.FlyonUi.Files;
 using MoonCore.Blazor.FlyonUi.Files.Manager.Abstractions;
 using MoonCore.Blazor.FlyonUi.Files.Manager.Operations;
@@ -21,6 +22,7 @@ public static class Extensions
         collection.AddScoped<ChunkedFileTransferService>();
         collection.AddScoped<DropHandlerService>();
         collection.AddScoped<DownloadService>();
+        collection.AddScoped<GlobalErrorService>();
     }
 
     public static void AddFileManagerOperations(this IServiceCollection collection)

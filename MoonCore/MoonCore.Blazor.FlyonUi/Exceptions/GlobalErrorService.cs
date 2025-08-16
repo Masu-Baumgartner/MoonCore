@@ -20,6 +20,8 @@ public class GlobalErrorService
     {
         if(HandlerReference == null)
             throw new AggregateException("HandlerReference is null. Make sure you have a GlobalErrorHandler component in your application");
+        
+        await HandlerReference.ShowMessage(title, message, icon);
     }
 
     public async Task HandleException(Exception ex)
@@ -30,6 +32,9 @@ public class GlobalErrorService
 
     public async Task HandleException(Exception ex, string title, bool isBlocking, bool isRecoverable = true)
     {
+        if(HandlerReference == null)
+            throw new AggregateException("HandlerReference is null. Make sure you have a GlobalErrorHandler component in your application");
+        
         // Filter exceptions which should not be handled by the global error service
         foreach (var errorFilter in ErrorFilters)
         {
@@ -38,6 +43,8 @@ public class GlobalErrorService
             if(isHandled)
                 return;
         }
+        
+        await HandlerReference.HandleException(ex, title, isBlocking, isRecoverable);
     }
 
     public void SetHandler(GlobalErrorHandler handler)
