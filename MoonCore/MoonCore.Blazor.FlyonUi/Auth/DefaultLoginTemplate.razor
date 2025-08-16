@@ -1,7 +1,5 @@
 ﻿@using MoonCore.Blazor.FlyonUi.Components
 
-@inject AuthenticationStateManager AuthStateManager
-
 <div class="flex h-screen justify-center items-center">
     <div class="sm:max-w-lg">
         <IconAlert Title="Logging you in"
@@ -19,6 +17,6 @@
         if(!firstRender)
             return;
         
-        await AuthStateManager.HandleLogin();
+        
     }
 }

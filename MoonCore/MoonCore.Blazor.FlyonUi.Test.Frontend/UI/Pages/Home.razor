@@ -1,7 +1,18 @@
 ﻿@page "/"
+@using System.Security.Claims
+@using Microsoft.AspNetCore.Components.Authorization
 @using MoonCore.Blazor.FlyonUi.Exceptions
 
 <PageTitle>Home</PageTitle>
+
+<div>
+    <h5 class="text-base-content text-lg mb-2.5">Details</h5>
+    <ul class="list-inside list-none">
+        <li class="mb-1">ID: @Id</li>
+        <li class="mb-1">Username: @Name</li>
+        <li class="mb-1">Email: @Email</li>
+    </ul>
+</div>
 
 <div class="mt-5">
     <div class="radial-progress text-primary text-xs bg-base-200" style="--value: 45; --size: 3rem" role="progressbar" aria-label="Primary Radial Progressbar">
@@ -132,6 +143,22 @@
 
 @code
 {
+    private string Id;
+    private string Name;
+    private string Email;
+    
+    [CascadingParameter] public Task<AuthenticationState> AuthState { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        var authState = await AuthState;
+        var principal = authState.User;
+
+        Id = principal.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? "N/A";
+        Name = principal.FindFirst(ClaimTypes.Name)?.Value ?? "N/A";
+        Email = principal.FindFirst(ClaimTypes.Email)?.Value ?? "N/A";
+    }
+
     private async Task DisplayError()
     {
         throw new DisplayException("An error occured or smth");

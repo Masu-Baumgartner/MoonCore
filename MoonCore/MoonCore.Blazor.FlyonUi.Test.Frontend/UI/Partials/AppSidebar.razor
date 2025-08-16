@@ -2,7 +2,6 @@
 @using MoonCore.Blazor.FlyonUi.Test.Frontend.UI.Layout
 
 @inject NavigationManager Navigation
-@inject AuthenticationStateManager AuthStateManager
 
 @{
     var url = new Uri(Navigation.Uri);
@@ -283,9 +282,10 @@
         return Task.CompletedTask;
     }
 
-    private async Task Logout()
+    private Task Logout()
     {
-        await AuthStateManager.Logout();
+        Navigation.NavigateTo("api/auth/logout", true);
+        return Task.CompletedTask;
     }
 
     record SidebarItem

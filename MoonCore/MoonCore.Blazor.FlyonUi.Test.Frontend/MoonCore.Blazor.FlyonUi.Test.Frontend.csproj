@@ -10,6 +10,7 @@
         <PackageReference Include="Bogus" Version="35.6.3" />
         <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly" Version="9.0.8"/>
         <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.DevServer" Version="9.0.8" PrivateAssets="all"/>
+        <PackageReference Include="System.Security.Claims" Version="4.3.0" />
     </ItemGroup>
 
     <ItemGroup>
@@ -46,6 +47,10 @@
       <AdditionalFiles Include="UI\Pages\Forms\SelectionPage.razor" />
       <AdditionalFiles Include="UI\Partials\AppHeader.razor" />
       <AdditionalFiles Include="UI\Partials\AppSidebar.razor" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <Folder Include="wwwroot\svgs\" />
     </ItemGroup>
 
 </Project>

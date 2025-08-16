@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en" class="bg-background text-base-content font-inter">
+
+<head>
+    <meta charset="utf-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <base href="/"/>
+    <link rel="stylesheet" href="/style.min.css"/>
+    <title>Authenticate via email</title>
+</head>
+
+<body>
+<div id="app">
+    <div class="flex h-screen justify-center items-center">
+        <div class="sm:max-w-lg">
+            <div class="card card-body w-full">
+                <div>
+                    <h3 class="text-base-content mb-1.5 text-2xl font-semibold">Login via Email</h3>
+                    <p class="text-base-content/80">
+                        You will get an email with a login link after submitting so please check your inbox
+                    </p>
+                </div>
+                @if (IsEmailSent)
+                {
+                    <div class="text-center">
+                        <i class="icon-mail-check text-4xl text-success"></i>
+                        <h3 class="mt-2 font-semibold text-base-content text-lg">
+                            Email successfully sent
+                        </h3>
+                        <p class="mt-1 text-base-content/80">
+                            The email with the login link has been sent successfully. Please check your inbox
+                        </p>
+                    </div>
+                }
+                else
+                {
+                    <form method="post" class="mt-5">
+                        <div class="mb-2">
+                            <input name="email" class="input" type="email" required="required"
+                                   placeholder="Enter your email address"/>
+                        </div>
+                        <button class="btn btn-primary">Send login code</button>
+                    </form>
+                }
+            </div>
+        </div>
+    </div>
+</div>
+</body>
+
+</html>
+
+
+@code
+{
+    [Parameter] public bool IsEmailSent { get; set; } = false;
+}

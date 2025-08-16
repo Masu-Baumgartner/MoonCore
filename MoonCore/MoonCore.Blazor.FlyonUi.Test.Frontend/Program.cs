@@ -1,9 +1,11 @@
+using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
 using MoonCore.Blazor.FlyonUi;
 using MoonCore.Blazor.FlyonUi.Ace;
 using MoonCore.Blazor.FlyonUi.Alerts;
 using MoonCore.Blazor.FlyonUi.Auth;
+using MoonCore.Blazor.FlyonUi.Exceptions;
 using MoonCore.Blazor.FlyonUi.Files;
 using MoonCore.Blazor.FlyonUi.Helpers;
 using MoonCore.Blazor.FlyonUi.Modals;
@@ -37,9 +39,10 @@ builder.Services.AddScoped<CodeEditorService>();
 builder.Services.AddScoped<ChunkedFileTransferService>();
 builder.Services.AddScoped<DropHandlerService>();
 builder.Services.AddScoped<DownloadService>();
+builder.Services.AddScoped<GlobalErrorService>();
 
 builder.Services.AddFileManagerOperations();
 
-builder.Services.AddAuthenticationStateManager<CoolestAuthStateManager>();
+builder.Services.AddScoped<AuthenticationStateProvider, CoolAuthStateProvider>();
 
 await builder.Build().RunAsync();

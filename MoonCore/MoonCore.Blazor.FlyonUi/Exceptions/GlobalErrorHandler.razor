@@ -1,0 +1,130 @@
+@using MoonCore.Blazor.FlyonUi.Components
+@using MoonCore.Blazor.FlyonUi.Toasts
+
+@inject GlobalErrorService GlobalErrorService
+@inject ToastService ToastService
+@inject NavigationManager Navigation
+
+@inherits ErrorBoundaryBase
+@implements IDisposable
+
+@if (ShouldShowException)
+{
+    <ErrorStateDisplay Exception="Exception">
+        @if (ExceptionIsRecoverable)
+        {
+            <div class="mt-3.5">
+                <button @onclick="RecoverException" type="button" class="btn btn-sm btn-primary">Recover</button>
+            </div>
+        }
+    </ErrorStateDisplay>
+}
+else
+{
+    if (ShouldShowMessage)
+    {
+        <div class="alert alert-soft alert-error flex items-start gap-4 mb-5">
+            <span class="@MessageIcon shrink-0 text-lg"></span>
+            <div class="flex flex-col gap-1">
+                <h5 class="text-lg font-semibold">
+                    @MessageTitle
+                </h5>
+                <p>
+                    @MessageContent
+                </p>
+            </div>
+            <button @onclick="DismissMessage" type="button" class="ms-auto cursor-pointer leading-none">
+                <span class="icon-x text-lg"></span>
+            </button>
+        </div>
+    }
+
+    @ChildContent
+}
+
+@code
+{
+    private IDisposable NavigationManagerSubscription;
+
+    // Message
+    private bool ShouldShowMessage = false;
+    private string MessageContent;
+    private string MessageTitle;
+    private string MessageIcon;
+
+    // Exception
+    private bool ShouldShowException = false;
+    private string ExceptionTitle;
+    private bool ExceptionIsRecoverable;
+    private Exception Exception;
+
+    protected override void OnInitialized()
+    {
+        Navigation.RegisterLocationChangingHandler(async context =>
+        {
+            if (!ShouldShowMessage && !(ShouldShowException && ExceptionIsRecoverable))
+                return;
+
+            if (ShouldShowMessage)
+                ShouldShowMessage = false;
+
+            if (ShouldShowException && ExceptionIsRecoverable)
+                ShouldShowException = false;
+
+            await InvokeAsync(StateHasChanged);
+        });
+    }
+
+    public async Task HandleException(Exception ex, string title, bool isBlocking, bool isRecoverable)
+    {
+        if (!isBlocking)
+        {
+            await ToastService.Error(
+                title,
+                ex.Message
+            );
+            
+            return;
+        }
+
+        Exception = ex;
+        ExceptionTitle = title;
+        ExceptionIsRecoverable = isRecoverable;
+
+        await InvokeAsync(StateHasChanged);
+    }
+
+    public async Task ShowMessage(string title, string message, string icon)
+    {
+        MessageTitle = title;
+        MessageContent = message;
+        MessageIcon = icon;
+
+        ShouldShowMessage = true;
+
+        await InvokeAsync(StateHasChanged);
+    }
+
+    private async Task DismissMessage()
+    {
+        ShouldShowMessage = false;
+        await InvokeAsync(StateHasChanged);
+    }
+
+    private async Task RecoverException()
+    {
+        ShouldShowException = false;
+        await InvokeAsync(StateHasChanged);
+    }
+
+    protected override async Task OnErrorAsync(Exception exception)
+    {
+        await GlobalErrorService.HandleException(exception);
+        Recover();
+    }
+    
+    public void Dispose()
+    {
+        NavigationManagerSubscription.Dispose();
+    }
+}
