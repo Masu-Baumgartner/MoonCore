@@ -1,0 +1,28 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+
+    <PropertyGroup>
+        <TargetFramework>net9.0</TargetFramework>
+        <Nullable>enable</Nullable>
+        <ImplicitUsings>enable</ImplicitUsings>
+    </PropertyGroup>
+
+    <ItemGroup>
+      <ProjectReference Include="..\MoonCore.Blazor.FlyonUi.Test.Frontend\MoonCore.Blazor.FlyonUi.Test.Frontend.csproj" />
+      <ProjectReference Include="..\MoonCore.Blazor.FlyonUi.Test.Shared\MoonCore.Blazor.FlyonUi.Test.Shared.csproj" />
+      <ProjectReference Include="..\MoonCore.Extended\MoonCore.Extended.csproj" />
+      <ProjectReference Include="..\MoonCore\MoonCore.csproj" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <PackageReference Include="AspNet.Security.OAuth.Discord" Version="9.4.0" />
+        <PackageReference Include="AspNet.Security.OAuth.GitHub" Version="9.4.0" />
+        <PackageReference Include="Bogus" Version="35.6.3" />
+        <PackageReference Include="SharpZipLib" Version="1.4.2" />
+        <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.Server" Version="9.0.7" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <Folder Include="storage\" />
+    </ItemGroup>
+
+</Project>

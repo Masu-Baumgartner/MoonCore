@@ -1,0 +1,56 @@
+<Project Sdk="Microsoft.NET.Sdk.BlazorWebAssembly">
+
+    <PropertyGroup>
+        <TargetFramework>net9.0</TargetFramework>
+        <Nullable>enable</Nullable>
+        <ImplicitUsings>enable</ImplicitUsings>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <PackageReference Include="Bogus" Version="35.6.3" />
+        <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly" Version="9.0.8"/>
+        <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.DevServer" Version="9.0.8" PrivateAssets="all"/>
+        <PackageReference Include="System.Security.Claims" Version="4.3.0" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <ProjectReference Include="..\MoonCore.Blazor.FlyonUi.Test.Shared\MoonCore.Blazor.FlyonUi.Test.Shared.csproj" />
+      <ProjectReference Include="..\MoonCore.Blazor.FlyonUi\MoonCore.Blazor.FlyonUi.csproj" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <_ContentIncludedByDefault Remove="wwwroot\css\app.css" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <AdditionalFiles Include="UI\Components\CustomModal.razor" />
+      <AdditionalFiles Include="UI\Components\MultiLayerModal.razor" />
+      <AdditionalFiles Include="UI\Pages\Auth\Testy.razor" />
+      <AdditionalFiles Include="UI\Pages\Components\ContextMenuPage.razor" />
+      <AdditionalFiles Include="UI\Pages\Components\Dropdowns.razor" />
+      <AdditionalFiles Include="UI\Pages\Components\Index.razor" />
+      <AdditionalFiles Include="UI\Pages\Components\LazyLoaders.razor" />
+      <AdditionalFiles Include="UI\Pages\Components\TabsPage.razor" />
+      <AdditionalFiles Include="UI\Pages\DataTables\Index.razor" />
+      <AdditionalFiles Include="UI\Pages\DataTables\Loading.razor" />
+      <AdditionalFiles Include="UI\Pages\DataTables\PaginationPage.razor" />
+      <AdditionalFiles Include="UI\Pages\DataTables\SelectionPage.razor" />
+      <AdditionalFiles Include="UI\Pages\Feedback\Index.razor" />
+      <AdditionalFiles Include="UI\Pages\Feedback\Modals.razor" />
+      <AdditionalFiles Include="UI\Pages\Feedback\Toasts.razor" />
+      <AdditionalFiles Include="UI\Pages\Files\Editor.razor" />
+      <AdditionalFiles Include="UI\Pages\Files\Index.razor" />
+      <AdditionalFiles Include="UI\Pages\Files\ManagerPage.razor" />
+      <AdditionalFiles Include="UI\Pages\Files\Transfer.razor" />
+      <AdditionalFiles Include="UI\Pages\Forms\FormComponents.razor" />
+      <AdditionalFiles Include="UI\Pages\Forms\Index.razor" />
+      <AdditionalFiles Include="UI\Pages\Forms\SelectionPage.razor" />
+      <AdditionalFiles Include="UI\Partials\AppHeader.razor" />
+      <AdditionalFiles Include="UI\Partials\AppSidebar.razor" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <Folder Include="wwwroot\svgs\" />
+    </ItemGroup>
+
+</Project>

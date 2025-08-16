@@ -18,7 +18,7 @@
         <RepositoryType>git</RepositoryType>
         <PackageTags>mooncore</PackageTags>
         <PackageReadmeFile>README.md</PackageReadmeFile>
-        <Version>1.1.3</Version>
+        <Version>1.1.4</Version>
     </PropertyGroup>
 
 
@@ -32,27 +32,8 @@
 
     <ItemGroup>
         <None Include="README.md" Pack="true" PackagePath="\"/>
-        <None Include="Styles/mappings/*" Pack="true" PackagePath="Styles/" />
+        <None Include="Styles/*" Pack="true" PackagePath="Styles/" />
         <None Include="MoonCore.Blazor.FlyonUi.targets" Pack="true" PackagePath="build\MoonCore.Blazor.FlyonUi.targets" />
-    </ItemGroup>
-
-    <ItemGroup>
-      <AdditionalFiles Include="Alerts\Components\ConfirmDangerAlert.razor" />
-      <AdditionalFiles Include="Alerts\Components\InfoAlert.razor" />
-      <AdditionalFiles Include="Alerts\Components\SuccessAlert.razor" />
-      <AdditionalFiles Include="Alerts\Components\WarningAlert.razor" />
-      <AdditionalFiles Include="Auth\DefaultLoginTemplate.razor" />
-      <AdditionalFiles Include="DataTables\Pagination.razor" />
-      <AdditionalFiles Include="DataTables\PaginationDesign.razor" />
-      <AdditionalFiles Include="DataTables\Selection.razor" />
-      <AdditionalFiles Include="Modals\Components\BaseModal.razor" />
-      <AdditionalFiles Include="Modals\ModalLauncher.razor" />
-      <AdditionalFiles Include="Toasts\Components\BaseToast.razor" />
-      <AdditionalFiles Include="Toasts\Components\InfoToast.razor" />
-      <AdditionalFiles Include="Toasts\Components\ProgressToast.razor" />
-      <AdditionalFiles Include="Toasts\Components\SuccessToast.razor" />
-      <AdditionalFiles Include="Toasts\Components\WarningToast.razor" />
-      <AdditionalFiles Include="Toasts\ToastLauncher.razor" />
     </ItemGroup>
 
     <ItemGroup>
@@ -60,7 +41,7 @@
     </ItemGroup>
 
     <ItemGroup>
-      <Folder Include="Styles\mappings\" />
+      <Folder Include="Styles\" />
       <Folder Include="wwwroot\" />
     </ItemGroup>
 

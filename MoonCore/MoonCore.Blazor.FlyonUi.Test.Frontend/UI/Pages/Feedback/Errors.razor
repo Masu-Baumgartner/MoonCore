@@ -1,0 +1,50 @@
+@page "/feedback/errors"
+
+@using MoonCore.Blazor.FlyonUi.Components
+@using MoonCore.Blazor.FlyonUi.Exceptions
+@using MoonCore.Exceptions
+
+<NavTabs Index="3" Names="UiConstants.FeedbackNames" Links="UiConstants.FeedbackLinks"/>
+
+@inject GlobalErrorService ErrorService
+
+<div class="mt-5">
+    <div class="grid grid-cols-4 gap-5 w-full">
+        <button @onclick="Message" class="btn btn-primary">Message</button>
+        <button @onclick="Error1" class="btn btn-error">Error 1</button>
+        <button @onclick="Error2" class="btn btn-error">Error 2</button>
+        <button @onclick="Error3" class="btn btn-error">Error 3</button>
+        <button @onclick="Error4" class="btn btn-error">Error 4</button>
+    </div>
+</div>
+
+@code
+{
+    private async Task Message()
+    {
+        await ErrorService.ShowMessage("Teeeeeeeeeeesty");
+    }
+    
+    private async Task Error1()
+    {
+        throw new HttpApiException("Teeeeeeests", 404);
+    }
+
+    private async Task Error2()
+    {
+        var x = new HttpApiException("Goover is an idiot ;)", 500);
+        await ErrorService.HandleException(x);
+    }
+    
+    private async Task Error3()
+    {
+        var x = new HttpApiException("Goover is an idiot ;)", 500);
+        await ErrorService.HandleException(x, "Lost soul", true);
+    }
+    
+    private async Task Error4()
+    {
+        var x = new HttpApiException("Goover is an idiot ;)", 500);
+        await ErrorService.HandleException(x, "Lost soul", true, false);
+    }
+}

@@ -3,8 +3,7 @@
 @using Microsoft.AspNetCore.Components.Routing
 @using MoonCore.Blazor.FlyonUi.Auth
 @using MoonCore.Exceptions
-
-@inject AuthenticationStateManager AuthenticationStateManager
+@using MoonCore.Blazor.FlyonUi.Exceptions
 
 <CrashHandler>
     @if (IsLoading)
@@ -34,7 +33,7 @@
                     <Router AppAssembly="AppAssembly" AdditionalAssemblies="AdditionalAssemblies">
                         <Found Context="routeData">
                             <LayoutView Layout="@DefaultLayout">
-                                <ErrorHandler CustomHandler="OnHandleException">
+                                <GlobalErrorHandler>
                                     <AuthorizeRouteView RouteData="routeData" Context="_">
                                         <NotAuthorized>
                                             <div class="flex justify-center items-center mt-10">
@@ -48,7 +47,7 @@
                                             </div>
                                         </NotAuthorized>
                                     </AuthorizeRouteView>
-                                </ErrorHandler>
+                                </GlobalErrorHandler>
                             </LayoutView>
                         </Found>
                         <NotFound>
@@ -134,18 +133,5 @@
 
         IsLoading = false;
         await InvokeAsync(StateHasChanged);
-    }
-
-    private async Task<bool> OnHandleException(Exception exception, ErrorHandler errorHandler)
-    {
-        if (exception is not HttpApiException httpApiException)
-            return false;
-
-        if (httpApiException.Status != 401)
-            return false;
-
-        await AuthenticationStateManager.Logout();
-
-        return true;
     }
 }

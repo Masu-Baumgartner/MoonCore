@@ -1,0 +1,9 @@
+@host=http://localhost:5048
+
+###  Create api key
+GET {{host}}/api/apikey
+
+
+###  Make demo api request
+GET {{host}}/api/auth/check
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJuYW1laWQiOiI2OSIsInVuaXF1ZV9uYW1lIjoiQVBJIEtleSIsImVtYWlsIjoiYm9ndXNAZW1haWwuYXBpIiwibmJmIjoxNzU1Mzc5MjY1LCJleHAiOjE3NTUzODI5MjUsImlhdCI6MTc1NTM3OTMyNSwiaXNzIjoibW9vbmNvcmUiLCJhdWQiOiJtb29uY29yZSJ9.iYlWYwQVkhWty-H79EkR-nEGkyT9LtZLBl8Czyb0ZQ4
