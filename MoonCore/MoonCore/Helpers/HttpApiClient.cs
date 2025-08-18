@@ -1,4 +1,5 @@
-﻿using System.Net.Http.Headers;
+﻿using System.Diagnostics.CodeAnalysis;
+using System.Net.Http.Headers;
 using System.Text.Json;
 using MoonCore.Extensions;
 
@@ -24,21 +25,21 @@ public class HttpApiClient : IDisposable
 
     #region GET
 
-    public Task<HttpResponseMessage> Get(string url) => SendHandled(HttpMethod.Get, url);
+    public Task<HttpResponseMessage> Get([StringSyntax(StringSyntaxAttribute.Uri)] string url) => SendHandled(HttpMethod.Get, url);
     
-    public async Task<Stream> GetStream(string url)
+    public async Task<Stream> GetStream([StringSyntax(StringSyntaxAttribute.Uri)] string url)
     {
         var response = await SendHandled(HttpMethod.Get, url);
         return await response.Content.ReadAsStreamAsync();
     }
     
-    public async Task<string> GetString(string url)
+    public async Task<string> GetString([StringSyntax(StringSyntaxAttribute.Uri)] string url)
     {
         var response = await SendHandled(HttpMethod.Get, url);
         return await response.Content.ReadAsStringAsync();
     }
     
-    public async Task<T> GetJson<T>(string url)
+    public async Task<T> GetJson<T>([StringSyntax(StringSyntaxAttribute.Uri)] string url)
     {
         var json = await GetString(url);
         return JsonSerializer.Deserialize<T>(json, JsonSerializerOptions) ?? throw new JsonException($"Unable to parse json: {json}");
@@ -48,21 +49,21 @@ public class HttpApiClient : IDisposable
 
     #region POST
 
-    public Task<HttpResponseMessage> Post(string url, object? data = null) => SendHandled(HttpMethod.Post, url, ConvertToContent(data));
+    public Task<HttpResponseMessage> Post([StringSyntax(StringSyntaxAttribute.Uri)] string url, object? data = null) => SendHandled(HttpMethod.Post, url, ConvertToContent(data));
     
-    public async Task<Stream> PostStream(string url, object? data = null)
+    public async Task<Stream> PostStream([StringSyntax(StringSyntaxAttribute.Uri)] string url, object? data = null)
     {
         var response = await SendHandled(HttpMethod.Post, url, ConvertToContent(data));
         return await response.Content.ReadAsStreamAsync();
     }
     
-    public async Task<string> PostString(string url, object? data = null)
+    public async Task<string> PostString([StringSyntax(StringSyntaxAttribute.Uri)] string url, object? data = null)
     {
         var response =await SendHandled(HttpMethod.Post, url, ConvertToContent(data));
         return await response.Content.ReadAsStringAsync();
     }
     
-    public async Task<T> PostJson<T>(string url, object? data = null)
+    public async Task<T> PostJson<T>([StringSyntax(StringSyntaxAttribute.Uri)] string url, object? data = null)
     {
         var json = await PostString(url, data);
         return JsonSerializer.Deserialize<T>(json, JsonSerializerOptions) ?? throw new JsonException($"Unable to parse json: {json}");
@@ -72,21 +73,21 @@ public class HttpApiClient : IDisposable
 
     #region PATCH
 
-    public Task<HttpResponseMessage> Patch(string url, object? data = null) => SendHandled(HttpMethod.Patch, url, ConvertToContent(data));
+    public Task<HttpResponseMessage> Patch([StringSyntax(StringSyntaxAttribute.Uri)] string url, object? data = null) => SendHandled(HttpMethod.Patch, url, ConvertToContent(data));
     
-    public async Task<Stream> PatchStream(string url, object? data = null)
+    public async Task<Stream> PatchStream([StringSyntax(StringSyntaxAttribute.Uri)] string url, object? data = null)
     {
         var response = await SendHandled(HttpMethod.Patch, url, ConvertToContent(data));
         return await response.Content.ReadAsStreamAsync();
     }
     
-    public async Task<string> PatchString(string url, object? data = null)
+    public async Task<string> PatchString([StringSyntax(StringSyntaxAttribute.Uri)] string url, object? data = null)
     {
         var response =await SendHandled(HttpMethod.Patch, url, ConvertToContent(data));
         return await response.Content.ReadAsStringAsync();
     }
     
-    public async Task<T> PatchJson<T>(string url, object? data = null)
+    public async Task<T> PatchJson<T>([StringSyntax(StringSyntaxAttribute.Uri)] string url, object? data = null)
     {
         var json = await PatchString(url, data);
         return JsonSerializer.Deserialize<T>(json, JsonSerializerOptions) ?? throw new JsonException($"Unable to parse json: {json}");
@@ -96,21 +97,21 @@ public class HttpApiClient : IDisposable
 
     #region PUT
 
-    public Task<HttpResponseMessage> Put(string url, object? data = null) => SendHandled(HttpMethod.Put, url, ConvertToContent(data));
+    public Task<HttpResponseMessage> Put([StringSyntax(StringSyntaxAttribute.Uri)] string url, object? data = null) => SendHandled(HttpMethod.Put, url, ConvertToContent(data));
     
-    public async Task<Stream> PutStream(string url, object? data = null)
+    public async Task<Stream> PutStream([StringSyntax(StringSyntaxAttribute.Uri)] string url, object? data = null)
     {
         var response = await SendHandled(HttpMethod.Put, url, ConvertToContent(data));
         return await response.Content.ReadAsStreamAsync();
     }
     
-    public async Task<string> PutString(string url, object? data = null)
+    public async Task<string> PutString([StringSyntax(StringSyntaxAttribute.Uri)] string url, object? data = null)
     {
         var response =await SendHandled(HttpMethod.Put, url, ConvertToContent(data));
         return await response.Content.ReadAsStringAsync();
     }
     
-    public async Task<T> PutJson<T>(string url, object? data = null)
+    public async Task<T> PutJson<T>([StringSyntax(StringSyntaxAttribute.Uri)] string url, object? data = null)
     {
         var json = await PutString(url, data);
         return JsonSerializer.Deserialize<T>(json, JsonSerializerOptions) ?? throw new JsonException($"Unable to parse json: {json}");
@@ -120,21 +121,21 @@ public class HttpApiClient : IDisposable
 
     #region DELETE
 
-    public Task<HttpResponseMessage> Delete(string url) => SendHandled(HttpMethod.Delete, url);
+    public Task<HttpResponseMessage> Delete([StringSyntax(StringSyntaxAttribute.Uri)] string url) => SendHandled(HttpMethod.Delete, url);
     
-    public async Task<Stream> DeleteStream(string url)
+    public async Task<Stream> DeleteStream([StringSyntax(StringSyntaxAttribute.Uri)] string url)
     {
         var response = await SendHandled(HttpMethod.Delete, url);
         return await response.Content.ReadAsStreamAsync();
     }
     
-    public async Task<string> DeleteString(string url)
+    public async Task<string> DeleteString([StringSyntax(StringSyntaxAttribute.Uri)] string url)
     {
         var response = await SendHandled(HttpMethod.Delete, url);
         return await response.Content.ReadAsStringAsync();
     }
     
-    public async Task<T> DeleteJson<T>(string url)
+    public async Task<T> DeleteJson<T>([StringSyntax(StringSyntaxAttribute.Uri)] string url)
     {
         var json = await DeleteString(url);
         return JsonSerializer.Deserialize<T>(json, JsonSerializerOptions) ?? throw new JsonException($"Unable to parse json: {json}");

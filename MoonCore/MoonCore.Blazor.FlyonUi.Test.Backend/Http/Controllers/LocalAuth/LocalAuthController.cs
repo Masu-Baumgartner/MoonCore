@@ -72,7 +72,7 @@ public class LocalAuthController : Controller
                     new Claim(ClaimTypes.NameIdentifier, id.ToString()),
                     new Claim(ClaimTypes.Name, username)
                 ],
-                options.SignInScheme
+                "LocalAuth"
             )
         ), new AuthenticationProperties());
 

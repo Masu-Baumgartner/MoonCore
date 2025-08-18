@@ -16,7 +16,7 @@
         <RepositoryUrl>https://github.com/Masu-Baumgartner/MoonCore</RepositoryUrl>
         <RepositoryType>git</RepositoryType>
         <PackageTags>moonlight</PackageTags>
-        <Version>1.9.5</Version>
+        <Version>1.9.6</Version>
         <PackageReadmeFile>README.md</PackageReadmeFile>
         <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
     </PropertyGroup>
