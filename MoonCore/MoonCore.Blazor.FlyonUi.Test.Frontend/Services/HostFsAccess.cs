@@ -2,10 +2,11 @@ using System.Net.Http.Json;
 using MoonCore.Blazor.FlyonUi.Files;
 using MoonCore.Blazor.FlyonUi.Files.Manager;
 using MoonCore.Blazor.FlyonUi.Files.Manager.Abstractions;
+using MoonCore.Blazor.FlyonUi.Test.Shared.Http.Request;
 
 namespace MoonCore.Blazor.FlyonUi.Test.Frontend.Services;
 
-public class HostFsAccess : IFsAccess, IDownloadUrlAccess
+public class HostFsAccess : IFsAccess, IDownloadUrlAccess, ICombineAccess
 {
     private readonly HttpClient Http;
 
@@ -70,4 +71,13 @@ public class HostFsAccess : IFsAccess, IDownloadUrlAccess
 
     public Task<string> GetFolderUrl(string path)
         => Task.FromResult($"{Http.BaseAddress}api/download/folder?path={path}");
+
+    public async Task Combine(string destination, string[] files)
+    {
+        await Http.PostAsync("api/fs/combine", JsonContent.Create(new FsCombineRequest()
+        {
+            Destination = destination,
+            Files = files
+        }));
+    }
 }

@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Mvc;
+using MoonCore.Blazor.FlyonUi.Test.Shared.Http.Request;
 using MoonCore.Blazor.FlyonUi.Test.Shared.Http.Responses;
 
 namespace MoonCore.Blazor.FlyonUi.Test.Backend.Http.Controllers;
@@ -138,6 +139,28 @@ public class FsController : Controller
             System.IO.File.Delete(pathSafe);
         else
             Directory.Delete(pathSafe, true);
+        return Ok();
+    }
+
+    [HttpPost("combine")]
+    public async Task<IActionResult> Combine([FromBody] FsCombineRequest request)
+    {
+        var dest = HandleRawPath(request.Destination);
+        await using var fs = System.IO.File.Open(dest, FileMode.Create, FileAccess.ReadWrite, FileShare.Read);
+
+        foreach (var file in request.Files)
+        {
+            var filePath = HandleRawPath(file);
+
+            await using var readFs = System.IO.File.Open(filePath, FileMode.Open, FileAccess.Read, FileShare.ReadWrite);
+            await readFs.CopyToAsync(fs);
+            await fs.FlushAsync();
+            readFs.Close();
+        }
+
+        await fs.FlushAsync();
+        fs.Close();
+
         return Ok();
     }
 }

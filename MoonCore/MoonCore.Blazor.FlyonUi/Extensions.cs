@@ -19,7 +19,6 @@ public static class Extensions
         collection.AddScoped<AlertService>();
         collection.AddScoped<ToastService>();
         collection.AddScoped<CodeEditorService>();
-        collection.AddScoped<ChunkedFileTransferService>();
         collection.AddScoped<DropHandlerService>();
         collection.AddScoped<DownloadService>();
         collection.AddScoped<GlobalErrorService>();

@@ -49,7 +49,7 @@ public partial class FileManager
 
                 foreach (var file in files)
                 {
-                    if (UploadLimit != -1 && file.Size > UploadLimit)
+                    if (Options.UploadLimit != -1 && file.Size > Options.UploadLimit)
                     {
                         await ToastService.Warning(
                             $"Unable to upload file as it exceeds the file upload limit: {file.Name}");
@@ -61,9 +61,9 @@ public partial class FileManager
                     try
                     {
                         await using var dataStream = file.OpenReadStream(
-                            UploadLimit == -1
+                            Options.UploadLimit == -1
                                 ? file.Size
-                                : UploadLimit
+                                : Options.UploadLimit
                         );
 
                         var path = UnixPath.Combine(pwdAtUpload, file.Name);
@@ -139,7 +139,7 @@ public partial class FileManager
 
             var fileName = UnixPath.GetFileName(item.Path);
 
-            if (UploadLimit != -1 && item.Stream.Length > UploadLimit)
+            if (Options.UploadLimit != -1 && item.Stream.Length > Options.UploadLimit)
             {
                 await ToastService.Warning($"Unable to upload file as it exceeds the file upload limit: {fileName}");
                 await DropHandlerService.PopItem();
@@ -193,7 +193,7 @@ public partial class FileManager
 
         var combineAccess = FsAccess as ICombineAccess;
 
-        if (stream.Length < TransferLimit) // If smaller than the transfer limit we won't even brother checking for chunking support
+        if (stream.Length < Options.WriteLimit) // If smaller than the transfer limit we won't even brother checking for chunking support
         {
             try
             {
@@ -214,7 +214,7 @@ public partial class FileManager
             {
                 await ToastService.Error(
                     "File upload limit exceeded",
-                    $"Unable to upload {name}: Exceeds limit of {Formatter.FormatSize(UploadLimit)}"
+                    $"Unable to upload {name}: Exceeds limit of {Formatter.FormatSize(Options.WriteLimit)}"
                 );
 
                 return false;
@@ -254,7 +254,7 @@ public partial class FileManager
                                     break;
                                 }
 
-                                await CopyStreamPart(stream, ms, TransferLimit);
+                                await CopyStreamPart(stream, ms, Options.WriteLimit);
 
                                 // Skip empty parts
                                 if (ms.Length == 0)
