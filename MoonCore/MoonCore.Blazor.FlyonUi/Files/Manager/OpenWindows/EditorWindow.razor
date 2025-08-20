@@ -1,0 +1,6 @@
+@code
+{
+    [Parameter] public string Content { get; set; }
+    [Parameter] public Func<string, Task> OnSave { get; set; }
+    [Parameter] public Func<Task> OnClose { get; set; }
+}
