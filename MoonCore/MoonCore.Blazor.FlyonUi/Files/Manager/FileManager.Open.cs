@@ -4,13 +4,14 @@ namespace MoonCore.Blazor.FlyonUi.Files.Manager;
 
 public partial class FileManager
 {
+    private bool ShowOpenWindow = false;
     private RenderFragment? OpenWindow;
-    
+
     private async Task Open(FsEntry entry)
     {
-        var openOperation = Options
-            .OpenOperations
-            .FirstOrDefault(x => x.Filter.Invoke(entry));
+        var openOperation = OpenOperations.FirstOrDefault(x =>
+            x.Filter.Invoke(entry)
+        );
 
         if (openOperation == null)
         {
@@ -23,7 +24,7 @@ public partial class FileManager
             await ToastService.Error("Cannot open the file: Exceeded the open limit");
             return;
         }
-        
+
         var pwd = new string(CurrentPath);
 
         OpenWindow = await openOperation.Open(
@@ -33,12 +34,19 @@ public partial class FileManager
             this
         );
 
+        if (OpenWindow == null)
+        {
+            await ToastService.Error("Cannot open file: Unknown error");
+            return;
+        }
+
+        ShowOpenWindow = true;
         await InvokeAsync(StateHasChanged);
     }
-    
+
     public async Task CloseOpenScreen()
     {
-        OpenWindow = null;
+        ShowOpenWindow = false;
         await InvokeAsync(StateHasChanged);
     }
 }

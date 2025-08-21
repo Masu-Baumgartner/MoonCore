@@ -15,51 +15,60 @@
 @implements IAsyncDisposable
 @implements IFileManager
 
-<FileManagerHeader CurrentPath="@CurrentPath"
-                   OnBreadcrumbClick="SetPath"
-                   OnHomeClick="@(() => SetPath("/"))"
-                   OnRefreshClick="() => FileView.Refresh()"
-                   OnFileSelected="HandleFileUpload"
-                   ShowSelectionItems="@(SelectedEntries.Length > 0)"
-                   SelectionOperations="MultiFsOperations"
-                   OnSelectionClicked="RunSelectionOperation"
-                   ToolbarOperations="ToolbarOperations"
-                   OnToolbarClicked="RunToolbarOperation"
-                   EnableUpload="EnableUpload"/>
+@if (ShowOpenWindow)
+{
+    <div>
+        @OpenWindow
+    </div>
+}
+else
+{
+    <FileManagerHeader CurrentPath="@CurrentPath"
+                       OnBreadcrumbClick="SetPath"
+                       OnHomeClick="@(() => SetPath("/"))"
+                       OnRefreshClick="() => FileView.Refresh()"
+                       OnFileSelected="HandleFileUpload"
+                       ShowSelectionItems="@(SelectedEntries.Length > 0)"
+                       SelectionOperations="MultiFsOperations"
+                       OnSelectionClicked="RunSelectionOperation"
+                       ToolbarOperations="ToolbarOperations"
+                       OnToolbarClicked="RunToolbarOperation"
+                       EnableUpload="EnableUpload"/>
+    
+    <div class="mt-5">
+        <FileView @ref="FileView" Load="Load" ShowDate="true" ShowSize="true" OnClick="OnClick"
+                  CustomClickLink="CustomClickLink" OnContextMenu="OnContextMenu">
+            <ChildContent>
+                <DataTableRow TItem="FsEntry" Index="int.MinValue">
+                    <Template>
+                        @if (CurrentPath != "/")
+                        {
+                            <td @onclick="GoUp" scope="row" colspan="99999"
+                                class="py-1.5 px-3 text-left font-normal cursor-pointer">
+                                <div class="flex flex-row items-center">
+                                    <i class="icon-folder-up text-accent text-2xl me-5"></i>
+                                    <div>Go up</div>
+                                </div>
+                            </td>
+                        }
+                    </Template>
+                </DataTableRow>
 
-<div class="mt-5">
-    <FileView @ref="FileView" Load="Load" ShowDate="true" ShowSize="true" OnClick="OnClick"
-              CustomClickLink="CustomClickLink" OnContextMenu="OnContextMenu">
-        <ChildContent>
-            <DataTableRow TItem="FsEntry" Index="int.MinValue">
-                <Template>
-                    @if (CurrentPath != "/")
-                    {
-                        <td @onclick="GoUp" scope="row" colspan="99999"
-                            class="py-1.5 px-3 text-left font-normal cursor-pointer">
-                            <div class="flex flex-row items-center">
-                                <i class="icon-folder-up text-accent text-2xl me-5"></i>
-                                <div>Go up</div>
-                            </div>
-                        </td>
-                    }
-                </Template>
-            </DataTableRow>
-
-            <Selection TItem="FsEntry" OnSelectionChanged="OnSelectionChanged"/>
-            <DataTableColumn TItem="FsEntry" Index="int.MaxValue">
-                <ColumnTemplate>
-                    <div class="flex justify-end me-1.5">
-                        <a href="#" @onclick="e => OnContextMenu(e.ClientX - 215, e.ClientY, context)"
-                           @onclick:preventDefault @onclick:stopPropagation>
-                            <i class="icon-ellipsis text-lg"></i>
-                        </a>
-                    </div>
-                </ColumnTemplate>
-            </DataTableColumn>
-        </ChildContent>
-    </FileView>
-</div>
+                <Selection TItem="FsEntry" OnSelectionChanged="OnSelectionChanged"/>
+                <DataTableColumn TItem="FsEntry" Index="int.MaxValue">
+                    <ColumnTemplate>
+                        <div class="flex justify-end me-1.5">
+                            <a href="#" @onclick="e => OnContextMenu(e.ClientX - 215, e.ClientY, context)"
+                               @onclick:preventDefault @onclick:stopPropagation>
+                                <i class="icon-ellipsis text-lg"></i>
+                            </a>
+                        </div>
+                    </ColumnTemplate>
+                </DataTableColumn>
+            </ChildContent>
+        </FileView>
+    </div>
+}
 
 <ContextMenu @ref="ContextMenu">
     @if (ContextEntry != null)
@@ -93,7 +102,7 @@
 
     private ContextMenu ContextMenu;
 
-    private IFileOpenOperation[] OpenOperations;
+    private IFsOpenOperation[] OpenOperations;
     private ISingleFsOperation[] SingleFsOperations;
     private IMultiFsOperation[] MultiFsOperations;
     private IToolbarOperation[] ToolbarOperations;
@@ -121,6 +130,7 @@
             .ToArray();
 
         OpenOperations = Options.OpenOperations
+            .Where(x => x.CheckCompatability(FsAccess, this))
             .OrderByDescending(x => x.Order)
             .ToArray();
 

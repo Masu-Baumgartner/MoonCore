@@ -33,5 +33,9 @@
         
         options.AddToolbarOperation<CreateFileOperation>();
         options.AddToolbarOperation<CreateFolderOperation>();
+        
+        options.AddOpenOperation<EditorOpenOperation>();
+        options.AddOpenOperation<ImageOpenOperation>();
+        options.AddOpenOperation<VideoOpenOperation>();
     }
 }

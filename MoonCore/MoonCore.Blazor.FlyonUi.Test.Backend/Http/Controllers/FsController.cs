@@ -88,7 +88,11 @@ public class FsController : Controller
     {
         var filePath = HandleRawPath(path);
         var contentType = "application/octet-stream";
-        return PhysicalFile(filePath, contentType, Path.GetFileName(filePath));
+        var fullPath = Path.Combine(Directory.GetCurrentDirectory(), filePath);
+
+        var fs = System.IO.File.Open(fullPath, FileMode.Open, FileAccess.Read, FileShare.ReadWrite);
+
+        return File(fs, contentType, Path.GetFileName(filePath), true);
     }
 
     [HttpPost("upload/single")]

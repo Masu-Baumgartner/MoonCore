@@ -1,4 +1,5 @@
 using System.Collections.Frozen;
+using System.Collections.Immutable;
 
 namespace MoonCore.Blazor.FlyonUi.Ace;
 
@@ -194,6 +195,133 @@ public static class CodeEditorModeHelper
         { "zeek", ["zeek", "bro"] }
     }.ToFrozenDictionary();
 
+    // Generated from
+    // https://github.com/github-linguist/linguist/blob/main/lib/linguist/languages.yml
+    private static readonly HashSet<string> ValidExtensions = new(StringComparer.OrdinalIgnoreCase)
+    {
+        "bsl", "os", "2da", "4dm", "abap", "asddls", "abnf", "asc", "ash", "aidl", "al", "ampl", "mod",
+        "g4", "apib", "apl", "dyalog", "asl", "dsl", "asn", "asn1", "asax", "ascx", "ashx", "asmx", "aspx",
+        "axd", "dats", "hats", "sats", "as", "adb", "ada", "ads", "txt", "afm", "agda", "ak", "als",
+        "OutJob", "PcbDoc", "PrjPCB", "SchDoc", "angelscript", "lp", "antlershtml", "antlersphp",
+        "antlersxml", "apacheconf", "vhost", "cls", "apex", "trigger", "agc", "applescript", "scpt", "arc",
+        "asciidoc", "adoc", "aj", "asm", "a51", "i", "inc", "nas", "nasm", "s", "astro", "asy", "aug",
+        "ahk", "ahkl", "au3", "avdl", "awk", "auk", "gawk", "mawk", "nawk", "bas", "bqn", "bal", "bat",
+        "cmd", "bf", "befunge", "be", "bib", "bibtex", "bst", "bicep", "bicepparam", "bs", "bison", "bb",
+        "bbappend", "bbclass", "blade", "bladephp", "decls", "bmx", "bsv", "boo", "bpl", "b", "brs", "c",
+        "cats", "h", "hin", "idc", "cs", "cake", "cspp", "csx", "linq", "cpp", "c++", "cc", "cp",
+        "cppm", "cxx", "h++", "hh", "hpp", "hxx", "inl", "ino", "ipp", "ixx", "re", "tcc", "tpp", "txx",
+        "c-objdump", "chs", "c3", "cds", "cil", "clp", "cmake", "cmakein", "cob", "cbl", "ccp", "cobol",
+        "cpy", "dae", "cson", "css", "csv", "cue", "w", "cabal", "caddyfile", "cdc", "cairo", "mligo",
+        "capnp", "carbon", "mss", "ceylon", "chpl", "ch", "crc32", "md2", "md4", "md5", "sha1", "sha2",
+        "sha224", "sha256", "sha256sum", "sha3", "sha384", "sha512", "ck", "circom", "cirru", "clw", "clar",
+        "asp", "icl", "dcl", "click", "clj", "boot", "cl2", "cljc", "cljs", "cljshl", "cljscm", "cljx",
+        "hic", "soy", "clue", "conllu", "conll", "ql", "qll", "coffee", "_coffee", "cjsx", "iced", "cfm",
+        "cfml", "cfc", "lisp", "asd", "cl", "l", "lsp", "ny", "podsl", "sexp", "cwl", "cps", "cppobjdump",
+        "c++-objdump", "c++objdump", "cpp-objdump", "cxx-objdump", "creole", "cr", "orc", "udo", "csd", "sco",
+        "cu", "cuh", "curry", "cy", "cylc", "cyp", "cypher", "pyx", "pxd", "pxi", "d", "di", "d-objdump",
+        "d2", "com", "dm", "zone", "arpa", "dfy", "darcspatch", "dpatch", "dart", "das", "dwl", "dsc",
+        "dhall", "diff", "patch", "x", "dockerfile", "containerfile", "djs", "env", "dylan", "dyl", "intr",
+        "lid", "e", "eml", "mbox", "ebnf", "ecl", "eclxml", "ejs", "ect", "ejst", "jst", "eq", "sch",
+        "brd", "eb", "epj", "html", "edge", "edgeql", "esdl", "editorconfig", "edc", "ex", "exs", "elm",
+        "elv", "el", "emacs", "emacsdesktop", "em", "emberscript", "erl", "app", "appsrc", "es", "escript",
+        "hrl", "xrl", "yrl", "fs", "fsi", "fsx", "fst", "fsti", "flf", "fir", "fx", "flux", "factor",
+        "fy", "fancypack", "fan", "dsp", "fnl", "f", "ftl", "for", "eamfs", "fth", "4th", "forth", "fr",
+        "frt", "f77", "fpp", "f90", "f03", "f08", "f95", "bi", "fut", "g", "cnc", "gco", "gcode", "gaml",
+        "gms", "gap", "gd", "gi", "tst", "md", "gdb", "gdbinit", "gdshader", "gdshaderinc", "ged", "glsl",
+        "fp", "frag", "frg", "fsh", "fshader", "geo", "geom", "glslf", "glslv", "gs", "gshader", "rchit",
+        "rmiss", "shader", "tesc", "tese", "vert", "vrx", "vs", "vsh", "vshader", "gn", "gni", "gsc",
+        "csc", "gsh", "gml", "gmi", "4gl", "per", "kid", "ebuild", "eclass", "gbr", "cmp", "gbl", "gbo",
+        "gbp", "gbs", "gko", "gpb", "gpt", "gtl", "gto", "gtp", "gts", "ncl", "sol", "po", "pot",
+        "feature", "story", "gitconfig", "gleam", "gjs", "glf", "bdf", "gp", "gnu", "gnuplot", "p", "plot",
+        "plt", "go", "gdnlib", "gdns", "tres", "tscn", "golo", "gst", "gsx", "vark", "grace", "gradle",
+        "gradlekts", "gf", "graphql", "gql", "graphqls", "dot", "gv", "groovy", "grt", "gtpl", "gvy",
+        "gsp", "cfg", "hcl", "nomad", "tf", "tfvars", "workflow", "hip", "hlsl", "cginc", "fxh", "hlsli",
+        "hocon", "hta", "htm", "htmlhl", "xht", "xhtml", "ecr", "htmleex", "heex", "leex", "erb",
+        "erbdeface", "rhtml", "phtml", "cshtml", "razor", "http", "hxml", "hack", "hhi", "php", "haml",
+        "hamldeface", "handlebars", "hbs", "hb", "ha", "hs", "hs-boot", "hsc", "hx", "hxsl", "q", "hql",
+        "hc", "hy", "pro", "dlm", "ipf", "ini", "cnf", "dof", "frm", "lektorproject", "prefs", "properties",
+        "url", "irclog", "weechatlog", "ispc", "idr", "lidr", "gitignore", "ijm", "imba", "ni", "i7x",
+        "ink", "iss", "isl", "io", "ik", "thy", "ijs", "jcl", "flex", "jflex", "json", "4DForm",
+        "4DProject", "avsc", "geojson", "gltf", "har", "ice", "JSON-tmLanguage", "jsonexample", "jsonl",
+        "mcmeta", "sarif", "tact", "tfstate", "tfstatebackup", "topojson", "webapp", "webmanifest", "yy",
+        "yyp", "jsonc", "code-snippets", "code-workspace", "sublime-build", "sublime-color-scheme",
+        "sublime-commands", "sublime-completions", "sublime-keymap", "sublime-macro", "sublime-menu",
+        "sublime-mousemap", "sublime-project", "sublime-settings", "sublime-theme", "sublime-workspace",
+        "sublime_metrics", "sublime_session", "json5", "jsonld", "jq", "jai", "janet", "j", "java", "jav",
+        "jsh", "jsp", "tag", "jte", "js", "_js", "bones", "cjs", "es6", "jake", "javascript", "jsb",
+        "jscad", "jsfl", "jslib", "jsm", "jspre", "jss", "jsx", "mjs", "njs", "pac", "sjs", "ssjs", "xsjs",
+        "xsjslib", "jserb", "snap", "mps", "mpl", "msd", "jinja", "j2", "jinja2", "jison", "jisonlex",
+        "ol", "iol", "jsonnet", "libsonnet", "jl", "ipynb", "just", "kdl", "krl", "ksy", "kak", "ks",
+        "kicad_pcb", "kicad_mod", "kicad_wks", "kicad_sch", "kicad_sym", "kit", "kk", "kt", "ktm", "kts",
+        "csl", "kql", "lfe", "ll", "lol", "lsl", "lslp", "lvproj", "lvclass", "lvlib", "lark", "lasso",
+        "las", "lasso8", "lasso9", "latte", "lean", "hlean", "leo", "less", "lex", "ligo", "ly", "ily",
+        "m", "ld", "lds", "liquid", "lagda", "litcoffee", "coffeemd", "lhs", "livecodescript", "ls", "_ls",
+        "xm", "xi", "lgt", "logtalk", "lkml", "lookml", "lua", "fcgi", "nse", "p8", "pd_lua", "rbxs",
+        "rockspec", "wlua", "luau", "mumps", "m3u", "m3u8", "m4", "mc", "matlab", "ms", "mcr", "mdx",
+        "mlir", "mq4", "mqh", "mq5", "mtml", "muf", "m2", "mak", "make", "makefile", "mk", "mkfile",
+        "mako", "mao", "livemd", "markdown", "mdown", "mdwn", "mkd", "mkdn", "mkdown", "ronn", "scd",
+        "workbook", "marko", "mask", "mathematica", "cdf", "ma", "mt", "nb", "nbp", "wl", "wlt", "maxpat",
+        "maxhelp", "maxproj", "mxt", "pat", "moo", "mmd", "mermaid", "metal", "sln", "minid", "yaml", "yml",
+        "mzn", "dzn", "mint", "druby", "duby", "mirah", "mo", "i3", "ig", "m3", "mg", "mms", "mmk",
+        "mojo", "monkey", "monkey2", "mbt", "moon", "x68", "move", "muse", "mustache", "myt", "nasl",
+        "neon", "nl", "nsi", "nsh", "nss", "ne", "nearley", "n", "axs", "axi", "axserb", "axierb",
+        "nlogo", "nf", "nginx", "nginxconf", "nim", "nimcfg", "nimble", "nimrod", "nims", "ninja", "nit",
+        "nix", "nr", "nu", "numpy", "numpyw", "numsc", "njk", "ml", "eliom", "eliomi", "ml4", "mli", "mll",
+        "mly", "msg", "ned", "ob2", "objdump", "odin", "mm", "sj", "omgrofl", "opa", "opal", "rego",
+        "opencl", "qasm", "scad", "plist", "glyphs", "fea", "org", "overpassql", "ox", "oxh", "oxo",
+        "oxygene", "oz", "p4", "pddl", "pegjs", "peggy", "aw", "ctp", "php3", "php4", "php5", "phps",
+        "phpt", "pls", "bdy", "ddl", "fnc", "pck", "pkb", "pks", "plb", "plsql", "prc", "spc", "sql",
+        "tpb", "tps", "trg", "vw", "pgsql", "pov", "pact", "pan", "psc", "parrot", "pasm", "pir", "pas",
+        "dfm", "dpr", "lpr", "pascal", "pp", "pwn", "sma", "pep", "pl", "cgi", "perl", "ph", "plx", "pm",
+        "psgi", "t", "pic", "chem", "pkl", "pig", "pike", "pmod", "puml", "iuml", "plantuml", "pod",
+        "pod6", "pogo", "polar", "pony", "por", "pcss", "postcss", "ps", "eps", "epsi", "pfa", "pbt",
+        "sra", "sru", "srw", "ps1", "psd1", "psm1", "praat", "prisma", "pde", "prolog", "yap", "pml",
+        "spin", "proto", "textproto", "pbtxt", "pub", "jade", "pug", "pd", "pb", "pbi", "purs", "arr",
+        "py", "gyp", "gypi", "lmi", "py3", "pyde", "pyi", "pyp", "pyt", "pyw", "rpy", "spec", "tac",
+        "wsgi", "xpy", "pytb", "qs", "qml", "qbs", "pri", "r", "rd", "rsx", "raml", "rbs", "rdoc",
+        "rbbas", "rbfrm", "rbmnu", "rbres", "rbtbar", "rbuistate", "rexx", "pprx", "rex", "qmd", "rmd",
+        "ron", "action", "srv", "rpgle", "sqlrpgle", "rnh", "rno", "rkt", "rktd", "rktl", "scrbl", "rl",
+        "6pl", "6pm", "nqp", "p6", "p6l", "p6m", "pl6", "pm6", "raku", "rakumod", "rsc", "raw", "res",
+        "resi", "rei", "religo", "reb", "r2", "r3", "rebol", "red", "reds", "cw", "regexp", "regex", "rs",
+        "rsh", "rtf", "ring", "riot", "robot", "resource", "roc", "v", "coq", "roff", "1", "1in", "1m",
+        "1x", "2", "3", "3in", "3m", "3p", "3pm", "3qt", "3x", "4", "5", "6", "7", "8", "9", "man",
+        "mdoc", "me", "tmac", "rg", "rb", "builder", "eye", "gemspec", "god", "jbuilder", "mspec",
+        "pluginspec", "podspec", "prawn", "rabl", "rake", "rbi", "rbuild", "rbw", "rbx", "ru", "ruby",
+        "thor", "watchr", "rsin", "sas", "scss", "te", "smt2", "smt", "z3", "sparql", "rq", "sqf", "hqf",
+        "cql", "mysql", "tab", "udf", "viw", "db2", "srt", "star", "stl", "ston", "svg", "swg", "swig",
+        "sage", "sagews", "sail", "sls", "sass", "scala", "kojo", "sbt", "sc", "scaml", "scenic", "scm",
+        "sld", "sps", "ss", "sci", "sce", "self", "sh", "bash", "bats", "command", "ksh", "shin", "tmux",
+        "tool", "zsh", "zsh-theme", "sh-session", "shen", "sieve", "sfv", "slang", "sl", "slim", "slint",
+        "cocci", "smali", "st", "tpl", "smithy", "smk", "snakefile", "sp", "sfd", "nut", "stan", "fun",
+        "sig", "sml", "bzl", "do", "ado", "doh", "ihlp", "mata", "matah", "sthlp", "styl", "sss", "svx",
+        "svelte", "sw", "rnw", "swift", "sv", "svh", "vh", "8xp", "8xptxt", "tlv", "tla", "toml", "tsp",
+        "tsv", "vcf", "tsx", "txl", "talon", "tcl", "adp", "sdc", "tclin", "tm", "xdc", "tcsh", "csh",
+        "tex", "aux", "bbx", "cbx", "dtx", "ins", "lbx", "ltx", "mkii", "mkiv", "mkvi", "sty", "toc",
+        "tea", "tftpl", "texinfo", "texi", "txi", "no", "TextGrid", "textile", "thrift", "toit", "tu",
+        "ttl", "twig", "tl", "ts", "cts", "mts", "typ", "upc", "anim", "asset", "mat", "meta", "prefab",
+        "unity", "uno", "uc", "uplc", "ur", "urs", "vba", "vbs", "vcl", "vhdl", "vhd", "vhf", "vhi",
+        "vho", "vhs", "vht", "vhw", "vala", "vapi", "vdf", "vtl", "vto", "veo", "vim", "vimrc", "vmb",
+        "snip", "snippet", "snippets", "vb", "vbhtml", "ctl", "Dsr", "volt", "vue", "vy", "wdl", "wgsl",
+        "mtl", "obj", "owl", "wast", "wat", "wit", "webidl", "vtt", "whiley", "mediawiki", "wiki",
+        "wikitext", "reg", "ws", "wlk", "wren", "xbm", "xpm", "x10", "xc", "xml", "adml", "admx", "ant",
+        "axaml", "axml", "builds", "ccproj", "ccxml", "clixml", "cproject", "cscfg", "csdef", "csproj", "ct",
+        "depproj", "dita", "ditamap", "ditaval", "dllconfig", "dotsettings", "filters", "fsproj", "fxml",
+        "glade", "gmx", "gpx", "grxml", "hzp", "iml", "ivy", "jelly", "jsproj", "kml", "launch", "mdpolicy",
+        "mjml", "mxml", "natvis", "ndproj", "nproj", "nuspec", "odd", "osm", "pkgproj", "proj", "props",
+        "ps1xml", "psc1", "pt", "qhelp", "rdf", "resx", "rss", "scxml", "sfproj", "shproj", "slnx", "srdf",
+        "storyboard", "sublime-snippet", "targets", "tml", "ui", "urdf", "ux", "vbproj", "vcxproj",
+        "vsixmanifest", "vssettings", "vstemplate", "vxml", "wixproj", "wsdl", "wsf", "wxi", "wxl", "wxs",
+        "x3d", "xacro", "xaml", "xib", "xlf", "xliff", "xmi", "xmldist", "xmp", "xproj", "xsd", "xspec",
+        "xul", "zcml", "stTheme", "tmCommand", "tmLanguage", "tmPreferences", "tmSnippet", "tmTheme",
+        "xsp-config", "xspmetadata", "xpl", "xproc", "xquery", "xq", "xql", "xqm", "xqy", "xs", "xslt",
+        "xsl", "xojo_code", "xojo_menu", "xojo_report", "xojo_script", "xojo_toolbar", "xojo_window", "xsh",
+        "xtend", "mir", "reek", "rviz", "sublime-syntax", "syntax", "yaml-tmlanguage", "yamlsed", "ymlmysql",
+        "yang", "yar", "yara", "yasnippet", "y", "yacc", "yul", "zap", "xzap", "zil", "mud", "zeek", "bro",
+        "zs", "zep", "zig", "zigzon", "zimpl", "zmpl", "zpl", "zmodel", "desktop", "desktopin", "service",
+        "dircolors", "ec", "eh", "edn", "fish", "hoon", "ics", "ical", "kv", "mrc", "mcfunction", "mu",
+        "nanorc", "nc", "ooc", "rst", "rest", "resttxt", "rsttxt", "sed", "templ", "wisp", "prg", "prw"
+    };
+
     public static string GetModeFromFile(string fileName)
     {
         var extension = Path.GetExtension(fileName).Replace(".", "");
@@ -208,5 +336,14 @@ public static class CodeEditorModeHelper
         }
 
         return "text";
+    }
+
+    public static bool IsValidExtension(string extension)
+    {
+        var extensionWithoutDot = extension[0] == '.'
+            ? extension.TrimStart('.')
+            : extension;
+
+        return ValidExtensions.Contains(extensionWithoutDot);
     }
 }

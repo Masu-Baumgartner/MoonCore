@@ -1,6 +1,63 @@
+@using MoonCore.Blazor.FlyonUi.Ace
+@using MoonCore.Blazor.FlyonUi.Alerts
+@using MoonCore.Blazor.FlyonUi.Components
+@using MoonCore.Blazor.FlyonUi.Toasts
+
+@inject AlertService AlertService
+@inject ToastService ToastService
+
+<div class="card card-body flex flex-row justify-between items-center p-2 mb-5">
+    <div class="flex items-center text-base-content">
+        <i class="icon-file-text text-lg ms-2 me-1.5"></i>
+        <span>@FileName</span>
+    </div>
+    <div>
+        <WButton OnClick="Save" CssClasses="btn btn-primary">Save</WButton>
+        <button @onclick="Close" class="btn btn-error">Close</button>
+    </div>
+</div>
+
+<CodeEditor @ref="Editor" InitialContent="@Content" OnConfigure="OnConfigure" />
+
 @code
 {
     [Parameter] public string Content { get; set; }
     [Parameter] public Func<string, Task> OnSave { get; set; }
     [Parameter] public Func<Task> OnClose { get; set; }
+    [Parameter] public string FileName { get; set; }
+
+    private CodeEditor Editor;
+
+    private void OnConfigure(CodeEditorOptions options)
+    {
+        options.Mode = $"ace/mode/{CodeEditorModeHelper.GetModeFromFile(FileName)}";
+    }
+
+    private async Task Save(WButton _)
+    {
+        var editedContent = await Editor.GetValue();
+        await OnSave.Invoke(editedContent);
+
+        await ToastService.Success("Successfully saved file");
+
+        // Update the "initial" content field so the
+        // unsaved changes popup won't trigger when closing after saving
+        Content = editedContent;
+    }
+
+    private async Task Close()
+    {
+        var editedContent = await Editor.GetValue();
+
+        if (editedContent != Content)
+        {
+            await AlertService.ConfirmDanger(
+                "Unsaved changes",
+                "You have unsaved changes to the file. You you really want to close the editor? Changes will be lost",
+                async () => await OnClose.Invoke()
+            );
+        }
+        else
+            await OnClose.Invoke();
+    }
 }
