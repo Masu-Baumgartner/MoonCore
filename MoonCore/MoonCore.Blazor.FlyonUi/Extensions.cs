@@ -33,6 +33,8 @@ public static class Extensions
         collection.AddScoped<CreateFileOperation>();
         collection.AddScoped<CreateFolderOperation>();
 
+        collection.AddScoped<ArchiveOperation>();
+
         collection.AddScoped<EditorOpenOperation>();
         collection.AddScoped<ImageOpenOperation>();
         collection.AddScoped<VideoOpenOperation>();

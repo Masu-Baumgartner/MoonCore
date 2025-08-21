@@ -12,7 +12,4 @@ public interface IFsAccess
     public Task Write(string path, Stream dataStream);
 
     public Task Delete(string path);
-
-    public Task UploadChunk(string path, int chunkId, long chunkSize, long totalSize, byte[] data);
-    public Task<byte[]> DownloadChunk(string path, int chunkId, long chunkSize);
 }

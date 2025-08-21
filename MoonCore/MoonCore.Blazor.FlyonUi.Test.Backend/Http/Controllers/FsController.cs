@@ -1,6 +1,9 @@
+using System.IO.Enumeration;
+using ICSharpCode.SharpZipLib.Zip;
 using Microsoft.AspNetCore.Mvc;
 using MoonCore.Blazor.FlyonUi.Test.Shared.Http.Request;
 using MoonCore.Blazor.FlyonUi.Test.Shared.Http.Responses;
+using MoonCore.Helpers;
 
 namespace MoonCore.Blazor.FlyonUi.Test.Backend.Http.Controllers;
 
@@ -38,7 +41,7 @@ public class FsController : Controller
     public ActionResult<FsEntryResponse[]> List(string path)
     {
         var entries = Directory.GetFileSystemEntries(HandleRawPath(path));
-        
+
         var result = entries.Select(entry =>
         {
             var fi = new FileInfo(entry);
@@ -107,34 +110,6 @@ public class FsController : Controller
         return Ok();
     }
 
-    [HttpPost("upload")]
-    public async Task<IActionResult> UploadChunk(
-        [FromQuery] int chunkId,
-        [FromQuery] long chunkSize,
-        [FromQuery] long fileSize,
-        [FromQuery] string fileName,
-        IFormFile file)
-    {
-        var savePath = HandleRawPath(fileName);
-        Directory.CreateDirectory(Path.GetDirectoryName(savePath)!);
-
-        await using var fs = new FileStream(savePath, chunkId == 0 ? FileMode.Create : FileMode.Append);
-        await file.CopyToAsync(fs);
-
-        return Ok();
-    }
-
-    [HttpGet("download-chunk")]
-    public IActionResult DownloadChunk(string path, int chunkId, long chunkSize)
-    {
-        var fullPath = HandleRawPath(path);
-        using var fs = new FileStream(fullPath, FileMode.Open, FileAccess.Read);
-        var buffer = new byte[chunkSize];
-        fs.Seek(chunkId * chunkSize, SeekOrigin.Begin);
-        var bytesRead = fs.Read(buffer, 0, buffer.Length);
-        return File(buffer.Take(bytesRead).ToArray(), "application/octet-stream");
-    }
-
     [HttpDelete("delete")]
     public IActionResult Delete(string path)
     {
@@ -166,5 +141,81 @@ public class FsController : Controller
         fs.Close();
 
         return Ok();
+    }
+    
+    [HttpPost("compress")]
+    public async Task<IResult> Compress([FromBody] FsCompressRequest request)
+    {
+        var destination = HandleRawPath(request.Destination);
+        var rootPath = HandleRawPath(request.Root);
+        var files = request.Files.Select(x => Path.Combine(rootPath, x));
+
+        switch (request.Identifier)
+        {
+            case "zip":
+                await CompressZip(destination, files, rootPath);
+                break;
+            
+            default:
+                return Results.Problem("Invalid compress identifier provided", statusCode: 400);
+        }
+
+        return Results.Ok();
+    }
+
+    private async Task CompressZip(string destination, IEnumerable<string> files, string root)
+    {
+        await using var fs = System.IO.File.Open(
+            destination,
+            FileMode.Create,
+            FileAccess.ReadWrite,
+            FileShare.Read
+        );
+
+        await using var zipStream = new ZipOutputStream(fs)
+        {
+            IsStreamOwner = false
+        };
+
+        foreach (var file in files)
+        {
+            await CompressZipInternal(zipStream, file, root);
+        }
+
+        await zipStream.FlushAsync();
+        await fs.FlushAsync();
+        
+        zipStream.Close();
+        fs.Close();
+    }
+
+    private async Task CompressZipInternal(ZipOutputStream stream, string file, string root)
+    {
+        if (Directory.Exists(file)) // Check if it's a directory
+        {
+            foreach (var directory in Directory.EnumerateFileSystemEntries(file))
+                await CompressZipInternal(stream, directory, root);
+        }
+        else
+        {
+            var fi = new FileInfo(file);
+            
+            if(!fi.Exists)
+                return;
+
+            var relativePath = Formatter.ReplaceStart(file, root, "");
+
+            await stream.PutNextEntryAsync(new ZipEntry(relativePath)
+            {
+                Size = fi.Length,
+                DateTime = fi.LastWriteTime
+            });
+
+            await using var fs = fi.Open(FileMode.Open, FileAccess.Read, FileShare.ReadWrite);
+            await fs.CopyToAsync(stream);
+            fs.Close();
+
+            await stream.CloseEntryAsync(CancellationToken.None);
+        }
     }
 }

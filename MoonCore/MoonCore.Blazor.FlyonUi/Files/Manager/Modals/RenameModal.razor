@@ -30,8 +30,16 @@
     [Parameter] public string OldName { get; set; } = "";
     [Parameter] public required Func<string, Task> OnSubmit { get; set; }
 
-    private FormData Form = new();
+    private FormData Form;
     private HandleForm HandleForm;
+
+    protected override void OnInitialized()
+    {
+        Form = new()
+        {
+            Name = OldName
+        };
+    }
 
     record FormData
     {
