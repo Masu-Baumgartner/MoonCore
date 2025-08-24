@@ -19,7 +19,6 @@ public static class Extensions
         collection.AddScoped<AlertService>();
         collection.AddScoped<ToastService>();
         collection.AddScoped<CodeEditorService>();
-        collection.AddScoped<ChunkedFileTransferService>();
         collection.AddScoped<DropHandlerService>();
         collection.AddScoped<DownloadService>();
         collection.AddScoped<GlobalErrorService>();
@@ -33,5 +32,11 @@ public static class Extensions
         collection.AddScoped<RenameOperation>();
         collection.AddScoped<CreateFileOperation>();
         collection.AddScoped<CreateFolderOperation>();
+
+        collection.AddScoped<ArchiveOperation>();
+
+        collection.AddScoped<EditorOpenOperation>();
+        collection.AddScoped<ImageOpenOperation>();
+        collection.AddScoped<VideoOpenOperation>();
     }
 }

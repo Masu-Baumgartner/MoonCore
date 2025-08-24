@@ -28,6 +28,7 @@
 
     <ItemGroup>
         <PackageReference Include="Microsoft.AspNetCore.Components.Web" Version="9.0.6"/>
+        <PackageReference Include="MimeTypesMap" Version="1.0.9" />
     </ItemGroup>
 
     <ItemGroup>

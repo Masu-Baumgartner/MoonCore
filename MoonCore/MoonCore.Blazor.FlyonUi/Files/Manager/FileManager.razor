@@ -5,63 +5,70 @@
 @using MoonCore.Blazor.FlyonUi.Toasts
 @using MoonCore.Blazor.FlyonUi.Components
 @using MoonCore.Blazor.FlyonUi.Files.Manager.Abstractions
-@using MoonCore.Helpers
 
 @inject ToastService ToastService
 @inject ILogger<FileManager> Logger
 @inject DropHandlerService DropHandlerService
-@inject ChunkedFileTransferService FileTransferService
 
 @inject IServiceProvider ServiceProvider
 
 @implements IAsyncDisposable
 @implements IFileManager
 
-<FileManagerHeader CurrentPath="@CurrentPath"
-                   OnBreadcrumbClick="SetPath"
-                   OnHomeClick="@(() => SetPath("/"))"
-                   OnRefreshClick="() => FileView.Refresh()"
-                   OnFileSelected="HandleFileUpload"
-                   ShowSelectionItems="@(SelectedEntries.Length > 0)"
-                   SelectionOperations="MultiFsOperations"
-                   OnSelectionClicked="RunSelectionOperation"
-                   ToolbarOperations="ToolbarOperations"
-                   OnToolbarClicked="RunToolbarOperation"
-                   EnableUpload="EnableUpload"/>
+@if (ShowOpenWindow)
+{
+    <div>
+        @OpenWindow
+    </div>
+}
+else
+{
+    <FileManagerHeader CurrentPath="@CurrentPath"
+                       OnBreadcrumbClick="SetPath"
+                       OnHomeClick="@(() => SetPath("/"))"
+                       OnRefreshClick="() => FileView.Refresh()"
+                       OnFileSelected="HandleFileUpload"
+                       ShowSelectionItems="@(SelectedEntries.Length > 0)"
+                       SelectionOperations="MultiFsOperations"
+                       OnSelectionClicked="RunSelectionOperation"
+                       ToolbarOperations="ToolbarOperations"
+                       OnToolbarClicked="RunToolbarOperation"
+                       EnableUpload="EnableUpload"/>
+    
+    <div class="mt-5">
+        <FileView @ref="FileView" Load="Load" ShowDate="true" ShowSize="true" OnClick="OnClick"
+                  CustomClickLink="CustomClickLink" OnContextMenu="OnContextMenu">
+            <ChildContent>
+                <DataTableRow TItem="FsEntry" Index="int.MinValue">
+                    <Template>
+                        @if (CurrentPath != "/")
+                        {
+                            <td @onclick="GoUp" scope="row" colspan="99999"
+                                class="py-1.5 px-3 text-left font-normal cursor-pointer">
+                                <div class="flex flex-row items-center">
+                                    <i class="icon-folder-up text-accent text-2xl me-5"></i>
+                                    <div>Go up</div>
+                                </div>
+                            </td>
+                        }
+                    </Template>
+                </DataTableRow>
 
-<div class="mt-5">
-    <FileView @ref="FileView" Load="Load" ShowDate="true" ShowSize="true" OnClick="OnClick"
-              CustomClickLink="CustomClickLink" OnContextMenu="OnContextMenu">
-        <ChildContent>
-            <DataTableRow TItem="FsEntry" Index="int.MinValue">
-                <Template>
-                    @if (CurrentPath != "/")
-                    {
-                        <td @onclick="GoUp" scope="row" colspan="99999"
-                            class="py-1.5 px-3 text-left font-normal cursor-pointer">
-                            <div class="flex flex-row items-center">
-                                <i class="icon-folder-up text-accent text-2xl me-5"></i>
-                                <div>Go up</div>
-                            </div>
-                        </td>
-                    }
-                </Template>
-            </DataTableRow>
-
-            <Selection TItem="FsEntry" OnSelectionChanged="OnSelectionChanged"/>
-            <DataTableColumn TItem="FsEntry" Index="int.MaxValue">
-                <ColumnTemplate>
-                    <div class="flex justify-end me-1.5">
-                        <a href="#" @onclick="e => OnContextMenu(e.ClientX - 215, e.ClientY, context)"
-                           @onclick:preventDefault @onclick:stopPropagation>
-                            <i class="icon-ellipsis text-lg"></i>
-                        </a>
-                    </div>
-                </ColumnTemplate>
-            </DataTableColumn>
-        </ChildContent>
-    </FileView>
-</div>
+                <Selection TItem="FsEntry" OnSelectionChanged="OnSelectionChanged"/>
+                <DataTableColumn TItem="FsEntry" Index="int.MaxValue">
+                    <ColumnTemplate>
+                        <div class="flex justify-end me-1.5">
+                            <a href="#" @onclick="e => OnContextMenu(e.ClientX - 215, e.ClientY, context)"
+                               @onclick:preventDefault @onclick:stopPropagation>
+                                <i class="icon-ellipsis text-lg"></i>
+                            </a>
+                        </div>
+                    </ColumnTemplate>
+                </DataTableColumn>
+            </ChildContent>
+        </FileView>
+    </div>
+}
 
 <ContextMenu @ref="ContextMenu">
     @if (ContextEntry != null)
@@ -88,44 +95,42 @@
 {
 
     [Parameter] public IFsAccess FsAccess { get; set; }
-    [Parameter] public long UploadLimit { get; set; } = -1;
     [Parameter] public required Action<FileManagerOptions> OnConfigure { get; set; }
     [Parameter] public bool EnableUpload { get; set; } = true;
-    [Parameter] public long TransferLimit { get; set; } = ByteConverter.FromMegaBytes(20).Bytes;
-    
-    [Parameter]
-    public long TransferChunkSize { get; set; } = ByteConverter.FromMegaBytes(20).Bytes;
 
     public FileView FileView { get; private set; }
 
     private ContextMenu ContextMenu;
 
-    private IFileOpenOperation[] OpenOperations;
+    private IFsOpenOperation[] OpenOperations;
     private ISingleFsOperation[] SingleFsOperations;
     private IMultiFsOperation[] MultiFsOperations;
     private IToolbarOperation[] ToolbarOperations;
 
+    private FileManagerOptions Options;
+
     protected override async Task OnInitializedAsync()
     {
-        var configuration = new FileManagerOptions(ServiceProvider);
-        OnConfigure.Invoke(configuration);
+        Options = new FileManagerOptions(ServiceProvider);
+        OnConfigure.Invoke(Options);
         
-        SingleFsOperations = configuration.SingleFsOperations
+        SingleFsOperations = Options.SingleFsOperations
             .Where(x => x.CheckCompatability(FsAccess, this))
             .OrderByDescending(x => x.Order)
             .ToArray();
 
-        MultiFsOperations = configuration.MultiFsOperations
+        MultiFsOperations = Options.MultiFsOperations
             .Where(x => x.CheckCompatability(FsAccess, this))
             .OrderByDescending(x => x.Order)
             .ToArray();
 
-        ToolbarOperations = configuration.ToolbarOperations
+        ToolbarOperations = Options.ToolbarOperations
             .Where(x => x.CheckCompatability(FsAccess, this))
             .OrderByDescending(x => x.Order)
             .ToArray();
 
-        OpenOperations = configuration.OpenOperations
+        OpenOperations = Options.OpenOperations
+            .Where(x => x.CheckCompatability(FsAccess, this))
             .OrderByDescending(x => x.Order)
             .ToArray();
 
@@ -150,9 +155,4 @@
 
     public Task Refresh()
         => FileView.Refresh();
-
-    public Task CloseOpenScreen()
-    {
-        throw new NotImplementedException();
-    }
 }

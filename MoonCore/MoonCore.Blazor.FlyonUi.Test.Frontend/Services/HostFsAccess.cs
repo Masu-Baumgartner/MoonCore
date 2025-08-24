@@ -2,10 +2,11 @@ using System.Net.Http.Json;
 using MoonCore.Blazor.FlyonUi.Files;
 using MoonCore.Blazor.FlyonUi.Files.Manager;
 using MoonCore.Blazor.FlyonUi.Files.Manager.Abstractions;
+using MoonCore.Blazor.FlyonUi.Test.Shared.Http.Request;
 
 namespace MoonCore.Blazor.FlyonUi.Test.Frontend.Services;
 
-public class HostFsAccess : IFsAccess, IDownloadUrlAccess
+public class HostFsAccess : IFsAccess, IDownloadUrlAccess, ICombineAccess, IArchiveAccess
 {
     private readonly HttpClient Http;
 
@@ -49,25 +50,56 @@ public class HostFsAccess : IFsAccess, IDownloadUrlAccess
         await Http.PostAsync($"api/fs/upload/single?filePath={path.TrimStart('/')}", content);
     }
 
-    public async Task UploadChunk(string path, int chunkId, long chunkSize, long totalSize, byte[] data)
-    {
-        using var content = new MultipartFormDataContent
-        {
-            { new ByteArrayContent(data), "file", "file" }
-        };
-        await Http.PostAsync(
-            $"api/fs/upload?chunkId={chunkId}&chunkSize={chunkSize}&fileSize={totalSize}&fileName={path.TrimStart('/')}",
-            content
-        );
-    }
-
-    public Task<byte[]> DownloadChunk(string path, int chunkId, long chunkSize)
-        => Http.GetByteArrayAsync(
-            $"api/fs/download-chunk?chunkId={chunkId}&chunkSize={chunkSize}&path={path.TrimStart('/')}");
-
     public Task<string> GetFileUrl(string path)
         => Task.FromResult($"{Http.BaseAddress}api/download/file?path={path}");
 
     public Task<string> GetFolderUrl(string path)
         => Task.FromResult($"{Http.BaseAddress}api/download/folder?path={path}");
+
+    public async Task Combine(string destination, string[] files)
+    {
+        await Http.PostAsync("api/fs/combine", JsonContent.Create(new FsCombineRequest()
+        {
+            Destination = destination,
+            Files = files
+        }));
+    }
+
+    public ArchiveFormat[] ArchiveFormats =>
+    [
+        new()
+        {
+            DisplayName = "ZIP Archive",
+            Identifier = "zip",
+            Extensions = ["zip"]
+        },
+        new()
+        {
+            DisplayName = "Tar-Gz Archive",
+            Identifier = "tar.gz",
+            Extensions = ["tar.gz"]
+        }
+    ];
+
+    public async Task Archive(
+        string path,
+        ArchiveFormat format,
+        string archiveRootPath,
+        FsEntry[] files,
+        Func<string, Task>? onProgress = null
+    )
+    {
+        await Http.PostAsync("api/fs/compress", JsonContent.Create(new FsCompressRequest()
+        {
+            Destination = path,
+            Identifier = format.Identifier,
+            Files = files.Select(x => x.Name).ToArray(),
+            Root = archiveRootPath
+        }));
+    }
+
+    public Task Unarchive(string path, ArchiveFormat format, string archiveRootPath, Func<string, Task>? onProgress = null)
+    {
+        throw new NotImplementedException();
+    }
 }

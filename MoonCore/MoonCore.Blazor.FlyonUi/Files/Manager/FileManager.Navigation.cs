@@ -25,6 +25,8 @@ public partial class FileManager
             await FileView.Refresh();
             await InvokeAsync(StateHasChanged);
         }
+        else
+            await Open(fsEntry);
     }
     
     private async Task GoUp()

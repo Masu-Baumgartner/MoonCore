@@ -1,0 +1,25 @@
+﻿<div class="card card-body flex flex-row justify-between items-center p-2 mb-5">
+    <div class="flex items-center text-base-content">
+        <i class="icon-film text-lg ms-2 me-1.5"></i>
+        <span>@FileName</span>
+    </div>
+    <div>
+        <button @onclick="Close" class="btn btn-error">Close</button>
+    </div>
+</div>
+
+<div class="card card-body p-1.5 w-full">
+    <video class="w-full h-full" controls>
+        <source src="@Url" type="video/mp4">
+        Your browser does not support HTML video.
+    </video>
+</div>
+
+@code
+{
+    [Parameter] public string Url { get; set; }
+    [Parameter] public Func<Task> OnClose { get; set; }
+    [Parameter] public string FileName { get; set; }
+
+    private async Task Close() => await OnClose.Invoke();
+}
