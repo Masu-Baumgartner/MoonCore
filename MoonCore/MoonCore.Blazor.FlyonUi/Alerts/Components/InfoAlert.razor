@@ -1,22 +1,29 @@
+@using MoonCore.Helpers
 @inherits MoonCore.Blazor.FlyonUi.Modals.Components.BaseModal
 
-<div class="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-info">
-    <i class="icon-info text-info-content text-xl"></i>
-</div>
-<div class="mt-3 text-center sm:mt-5">
-    <h3 class="text-lg font-semibold leading-6 text-base-content">
-        @Title
-    </h3>
-    <div class="mt-2">
-        <p class="text-sm text-base-content/80">
-            @Text
+<div class="flex flex-col gap-6 p-5">
+    <div class="flex justify-center">
+        <div class="avatar avatar-placeholder border-info/30 rounded-full border p-2.5">
+            <div class="bg-info flex size-12 items-center justify-center rounded-full">
+                <span class="icon-info text-2xl text-info-content"></span>
+            </div>
+        </div>
+    </div>
+
+    <div class="space-y-4 text-center">
+        <h3 class="text-base-content text-2xl font-semibold">
+            @Title
+        </h3>
+        <p class="text-base-content/80">
+            @Formatter.FormatLineBreaks(Text)
         </p>
     </div>
-</div>
-<div class="mt-5 sm:mt-6 flex justify-center">
-    <button @onclick="Hide" type="button" class="btn btn-primary">
-        Got it
-    </button>
+
+    <div class="flex justify-center">
+        <button @onclick="Hide" type="button" class="btn btn-primary">
+            Got it
+        </button>
+    </div>
 </div>
 
 @code

@@ -1,4 +1,3 @@
-using System.Security.Claims;
 using System.Text;
 using Microsoft.IdentityModel.Tokens;
 using MoonCore.Blazor.FlyonUi.Test.Backend.Configuration;

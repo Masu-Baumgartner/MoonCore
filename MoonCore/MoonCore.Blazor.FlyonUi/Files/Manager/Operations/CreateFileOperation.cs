@@ -8,8 +8,8 @@ namespace MoonCore.Blazor.FlyonUi.Files.Manager.Operations;
 public class CreateFileOperation : IToolbarOperation
 {
     public string Name => "File";
-    public string Icon => "icon-file-plus-2";
-    public string ToolbarCss => "btn-outline btn-primary";
+    public string Icon => "icon-file";
+    public string ToolbarCss => "btn-accent";
     public int Order => 1;
 
     private readonly ModalService ModalService;

@@ -1,28 +1,35 @@
 @using System.ComponentModel.DataAnnotations
 @using MoonCore.Blazor.FlyonUi.Components
+
 @inherits MoonCore.Blazor.FlyonUi.Modals.Components.BaseModal
 
-<HandleForm @ref="HandleForm" Model="Form" OnValidSubmit="HandleSubmit">
-    <div class="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-primary">
-        <i class="icon-folder-plus text-primary-content text-xl"></i>
-    </div>
-    <div class="mt-3 text-center sm:mt-5">
-        <h3 class="text-lg font-semibold leading-6 text-base-content" id="modal-title">
-            @Title
-        </h3>
-        <div class="mt-2">
-            <input class="input" @bind="Form.Name" placeholder="Enter a name"/>
+<div class="flex items-center gap-4">
+    <div class="avatar avatar-placeholder max-sm:hidden">
+        <div class="border-base-content/20 rounded-box w-13 border-1">
+            <span class="icon-folder text-xl"></span>
         </div>
     </div>
-    <div class="mt-5 sm:mt-6 flex justify-center">
-        <button @onclick="Hide" type="button" class="btn btn-secondary me-2">
-            Cancel
-        </button>
-        <WButton IsWorking="HandleForm.IsSubmitting" Type="submit">
-            Create
-        </WButton>
+    <div class="space-y-1">
+        <h3 class="text-base-content text-2xl font-semibold">Create directory</h3>
+        <p class="text-base-content/80">Create a new directory at the current location</p>
     </div>
-</HandleForm>
+</div>
+<div class="mt-5">
+    <HandleForm @ref="HandleForm" Model="Form" OnValidSubmit="HandleSubmit">
+        <div class="mt-2">
+            <label class="label-text">Directory name</label>
+            <input class="input" @bind="Form.Name" placeholder="Enter a name"/>
+        </div>
+    </HandleForm>
+</div>
+<div class="mt-5 flex justify-end">
+    <button @onclick="Hide" type="button" class="btn btn-secondary me-2">
+        Cancel
+    </button>
+    <WButton OnClick="_ => HandleForm.Submit()">
+        Create
+    </WButton>
+</div>
 
 @code
 {

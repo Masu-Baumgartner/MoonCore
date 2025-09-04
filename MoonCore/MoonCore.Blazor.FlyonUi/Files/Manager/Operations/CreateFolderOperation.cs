@@ -8,8 +8,8 @@ namespace MoonCore.Blazor.FlyonUi.Files.Manager.Operations;
 public class CreateFolderOperation : IToolbarOperation
 {
     public string Name => "Folder";
-    public string Icon => "icon-folder-plus";
-    public string ToolbarCss => "btn-outline btn-primary";
+    public string Icon => "icon-folder";
+    public string ToolbarCss => "btn-accent";
     public int Order => 0;
 
     private readonly ModalService ModalService;
