@@ -5,27 +5,31 @@
 
 @if (Modals.Count > 0)
 {
-    <div @onclick="HandleOutOfFocusClick"
-         class="overlay-backdrop transition duration-300 fixed inset-0 bg-base-300/50 overflow-y-auto z-50"></div>
-
     var i = 0;
-    
+
     foreach (var modal in Modals)
     {
-        i++;
-        
-        <div class="overlay modal transition-all transform modal-middle z-50 open opened opacity-100" role="dialog"
-             tabindex="-1" aria-overlay="true" style="z-index: @(i + 100)">
+        <div @onclick="HandleOutOfFocusClick"
+             class="overlay-backdrop transition duration-300 fixed inset-0 bg-base-300/50 overflow-y-auto"
+             style="z-index: @(i + 100)">
+        </div>
+
+        <div class="overlay modal transition-all transform modal-middle z-50 open opened opacity-100"
+             role="dialog"
+             tabindex="-1"
+             aria-overlay="true"
+             style="z-index: @(i + 101)">
             <div class="modal-dialog overlay-open:opacity-100 overlay-open:duration-50 @modal.Size">
                 <div class="modal-content overflow-y-auto">
                     @modal.Component
                 </div>
             </div>
         </div>
-    }
         
-    
-    
+        i += 2;
+    }
+
+
     @* class="sm:max-w-md sm:max-w-lg sm:max-w-xl sm:max-w-2xl sm:max-w-3xl sm:max-w-4xl sm:max-w-5xl sm:max-w-6xl sm:max-w-7xl" *@
 }
 
@@ -53,7 +57,7 @@
 
             onConfigure?.Invoke(buildAttr);
         });
-        
+
         Modals.Add(item);
         await InvokeAsync(StateHasChanged);
 
