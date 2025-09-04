@@ -46,7 +46,7 @@
 
             @if (SearchField != null)
             {
-                <div class="bg-base-200 sticky top-0 mb-2 pt-3">
+                <div class="bg-base-200 sticky top-0 py-2 mx-2">
                     <input @oninput="OnSearchInput" value="@SearchTerm"
                            type="text" placeholder="Search..."
                            class="input">
@@ -62,11 +62,25 @@
                 <div @onclick="() => Select(item)"
                      tabindex="0"
                      class="cursor-pointer advance-select-option selected:select-active @(item!.Equals(Value) ? "selected" : "")">
-                    <div class="flex items-center w-full">
-                        <span>
-                            @DisplayField.Invoke(item)
-                        </span>
-                    </div>
+                    @if (item.Equals(Value))
+                    {
+                        <div class="flex flex-row justify-between items-center w-full">
+                            <div>
+                                @DisplayField.Invoke(item)
+                            </div>
+                            <div>
+                                <i class="icon-check text-base text-primary-content"></i>
+                            </div>
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="flex flex-row justify-start items-center w-full">
+                            <div>
+                                @DisplayField.Invoke(item)
+                            </div>
+                        </div>
+                    }
                 </div>
             }
         </div>

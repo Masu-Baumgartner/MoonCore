@@ -92,10 +92,6 @@
     .input {
         @apply !border-base-content/20 border-2 ring-0! outline-0! focus:border-primary! focus-within:border-primary! bg-base-200/50;
     }
-    
-    .advance-select-toggle {
-        @apply !border-base-content/20 border-2 ring-0! outline-0! focus:border-primary! focus-within:border-primary! bg-base-200/50;
-    }
 
     .select {
         @apply !border-base-content/20 border-2 ring-0! outline-0! focus:border-primary! focus-within:border-primary! bg-base-200/50;
@@ -113,5 +109,21 @@
     
     .dropdown-menu {
         @apply bg-base-150;
+    }
+
+    .advance-select-menu {
+        @apply !border-base-content/20 border-2 ring-0! outline-0! bg-base-200/50 !px-0;
+    }
+
+    .advance-select-option {
+        @apply !rounded-none hover:!bg-primary;
+    }
+
+    .advance-select-option.selected {
+        @apply !bg-primary !text-primary-content;
+    }
+
+    .advance-select-toggle {
+        @apply !border-base-content/20 border-2 ring-0! outline-0! focus:border-primary! focus-within:border-primary! bg-base-200/50;
     }
 }
