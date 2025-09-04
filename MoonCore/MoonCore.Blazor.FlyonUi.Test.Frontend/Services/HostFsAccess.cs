@@ -1,4 +1,5 @@
 using System.Net.Http.Json;
+using System.Text.Encodings.Web;
 using MoonCore.Blazor.FlyonUi.Files;
 using MoonCore.Blazor.FlyonUi.Files.Manager;
 using MoonCore.Blazor.FlyonUi.Files.Manager.Abstractions;
@@ -38,8 +39,11 @@ public class HostFsAccess : IFsAccess, IDownloadUrlAccess, ICombineAccess, IArch
         await onHandleData(stream);
     }
 
-    public Task Delete(string path)
-        => Http.DeleteAsync($"api/fs/delete?path={path}");
+    public async Task Delete(string path)
+    {
+        var encodedPath = UrlEncoder.Default.Encode(path);
+        await Http.DeleteAsync($"api/fs/delete?path={encodedPath}");
+    }
 
     public async Task Write(string path, Stream dataStream)
     {
@@ -67,18 +71,16 @@ public class HostFsAccess : IFsAccess, IDownloadUrlAccess, ICombineAccess, IArch
 
     public ArchiveFormat[] ArchiveFormats =>
     [
-        new()
-        {
-            DisplayName = "ZIP Archive",
-            Identifier = "zip",
-            Extensions = ["zip"]
-        },
-        new()
-        {
-            DisplayName = "Tar-Gz Archive",
-            Identifier = "tar.gz",
-            Extensions = ["tar.gz"]
-        }
+        new(
+            displayName: "ZIP Archive",
+            identifier: "zip",
+            extensions: ["zip"]
+        ),
+        new(
+            displayName: "Tar-Gz Archive",
+            identifier: "tar.gz",
+            extensions: ["tar.gz"]
+        )
     ];
 
     public async Task Archive(
@@ -98,7 +100,8 @@ public class HostFsAccess : IFsAccess, IDownloadUrlAccess, ICombineAccess, IArch
         }));
     }
 
-    public Task Unarchive(string path, ArchiveFormat format, string archiveRootPath, Func<string, Task>? onProgress = null)
+    public Task Unarchive(string path, ArchiveFormat format, string archiveRootPath,
+        Func<string, Task>? onProgress = null)
     {
         throw new NotImplementedException();
     }

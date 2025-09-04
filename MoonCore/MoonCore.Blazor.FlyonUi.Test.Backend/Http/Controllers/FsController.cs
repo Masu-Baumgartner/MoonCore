@@ -111,7 +111,7 @@ public class FsController : Controller
     }
 
     [HttpDelete("delete")]
-    public IActionResult Delete(string path)
+    public IActionResult Delete([FromQuery] string path)
     {
         var pathSafe = HandleRawPath(path);
         if (System.IO.File.Exists(pathSafe))

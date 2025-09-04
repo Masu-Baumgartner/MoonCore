@@ -67,6 +67,8 @@ public class ArchiveOperation : IMultiFsOperation
                             Logger.LogError(e, "An error occured while archiving");
                             await ToastService.Error("An unhandled error occured while creating archive");
                         }
+
+                        await fileManager.Refresh();
                     }
                 );
             };
