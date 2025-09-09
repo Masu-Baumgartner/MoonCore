@@ -18,30 +18,33 @@
 }
 else
 {
-    <div>
-        @if (ErrorMessages.Count == 1)
-        {
-            <div class="alert alert-error flex items-center gap-4 text-sm mb-5" role="alert">
-                <i class="icon-triangle-alert shrink-0 text-lg"></i>
-                <p>@ErrorMessages[0]</p>
-            </div>
-        }
-        else if (ErrorMessages.Count > 1)
-        {
-            <div class="alert alert-error flex items-start gap-4 mb-3">
-                <span class="icon-triangle-alert text-lg"></span>
-                <div class="flex flex-col gap-1">
-                    <h5 class="text-base font-semibold">Error(s) occured while processing your data</h5>
-                    <ul class="mt-1.5 list-inside list-disc text-sm">
-                        @foreach (var message in ErrorMessages)
-                        {
-                            <li>@message</li>
-                        }
-                    </ul>
+    if (ErrorMessages.Count > 0)
+    {
+        <div>
+            @if (ErrorMessages.Count == 1)
+            {
+                <div class="alert alert-error flex items-center gap-4 text-sm mb-5" role="alert">
+                    <i class="icon-triangle-alert shrink-0 text-lg"></i>
+                    <p>@ErrorMessages[0]</p>
                 </div>
-            </div>
-        }
-    </div>
+            }
+            else if (ErrorMessages.Count > 1)
+            {
+                <div class="alert alert-error flex items-start gap-4 mb-3">
+                    <span class="icon-triangle-alert text-lg"></span>
+                    <div class="flex flex-col gap-1">
+                        <h5 class="text-base font-semibold">Error(s) occured while processing your data</h5>
+                        <ul class="mt-1.5 list-inside list-disc text-sm">
+                            @foreach (var message in ErrorMessages)
+                            {
+                                <li>@message</li>
+                            }
+                        </ul>
+                    </div>
+                </div>
+            }
+        </div>
+    }
 
     <form action="#" @onsubmit="Submit" @onsubmit:preventDefault>
         @ChildContent.Invoke(this)
