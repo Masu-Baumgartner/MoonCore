@@ -1,0 +1,65 @@
+﻿@page "/dtt"
+@using MoonCore.Blazor.FlyonUi.Components
+@using MoonCore.Blazor.FlyonUi.Grid
+@using MoonCore.Blazor.FlyonUi.Grid.Columns
+@using MoonCore.Blazor.FlyonUi.Test.Shared.Http.Responses
+@using MoonCore.Blazor.FlyonUi.Toasts
+@using MoonCore.Models
+
+@inject HttpClient HttpClient
+@inject ToastService ToastService
+
+<div class="mb-5">
+    @SelectedItems.Count
+</div>
+
+<DataGrid TGridItem="DemoDataModel" ItemsProvider="ItemsProvider" EnablePagination="true" EnableFiltering="true"
+          EnableLiveFiltering="true">
+    <SelectColumn Selection="SelectedItems"
+                  OnSelectionChanged="Callback"/>
+
+    <PropertyColumn Field="x => x.Id" Sortable="true"/>
+    <PropertyColumn Field="x => x.Text" Sortable="true"/>
+    <PropertyColumn Field="x => x.Bool"/>
+    <PropertyColumn Field="x => x.Number"/>
+</DataGrid>
+
+@code
+{
+    private List<DemoDataModel> SelectedItems = new();
+
+    private async Task Callback()
+        => await InvokeAsync(StateHasChanged);
+
+    private async Task<DataGridItemResult<DemoDataModel>> ItemsProvider(DataGridItemRequest request)
+    {
+        await Task.Delay(500);
+
+        var url = $"/api/query?startIndex={request.StartIndex}&count={request.Count}";
+
+        if (!string.IsNullOrEmpty(request.SortColumn))
+        {
+            var orderByDir = request.SortDirection switch
+            {
+                SortState.None => "asc",
+                SortState.Ascending => "asc",
+                SortState.Descending => "desc"
+            };
+
+            url += $"&orderBy={request.SortColumn}&orderByDir={orderByDir}";
+        }
+
+        if (!string.IsNullOrEmpty(request.Filter))
+            url += $"&filter={request.Filter}";
+
+        var countedItems = await HttpClient.GetFromJsonAsync<CountedData<DemoDataModel>>(
+            url
+        );
+
+        return new DataGridItemResult<DemoDataModel>()
+        {
+            Items = countedItems!.Items,
+            TotalCount = countedItems.TotalCount
+        };
+    }
+}

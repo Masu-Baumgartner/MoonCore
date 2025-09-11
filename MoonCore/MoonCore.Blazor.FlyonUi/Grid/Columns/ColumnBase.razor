@@ -1,0 +1,43 @@
+﻿@using Microsoft.AspNetCore.Components.Rendering
+@typeparam TGridItem
+
+@code
+{
+    [Parameter] public string? HeaderCss { get; set; }
+    [Parameter] public string? Title { get; set; }
+    
+    private void RenderDefaultHeader(RenderTreeBuilder __builder)
+    {
+        <th scope="col" class="@HeaderCss">
+            <div class="flex items-center">
+                <span class="me-1">
+                    @Title
+                </span>
+                @if (Sortable)
+                {
+                    if (SortState == SortState.None)
+                    {
+                        <a href="#" @onclick:preventDefault
+                           @onclick="() => Parent.SetColumnSorting(this, SortState.Ascending)">
+                            <i class="icon-arrow-down-up text-xs"></i>
+                        </a>
+                    }
+                    else if (SortState == SortState.Ascending)
+                    {
+                        <a href="#" @onclick:preventDefault
+                           @onclick="() => Parent.SetColumnSorting(this, SortState.Descending)">
+                            <i class="icon-arrow-up-narrow-wide text-xs"></i>
+                        </a>
+                    }
+                    else if (SortState == SortState.Descending)
+                    {
+                        <a href="#" @onclick:preventDefault
+                           @onclick="() => Parent.SetColumnSorting(this, SortState.Ascending)">
+                            <i class="icon-arrow-down-wide-narrow text-xs"></i>
+                        </a>
+                    }
+                }
+            </div>
+        </th>
+    }
+}

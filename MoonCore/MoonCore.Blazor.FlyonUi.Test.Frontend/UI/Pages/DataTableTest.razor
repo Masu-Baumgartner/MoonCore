@@ -1,0 +1,202 @@
+﻿@page "/datatabletest"
+@using MoonCore.Blazor.FlyonUi.Components
+@using MoonCore.Blazor.FlyonUi.Test.Shared.Http.Responses
+@using MoonCore.Models
+
+@inject HttpClient HttpClient
+
+<div class="flex flex-row justify-between items-center mb-3">
+  <div>
+  </div>
+  @if (RealtimeSearch)
+  {
+    <form class="flex flex-row" @onsubmit="_ => TriggerSearch()">
+      <div class="join max-w-sm">
+        <input @oninput="e => TriggerSearch(e)" class="input join-item" type="text" placeholder="Search..."/>
+        <button type="submit" class="btn btn-square btn-primary join-item">
+          <i class="icon-search"></i>
+        </button>
+      </div>
+    </form>
+  }
+  else
+  {
+    <form class="flex flex-row" @onsubmit="_ => TriggerSearch()">
+      <div class="join max-w-sm">
+        <input @bind="Filter" class="input input-sm join-item" type="text" placeholder="Search..."/>
+        <button type="submit" class="btn btn-square btn-secondary btn-sm join-item">
+          <i class="icon-search"></i>
+        </button>
+      </div>
+    </form>
+  }
+</div>
+
+<div class="overflow-x-auto rounded-lg">
+  <table class="table min-w-full bg-base-100">
+    <thead class="text-xs font-semibold">
+    <tr class="border-0 bg-base-200/50">
+      <th scope="col">
+        <div class="flex items-center">
+          <span class="me-1">Id</span>
+          <a href="#" @onclick:preventDefault>
+            <i class="icon-funnel text-xs"></i>
+          </a>
+        </div>
+      </th>
+      <th scope="col">
+        Text
+      </th>
+      <th scope="col">
+        Bool
+      </th>
+      <th scope="col">
+        Number
+      </th>
+      <th scope="col" class="py-2 px-3 text-right">
+        Actions
+      </th>
+    </tr>
+    </thead>
+    <tbody class="text-sm">
+
+    @foreach (var item in Items)
+    {
+      <tr>
+        <td>@item.Id</td>
+        <td>@item.Text</td>
+        <td>@item.Bool</td>
+        <td>@item.Number</td>
+        <td>
+          <div class="flex items-center justify-end space-x-2.5">
+            <a href="#" @onclick:preventDefault aria-label="Action button">
+              <span class="icon-pencil"></span>
+            </a>
+            <a href="#" @onclick:preventDefault aria-label="Action button">
+              <span class="icon-trash"></span>
+            </a>
+          </div>
+        </td>
+      </tr>
+    }
+    </tbody>
+  </table>
+</div>
+
+<div class="flex items-center justify-between gap-3 mt-3 max-md:flex-wrap max-md:justify-center">
+  <div class="text-sm text-base-content/80">
+    Showing
+    @(TotalCount == 0 ? 0 : StartIndex + 1)
+    to
+    @(StartIndex + 1 + Count > TotalCount ? TotalCount : StartIndex + Count)
+    of
+    @(TotalCount)
+    users
+  </div>
+  <div class="flex items-center space-x-1">
+    <select @onchange="ChangePagination" class="select select-sm">
+      <option value="15">15</option>
+      <option value="30">30</option>
+      <option value="100">100</option>
+    </select>
+    @if (StartIndex == 0)
+    {
+      <button type="button" class="btn btn-text btn-circle btn-sm disabled" disabled="disabled">
+        <span class="icon-chevron-left"></span>
+        <span class="sr-only">Previous</span>
+      </button>
+    }
+    else
+    {
+      <button @onclick="() => Navigate(-Count)" type="button" class="btn btn-text btn-circle btn-sm">
+        <span class="icon-chevron-left"></span>
+        <span class="sr-only">Previous</span>
+      </button>
+    }
+    @if (StartIndex + 1 + Count > TotalCount)
+    {
+      <button type="button" class="btn btn-text btn-circle btn-sm disabled" disabled="disabled">
+        <span class="sr-only">Next</span>
+        <span class="icon-chevron-right"></span>
+      </button>
+    }
+    else
+    {
+      <button @onclick="() => Navigate(Count)" type="button" class="btn btn-text btn-circle btn-sm">
+        <span class="sr-only">Next</span>
+        <span class="icon-chevron-right"></span>
+      </button>
+    }
+  </div>
+</div>
+
+
+@code
+{
+  private DemoDataModel[] Items = [];
+  private int TotalCount = 0;
+  private int StartIndex = 0;
+  private int Count = 15;
+  private string Filter = "";
+
+  private bool RealtimeSearch = true;
+
+  protected override async Task OnAfterRenderAsync(bool firstRender)
+  {
+    if (!firstRender)
+      return;
+
+    await Load();
+  }
+
+  private async Task Load()
+  {
+    var url = $"/api/query?startIndex={StartIndex}&count={Count}";
+
+    if (!string.IsNullOrEmpty(Filter))
+      url += $"&filter={Uri.EscapeDataString(Filter)}";
+
+    url += "&orderBy=Id&orderByDir=desc";
+
+    var response = await HttpClient.GetFromJsonAsync<CountedData<DemoDataModel>>(url);
+
+    Items = response!.Items;
+    TotalCount = response.TotalCount;
+
+    await InvokeAsync(StateHasChanged);
+  }
+
+  private async Task TriggerSearch(ChangeEventArgs args)
+  {
+    Filter = args.Value?.ToString() ?? "";
+    await TriggerSearch();
+  }
+
+  private async Task TriggerSearch()
+  {
+    StartIndex = 0;
+    await Load();
+  }
+
+  private async Task Navigate(int diff)
+  {
+    StartIndex += diff;
+
+    if (StartIndex < 0)
+      StartIndex = 0;
+
+    if (StartIndex > TotalCount)
+      StartIndex = TotalCount - Count;
+
+    await Load();
+  }
+
+  private async Task ChangePagination(ChangeEventArgs args)
+  {
+    if (args.Value == null || !int.TryParse(args.Value.ToString(), out var pageSize))
+      return;
+
+    Count = pageSize;
+    await Navigate(0); // Trigger revalidation & refresh
+  }
+}

@@ -20,6 +20,13 @@
 
     <ItemGroup>
       <_ContentIncludedByDefault Remove="wwwroot\css\app.css" />
+      <_ContentIncludedByDefault Remove="UI\Components\Dg\Columns\PropertyColumn.razor" />
+      <_ContentIncludedByDefault Remove="UI\Components\Dg\DataGrid.razor" />
+      <_ContentIncludedByDefault Remove="UI\Components\ImprovedDg\Columns\ColumnBase.razor" />
+      <_ContentIncludedByDefault Remove="UI\Components\ImprovedDg\Columns\PropertyColumn.razor" />
+      <_ContentIncludedByDefault Remove="UI\Components\ImprovedDg\Columns\SelectColumn.razor" />
+      <_ContentIncludedByDefault Remove="UI\Components\ImprovedDg\Columns\TemplateColumn.razor" />
+      <_ContentIncludedByDefault Remove="UI\Components\ImprovedDg\DataGrid.razor" />
     </ItemGroup>
 
     <ItemGroup>

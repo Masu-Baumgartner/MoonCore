@@ -1,0 +1,50 @@
+﻿@using System.Linq.Expressions
+@using Microsoft.AspNetCore.Components.Rendering
+
+@typeparam TGridItem
+@typeparam TValue
+
+@inherits ColumnBase<TGridItem>
+
+@code
+{
+    /// <summary>
+    /// Property to visualize in the column
+    /// </summary>
+    [Parameter] public Expression<Func<TGridItem, TValue>> Field { get; set; }
+
+    private Func<TGridItem, TValue> CompiledField;
+
+    protected override void OnInitialized()
+    {
+        base.OnInitialized();
+
+        CompiledField = Field.Compile();
+        
+        var propName = GetPropertyName(Field);
+
+        if (string.IsNullOrEmpty(Title))
+            Title = propName;
+
+        if (string.IsNullOrEmpty(SortName))
+            SortName = propName;
+    }
+
+    protected internal override void RenderCell(RenderTreeBuilder __builder, TGridItem item)
+    {
+        <td>
+            @(CompiledField.Invoke(item)?.ToString() ?? "-")
+        </td>
+    }
+    
+    private static string GetPropertyName(Expression<Func<TGridItem, TValue>> expression)
+    {
+        if (expression.Body is UnaryExpression { Operand: MemberExpression memberExpression })
+            return memberExpression.Member.Name;
+
+        if (expression.Body is MemberExpression member)
+            return member.Member.Name;
+
+        throw new ArgumentException("Invalid expression");
+    }
+}
