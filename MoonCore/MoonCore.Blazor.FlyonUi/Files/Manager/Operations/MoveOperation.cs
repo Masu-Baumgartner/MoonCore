@@ -31,7 +31,6 @@ public class MoveOperation : IMultiFsOperation
     {
         await ModalService.Launch<MoveModal>(parameters =>
         {
-            parameters["Title"] = $"Select a location to move {files.Length} item(s) to";
             parameters["FsAccess"] = fsAccess;
             parameters["InitialPath"] = workingDir;
             parameters["OnSubmit"] = async (string path) =>
