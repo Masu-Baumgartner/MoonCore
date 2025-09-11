@@ -16,25 +16,25 @@ else
 {
     [Parameter] public string CssClasses { get; set; } = "btn btn-primary";
     [Parameter] public RenderFragment ChildContent { get; set; }
-    [Parameter] public Func<WButton, Task>? OnClick { get; set; }
+    [Parameter] public EventCallback<WButton> OnClick { get; set; }
 
     [Parameter] public bool IsWorking { get; set; } = false;
     [Parameter] public string Type { get; set; } = "button";
 
-    private string WorkingText = "Processing";
+    private string WorkingText = "";
 
     private async Task Click()
     {
-        if(IsWorking || OnClick == null)
+        if(IsWorking)
             return;
         
         IsWorking = true;
-        WorkingText = "Processing";
+        WorkingText = "";
         await InvokeAsync(StateHasChanged);
         
         try
         {
-            await OnClick.Invoke(this);
+            await OnClick.InvokeAsync(this);
             
             // Reset states
             IsWorking = false;
