@@ -17,6 +17,7 @@
         <PackageReference Include="AspNet.Security.OAuth.Discord" Version="9.4.0" />
         <PackageReference Include="AspNet.Security.OAuth.GitHub" Version="9.4.0" />
         <PackageReference Include="Bogus" Version="35.6.3" />
+        <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="9.0.5" />
         <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="9.0.9" />
         <PackageReference Include="Scalar.AspNetCore" Version="2.8.0" />
         <PackageReference Include="SharpZipLib" Version="1.4.2" />
