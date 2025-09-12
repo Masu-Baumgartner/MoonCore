@@ -1,0 +1,94 @@
+﻿@using Microsoft.AspNetCore.Components.Rendering
+
+@typeparam TGridItem
+@inherits ColumnBase<TGridItem>
+
+@code
+{
+    /// <summary>
+    /// List object to store the selected items in
+    /// </summary>
+    [Parameter] public IList<TGridItem> Selection { get; set; }
+    
+    /// <summary>
+    /// Event which will be triggered when the selection changed
+    /// </summary>
+    [Parameter] public EventCallback OnSelectionChanged { get; set; }
+
+    protected internal override async ValueTask OnItemsChangedAsync()
+    {
+        Selection.Clear();
+        
+        await Parent.NotifyStateChanged();
+        await OnSelectionChanged.InvokeAsync();
+    }
+
+    private async Task SelectAsync(TGridItem item, bool toggle)
+    {
+        if (toggle)
+        {
+            if(!Selection.Contains(item))
+                Selection.Add(item);
+        }
+        else
+        {
+            if (Selection.Contains(item))
+                Selection.Remove(item);
+        }
+
+        await Parent.NotifyStateChanged();
+        await OnSelectionChanged.InvokeAsync();
+    }
+
+    private async Task SelectAllAsync(bool toggle)
+    {
+        Selection.Clear();
+
+        if (toggle)
+        {
+            foreach (var item in Parent.Items)
+                Selection.Add(item);
+        }
+        
+        await Parent.NotifyStateChanged();
+        await OnSelectionChanged.InvokeAsync();
+    }
+
+    protected internal override void RenderHeader(RenderTreeBuilder __builder)
+    {
+        <th scope="col" class="px-0.5 w-4">
+            @if (Parent.Items.Length == 0 || Parent.Items.Length != Selection.Count)
+            {
+                <input @onclick="() => SelectAllAsync(true)"
+                       type="checkbox"
+                       class="checkbox checkbox-primary checkbox-xs"/>
+            }
+            else
+            {
+                <input @onclick="() => SelectAllAsync(false)"
+                       type="checkbox"
+                       class="checkbox checkbox-primary checkbox-xs"
+                       checked="checked"/>
+            }
+        </th>
+    }
+
+    protected internal override void RenderCell(RenderTreeBuilder __builder, TGridItem item)
+    {
+        <td scope="row" class="px-0.5 w-4">
+            @if (Selection.Contains(item))
+            {
+                <input @onclick="() => SelectAsync(item, false)"
+                       type="checkbox"
+                       class="checkbox checkbox-primary checkbox-xs"
+                       checked="checked" />
+            }
+            else
+            {
+                <input @onclick="() => SelectAsync(item, true)"
+                       type="checkbox"
+                       class="checkbox checkbox-primary checkbox-xs" />
+            }
+        </td>
+    }
+}

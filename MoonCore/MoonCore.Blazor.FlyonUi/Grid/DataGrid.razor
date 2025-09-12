@@ -1,0 +1,179 @@
+﻿@using Microsoft.AspNetCore.Components.Rendering
+@using MoonCore.Blazor.FlyonUi.Components
+@typeparam TGridItem
+
+<CascadingValue TValue="DataGrid<TGridItem>" Value="this" IsFixed="true">
+    @ChildContent
+</CascadingValue>
+
+@if (IsInitialized)
+{
+    if (EnableFiltering)
+    {
+        <div class="flex flex-row justify-between items-center mb-3">
+            <div>
+            </div>
+            @if (EnableLiveFiltering)
+            {
+                <form class="flex flex-row" @onsubmit="_ => FilterAsync()">
+                    <div class="join max-w-sm">
+                        <input @oninput="e => FilterAsync(e)" class="input join-item" type="text" placeholder="Search..."/>
+                        <button type="submit" class="btn btn-square btn-primary join-item">
+                            <i class="icon-search"></i>
+                        </button>
+                    </div>
+                </form>
+            }
+            else
+            {
+                <form class="flex flex-row" @onsubmit="_ => FilterAsync()">
+                    <div class="join max-w-sm">
+                        <input @bind="FilterInput" class="input input-sm join-item" type="text" placeholder="Search..."/>
+                        <button type="submit" class="btn btn-square btn-secondary btn-sm join-item">
+                            <i class="icon-search"></i>
+                        </button>
+                    </div>
+                </form>
+            }
+        </div>
+    }
+    
+    <div class="overflow-x-auto rounded-lg">
+        <table class="table min-w-full bg-base-100">
+            <thead class="text-xs font-semibold">
+            <tr class="border-0 bg-base-200/50">
+                @HeaderRender
+            </tr>
+            </thead>
+            <tbody class="text-sm">
+
+            @if (IsLoadCompleted)
+            {
+                if (IsLoadFailed)
+                {
+                    <tr>
+                        <td colspan="99999">
+                            <div class="flex justify-center items-center my-3">
+                                <ErrorStateDisplay Exception="LoadException"/>
+                            </div>
+                        </td>
+                    </tr>
+                }
+                else
+                {
+                    if (Items.Length == 0)
+                    {
+                        <tr>
+                            <td colspan="99999">
+                                <div class="my-3">
+                                    <IconAlert Title="No items found"
+                                               Color="text-primary"
+                                               Icon="icon-file-x">
+                                        No items could be found
+                                    </IconAlert>
+                                </div>
+                            </td>
+                        </tr>
+                    }
+                    else
+                    {
+                        @RowsRender
+                        
+                        foreach (var item in Items)
+                        {
+                            <tr>
+                                @CellsRender.Invoke(item)
+                            </tr>
+                        }
+                    }
+                }
+            }
+            else
+            {
+                <tr>
+                    <td colspan="99999">
+                        <div class="flex justify-center items-center my-3">
+                            <span class="loading loading-spinner loading-xl"></span>
+                        </div>
+                    </td>
+                </tr>
+            }
+            </tbody>
+        </table>
+    </div>
+
+    if (EnablePagination)
+    {
+        var nextCount = StartIndex + 1 + Count;
+
+        <div class="flex items-center justify-between gap-3 mt-3 max-md:flex-wrap max-md:justify-center">
+            <div class="text-sm text-base-content/80">
+                Showing
+                @(TotalCount == 0 ? 0 : StartIndex + 1)
+                to
+                @(nextCount > TotalCount ? TotalCount : StartIndex + Count)
+                of
+                @(TotalCount)
+            </div>
+            <div class="flex items-center space-x-1">
+                <select @onchange="UpdatePaginationAsync" class="select select-sm">
+                    @foreach (var pageSize in PageSizes)
+                    {
+                        <option value="@pageSize">
+                            @pageSize
+                        </option>
+                    }
+                </select>
+                @if (StartIndex == 0)
+                {
+                    <button type="button" class="btn btn-text btn-circle btn-sm disabled" disabled="disabled">
+                        <span class="icon-chevron-left"></span>
+                        <span class="sr-only">Previous</span>
+                    </button>
+                }
+                else
+                {
+                    <button @onclick="() => Navigate(-Count)" type="button" class="btn btn-text btn-circle btn-sm">
+                        <span class="icon-chevron-left"></span>
+                        <span class="sr-only">Previous</span>
+                    </button>
+                }
+                @if (nextCount > TotalCount)
+                {
+                    <button type="button" class="btn btn-text btn-circle btn-sm disabled" disabled="disabled">
+                        <span class="sr-only">Next</span>
+                        <span class="icon-chevron-right"></span>
+                    </button>
+                }
+                else
+                {
+                    <button @onclick="() => Navigate(Count)" type="button" class="btn btn-text btn-circle btn-sm">
+                        <span class="sr-only">Next</span>
+                        <span class="icon-chevron-right"></span>
+                    </button>
+                }
+            </div>
+        </div>
+    }
+}
+
+@code
+{
+    private void RenderAndCombineHeader(RenderTreeBuilder __builder)
+    {
+        foreach (var column in Columns)
+            column.RenderHeader(__builder);
+    }
+
+    private void RenderAndCombineCells(RenderTreeBuilder __builder, TGridItem item)
+    {
+        foreach (var column in Columns)
+            column.RenderCell(__builder, item);
+    }
+
+    private void RenderAndCombineRows(RenderTreeBuilder __builder)
+    {
+        foreach (var row in Rows)
+            row.RenderContent(__builder);
+    }
+}

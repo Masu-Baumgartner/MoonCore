@@ -11,8 +11,7 @@ public class RenameOperation : ISingleFsOperation
     public string Name => "Rename";
     public string Icon => "icon-folder-pen";
     public string ContextCss => "text-primary";
-
-    public string ToolbarCss => "";
+    
     public int Order => 0;
 
     public Func<FsEntry, bool>? Filter => _ => true;

@@ -1,0 +1,17 @@
+﻿@using Microsoft.AspNetCore.Components.Rendering
+
+@typeparam TGridItem
+@inherits ColumnBase<TGridItem>
+
+@code
+{
+    /// <summary>
+    /// Template to use for the cell content
+    /// </summary>
+    [Parameter] public RenderFragment<TGridItem> ChildContent { get; set; }
+    
+    protected internal override void RenderCell(RenderTreeBuilder __builder, TGridItem item)
+    {
+        ChildContent.Invoke(item).Invoke(__builder);
+    }
+}

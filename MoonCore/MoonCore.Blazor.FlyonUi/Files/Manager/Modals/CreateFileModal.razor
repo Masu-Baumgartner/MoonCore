@@ -3,32 +3,34 @@
 
 @inherits MoonCore.Blazor.FlyonUi.Modals.Components.BaseModal
 
-<div class="flex items-center gap-4">
-    <div class="avatar avatar-placeholder max-sm:hidden">
-        <div class="border-base-content/20 rounded-box w-13 border-1">
-            <span class="icon-file text-xl"></span>
+<div class="p-5">
+    <div class="flex items-center gap-4">
+        <div class="avatar avatar-placeholder max-sm:hidden">
+            <div class="border-base-content/20 rounded-box w-13 border-1">
+                <span class="icon-file text-xl"></span>
+            </div>
+        </div>
+        <div class="space-y-1">
+            <h3 class="text-base-content text-2xl font-semibold">Create file</h3>
+            <p class="text-base-content/80">Create a new file at the current location</p>
         </div>
     </div>
-    <div class="space-y-1">
-        <h3 class="text-base-content text-2xl font-semibold">Create file</h3>
-        <p class="text-base-content/80">Create a new file at the current location</p>
+    <div class="mt-5">
+        <HandleForm @ref="HandleForm" Model="Form" OnValidSubmit="HandleSubmit">
+            <div class="mt-2">
+                <label class="label-text">Filename</label>
+                <input class="input" @bind="Form.Name" placeholder="Enter a name"/>
+            </div>
+        </HandleForm>
     </div>
-</div>
-<div class="mt-5">
-    <HandleForm @ref="HandleForm" Model="Form" OnValidSubmit="HandleSubmit">
-        <div class="mt-2">
-            <label class="label-text">Filename</label>
-            <input class="input" @bind="Form.Name" placeholder="Enter a name"/>
-        </div>
-    </HandleForm>
-</div>
-<div class="mt-5 flex justify-end">
-    <button @onclick="Hide" type="button" class="btn btn-secondary me-2">
-        Cancel
-    </button>
-    <WButton OnClick="_ => HandleForm.Submit()">
-        Create
-    </WButton>
+    <div class="mt-5 flex justify-end">
+        <button @onclick="Hide" type="button" class="btn btn-secondary me-2">
+            Cancel
+        </button>
+        <WButton OnClick="_ => HandleForm.Submit()">
+            Create
+        </WButton>
+    </div>
 </div>
 
 @code

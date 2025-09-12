@@ -1,8 +1,10 @@
 using System.Text;
 using Microsoft.IdentityModel.Tokens;
+using MoonCore.Blazor.FlyonUi.Test.Backend;
 using MoonCore.Blazor.FlyonUi.Test.Backend.Configuration;
 using MoonCore.Blazor.FlyonUi.Test.Backend.LocalAuth;
 using MoonCore.Yaml;
+using Scalar.AspNetCore;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -61,7 +63,7 @@ builder.Services.AddAuthentication(options => { options.DefaultScheme = "Main"; 
     })
     .AddCookie("Session", options =>
     {
-        options.ExpireTimeSpan = TimeSpan.FromMinutes(30);
+        options.ExpireTimeSpan = TimeSpan.FromDays(10);
 
         // As redirects won't work in our spa which uses API calls
         // we need to customize the responses when certain actions happen
@@ -138,10 +140,20 @@ builder.Services.AddAuthentication(options => { options.DefaultScheme = "Main"; 
 
 builder.Services.AddAuthorization();
 
+builder.Services.AddSingleton<DemoRepository>();
+
+builder.Services.AddOpenApi();
+
 var app = builder.Build();
 
 if (app.Environment.IsDevelopment())
     app.UseWebAssemblyDebugging();
+
+if (app.Environment.IsDevelopment())
+{
+    app.MapOpenApi();
+    app.MapScalarApiReference();
+}
 
 app.UseBlazorFrameworkFiles();
 app.UseStaticFiles();
