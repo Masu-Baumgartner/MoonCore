@@ -1,0 +1,14 @@
+﻿@using Microsoft.AspNetCore.Components.Rendering
+
+@inherits ToolbarItemBase<TGridItem>
+@typeparam TGridItem
+
+@code
+{
+    [Parameter] public RenderFragment ChildContent { get; set; }
+    
+    public override void RenderContent(RenderTreeBuilder __builder)
+    {
+        ChildContent.Invoke(__builder);
+    }
+}

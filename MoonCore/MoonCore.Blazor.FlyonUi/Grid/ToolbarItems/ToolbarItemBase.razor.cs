@@ -1,9 +1,9 @@
 ﻿using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Rendering;
 
-namespace MoonCore.Blazor.FlyonUi.Grid.Rows;
+namespace MoonCore.Blazor.FlyonUi.Grid.ToolbarItems;
 
-public abstract partial class RowBase<TGridItem>
+public abstract partial class ToolbarItemBase<TGridItem>
 {
     /// <summary>
     /// Reference to the DataGrid parent
@@ -11,17 +11,17 @@ public abstract partial class RowBase<TGridItem>
     [CascadingParameter] public DataGrid<TGridItem> Parent { get; set; }
     
     /// <summary>
-    /// Order number for the row. Higher values place it further to the right
+    /// Order number for the toolbar item. Higher values place it further to the right
     /// </summary>
     [Parameter] public int Order { get; set; }
     
     protected override void OnInitialized()
     {
-        Parent.AddRow(this);
+        Parent.AddToolbarItem(this);
     }
     
     /// <summary>
-    /// Render the content of the row in this function. You should include a <b>tr</b> to have it properly formatted
+    /// Render the content of the toolbar item in this function
     /// </summary>
     /// <param name="__builder">Render builder from the parent grid</param>
     public abstract void RenderContent(RenderTreeBuilder __builder);
