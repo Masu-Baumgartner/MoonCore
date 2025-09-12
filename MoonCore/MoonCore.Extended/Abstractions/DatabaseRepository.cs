@@ -31,7 +31,7 @@ public class DatabaseRepository<TEntity> where TEntity : class
         return DbSet;
     }
 
-    public async Task<TEntity> Add(TEntity entity)
+    public async Task<TEntity> AddAsync(TEntity entity)
     {
         var result = await DataContext.AddAsync(entity);
         await DataContext.SaveChangesAsync();
@@ -39,25 +39,25 @@ public class DatabaseRepository<TEntity> where TEntity : class
         return result.Entity;
     }
 
-    public async Task Update(TEntity entity)
+    public async Task UpdateAsync(TEntity entity)
     {
         DataContext.Update(entity);
         await DataContext.SaveChangesAsync();
     }
 
-    public async Task Remove(TEntity entity)
+    public async Task RemoveAsync(TEntity entity)
     {
         DataContext.Remove(entity);
         await DataContext.SaveChangesAsync();
     }
 
-    public async Task RunTransaction(Action<DbSet<TEntity>> transaction)
+    public async Task RunTransactionAsync(Action<DbSet<TEntity>> transaction)
     {
         transaction.Invoke(DbSet);
         await DataContext.SaveChangesAsync();
     }
     
-    public async Task RunTransaction(Func<DbSet<TEntity>, Task> transactionTask)
+    public async Task RunTransactionAsync(Func<DbSet<TEntity>, Task> transactionTask)
     {
         await transactionTask.Invoke(DbSet);
         await DataContext.SaveChangesAsync();
