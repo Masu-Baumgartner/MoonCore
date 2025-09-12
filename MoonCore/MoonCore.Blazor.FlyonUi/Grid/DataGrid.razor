@@ -10,14 +10,13 @@
 {
     if (EnableFiltering)
     {
-        <div class="flex flex-row justify-between items-center mb-3">
-            <div>
-            </div>
+        <div class="flex flex-row justify-end items-center mb-3">
             @if (EnableLiveFiltering)
             {
                 <form class="flex flex-row" @onsubmit="_ => FilterAsync()">
                     <div class="join max-w-sm">
-                        <input @oninput="e => FilterAsync(e)" class="input join-item" type="text" placeholder="Search..."/>
+                        <input @oninput="e => FilterAsync(e)" class="input join-item" type="text"
+                               placeholder="Search..."/>
                         <button type="submit" class="btn btn-square btn-primary join-item">
                             <i class="icon-search"></i>
                         </button>
@@ -28,19 +27,29 @@
             {
                 <form class="flex flex-row" @onsubmit="_ => FilterAsync()">
                     <div class="join max-w-sm">
-                        <input @bind="FilterInput" class="input input-sm join-item" type="text" placeholder="Search..."/>
-                        <button type="submit" class="btn btn-square btn-secondary btn-sm join-item">
+                        <input @bind="FilterInput" class="input join-item" type="text" placeholder="Search..."/>
+                        <button type="submit" class="btn btn-square btn-secondary join-item">
                             <i class="icon-search"></i>
                         </button>
                     </div>
                 </form>
             }
+
+            @ToolbarItemRender
         </div>
     }
-    
+    else if (ToolbarItems.Length > 0)
+    {
+        <div class="flex flex-row justify-end items-center mb-3">
+            <div>
+                @ToolbarItemRender
+            </div>
+        </div>
+    }
+
     <div class="overflow-x-auto rounded-lg">
         <table class="table min-w-full bg-base-100">
-            <thead class="text-xs font-semibold">
+            <thead class="text-xs font-bold">
             <tr class="border-0 bg-base-200/50">
                 @HeaderRender
             </tr>
@@ -78,7 +87,7 @@
                     else
                     {
                         @RowsRender
-                        
+
                         foreach (var item in Items)
                         {
                             <tr>
@@ -175,5 +184,11 @@
     {
         foreach (var row in Rows)
             row.RenderContent(__builder);
+    }
+    
+    private void RenderAndCombineToolbarItems(RenderTreeBuilder __builder)
+    {
+        foreach (var toolbarItem in ToolbarItems)
+            toolbarItem.RenderContent(__builder);
     }
 }

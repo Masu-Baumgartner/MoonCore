@@ -1,8 +1,8 @@
 ﻿@page "/dtt"
-@using MoonCore.Blazor.FlyonUi.Components
 @using MoonCore.Blazor.FlyonUi.Grid
 @using MoonCore.Blazor.FlyonUi.Grid.Columns
 @using MoonCore.Blazor.FlyonUi.Grid.Rows
+@using MoonCore.Blazor.FlyonUi.Grid.ToolbarItems
 @using MoonCore.Blazor.FlyonUi.Test.Shared.Http.Responses
 @using MoonCore.Blazor.FlyonUi.Toasts
 @using MoonCore.Models
@@ -33,6 +33,10 @@
             </td>
         </tr>
     </TemplateRow>
+    
+    <TemplateToolbarItem>
+        <button class="ms-1.5 btn btn-primary">Create</button>
+    </TemplateToolbarItem>
 </DataGrid>
 
 @code
@@ -46,31 +50,34 @@
     {
         await Task.Delay(500);
 
-        var url = $"/api/query?startIndex={request.StartIndex}&count={request.Count}";
-
-        if (!string.IsNullOrEmpty(request.SortColumn))
+        var items = await CountedData<DemoDataModel>.LoadAllAsync(async (index, count) =>
         {
-            var orderByDir = request.SortDirection switch
+            var url = $"/api/query?startIndex={index}&count={count}";
+
+            if (!string.IsNullOrEmpty(request.SortColumn))
             {
-                SortState.None => "asc",
-                SortState.Ascending => "asc",
-                SortState.Descending => "desc"
-            };
+                var orderByDir = request.SortDirection switch
+                {
+                    SortState.None => "asc",
+                    SortState.Ascending => "asc",
+                    SortState.Descending => "desc"
+                };
 
-            url += $"&orderBy={request.SortColumn}&orderByDir={orderByDir}";
-        }
+                url += $"&orderBy={request.SortColumn}&orderByDir={orderByDir}";
+            }
 
-        if (!string.IsNullOrEmpty(request.Filter))
-            url += $"&filter={request.Filter}";
-
-        var countedItems = await HttpClient.GetFromJsonAsync<CountedData<DemoDataModel>>(
-            url
-        );
+            if (!string.IsNullOrEmpty(request.Filter))
+                url += $"&filter={request.Filter}";
+            
+            return (await HttpClient.GetFromJsonAsync<CountedData<DemoDataModel>>(
+                url
+            ))!;
+        });
 
         return new DataGridItemResult<DemoDataModel>()
         {
-            Items = countedItems!.Items,
-            TotalCount = countedItems.TotalCount
+            Items = items,
+            TotalCount = items.Length
         };
     }
 }
