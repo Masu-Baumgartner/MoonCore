@@ -77,6 +77,8 @@
                     }
                     else
                     {
+                        @RowsRender
+                        
                         foreach (var item in Items)
                         {
                             <tr>
@@ -167,5 +169,11 @@
     {
         foreach (var column in Columns)
             column.RenderCell(__builder, item);
+    }
+
+    private void RenderAndCombineRows(RenderTreeBuilder __builder)
+    {
+        foreach (var row in Rows)
+            row.RenderContent(__builder);
     }
 }

@@ -63,7 +63,7 @@ builder.Services.AddAuthentication(options => { options.DefaultScheme = "Main"; 
     })
     .AddCookie("Session", options =>
     {
-        options.ExpireTimeSpan = TimeSpan.FromMinutes(30);
+        options.ExpireTimeSpan = TimeSpan.FromDays(10);
 
         // As redirects won't work in our spa which uses API calls
         // we need to customize the responses when certain actions happen

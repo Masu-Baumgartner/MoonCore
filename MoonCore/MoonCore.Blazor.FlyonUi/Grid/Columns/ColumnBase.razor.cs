@@ -41,7 +41,10 @@ public abstract partial class ColumnBase<TGridItem>
         Parent.AddColumn(this);
     }
 
-    // 
+    /// <summary>
+    /// Define the content of the column header. If not overridden the default header will be rendered
+    /// </summary>
+    /// <param name="__builder"></param>
     protected internal virtual void RenderHeader(RenderTreeBuilder __builder)
     {
         if (HeaderTemplate != null)
@@ -50,8 +53,16 @@ public abstract partial class ColumnBase<TGridItem>
             RenderDefaultHeader(__builder);
     }
 
+    /// <summary>
+    /// Define the cell content for the column per item. You should put your content in a <b>td</b> element to fit in the table properly
+    /// </summary>
+    /// <param name="__builder">Render builder from the parent grid</param>
+    /// <param name="item">Item which should be used to determine the current cells content</param>
     protected internal abstract void RenderCell(RenderTreeBuilder __builder, TGridItem item);
 
+    /// <summary>
+    /// Callback whenever the items of the parent grid have changed. Needs to be overridden if you wish to handle it
+    /// </summary>
     protected internal virtual ValueTask OnItemsChangedAsync()
         => ValueTask.CompletedTask;
 }

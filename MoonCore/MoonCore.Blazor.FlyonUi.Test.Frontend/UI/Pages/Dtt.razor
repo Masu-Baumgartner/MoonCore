@@ -2,6 +2,7 @@
 @using MoonCore.Blazor.FlyonUi.Components
 @using MoonCore.Blazor.FlyonUi.Grid
 @using MoonCore.Blazor.FlyonUi.Grid.Columns
+@using MoonCore.Blazor.FlyonUi.Grid.Rows
 @using MoonCore.Blazor.FlyonUi.Test.Shared.Http.Responses
 @using MoonCore.Blazor.FlyonUi.Toasts
 @using MoonCore.Models
@@ -22,6 +23,16 @@
     <PropertyColumn Field="x => x.Text" Sortable="true"/>
     <PropertyColumn Field="x => x.Bool"/>
     <PropertyColumn Field="x => x.Number"/>
+    
+    <TemplateRow>
+        <tr>
+            <td colspan="99999">
+                <div class="flex justify-center items-center">
+                    My custom row :>
+                </div>
+            </td>
+        </tr>
+    </TemplateRow>
 </DataGrid>
 
 @code

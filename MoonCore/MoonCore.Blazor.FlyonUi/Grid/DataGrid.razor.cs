@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Components;
 using MoonCore.Blazor.FlyonUi.Grid.Columns;
+using MoonCore.Blazor.FlyonUi.Grid.Rows;
 using MoonCore.Exceptions;
 
 namespace MoonCore.Blazor.FlyonUi.Grid;
@@ -16,7 +17,9 @@ public partial class DataGrid<TGridItem>
     
     // Configuration
     private readonly List<ColumnBase<TGridItem>> CollectedColumns = new();
+    private readonly List<RowBase<TGridItem>> CollectedRows = new();
     private ColumnBase<TGridItem>[] Columns;
+    private RowBase<TGridItem>[] Rows;
     private ColumnBase<TGridItem>? CurrentSortColumn;
     
     // States
@@ -27,6 +30,7 @@ public partial class DataGrid<TGridItem>
     // Cache & UI Storage
     private Exception LoadException;
     private RenderFragment HeaderRender;
+    private RenderFragment RowsRender;
     private RenderFragment<TGridItem> CellsRender;
     
     // Item Loading
@@ -57,8 +61,13 @@ public partial class DataGrid<TGridItem>
         Columns = CollectedColumns
             .OrderBy(x => x.Order)
             .ToArray();
+        
+        Rows = CollectedRows
+            .OrderBy(x => x.Order)
+            .ToArray();
 
         HeaderRender = RenderAndCombineHeader;
+        RowsRender = RenderAndCombineRows;
         CellsRender = item => builder => RenderAndCombineCells(builder, item);
         
         // Set init state
@@ -105,6 +114,10 @@ public partial class DataGrid<TGridItem>
             foreach (var column in Columns)
                 await column.OnItemsChangedAsync();
             
+            // Invoke rows items changed event
+            foreach (var row in Rows)
+                await row.OnItemsChangedAsync();
+            
             IsLoadFailed = false;
         }
         catch (Exception e)
@@ -131,6 +144,9 @@ public partial class DataGrid<TGridItem>
 
     internal void AddColumn(ColumnBase<TGridItem> column)
         => CollectedColumns.Add(column);
+
+    internal void AddRow(RowBase<TGridItem> row)
+        => CollectedRows.Add(row);
 
     /// <summary>
     /// Set the sorting of the provided column 
