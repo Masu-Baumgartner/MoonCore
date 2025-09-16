@@ -56,39 +56,43 @@
 
     protected internal override void RenderHeader(RenderTreeBuilder __builder)
     {
-        <th scope="col" class="px-0.5 w-4">
-            @if (Parent.Items.Length == 0 || Parent.Items.Length != Selection.Count)
-            {
-                <input @onclick="() => SelectAllAsync(true)"
-                       type="checkbox"
-                       class="checkbox checkbox-primary checkbox-xs"/>
-            }
-            else
-            {
-                <input @onclick="() => SelectAllAsync(false)"
-                       type="checkbox"
-                       class="checkbox checkbox-primary checkbox-xs"
-                       checked="checked"/>
-            }
+        <th scope="col" class="ms-1.5 max-w-8">
+            <div class="flex justify-start">
+                @if (Parent.Items.Length == 0 || Parent.Items.Length != Selection.Count)
+                {
+                    <input @onclick="() => SelectAllAsync(true)"
+                           type="checkbox"
+                           class="checkbox checkbox-primary checkbox-xs"/>
+                }
+                else
+                {
+                    <input @onclick="() => SelectAllAsync(false)"
+                           type="checkbox"
+                           class="checkbox checkbox-primary checkbox-xs"
+                           checked="checked"/>
+                }
+            </div>
         </th>
     }
 
     protected internal override void RenderCell(RenderTreeBuilder __builder, TGridItem item)
     {
-        <td scope="row" class="px-0.5 w-4">
-            @if (Selection.Contains(item))
-            {
-                <input @onclick="() => SelectAsync(item, false)"
-                       type="checkbox"
-                       class="checkbox checkbox-primary checkbox-xs"
-                       checked="checked" />
-            }
-            else
-            {
-                <input @onclick="() => SelectAsync(item, true)"
-                       type="checkbox"
-                       class="checkbox checkbox-primary checkbox-xs" />
-            }
+        <td scope="row" class="ms-1.5 max-w-8">
+            <div class="flex justify-start">
+                @if (Selection.Contains(item))
+                {
+                    <input @onclick="() => SelectAsync(item, false)"
+                           type="checkbox"
+                           class="checkbox checkbox-primary checkbox-xs"
+                           checked="checked" />
+                }
+                else
+                {
+                    <input @onclick="() => SelectAsync(item, true)"
+                           type="checkbox"
+                           class="checkbox checkbox-primary checkbox-xs" />
+                }
+            </div>
         </td>
     }
 }

@@ -1,0 +1,9 @@
+﻿<div class="relative flex @Size" data-slot="wrapper">
+    <span class="absolute w-full h-full rounded-full border-3 border-b-primary border-solid border-t-transparent border-l-transparent border-r-transparent animate-spin [animation-duration:0.8s] [animation-timing-function:ease]"></span>
+    <span class="absolute w-full h-full rounded-full border-3 border-b-primary opacity-75 border-dotted border-t-transparent border-l-transparent border-r-transparent animate-spin [animation-duration:0.8s]"></span>
+</div>
+
+@code
+{
+    [Parameter] public string Size { get; set; } = "size-8";
+}
