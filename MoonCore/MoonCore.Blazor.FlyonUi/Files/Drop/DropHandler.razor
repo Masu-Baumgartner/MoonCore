@@ -24,7 +24,10 @@
 
 @code
 {
-    public bool IsEnabled { get; set; } = false;
+    /// <summary>
+    /// Represents the current state of the handler
+    /// </summary>
+    public bool IsEnabled { get; private set; } = false;
 
     private bool IsInitialized = false;
     private bool IsActive => Counter != 0;
@@ -49,7 +52,10 @@
         }
     }
 
-    public async Task Enable()
+    /// <summary>
+    /// Enables the handling of file drops and initializes the interop
+    /// </summary>
+    public async Task EnableAsync()
     {
         IsEnabled = true;
         Counter = 0;
@@ -58,7 +64,10 @@
         await JsRuntime.InvokeVoidAsync("moonCore.dropzone.enable");
     }
 
-    public async Task Disable()
+    /// <summary>
+    /// Disables the handling of file drops and disables the interop handling for it
+    /// </summary>
+    public async Task DisableAsync()
     {
         IsEnabled = false;
         await InvokeAsync(StateHasChanged);
@@ -66,14 +75,21 @@
         await JsRuntime.InvokeVoidAsync("moonCore.dropzone.disable");
     }
 
-    public async Task<DropData?> PeekItem()
+    /// <summary>
+    /// Peeks at the next item in the stack of files provided by the interop
+    /// </summary>
+    /// <returns><b>null</b> if no item is left otherwise it returns the next item</returns>
+    public async Task<DropData?> PeekItemAsync()
     {
         return await JsRuntime.InvokeAsync<DropData?>(
             "moonCore.dropzone.peek"
         );
     }
     
-    public async Task PopItem()
+    /// <summary>
+    /// Pops the current item of the interop stack
+    /// </summary>
+    public async Task PopItemAsync()
     {
         await JsRuntime.InvokeVoidAsync(
             "moonCore.dropzone.pop"
@@ -83,12 +99,12 @@
     #region Handlers
 
     [JSInvokable]
-    public async Task Trigger()
+    public async Task TriggerAsync()
     {
         Counter = 0;
         await InvokeAsync(StateHasChanged);
 
-        await HandlerService.TriggerDropped();
+        await HandlerService.TriggerDroppedAsync();
     }
 
     [JSInvokable]

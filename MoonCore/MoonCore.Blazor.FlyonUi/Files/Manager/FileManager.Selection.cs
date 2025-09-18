@@ -12,7 +12,7 @@ public partial class FileManager
         await InvokeAsync(StateHasChanged);
     }
 
-    private async Task RunSelectionOperation(IMultiFsOperation operation)
+    private async Task RunSelectionOperationAsync(IMultiFsOperation operation)
     {
         if(SelectedEntries.Length == 0)
             return;
@@ -20,6 +20,6 @@ public partial class FileManager
         var workingDir = new string(CurrentPath);
         var files = SelectedEntries.ToArray();
 
-        await operation.Execute(workingDir, files, FsAccess, this);
+        await operation.ExecuteAsync(workingDir, files, FsAccess, this);
     }
 }

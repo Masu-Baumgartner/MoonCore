@@ -24,7 +24,7 @@ public abstract partial class ToolbarItemBase<TGridItem>
     /// Render the content of the toolbar item in this function
     /// </summary>
     /// <param name="__builder">Render builder from the parent grid</param>
-    public abstract void RenderContent(RenderTreeBuilder __builder);
+    public abstract void RenderContent(RenderTreeBuilder builder);
     
     /// <summary>
     /// Callback whenever the items of the parent grid have changed. Needs to be overridden if you wish to handle it

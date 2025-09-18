@@ -4,5 +4,8 @@ namespace MoonCore.Blazor.FlyonUi.Toasts;
 
 public class ToastItem
 {
+    /// <summary>
+    /// Content of the toast
+    /// </summary>
     public RenderFragment Component { get; set; }
 }

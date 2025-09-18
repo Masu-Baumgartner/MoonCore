@@ -22,18 +22,18 @@ public class CreateFileOperation : IToolbarOperation
     public bool CheckCompatability(IFsAccess access, IFileManager fileManager)
         => true;
 
-    public async Task Execute(string workingDir, IFsAccess fsAccess, IFileManager fileManager)
+    public async Task ExecuteAsync(string workingDir, IFsAccess fsAccess, IFileManager fileManager)
     {
-        await ModalService.Launch<CreateFileModal>(parameters =>
+        await ModalService.LaunchAsync<CreateFileModal>(parameters =>
         {
             parameters.Add("OnSubmit", async (string fileName) =>
             {
-                await fsAccess.CreateFile(UnixPath.Combine(
+                await fsAccess.CreateFileAsync(UnixPath.Combine(
                     workingDir,
                     fileName
                 ));
 
-                await fileManager.Refresh();
+                await fileManager.RefreshAsync();
             });
         });
     }

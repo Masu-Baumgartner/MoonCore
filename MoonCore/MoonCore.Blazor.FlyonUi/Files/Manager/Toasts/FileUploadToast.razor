@@ -47,8 +47,19 @@
 
 @code
 {
+    /// <summary>
+    /// Initial value for the current file which is being uploaded
+    /// </summary>
     [Parameter] public string? File { get; set; }
+    
+    /// <summary>
+    /// Initial percentage of the upload progress
+    /// </summary>
     [Parameter] public int Percent { get; set; }
+    
+    /// <summary>
+    /// Worker callback which should execute the actual task so the modal can hide when its finished
+    /// </summary>
     [Parameter] public Func<FileUploadToast, Task> Callback { get; set; }
 
     private TaskType CurrentTaskType = TaskType.Progressing;
@@ -59,10 +70,15 @@
             return;
 
         await Callback.Invoke(this);
-        await Hide();
+        await HideAsync();
     }
 
-    public async Task SetProgress(string file, int percent)
+    /// <summary>
+    /// Update the current status to progressing and set the filename and the percentage of the operation
+    /// </summary>
+    /// <param name="file">Filename of the currently uploading file</param>
+    /// <param name="percent">Percentage of the current file upload progress</param>
+    public async Task SetProgressAsync(string file, int percent)
     {
         CurrentTaskType = TaskType.Progressing;
         File = file;
@@ -71,7 +87,10 @@
         await InvokeAsync(StateHasChanged);
     }
 
-    public async Task SetCombining()
+    /// <summary>
+    /// Sets the state to combining
+    /// </summary>
+    public async Task SetCombiningAsync()
     {
         CurrentTaskType = TaskType.Combining;
         await InvokeAsync(StateHasChanged);

@@ -16,19 +16,19 @@ public class HostFsAccess : IFsAccess, IDownloadUrlAccess, ICombineAccess, IArch
         Http = http;
     }
 
-    public Task CreateFile(string path)
+    public Task CreateFileAsync(string path)
         => Http.PostAsync($"api/fs/create-file?path={path}", null);
 
-    public Task CreateDirectory(string path)
+    public Task CreateDirectoryAsync(string path)
         => Http.PostAsync($"api/fs/create-directory?path={path}", null);
 
-    public async Task<FsEntry[]> List(string path)
+    public async Task<FsEntry[]> ListAsync(string path)
         => await Http.GetFromJsonAsync<FsEntry[]>($"api/fs/list?path={path}") ?? [];
 
-    public Task Move(string oldPath, string newPath)
+    public Task MoveAsync(string oldPath, string newPath)
         => Http.PostAsync($"api/fs/move?oldPath={oldPath}&newPath={newPath}", null);
 
-    public async Task Read(string path, Func<Stream, Task> onHandleData)
+    public async Task ReadAsync(string path, Func<Stream, Task> onHandleData)
     {
         var encoded = Uri.EscapeDataString(path.TrimStart('/'));
         using var request = new HttpRequestMessage(HttpMethod.Get, $"api/fs/download?path={encoded}");
@@ -39,13 +39,13 @@ public class HostFsAccess : IFsAccess, IDownloadUrlAccess, ICombineAccess, IArch
         await onHandleData(stream);
     }
 
-    public async Task Delete(string path)
+    public async Task DeleteAsync(string path)
     {
         var encodedPath = UrlEncoder.Default.Encode(path);
         await Http.DeleteAsync($"api/fs/delete?path={encodedPath}");
     }
 
-    public async Task Write(string path, Stream dataStream)
+    public async Task WriteAsync(string path, Stream dataStream)
     {
         using var content = new MultipartFormDataContent
         {
@@ -54,13 +54,13 @@ public class HostFsAccess : IFsAccess, IDownloadUrlAccess, ICombineAccess, IArch
         await Http.PostAsync($"api/fs/upload/single?filePath={path.TrimStart('/')}", content);
     }
 
-    public Task<string> GetFileUrl(string path)
+    public Task<string> GetFileUrlAsync(string path)
         => Task.FromResult($"{Http.BaseAddress}api/download/file?path={path}");
 
-    public Task<string> GetFolderUrl(string path)
+    public Task<string> GetFolderUrlAsync(string path)
         => Task.FromResult($"{Http.BaseAddress}api/download/folder?path={path}");
 
-    public async Task Combine(string destination, string[] files)
+    public async Task CombineAsync(string destination, string[] files)
     {
         await Http.PostAsync("api/fs/combine", JsonContent.Create(new FsCombineRequest()
         {
@@ -83,8 +83,8 @@ public class HostFsAccess : IFsAccess, IDownloadUrlAccess, ICombineAccess, IArch
         )
     ];
 
-    public async Task Archive(
-        string path,
+    public async Task ArchiveAsync(
+        string destination,
         ArchiveFormat format,
         string archiveRootPath,
         FsEntry[] files,
@@ -93,14 +93,14 @@ public class HostFsAccess : IFsAccess, IDownloadUrlAccess, ICombineAccess, IArch
     {
         await Http.PostAsync("api/fs/compress", JsonContent.Create(new FsCompressRequest()
         {
-            Destination = path,
+            Destination = destination,
             Identifier = format.Identifier,
             Files = files.Select(x => x.Name).ToArray(),
             Root = archiveRootPath
         }));
     }
 
-    public Task Unarchive(string path, ArchiveFormat format, string archiveRootPath,
+    public Task UnarchiveAsync(string path, ArchiveFormat format, string archiveRootPath,
         Func<string, Task>? onProgress = null)
     {
         throw new NotImplementedException();

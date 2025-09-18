@@ -18,14 +18,14 @@
         </div>
         <div class="col-span-1">
             <div class="flex flex-row justify-center lg:justify-end">
-                @if (ShowSelectionItems)
+                @if (ShowMultiOperations)
                 {
-                    for (var i = 0; i < SelectionOperations.Length; i++)
+                    for (var i = 0; i < MultiOperations.Length; i++)
                     {
-                        var operation = SelectionOperations[i];
+                        var operation = MultiOperations[i];
 
-                        <button @onclick="_ => OnSelectionClicked.Invoke(operation)"
-                                class="btn @(operation.ToolbarCss) @(i != SelectionOperations.Length - 1 ? "me-2" : "")">
+                        <button @onclick="_ => OnMultiOperationClicked.Invoke(operation)"
+                                class="btn @(operation.ToolbarCss) @(i != MultiOperations.Length - 1 ? "me-2" : "")">
                             <i class="@operation.Icon"></i>
                             @operation.Name
                         </button>
@@ -50,7 +50,7 @@
                             <i class="icon-upload"></i>
                             Upload
                         </label>
-                        <InputFile OnChange="HandleUpload" class="hidden" id="fm-upload" multiple=""/>
+                        <InputFile OnChange="HandleUploadAsync" class="hidden" id="fm-upload" multiple=""/>
                     }
                 }
             </div>
@@ -60,26 +60,67 @@
 
 @code
 {
+    /// <summary>
+    /// Current path to show to the user
+    /// </summary>
     [Parameter] public string CurrentPath { get; set; }
+    
+    /// <summary>
+    /// Callback which gets invoked when the user clicks on a part of the breadcrumb
+    /// </summary>
     [Parameter] public Func<string, Task>? OnBreadcrumbClick { get; set; }
+    
+    /// <summary>
+    /// Allows to specify a custom path which would be opened in a middle click for the breadcrumb
+    /// </summary>
     [Parameter] public Func<string, string>? CustomBreadcrumbClickLink { get; set; }
 
+    /// <summary>
+    /// Callback which gets invoked when the home button is clicked
+    /// </summary>
     [Parameter] public required Func<Task> OnHomeClick { get; set; }
+    
+    /// <summary>
+    /// Callback which gets called when the refresh button is clicked
+    /// </summary>
     [Parameter] public required Func<Task> OnRefreshClick { get; set; }
 
+    /// <summary>
+    /// Callback which gets called when a user selected files to upload
+    /// </summary>
     [Parameter] public required Func<IBrowserFile[], Task> OnFileSelected { get; set; }
 
-    [Parameter] public bool ShowSelectionItems { get; set; }
+    /// <summary>
+    /// Toggles whether to show the provided multi operations, if false the toolbar operations will be used
+    /// </summary>
+    [Parameter] public bool ShowMultiOperations { get; set; }
 
-    [Parameter] public IMultiFsOperation[] SelectionOperations { get; set; }
-    [Parameter] public Func<IMultiFsOperation, Task> OnSelectionClicked { get; set; }
+    /// <summary>
+    /// Defines the available multi operations
+    /// </summary>
+    [Parameter] public IMultiFsOperation[] MultiOperations { get; set; }
+    
+    /// <summary>
+    /// Callback which gets invoked when the user clicked on a multi operation button
+    /// </summary>
+    [Parameter] public Func<IMultiFsOperation, Task> OnMultiOperationClicked { get; set; }
 
+    /// <summary>
+    /// Defines the available toolbar operations
+    /// </summary>
     [Parameter] public IToolbarOperation[] ToolbarOperations { get; set; }
+    
+    /// <summary>
+    /// Callback which gets invoked when the user clicked on a toolbar operation button
+    /// </summary>
     [Parameter] public Func<IToolbarOperation, Task> OnToolbarClicked { get; set; }
     
+    /// <summary>
+    /// Toggles whether the user should be shown a file upload button
+    /// </summary>
     [Parameter] public bool EnableUpload { get; set; }
 
-    private async Task HandleUpload(InputFileChangeEventArgs eventArgs)
+    private async Task HandleUploadAsync(InputFileChangeEventArgs eventArgs)
     {
         if (eventArgs.FileCount == 0)
             return;

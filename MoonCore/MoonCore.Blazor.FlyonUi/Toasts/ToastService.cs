@@ -6,33 +6,74 @@ public class ToastService
 {
     private ToastLauncher ToastLauncher;
 
-    public Task Success(string title, string text = "") => LaunchInternal<SuccessToast>(title, text);
-    public Task Info(string title, string text = "") => LaunchInternal<InfoToast>(title, text);
-    public Task Warning(string title, string text = "") => LaunchInternal<WarningToast>(title, text);
-    public Task Error(string title, string text = "") => LaunchInternal<ErrorToast>(title, text);
+    /// <summary>
+    /// Launches a success toast with the provided text
+    /// </summary>
+    /// <param name="title">Title of the toast</param>
+    /// <param name="text"><b>Optional:</b> Content of the toast</param>
+    /// <returns></returns>
+    public Task SuccessAsync(string title, string text = "") => LaunchInternalAsync<SuccessToast>(title, text);
+    
+    /// <summary>
+    /// Launches an info toast with the provided text
+    /// </summary>
+    /// <param name="title">Title of the toast</param>
+    /// <param name="text"><b>Optional:</b> Content of the toast</param>
+    /// <returns></returns>
+    public Task InfoAsync(string title, string text = "") => LaunchInternalAsync<InfoToast>(title, text);
+    
+    /// <summary>
+    /// Launches a warning toast with the provided text
+    /// </summary>
+    /// <param name="title">Title of the toast</param>
+    /// <param name="text"><b>Optional:</b> Content of the toast</param>
+    /// <returns></returns>
+    public Task WarningAsync(string title, string text = "") => LaunchInternalAsync<WarningToast>(title, text);
+    
+    /// <summary>
+    /// Launches an error toast with the provided text
+    /// </summary>
+    /// <param name="title">Title of the toast</param>
+    /// <param name="text"><b>Optional:</b> Content of the toast</param>
+    /// <returns></returns>
+    public Task ErrorAsync(string title, string text = "") => LaunchInternalAsync<ErrorToast>(title, text);
 
-    public async Task Progress(string title, string defaultText, Func<ProgressToast, Task> work)
+    public async Task ProgressAsync(string title, string defaultText, Func<ProgressToast, Task> work)
     {
-        await Launch<ProgressToast>(buildAttr =>
+        await LaunchAsync<ProgressToast>(buildAttr =>
         {
             buildAttr.Add("Title", title);
             buildAttr.Add("Text", defaultText);
             buildAttr.Add("Work", work);
-        });
+        }, -1);
     }
 
-    private async Task LaunchInternal<T>(string title, string text) where T : BaseToast
+    private async Task LaunchInternalAsync<T>(string title, string text) where T : BaseToast
     {
-        await Launch<T>(buildAttr =>
+        await LaunchAsync<T>(buildAttr =>
         {
             buildAttr.Add("Title", title);
             buildAttr.Add("Text", text);
-        }, (int)TimeSpan.FromSeconds(5).TotalMilliseconds);
+        });
     }
 
-    public Task<ToastItem> Launch<T>(Action<Dictionary<string, object>>? onConfigure = null, int hideDelay = -1)
+    /// <summary>
+    /// Launches a component inside a toast container and automatically hides it again
+    /// </summary>
+    /// <param name="onConfigure">Callback to configure the parameters of the component</param>
+    /// <param name="hideDelayMs">Time in milliseconds until the modal should hide again. Use <b>-1</b> to disable this. Default: <b>5s</b></param>
+    /// <typeparam name="T">Type of the component</typeparam>
+    /// <returns>Reference item to close the toast using <see cref="CloseAsync"/></returns>
+    public Task<ToastItem> LaunchAsync<T>(Action<Dictionary<string, object>>? onConfigure = null, int hideDelayMs = 5000)
         where T : BaseToast
-        => ToastLauncher.Launch<T>(onConfigure, hideDelay);
+        => ToastLauncher.LaunchAsync<T>(onConfigure, hideDelayMs);
 
-    public void SetLauncher(ToastLauncher launcher) => ToastLauncher = launcher;
+    /// <summary>
+    /// Closes the provided toast
+    /// </summary>
+    /// <param name="item">Reference item of the toast to close</param>
+    public Task CloseAsync(ToastItem item)
+        => ToastLauncher.CloseAsync(item);
+
+    internal void SetLauncher(ToastLauncher launcher) => ToastLauncher = launcher;
 }

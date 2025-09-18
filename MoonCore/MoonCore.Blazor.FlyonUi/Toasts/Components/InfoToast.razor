@@ -12,7 +12,7 @@
     </p>
 </div>
 <div class="ml-4 flex flex-shrink-0">
-    <button @onclick="Hide" type="button"
+    <button @onclick="HideAsync" type="button"
             class="inline-flex rounded-md text-base-content/80 hover:text-base-content/60 focus:outline-none">
         <span class="sr-only">Close</span>
         <i class="bi bi-x-lg"></i>
@@ -21,6 +21,13 @@
 
 @code
 {
+    /// <summary>
+    /// Title of the toast
+    /// </summary>
     [Parameter] public string Title { get; set; }
+    
+    /// <summary>
+    /// Content of the toast
+    /// </summary>
     [Parameter] public string Text { get; set; }
 }

@@ -16,8 +16,23 @@
 
 @code
 {
+    /// <summary>
+    /// Array of names to select from with the <see cref="Index"/>
+    /// </summary>
     [Parameter] public string[] Names { get; set; } = [];
+    
+    /// <summary>
+    /// Array of links to select from with the <see cref="Index"/>
+    /// </summary>
     [Parameter] public string[] Links { get; set; } = [];
+    
+    /// <summary>
+    /// Array of icons to select from with the <see cref="Index"/>
+    /// </summary>
     [Parameter] public string[]? Icons { get; set; } = null;
+    
+    /// <summary>
+    /// Index to select from the arrays
+    /// </summary>
     [Parameter] public int Index { get; set; }
 }

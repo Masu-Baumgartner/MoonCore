@@ -16,7 +16,7 @@
         @if (ExceptionIsRecoverable)
         {
             <div class="mt-3.5">
-                <button @onclick="RecoverException" type="button" class="btn btn-sm btn-primary">
+                <button @onclick="RecoverExceptionAsync" type="button" class="btn btn-sm btn-primary">
                     Go back
                 </button>
             </div>
@@ -37,7 +37,7 @@ else
                     @MessageContent
                 </p>
             </div>
-            <button @onclick="DismissMessage" type="button" class="ms-auto cursor-pointer leading-none">
+            <button @onclick="DismissMessageAsync" type="button" class="ms-auto cursor-pointer leading-none">
                 <span class="icon-x text-lg"></span>
             </button>
         </div>
@@ -48,14 +48,14 @@ else
 
 @code
 {
-    private IDisposable NavigationManagerSubscription;
+    private IDisposable? NavigationManagerSubscription;
 
     // Message
     private bool ShouldShowMessage = false;
     private string MessageContent;
     private string MessageTitle;
     private string MessageIcon;
-    private Debouncer MessageDebouncer = new(TimeSpan.FromSeconds(3));
+    private readonly Debouncer MessageDebouncer = new(TimeSpan.FromSeconds(3));
 
     // Exception
     private bool ShouldShowException = false;
@@ -65,7 +65,7 @@ else
 
     protected override void OnInitialized()
     {
-        Navigation.RegisterLocationChangingHandler(async context =>
+        NavigationManagerSubscription = Navigation.RegisterLocationChangingHandler(async context =>
         {
             if (!ShouldShowMessage && !(ShouldShowException && ExceptionIsRecoverable))
                 return;
@@ -82,11 +82,11 @@ else
         GlobalErrorService.SetHandler(this);
     }
 
-    public async Task HandleException(Exception ex, string title, bool isBlocking, bool isRecoverable)
+    internal async Task HandleExceptionAsync(Exception ex, string title, bool isBlocking, bool isRecoverable)
     {
         if (!isBlocking)
         {
-            await ToastService.Error(
+            await ToastService.ErrorAsync(
                 title,
                 ex.Message
             );
@@ -102,7 +102,7 @@ else
         await InvokeAsync(StateHasChanged);
     }
 
-    public async Task ShowMessage(string title, string message, string icon)
+    internal async Task ShowMessageAsync(string title, string message, string icon)
     {
         MessageTitle = title;
         MessageContent = message;
@@ -118,13 +118,13 @@ else
         });
     }
 
-    private async Task DismissMessage()
+    private async Task DismissMessageAsync()
     {
         ShouldShowMessage = false;
         await InvokeAsync(StateHasChanged);
     }
 
-    private async Task RecoverException()
+    private async Task RecoverExceptionAsync()
     {
         ShouldShowException = false;
         await InvokeAsync(StateHasChanged);
@@ -132,12 +132,12 @@ else
 
     protected override async Task OnErrorAsync(Exception exception)
     {
-        await GlobalErrorService.HandleException(exception, string.Empty, true);
+        await GlobalErrorService.HandleExceptionAsync(exception, string.Empty, true);
         Recover();
     }
     
     public void Dispose()
     {
-        NavigationManagerSubscription.Dispose();
+        NavigationManagerSubscription?.Dispose();
     }
 }

@@ -3,7 +3,7 @@
     {
         <span href="#"
               @onclick:preventDefault
-              @onclick="() => RemoveTag(tag)"
+              @onclick="() => RemoveTagAsync(tag)"
               class="flex bg-primary rounded-lg py-0.5 px-1.5 me-1 cursor-pointer text-center text-primary-content">
             @tag
         </span>
@@ -19,14 +19,20 @@
 
 @code
 {
+    /// <summary>
+    /// List containing the entered tags. Will be modified by the component
+    /// </summary>
     [Parameter]
     public List<string> Value { get; set; } = new();
     
+    /// <summary>
+    /// Callback which will be invoked whenevr a tag gets added or removed
+    /// </summary>
     [Parameter] public Func<Task>? OnValueChanged { get; set; }
     
     private string InputField = "";
 
-    private async Task RemoveTag(string tag)
+    private async Task RemoveTagAsync(string tag)
     {
         Value.Remove(tag);
         

@@ -19,7 +19,13 @@
 
 @code
 {
+    /// <summary>
+    /// Text to use as the title of the header
+    /// </summary>
     [Parameter] public string Title { get; set; }
 
+    /// <summary>
+    /// Content of the header of the right
+    /// </summary>
     [Parameter] public RenderFragment? ChildContent { get; set; }
 }

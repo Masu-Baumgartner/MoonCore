@@ -19,16 +19,16 @@
     </div>
 
     <div class="mt-5">
-        <PathBreadcrumb Path="@Path" OnClick="SetPath"/>
+        <PathBreadcrumb Path="@Path" OnClick="SetPathAsync"/>
     </div>
 
     <div class="mt-3 border-base-content/20 bg-base-200 border-2 rounded-lg overflow-y-auto">
-        <FileView @ref="FileView" Load="Load" OnClick="OnClick">
+        <FileView @ref="FileView" Load="LoadAsync" OnClick="OnClick">
             <DataTableRow TItem="FsEntry" Index="int.MinValue">
                 <Template>
                     @if (Path != "/")
                     {
-                        <td @onclick="GoUp" scope="row" colspan="99999"
+                        <td @onclick="GoUpAsync" scope="row" colspan="99999"
                             class="py-1.5 px-3 text-left font-normal cursor-pointer">
                             <div class="flex flex-row items-center">
                                 <i class="icon-folder-up text-accent text-2xl me-5"></i>
@@ -41,10 +41,10 @@
         </FileView>
     </div>
     <div class="mt-5 flex justify-end">
-        <button @onclick="Hide" type="button" class="btn btn-secondary me-2">
+        <button @onclick="HideAsync" type="button" class="btn btn-secondary me-2">
             Cancel
         </button>
-        <WButton OnClick="_ => Submit()">
+        <WButton OnClick="_ => SubmitAsync()">
             Select
         </WButton>
     </div>
@@ -52,8 +52,19 @@
 
 @code
 {
+    /// <summary>
+    /// <see cref="IFsAccess"/> to use for acessing the folder structure in order to allow the user to browse for the move target
+    /// </summary>
     [Parameter] public IFsAccess FsAccess { get; set; }
+    
+    /// <summary>
+    /// Initial path where the move modal will start from
+    /// </summary>
     [Parameter] public string InitialPath { get; set; }
+    
+    /// <summary>
+    /// Callback with the selected path where the move operation should move to
+    /// </summary>
     [Parameter] public Func<string, Task> OnSubmit { get; set; }
 
     private string Path;
@@ -66,9 +77,9 @@
         return Task.CompletedTask;
     }
 
-    private async Task<FsEntry[]> Load()
+    private async Task<FsEntry[]> LoadAsync()
     {
-        var items = await FsAccess.List(Path);
+        var items = await FsAccess.ListAsync(Path);
 
         return items
             .OrderByDescending(x => x.IsFolder)
@@ -83,31 +94,31 @@
 
         Path = UnixPath.Combine(Path, entry.Name);
 
-        await FileView.Refresh();
+        await FileView.RefreshAsync();
         await InvokeAsync(StateHasChanged);
     }
 
-    private async Task SetPath(string path)
+    private async Task SetPathAsync(string path)
     {
         Path = path;
 
-        await FileView.Refresh();
+        await FileView.RefreshAsync();
         await InvokeAsync(StateHasChanged);
     }
 
-    private async Task GoUp()
+    private async Task GoUpAsync()
     {
         Path = UnixPath.GetFullPath(
             UnixPath.Combine(Path, "..")
         );
 
-        await FileView.Refresh();
+        await FileView.RefreshAsync();
         await InvokeAsync(StateHasChanged);
     }
 
-    private async Task Submit()
+    private async Task SubmitAsync()
     {
         await OnSubmit.Invoke(Path);
-        await Hide();
+        await HideAsync();
     }
 }

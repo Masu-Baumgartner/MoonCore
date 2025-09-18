@@ -5,8 +5,19 @@
     [CascadingParameter(Name = "DataTable")]
     public DataTable<TItem> DataTable { get; set; }
     
+    /// <summary>
+    /// Index of the row. The higher the value the more at the bottom the row will be placed
+    /// </summary>
     [Parameter] public int Index { get; set; }
+    
+    /// <summary>
+    /// Content of the row
+    /// </summary>
     [Parameter] public RenderFragment<TItem[]> Template { get; set; }
+    
+    /// <summary>
+    /// <b>Optional:</b> Custom CSS for the row. Empty by default
+    /// </summary>
     [Parameter] public string Css { get; set; } = "";
 
     protected override void OnInitialized()

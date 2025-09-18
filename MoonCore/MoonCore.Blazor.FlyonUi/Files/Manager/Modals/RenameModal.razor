@@ -16,14 +16,14 @@
         </div>
     </div>
     
-    <HandleForm @ref="HandleForm" Model="Form" OnValidSubmit="HandleSubmit">
+    <HandleForm @ref="HandleForm" Model="Form" OnValidSubmit="HandleSubmitAsync">
         <div class="mt-5 text-center sm:mt-5">
             <div>
                 <input class="input" @bind="Form.Name" placeholder="Enter a new name"/>
             </div>
         </div>
         <div class="mt-5 flex justify-end">
-            <button @onclick="Hide" type="button" class="btn btn-secondary me-2">
+            <button @onclick="HideAsync" type="button" class="btn btn-secondary me-2">
                 Cancel
             </button>
             <WButton IsWorking="HandleForm.IsSubmitting" Type="submit">
@@ -35,7 +35,14 @@
 
 @code
 {
+    /// <summary>
+    /// Specifies the old name the folder/file has before renaming
+    /// </summary>
     [Parameter] public string OldName { get; set; } = "";
+    
+    /// <summary>
+    /// Callback with the new name which will be invoked when the user provided the new name
+    /// </summary>
     [Parameter] public required Func<string, Task> OnSubmit { get; set; }
 
     private FormData Form;
@@ -55,9 +62,9 @@
         public string Name { get; set; }
     }
 
-    private async Task HandleSubmit()
+    private async Task HandleSubmitAsync()
     {
         await OnSubmit.Invoke(Form.Name);
-        await Hide();
+        await HideAsync();
     }
 }

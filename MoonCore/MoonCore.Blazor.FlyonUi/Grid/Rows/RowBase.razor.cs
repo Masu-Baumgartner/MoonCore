@@ -24,7 +24,7 @@ public abstract partial class RowBase<TGridItem>
     /// Render the content of the row in this function. You should include a <b>tr</b> to have it properly formatted
     /// </summary>
     /// <param name="__builder">Render builder from the parent grid</param>
-    public abstract void RenderContent(RenderTreeBuilder __builder);
+    public abstract void RenderContent(RenderTreeBuilder builder);
     
     /// <summary>
     /// Callback whenever the items of the parent grid have changed. Needs to be overridden if you wish to handle it

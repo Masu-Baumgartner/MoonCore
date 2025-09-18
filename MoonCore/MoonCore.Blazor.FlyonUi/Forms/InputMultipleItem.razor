@@ -22,7 +22,7 @@
     }
     else
     {
-        <button @onclick="ToggleVisibility" type="button" aria-expanded="true"
+        <button @onclick="ToggleVisibilityAsync" type="button" aria-expanded="true"
                 class="advance-select-toggle">
             @if (Value.Count == 0)
             {
@@ -77,7 +77,7 @@
             {
                 foreach (var item in VisibleItems)
                 {
-                    <div @onclick="() => Select(item)"
+                    <div @onclick="() => SelectAsync(item)"
                          tabindex="0"
                          class="cursor-pointer advance-select-option selected:select-active @(Value.Contains(item) ? "selected" : "")">
                         @if (Value.Contains(item))
@@ -124,10 +124,45 @@
 
 @code
 {
+    /// <summary>
+    /// Defines the list which should contain the selected items.
+    /// This list will be modified by the component
+    /// </summary>
     [Parameter] public IList<TItem> Value { get; set; }
+    
+    /// <summary>
+    /// Callback used to retrieve the items which should be shown in the item select
+    /// </summary>
     [Parameter] public required Func<Task<TItem[]>> ItemSource { get; set; }
+    
+    /// <summary>
+    /// Define which field should be used to display the item in the dropdown.
+    /// This expression can also build a string to combine multiple properties
+    /// <br />
+    /// <br />
+    /// Example:
+    /// <code>
+    /// DisplayField="@(x => $"{x.FirstName} {x.LastName}")"
+    /// </code>
+    /// </summary>
     [Parameter] public required Func<TItem, object> DisplayField { get; set; }
+    
+    /// <summary>
+    /// Define which field should be used to search the item in the dropdown.
+    /// This expression can also build a string to combine multiple properties
+    /// <br />
+    /// <br />
+    /// Example:
+    /// <code>
+    /// SearchField="@(x => $"{x.FirstName} {x.LastName}")"
+    /// </code>
+    /// </summary>
     [Parameter] public Func<TItem, object>? SearchField { get; set; }
+    
+    /// <summary>
+    /// <b>Optional:</b> Callback which will be invoked when the selection has changed
+    /// </summary>
+    [Parameter] public Func<Task>? OnValueChanged { get; set; }
 
     private bool IsLoading;
     private bool IsVisible;
@@ -143,7 +178,7 @@
         await InvokeAsync(StateHasChanged);
     }
 
-    private async Task Select(TItem item)
+    private async Task SelectAsync(TItem item)
     {
         if (Value.Contains(item))
             Value.Remove(item);
@@ -151,22 +186,25 @@
             Value.Add(item);
         
         await InvokeAsync(StateHasChanged);
+
+        if (OnValueChanged != null)
+            await OnValueChanged.Invoke();
     }
 
-    private async Task ToggleVisibility()
+    private async Task ToggleVisibilityAsync()
     {
         IsVisible = !IsVisible;
 
         if (IsVisible && Items == null)
         {
             IsLoading = true;
-            Task.Run(LoadItems);
+            Task.Run(LoadItemsAsync);
         }
 
         await InvokeAsync(StateHasChanged);
     }
 
-    private async Task LoadItems()
+    private async Task LoadItemsAsync()
     {
         try
         {

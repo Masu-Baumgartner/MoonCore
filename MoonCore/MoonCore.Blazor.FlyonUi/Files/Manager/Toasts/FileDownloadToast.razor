@@ -25,8 +25,19 @@
 
 @code
 {
+    /// <summary>
+    /// <b>Optional:</b> Initial text shown as the status
+    /// </summary>
     [Parameter] public string? Text { get; set; }
+    
+    /// <summary>
+    /// Initial percentage of progress shown as the status
+    /// </summary>
     [Parameter] public int Percent { get; set; }
+    
+    /// <summary>
+    /// Worker callback which should execute the actual task so the modal can hide when its finished
+    /// </summary>
     [Parameter] public Func<FileDownloadToast, Task> Callback { get; set; }
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
@@ -35,10 +46,15 @@
             return;
 
         await Callback.Invoke(this);
-        await Hide();
+        await HideAsync();
     }
 
-    public async Task UpdateStatus(string text, int percent)
+    /// <summary>
+    /// Updates the current status of the download
+    /// </summary>
+    /// <param name="text">Description for the status</param>
+    /// <param name="percent">Percentage progress of the operation</param>
+    public async Task UpdateStatusAsync(string text, int percent)
     {
         Text = text;
         Percent = percent;

@@ -27,39 +27,39 @@
 @code
 {
     private async Task Success()
-        => await ToastService.Success("Successfully did something", "Successfully failed an unsuccessful task");
+        => await ToastService.SuccessAsync("Successfully did something", "Successfully failed an unsuccessful task");
     
     private async Task Info()
-        => await ToastService.Info("Important information", "There is a bomb inside your walls");
+        => await ToastService.InfoAsync("Important information", "There is a bomb inside your walls");
     
     private async Task Warning()
-        => await ToastService.Warning("Useless warning", "This message is just pointless");
+        => await ToastService.WarningAsync("Useless warning", "This message is just pointless");
     
     private async Task Error()
-        => await ToastService.Error("Unhandled error", "Your windoof instance crashed");
+        => await ToastService.ErrorAsync("Unhandled error", "Your windoof instance crashed");
     
     private async Task SuccessSmall()
-        => await ToastService.Success("Successfully failed an unsuccessful task");
+        => await ToastService.SuccessAsync("Successfully failed an unsuccessful task");
     
     private async Task InfoSmall()
-        => await ToastService.Info("There is a bomb inside your walls");
+        => await ToastService.InfoAsync("There is a bomb inside your walls");
     
     private async Task WarningSmall()
-        => await ToastService.Warning("This message is just pointless");
+        => await ToastService.WarningAsync("This message is just pointless");
     
     private async Task ErrorSmall()
-        => await ToastService.Error("Your windoof instance crashed");
+        => await ToastService.ErrorAsync("Your windoof instance crashed");
 
     private async Task Progress()
     {
-        await ToastService.Progress(
+        await ToastService.ProgressAsync(
             "Working on something",
             "Doing one task",
             async toast =>
             {
                 await Task.Delay(TimeSpan.FromSeconds(2));
 
-                await toast.UpdateText("Doing another task");
+                await toast.UpdateTextAsync("Doing another task");
                 
                 await Task.Delay(TimeSpan.FromSeconds(2));
             }

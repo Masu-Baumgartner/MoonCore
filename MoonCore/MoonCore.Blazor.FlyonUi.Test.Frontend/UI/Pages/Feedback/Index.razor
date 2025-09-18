@@ -19,25 +19,25 @@
 @code
 {
     private async Task Info()
-        => await AlertService.Info("Important information", "Hey this is an important information");
+        => await AlertService.InfoAsync("Important information", "Hey this is an important information");
     
     private async Task Error()
-        => await AlertService.Error("Critical error", "Something went wrong");
+        => await AlertService.ErrorAsync("Critical error", "Something went wrong");
     
     private async Task Success()
-        => await AlertService.Success("Successfully did something", "Successfully failed task");
+        => await AlertService.SuccessAsync("Successfully did something", "Successfully failed task");
     
     private async Task Warning()
-        => await AlertService.Warning("Irrelevant warning", "Nothing to worry about");
+        => await AlertService.WarningAsync("Irrelevant warning", "Nothing to worry about");
 
     private async Task ConfirmDanger()
     {
-        await AlertService.ConfirmDanger(
+        await AlertService.ConfirmDangerAsync(
             "Destructive action",
             "You are about to doing something destructive",
             async () =>
             {
-                await AlertService.Success("Destruction successful", "Whoops :>");
+                await AlertService.SuccessAsync("Destruction successful", "Whoops :>");
             }
         );
     }

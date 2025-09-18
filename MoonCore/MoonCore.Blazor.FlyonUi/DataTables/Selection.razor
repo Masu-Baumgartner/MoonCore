@@ -5,12 +5,12 @@
         <div class="flex justify-center ms-1">
             @if (DataTable.Items.Length != 0 && DataTable.Items.Length == SelectedItems.Count)
             {
-                <input @onclick="() => ToggleAll(false)" @onclick:stopPropagation type="checkbox" class="checkbox checkbox-primary checkbox-xs"
+                <input @onclick="() => ToggleAllAsync(false)" @onclick:stopPropagation type="checkbox" class="checkbox checkbox-primary checkbox-xs"
                        checked="checked">
             }
             else
             {
-                <input @onclick="() => ToggleAll(true)" @onclick:stopPropagation type="checkbox" class="checkbox checkbox-primary checkbox-xs">
+                <input @onclick="() => ToggleAllAsync(true)" @onclick:stopPropagation type="checkbox" class="checkbox checkbox-primary checkbox-xs">
             }
         </div>
     </HeaderTemplate>
@@ -35,6 +35,9 @@
     [CascadingParameter(Name = "DataTable")]
     public DataTable<TItem> DataTable { get; set; }
     
+    /// <summary>
+    /// EVent callback which will be invoked when the selection of items has changed
+    /// </summary>
     [Parameter] public Func<TItem[], Task>? OnSelectionChanged { get; set; }
 
     private readonly List<TItem> SelectedItems = new();
@@ -50,14 +53,14 @@
         };
     }
 
-    private async Task ToggleAll(bool toggle)
+    private async Task ToggleAllAsync(bool toggle)
     {
         SelectedItems.Clear();
         
         if(toggle)
             SelectedItems.AddRange(DataTable.Items);
 
-        await DataTable.NotifyStateHasChanged();
+        await DataTable.NotifyStateHasChangedAsync();
        
         if(OnSelectionChanged != null)
             await OnSelectionChanged.Invoke(SelectedItems.ToArray());

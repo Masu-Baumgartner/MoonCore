@@ -22,7 +22,7 @@
     }
     else
     {
-        <button @onclick="ToggleVisibility" type="button" aria-expanded="true"
+        <button @onclick="ToggleVisibilityAsync" type="button" aria-expanded="true"
                 class="advance-select-toggle">
             @if (Value == null)
             {
@@ -67,7 +67,7 @@
             {
                 foreach (var item in VisibleItems)
                 {
-                    <div @onclick="() => Select(item)"
+                    <div @onclick="() => SelectAsync(item)"
                          tabindex="0"
                          class="cursor-pointer advance-select-option selected:select-active @(item!.Equals(Value) ? "selected" : "")">
                         @if (item.Equals(Value))
@@ -116,6 +116,9 @@
 
     #region Binder
 
+    /// <summary>
+    /// Current value of the <see cref="InputItem{TItem}"/>
+    /// </summary>
     [Parameter]
     public TItem? Value
     {
@@ -133,14 +136,42 @@
         }
     }
 
+    /// <summary>
+    /// <b>Optional:</b> Callback which gets executed when the <see cref="Value"/> has changed
+    /// </summary>
     [Parameter] public EventCallback<TItem?> ValueChanged { get; set; }
 
     private TItem? _value;
 
     #endregion
 
+    /// <summary>
+    /// Callback used to retrieve the items which should be shown in the item select
+    /// </summary>
     [Parameter] public required Func<Task<TItem[]>> ItemSource { get; set; }
+    
+    /// <summary>
+    /// Define which field should be used to display the item in the dropdown.
+    /// This expression can also build a string to combine multiple properties
+    /// <br />
+    /// <br />
+    /// Example:
+    /// <code>
+    /// DisplayField="@(x => $"{x.FirstName} {x.LastName}")"
+    /// </code>
+    /// </summary>
     [Parameter] public required Func<TItem, object> DisplayField { get; set; }
+    
+    /// <summary>
+    /// Define which field should be used to search the item in the dropdown.
+    /// This expression can also build a string to combine multiple properties
+    /// <br />
+    /// <br />
+    /// Example:
+    /// <code>
+    /// SearchField="@(x => $"{x.FirstName} {x.LastName}")"
+    /// </code>
+    /// </summary>
     [Parameter] public Func<TItem, object>? SearchField { get; set; }
 
     private bool IsLoading;
@@ -157,7 +188,7 @@
         await InvokeAsync(StateHasChanged);
     }
 
-    private async Task Select(TItem? item)
+    private async Task SelectAsync(TItem? item)
     {
         if (Value?.Equals(item) ?? false) // Select using click on the same item again
             Value = default;
@@ -168,20 +199,20 @@
         await InvokeAsync(StateHasChanged);
     }
 
-    private async Task ToggleVisibility()
+    private async Task ToggleVisibilityAsync()
     {
         IsVisible = !IsVisible;
 
         if (IsVisible && Items == null)
         {
             IsLoading = true;
-            Task.Run(LoadItems);
+            Task.Run(LoadItemsAsync);
         }
 
         await InvokeAsync(StateHasChanged);
     }
 
-    private async Task LoadItems()
+    private async Task LoadItemsAsync()
     {
         try
         {

@@ -11,7 +11,14 @@
 
 @code
 {
+    /// <summary>
+    /// Exception to render as an error display
+    /// </summary>
     [Parameter] public required Exception Exception { get; set; }
+    
+    /// <summary>
+    /// <b>Optional:</b> Addition content to put under the error display
+    /// </summary>
     [Parameter] public RenderFragment? ChildContent { get; set; }
 
     private string Title;
@@ -38,6 +45,12 @@
                 Title = "Not found";
                 Icon = "icon-package-open";
                 IconColor = "text-info";
+            }
+            else if (httpApiException.Status == 401)
+            {
+                Title = "Unauthenticated";
+                Icon = "icon-key-round";
+                IconColor = "text-error";
             }
             else if (httpApiException.Status == 400)
             {

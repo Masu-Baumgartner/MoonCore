@@ -14,8 +14,20 @@
 
 @code
 {
+    /// <summary>
+    /// Title of the toast
+    /// </summary>
     [Parameter] public string Title { get; set; }
+    
+    /// <summary>
+    /// Content of the toast
+    /// </summary>
     [Parameter] public string Text { get; set; }
+    
+    /// <summary>
+    /// Worker callback which hides the toast after the callback has returned.
+    /// Call your actual work code inside this callback
+    /// </summary>
     [Parameter] public Func<ProgressToast, Task> Work { get; set; }
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
@@ -24,10 +36,14 @@
             return;
 
         await Work.Invoke(this);
-        await Hide();
+        await HideAsync();
     }
 
-    public async Task UpdateText(string text)
+    /// <summary>
+    /// Update the text of the progress
+    /// </summary>
+    /// <param name="text">New text to show as the status</param>
+    public async Task UpdateTextAsync(string text)
     {
         Text = text;
         await InvokeAsync(StateHasChanged);

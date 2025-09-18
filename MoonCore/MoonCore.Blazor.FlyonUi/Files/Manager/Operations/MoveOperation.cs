@@ -27,15 +27,15 @@ public class MoveOperation : IMultiFsOperation
     public bool CheckCompatability(IFsAccess access, IFileManager fileManager)
         => true;
 
-    public async Task Execute(string workingDir, FsEntry[] files, IFsAccess fsAccess, IFileManager fileManager)
+    public async Task ExecuteAsync(string workingDir, FsEntry[] files, IFsAccess fsAccess, IFileManager fileManager)
     {
-        await ModalService.Launch<MoveModal>(parameters =>
+        await ModalService.LaunchAsync<MoveModal>(parameters =>
         {
             parameters["FsAccess"] = fsAccess;
             parameters["InitialPath"] = workingDir;
             parameters["OnSubmit"] = async (string path) =>
             {
-                await ToastService.Progress(
+                await ToastService.ProgressAsync(
                     $"Moving {files.Length} items",
                     "Preparing",
                     async toast =>
@@ -44,11 +44,11 @@ public class MoveOperation : IMultiFsOperation
                         
                         foreach (var file in files)
                         {
-                            await toast.UpdateText(file.Name);
+                            await toast.UpdateTextAsync(file.Name);
 
                             try
                             {
-                                await fsAccess.Move(
+                                await fsAccess.MoveAsync(
                                     UnixPath.Combine(workingDir, file.Name),
                                     UnixPath.Combine(path, file.Name)
                                 );
@@ -57,15 +57,15 @@ public class MoveOperation : IMultiFsOperation
                             }
                             catch (HttpApiException e)
                             {
-                                await ToastService.Error(
+                                await ToastService.ErrorAsync(
                                     file.Name,
                                     e.Title
                                 );
                             }
                         }
                         
-                        await ToastService.Success($"Successfully moved {successfully} item(s)");
-                        await fileManager.Refresh();
+                        await ToastService.SuccessAsync($"Successfully moved {successfully} item(s)");
+                        await fileManager.RefreshAsync();
                     }
                 );
             };

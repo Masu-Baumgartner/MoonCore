@@ -1,5 +1,5 @@
 <div class="dropdown relative inline-flex @(Show ? "open" : "")">
-    <a href="#" @onclick="Toggle" @onclick:preventDefault>
+    <a href="#" @onclick="ToggleAsync" @onclick:preventDefault>
         @Activator
     </a>
     <div @ref="Reference" @onfocusout="OnFocusOut" class="dropdown-menu dropdown-open:opacity-100 block absolute @Align z-10 mt-12 w-56 origin-top-left" role="menu" aria-orientation="vertical" aria-labelledby="dropdown-default">
@@ -9,13 +9,22 @@
 
 @code
 {
+    /// <summary>
+    /// Element content for the activator. Used for opening the dropdown. Put a button or simular here
+    /// </summary>
     [Parameter] public RenderFragment Activator { get; set; }
+    
+    /// <summary>
+    /// Content of the dropdown
+    /// </summary>
     [Parameter] public RenderFragment Content { get; set; }
+    
+    /// <summary>
+    /// CSS class for alignment. By default, <b>left-0</b> is used
+    /// </summary>
     [Parameter] public string Align { get; set; } = "left-0";
 
     private bool Show = false;
-    private double X;
-    private double Y;
     private ElementReference Reference;
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
@@ -26,7 +35,7 @@
         await Reference.FocusAsync();
     }
 
-    private async Task Toggle()
+    private async Task ToggleAsync()
     {
         Show = !Show;
         await InvokeAsync(StateHasChanged);

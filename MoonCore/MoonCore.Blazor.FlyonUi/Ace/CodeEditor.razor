@@ -10,9 +10,24 @@
 
 @code
 {
+    /// <summary>
+    /// Initial content of the text editor. Use this property to set the content of the editor
+    /// </summary>
     [Parameter] public string InitialContent { get; set; }
+    
+    /// <summary>
+    /// Callback used to collect configuration options
+    /// </summary>
     [Parameter] public Action<CodeEditorOptions>? OnConfigure { get; set; }
+    
+    /// <summary>
+    /// CSS height property for the editor
+    /// </summary>
     [Parameter] public string Height { get; set; } = "60dvh";
+    
+    /// <summary>
+    /// Can be used to provide custom css classes to the editor container
+    /// </summary>
     [Parameter] public string CssClasses { get; set; } = "";
     
     private string EditorId;
@@ -39,13 +54,17 @@
         if(!firstRender)
             return;
         
-        await CodeEditorService.Attach(EditorId, Options);
+        await CodeEditorService.AttachAsync(EditorId, Options);
         IsInitialized = true;
     }
-
-    public async Task<string> GetValue()
+    
+    /// <summary>
+    /// Retrieves the content of the editor
+    /// </summary>
+    /// <returns>String content of the editor. Contains all lines in one string</returns>
+    public async Task<string> GetValueAsync()
     {
-        return await CodeEditorService.GetValue(EditorId);
+        return await CodeEditorService.GetValueAsync(EditorId);
     }
 
     public async ValueTask DisposeAsync()
@@ -55,7 +74,7 @@
         
         try
         {
-            await CodeEditorService.Destroy(EditorId);
+            await CodeEditorService.DestroyAsync(EditorId);
         }
         catch (JSDisconnectedException)
         {

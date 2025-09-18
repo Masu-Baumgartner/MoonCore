@@ -17,7 +17,7 @@ public class ImageOpenOperation : IFsOpenOperation
     public bool CheckCompatability(IFsAccess access, IFileManager fileManager)
         => access is IDownloadUrlAccess;
 
-    public async Task<RenderFragment?> Open(string workingDir, FsEntry entry, IFsAccess fsAccess, IFileManager fileManager)
+    public async Task<RenderFragment?> OpenAsync(string workingDir, FsEntry entry, IFsAccess fsAccess, IFileManager fileManager)
     {
         var downloadUrlAccess = fsAccess as IDownloadUrlAccess;
 
@@ -26,13 +26,13 @@ public class ImageOpenOperation : IFsOpenOperation
         
         var path = UnixPath.Combine(workingDir, entry.Name);
 
-        var url = await downloadUrlAccess.GetFileUrl(path);
+        var url = await downloadUrlAccess.GetFileUrlAsync(path);
         
         return ComponentHelper.FromType<ImageWindow>(parameters =>
         {
             parameters["Url"] = url;
             parameters["FileName"] = entry.Name;
-            parameters["OnClose"] = async () => await fileManager.CloseOpenScreen();
+            parameters["OnClose"] = async () => await fileManager.CloseOpenScreenAsync();
         });
     }
 }

@@ -4,7 +4,7 @@
         <span>@FileName</span>
     </div>
     <div>
-        <button @onclick="Close" class="btn btn-error">Close</button>
+        <button @onclick="CloseAsync" class="btn btn-error">Close</button>
     </div>
 </div>
 
@@ -14,9 +14,20 @@
 
 @code
 {
+    /// <summary>
+    /// URL to load the image from. Retrieved by the download access
+    /// </summary>
     [Parameter] public string Url { get; set; }
+    
+    /// <summary>
+    /// Callback which will be invoked when the user wants to close the image
+    /// </summary>
     [Parameter] public Func<Task> OnClose { get; set; }
+    
+    /// <summary>
+    /// Filename of the image to show to the user
+    /// </summary>
     [Parameter] public string FileName { get; set; }
 
-    private async Task Close() => await OnClose.Invoke();
+    private async Task CloseAsync() => await OnClose.Invoke();
 }

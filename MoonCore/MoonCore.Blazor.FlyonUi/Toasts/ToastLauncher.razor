@@ -28,7 +28,14 @@
         ToastService.SetLauncher(this);
     }
 
-    public async Task<ToastItem> Launch<T>(Action<Dictionary<string, object>>? onConfigure = null, int hideDelay = -1) where T : BaseToast
+    /// <summary>
+    /// Launches a component inside a toast container and automatically hides it again
+    /// </summary>
+    /// <param name="onConfigure">Callback to configure the parameters of the component</param>
+    /// <param name="hideDelayMs">Time in milliseconds until the modal should hide again. Use <b>-1</b> to disable this. Default: <b>5s</b></param>
+    /// <typeparam name="T">Type of the component</typeparam>
+    /// <returns>Reference item to close the toast using <see cref="CloseAsync"/></returns>
+    public async Task<ToastItem> LaunchAsync<T>(Action<Dictionary<string, object>>? onConfigure = null, int hideDelayMs = 5000) where T : BaseToast
     {
         var item = new ToastItem();
 
@@ -40,12 +47,12 @@
             onConfigure?.Invoke(buildAttr);
         });
 
-        if (hideDelay > 0)
+        if (hideDelayMs > 0)
         {
             Task.Run(async () =>
             {
-                await Task.Delay(hideDelay);
-                await Close(item);
+                await Task.Delay(hideDelayMs);
+                await CloseAsync(item);
             });
         }
         
@@ -54,8 +61,12 @@
 
         return item;
     }
-
-    public async Task Close(ToastItem item)
+    
+    /// <summary>
+    /// Closes the provided toast
+    /// </summary>
+    /// <param name="item">Reference item of the toast to close</param>
+    public async Task CloseAsync(ToastItem item)
     {
         if(Items.Contains(item))
             Items.Remove(item);

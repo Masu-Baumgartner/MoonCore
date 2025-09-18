@@ -34,15 +34,15 @@ public class DownloadOperation : IMultiFsOperation
     public bool CheckCompatability(IFsAccess access, IFileManager fileManager)
         => access is IDownloadUrlAccess;
 
-    public async Task Execute(string workingDir, FsEntry[] entries, IFsAccess access, IFileManager fileManager)
+    public async Task ExecuteAsync(string workingDir, FsEntry[] entries, IFsAccess access, IFileManager fileManager)
     {
         if (access is not IDownloadUrlAccess downloadUrlAccess)
         {
-            await ToastService.Error("Unable to download any files/folders. Not supported operation");
+            await ToastService.ErrorAsync("Unable to download any files/folders. Not supported operation");
             return;
         }
 
-        await ToastService.Launch<FileDownloadToast>(parameters =>
+        await ToastService.LaunchAsync<FileDownloadToast>(parameters =>
         {
             parameters["Callback"] = async (FileDownloadToast toast) =>
             {
@@ -51,7 +51,7 @@ public class DownloadOperation : IMultiFsOperation
 
                 foreach (var entry in entries)
                 {
-                    await toast.UpdateStatus($"Starting download for {entry.Name}", 0);
+                    await toast.UpdateStatusAsync($"Starting download for {entry.Name}", 0);
 
                     var entryPath = UnixPath.Combine(workingDir, entry.Name);
 
@@ -60,11 +60,11 @@ public class DownloadOperation : IMultiFsOperation
                         string url;
 
                         if (entry.IsFolder)
-                            url = await downloadUrlAccess.GetFolderUrl(entryPath);
+                            url = await downloadUrlAccess.GetFolderUrlAsync(entryPath);
                         else
-                            url = await downloadUrlAccess.GetFileUrl(entryPath);
+                            url = await downloadUrlAccess.GetFileUrlAsync(entryPath);
 
-                        await DownloadService.DownloadUrl(url);
+                        await DownloadService.DownloadUrlAsync(url);
 
                         succeeded++;
                     }
@@ -76,7 +76,7 @@ public class DownloadOperation : IMultiFsOperation
                             entry.Name
                         );
 
-                        await ToastService.Error(
+                        await ToastService.ErrorAsync(
                             "An error occured while downloading item",
                             entry.Name
                         );
@@ -85,7 +85,7 @@ public class DownloadOperation : IMultiFsOperation
                     }
                 }
 
-                await ToastService.Info(
+                await ToastService.InfoAsync(
                     "File downloads started",
                     $"Successful: {succeeded} - Failed: {failed}"
                 );

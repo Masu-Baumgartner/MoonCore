@@ -4,12 +4,13 @@
 @using MoonCore.Exceptions
 
 @inject ILogger<HandleForm> Logger
+@inject GlobalErrorService ErrorService
 
 @if (SubmitException != null)
 {
     <div class="flex justify-center items-center">
         <ErrorStateDisplay Exception="SubmitException">
-            <button @onclick="ReturnToForm" class="btn btn-sm btn-primary mt-2">
+            <button @onclick="ReturnToFormAsync" class="btn btn-sm btn-primary mt-2">
                 <i class="icon-undo-2"></i>
                 Return
             </button>
@@ -23,14 +24,14 @@ else
         <div>
             @if (ErrorMessages.Count == 1)
             {
-                <div class="alert alert-error flex items-center gap-4 text-sm mb-5" role="alert">
+                <div class="alert alert-error flex items-center gap-4 text-sm @ErrorMessageCss" role="alert">
                     <i class="icon-triangle-alert shrink-0 text-lg"></i>
                     <p>@ErrorMessages[0]</p>
                 </div>
             }
             else if (ErrorMessages.Count > 1)
             {
-                <div class="alert alert-error flex items-start gap-4 mb-3">
+                <div class="alert alert-error flex items-start gap-4 @ErrorMessageCss">
                     <span class="icon-triangle-alert text-lg"></span>
                     <div class="flex flex-col gap-1">
                         <h5 class="text-base font-semibold">Error(s) occured while processing your data</h5>
@@ -46,28 +47,53 @@ else
         </div>
     }
 
-    <form action="#" @onsubmit="Submit" @onsubmit:preventDefault>
+    <form action="#" @onsubmit="SubmitAsync" @onsubmit:preventDefault>
         @ChildContent.Invoke(this)
     </form>
 }
 
 @code
 {
+    /// <summary>
+    /// Content of the form. Put your fields etc here
+    /// </summary>
     [Parameter] public RenderFragment<HandleForm> ChildContent { get; set; }
+    
+    /// <summary>
+    /// Form model to validate on. Use Data Attributes for validation
+    /// </summary>
     [Parameter] public required object Model { get; set; }
-    [Parameter] public required Func<Task> OnValidSubmit { get; set; }
+    
+    /// <summary>
+    /// Callback when the form is submitted and valid. Any exceptions thrown inside the callback will be handled.
+    /// Use a <see cref="DisplayException"/> to display a message
+    /// </summary>
+    [Parameter] public required EventCallback OnValidSubmit { get; set; }
 
+    /// <summary>
+    /// Allows to specify custom css classes for the error message. By default, it contains the spacing class <b>mb-5</b>
+    /// </summary>
+    [Parameter]
+    public string ErrorMessageCss { get; set; } = "mb-5";
+
+    /// <summary>
+    /// Determines if the HandleForm is currently submitting
+    /// </summary>
     public bool IsSubmitting { get; set; } = false;
 
     private Exception? SubmitException;
     private readonly List<string> ErrorMessages = [];
-    
-    public async Task<bool> Submit()
+
+    /// <summary>
+    /// Triggers submit of the form. Will validate the form and invoke <see cref="OnValidSubmit"/> if valid
+    /// </summary>
+    /// <returns>True if validated successfully, false if any validation errors occured</returns>
+    public async Task<bool> SubmitAsync()
     {
         // Prevent multiple submits at the same time
         if (IsSubmitting)
             return false;
-        
+
         // Resetting state
         SubmitException = null;
         ErrorMessages.Clear();
@@ -75,7 +101,7 @@ else
 
         await InvokeAsync(StateHasChanged);
 
-        var wasSuccessful = await InternalSubmit();
+        var wasSuccessful = await InternalSubmitAsync();
 
         IsSubmitting = false;
         await InvokeAsync(StateHasChanged);
@@ -83,7 +109,7 @@ else
         return wasSuccessful;
     }
 
-    private async Task<bool> InternalSubmit()
+    private async Task<bool> InternalSubmitAsync()
     {
         // Exit early if form model is invalid
         if (!ValidateFormModel())
@@ -91,7 +117,7 @@ else
 
         try
         {
-            await OnValidSubmit.Invoke();
+            await OnValidSubmit.InvokeAsync();
             return true;
         }
         catch (Exception e)
@@ -106,7 +132,11 @@ else
                 // Pass through unauthenticated exception to parents
                 // as we don't want to handle them
                 if (httpApiException.Status == 401)
-                    throw;
+                {
+                    await ErrorService.HandleExceptionAsync(e);
+                    SubmitException = e;
+                    return false;
+                }
 
                 // We only want to create error messages of responses
                 // which are of the type "BadRequest". All other
@@ -124,7 +154,7 @@ else
                     ErrorMessages.Add(
                         string.IsNullOrEmpty(httpApiException.Detail) ? httpApiException.Title : httpApiException.Title + ": " + httpApiException.Detail
                     );
-                    
+
                     return false;
                 }
 
@@ -138,14 +168,14 @@ else
             else
             {
                 Logger.LogError(e, "An unhandled error occured while handling form");
-                
+
                 SubmitException = e;
                 return false;
             }
         }
     }
 
-    private async Task ReturnToForm()
+    private async Task ReturnToFormAsync()
     {
         SubmitException = null;
         await InvokeAsync(StateHasChanged);

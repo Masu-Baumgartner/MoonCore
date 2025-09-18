@@ -7,7 +7,7 @@ public partial class FileManager
     private bool ShowOpenWindow = false;
     private RenderFragment? OpenWindow;
 
-    private async Task Open(FsEntry entry)
+    private async Task OpenAsync(FsEntry entry)
     {
         var openOperation = OpenOperations.FirstOrDefault(x =>
             x.Filter.Invoke(entry)
@@ -15,19 +15,19 @@ public partial class FileManager
 
         if (openOperation == null)
         {
-            await ToastService.Error("Cannot open the file: Not supported");
+            await ToastService.ErrorAsync("Cannot open the file: Not supported");
             return;
         }
 
         if (Options.OpenLimit != -1 && entry.Size > Options.OpenLimit)
         {
-            await ToastService.Error("Cannot open the file: Exceeded the open limit");
+            await ToastService.ErrorAsync("Cannot open the file: Exceeded the open limit");
             return;
         }
 
         var pwd = new string(CurrentPath);
 
-        OpenWindow = await openOperation.Open(
+        OpenWindow = await openOperation.OpenAsync(
             pwd,
             entry,
             FsAccess,
@@ -36,7 +36,7 @@ public partial class FileManager
 
         if (OpenWindow == null)
         {
-            await ToastService.Error("Cannot open file: Unknown error");
+            await ToastService.ErrorAsync("Cannot open file: Unknown error");
             return;
         }
 
@@ -44,7 +44,7 @@ public partial class FileManager
         await InvokeAsync(StateHasChanged);
     }
 
-    public async Task CloseOpenScreen()
+    public async Task CloseOpenScreenAsync()
     {
         ShowOpenWindow = false;
         await InvokeAsync(StateHasChanged);

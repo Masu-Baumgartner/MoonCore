@@ -1,3 +1,4 @@
+@using MoonCore.Helpers
 @if (IsVisible)
 {
     <div @ref="Reference" class="dropdown-menu dropdown-open:opacity-100 min-w-60 block open focus-visible:outline-none" role="menu" aria-orientation="vertical"
@@ -12,6 +13,9 @@
 
 @code
 {
+    /// <summary>
+    /// Content of the context menu
+    /// </summary>
     [Parameter] public RenderFragment ChildContent { get; set; }
     
     private bool IsVisible = false;
@@ -28,10 +32,19 @@
             await Reference.FocusAsync();
     }
 
-    public async Task Trigger(MouseEventArgs eventArgs)
-        => await Trigger(eventArgs.ClientX, eventArgs.ClientY);
+    /// <summary>
+    /// Opens the context menu at the specified position
+    /// </summary>
+    /// <param name="eventArgs">Mouse event args to derive the position from</param>
+    public async Task TriggerAsync(MouseEventArgs eventArgs)
+        => await TriggerAsync(eventArgs.ClientX, eventArgs.ClientY);
     
-    public async Task Trigger(double x, double y)
+    /// <summary>
+    /// Opens the context menu at the specified position
+    /// </summary>
+    /// <param name="x">X position to use</param>
+    /// <param name="y">Y position to use</param>
+    public async Task TriggerAsync(double x, double y)
     {
         X = x;
         Y = y;
