@@ -14,7 +14,7 @@ public partial class DataGrid<TGridItem>
     /// </summary>
     [Parameter] public int[] PageSizes { get; set; } = [15, 30, 100];
     
-    private async Task Navigate(int diff)
+    public async Task NavigateAsync(int diff)
     {
         StartIndex += diff;
 
@@ -24,6 +24,18 @@ public partial class DataGrid<TGridItem>
         if (StartIndex > TotalCount)
             StartIndex = TotalCount - Count;
 
+        await RefreshAsync();
+    }
+
+    public async Task NavigateStartAsync()
+    {
+        StartIndex = 0;
+        await RefreshAsync();
+    }
+    
+    public async Task NavigateEndAsync()
+    {
+        StartIndex = TotalCount - Count;
         await RefreshAsync();
     }
 

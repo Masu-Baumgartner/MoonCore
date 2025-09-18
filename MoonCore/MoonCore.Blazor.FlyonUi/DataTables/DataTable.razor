@@ -20,7 +20,7 @@
 @* Add option for rounded-lg in the element below *@
 
 <div class="@ContainerCss">
-    <table class="table bg-base-100" cols="3">
+    <table class="table bg-base-100">
 
         @* Header *@
         <thead>
@@ -29,7 +29,7 @@
 
             @foreach (var column in SortedColumns)
             {
-                <th scope="col" class="@column.HeaderCss" colspan="1">
+                <th scope="col" class="@column.HeaderCss">
                     @if (column.HeaderTemplate != null)
                     {
                         @column.HeaderTemplate
@@ -102,7 +102,7 @@
                                 <div class="p-5">
                                     <div class="text-center">
                                         <h3 class="mt-2 font-semibold text-base-content text-lg">
-                                            \(o_o)/
+                                            ¯\_(ツ)_/¯
                                         </h3>
                                         <div class="text-base text-base-content/80">No items could be found</div>
                                     </div>

@@ -154,7 +154,7 @@ public partial class DataGrid<TGridItem>
     /// <summary>
     /// Triggers a rerender of the data grid
     /// </summary>
-    public async Task NotifyStateChanged()
+    public async Task NotifyStateChangedAsync()
     {
         await InvokeAsync(StateHasChanged);
     }
@@ -173,7 +173,7 @@ public partial class DataGrid<TGridItem>
     /// </summary>
     /// <param name="column">Column to sort. Provide <b>null</b> to reset sorting</param>
     /// <param name="state">Sort direction for the column sorting. If you provided <b>null</b> in <see cref="column"/> you can provide <b>SortState.None</b></param>
-    public async Task SetColumnSorting(ColumnBase<TGridItem>? column, SortState state)
+    public async Task SetColumnSortingAsync(ColumnBase<TGridItem>? column, SortState state)
     {
         // Reset current column if it has changed
         if (CurrentSortColumn != null && CurrentSortColumn != column)

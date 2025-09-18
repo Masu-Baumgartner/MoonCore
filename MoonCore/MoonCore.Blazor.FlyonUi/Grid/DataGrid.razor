@@ -77,7 +77,7 @@
                                 <div class="my-5">
                                     <div class="text-center">
                                         <h3 class="mt-2 font-semibold text-base-content text-lg">
-                                            \(o_o)/
+                                            ¯\_(ツ)_/¯
                                         </h3>
                                         <div class="text-base text-base-content/80">No items could be found</div>
                                     </div>
@@ -137,13 +137,23 @@
                 @if (StartIndex == 0)
                 {
                     <button type="button" class="btn btn-text btn-circle btn-sm disabled" disabled="disabled">
+                        <span class="icon-chevrons-left"></span>
+                        <span class="sr-only">Start</span>
+                    </button>
+                    
+                    <button type="button" class="btn btn-text btn-circle btn-sm disabled" disabled="disabled">
                         <span class="icon-chevron-left"></span>
                         <span class="sr-only">Previous</span>
                     </button>
                 }
                 else
                 {
-                    <button @onclick="() => Navigate(-Count)" type="button" class="btn btn-text btn-circle btn-sm">
+                    <button @onclick="NavigateStartAsync" type="button" class="btn btn-text btn-circle btn-sm">
+                        <span class="icon-chevrons-left"></span>
+                        <span class="sr-only">Start</span>
+                    </button>
+                    
+                    <button @onclick="() => NavigateAsync(-Count)" type="button" class="btn btn-text btn-circle btn-sm">
                         <span class="icon-chevron-left"></span>
                         <span class="sr-only">Previous</span>
                     </button>
@@ -154,12 +164,22 @@
                         <span class="sr-only">Next</span>
                         <span class="icon-chevron-right"></span>
                     </button>
+                    
+                    <button type="button" class="btn btn-text btn-circle btn-sm disabled" disabled="disabled">
+                        <span class="icon-chevrons-right"></span>
+                        <span class="sr-only">End</span>
+                    </button>
                 }
                 else
                 {
-                    <button @onclick="() => Navigate(Count)" type="button" class="btn btn-text btn-circle btn-sm">
+                    <button @onclick="() => NavigateAsync(Count)" type="button" class="btn btn-text btn-circle btn-sm">
                         <span class="sr-only">Next</span>
                         <span class="icon-chevron-right"></span>
+                    </button>
+                    
+                    <button @onclick="NavigateEndAsync" type="button" class="btn btn-text btn-circle btn-sm">
+                        <span class="icon-chevrons-right"></span>
+                        <span class="sr-only">End</span>
                     </button>
                 }
             </div>

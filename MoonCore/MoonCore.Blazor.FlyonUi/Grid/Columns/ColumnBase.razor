@@ -14,7 +14,7 @@
                 if (SortState == SortState.None)
                 {
                     <div class="flex items-center hover:cursor-pointer" @onclick:preventDefault
-                         @onclick="() => Parent.SetColumnSorting(this, SortState.Ascending)">
+                         @onclick="() => Parent.SetColumnSortingAsync(this, SortState.Ascending)">
                         @Title
                         <i class="ms-1 icon-chevron-down text-sm"></i>
                     </div>
@@ -22,7 +22,7 @@
                 else if (SortState == SortState.Descending)
                 {
                     <div class="flex items-center hover:cursor-pointer" @onclick:preventDefault
-                         @onclick="() => Parent.SetColumnSorting(this, SortState.Ascending)">
+                         @onclick="() => Parent.SetColumnSortingAsync(this, SortState.Ascending)">
                         @Title
                         <i class="ms-1 icon-chevron-down text-sm"></i>
                     </div>
@@ -30,7 +30,7 @@
                 else
                 {
                     <div class="flex items-center hover:cursor-pointer" @onclick:preventDefault
-                         @onclick="() => Parent.SetColumnSorting(this, SortState.Descending)">
+                         @onclick="() => Parent.SetColumnSortingAsync(this, SortState.Descending)">
                         @Title
                         <i class="ms-1 icon-chevron-up text-sm"></i>
                     </div>

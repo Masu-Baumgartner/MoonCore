@@ -48,8 +48,6 @@
 
     private async Task<DataGridItemResult<DemoDataModel>> ItemsProvider(DataGridItemRequest request)
     {
-        await Task.Delay(5000);
-
         var query = $"?startIndex={request.StartIndex}&count={request.Count}";
 
         if (!string.IsNullOrEmpty(request.SortColumn))
