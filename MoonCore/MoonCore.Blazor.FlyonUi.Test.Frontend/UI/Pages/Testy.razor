@@ -1,0 +1,20 @@
+﻿@page "/testy"
+@using MoonCore.Blazor.FlyonUi.Components
+
+<Spinner Size="size-12" />
+
+@code
+{
+    private bool IsLoading = true;
+    
+    protected async override Task OnAfterRenderAsync(bool firstRender)
+    {
+        if(!firstRender)
+            return;
+
+        await Task.Delay(TimeSpan.FromSeconds(3));
+        
+        IsLoading = false;
+        await InvokeAsync(StateHasChanged);
+    }
+}

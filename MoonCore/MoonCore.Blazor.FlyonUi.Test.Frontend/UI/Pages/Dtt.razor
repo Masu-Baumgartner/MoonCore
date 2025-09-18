@@ -48,36 +48,31 @@
 
     private async Task<DataGridItemResult<DemoDataModel>> ItemsProvider(DataGridItemRequest request)
     {
-        await Task.Delay(500);
+        var query = $"?startIndex={request.StartIndex}&count={request.Count}";
 
-        var items = await CountedData<DemoDataModel>.LoadAllAsync(async (index, count) =>
+        if (!string.IsNullOrEmpty(request.SortColumn))
         {
-            var url = $"/api/query?startIndex={index}&count={count}";
-
-            if (!string.IsNullOrEmpty(request.SortColumn))
+            var orderByDir = request.SortDirection switch
             {
-                var orderByDir = request.SortDirection switch
-                {
-                    SortState.None => "asc",
-                    SortState.Ascending => "asc",
-                    SortState.Descending => "desc"
-                };
+                SortState.None => "asc",
+                SortState.Ascending => "asc",
+                SortState.Descending => "desc"
+            };
 
-                url += $"&orderBy={request.SortColumn}&orderByDir={orderByDir}";
-            }
+            query += $"&orderBy={request.SortColumn}&orderByDir={orderByDir}";
+        }
 
-            if (!string.IsNullOrEmpty(request.Filter))
-                url += $"&filter={request.Filter}";
+        if (!string.IsNullOrEmpty(request.Filter))
+            query += $"&filter={request.Filter}";
             
-            return (await HttpClient.GetFromJsonAsync<CountedData<DemoDataModel>>(
-                url
-            ))!;
-        });
+        var data =await HttpClient.GetFromJsonAsync<CountedData<DemoDataModel>>(
+            $"/api/query{query}"
+        )!;
 
         return new DataGridItemResult<DemoDataModel>()
         {
-            Items = items,
-            TotalCount = items.Length
+            Items = data.Items,
+            TotalCount = data.TotalCount
         };
     }
 }
