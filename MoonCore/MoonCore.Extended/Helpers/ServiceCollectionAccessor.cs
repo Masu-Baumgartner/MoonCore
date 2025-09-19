@@ -2,6 +2,9 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace MoonCore.Extended.Helpers;
 
+/// <summary>
+/// Accessor for the service collection
+/// </summary>
 public class ServiceCollectionAccessor
 {
     // We need this accessor as it is not possible to access the service descriptor collection

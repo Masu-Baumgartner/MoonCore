@@ -1,6 +1,5 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
 using MoonCore.Extended.Extensions;
-using MoonCore.Extended.SingleDb;
 using MoonCore.Extended.Test;
 using MoonCore.Logging;
 
@@ -13,15 +12,6 @@ serviceCollection.AddLogging(builder =>
 
 serviceCollection.AddDatabaseMappings();
 serviceCollection.AddServiceCollectionAccessor();
-
-serviceCollection.AddSingleton(new DatabaseOptions()
-{
-    Host = "localhost",
-    Port = 5432,
-    Username = "test_db",
-    Database = "test_db",
-    Password = "test_db"
-});
 
 serviceCollection.AddDbContext<DataContext>();
 

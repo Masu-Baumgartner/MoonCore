@@ -1,16 +1,22 @@
 using Microsoft.EntityFrameworkCore;
-using MoonCore.Extended.SingleDb;
 
 namespace MoonCore.Extended.Test;
 
-public class DataContext : DatabaseContext
+public class DataContext : DbContext
 {
-    public override string Prefix { get; } = "Data";
-
     public DbSet<Car> Cars { get; set; }
 
-    public DataContext(DatabaseOptions options)
+    protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
     {
-        Options = options;
+        if(optionsBuilder.IsConfigured)
+            return;
+        
+        var connectionString = "Host=localhost;" +
+                               "Port=5432;" +
+                               "Username=test_db;" +
+                               "Password=test_db;" +
+                               "Database=test_db";
+
+        optionsBuilder.UseNpgsql(connectionString);
     }
 }

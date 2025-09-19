@@ -3,6 +3,9 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace MoonCore.Extended.Models;
 
+/// <summary>
+/// Defines a paged request loaded via the query
+/// </summary>
 public class PagedOptions
 {
     [FromQuery(Name = "page")]
