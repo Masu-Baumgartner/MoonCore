@@ -4,6 +4,11 @@ using MoonCore.Helpers;
 
 namespace MoonCore.Permissions;
 
+/// <summary>
+/// Implementation of the <see cref="IAuthorizationPolicyProvider"/> to provide
+/// access to policies based on a LuckPerms like permssion string system when a specific
+/// prefix is provided in the requested policy name
+/// </summary>
 public class PermissionsPolicyProvider : IAuthorizationPolicyProvider
 {
     private readonly PermissionsOptions Options;

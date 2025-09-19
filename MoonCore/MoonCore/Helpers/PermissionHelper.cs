@@ -2,6 +2,14 @@
 
 public static class PermissionHelper
 {
+    /// <summary>
+    /// Check if the required permission is contained in the provided permission array.
+    /// It uses the LuckPerms permission syntax.
+    /// More details <see href="https://luckperms.net/wiki/Usage">here</see>
+    /// </summary>
+    /// <param name="permissions">Array of permissions to look in</param>
+    /// <param name="requiredPermission">Permission to check for</param>
+    /// <returns>True if the permission was found, False if the permission was not found</returns>
     public static bool HasPermission(string[] permissions, string requiredPermission)
     {
         // Check for wildcard permission

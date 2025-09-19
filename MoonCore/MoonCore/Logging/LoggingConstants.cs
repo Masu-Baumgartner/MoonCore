@@ -3,9 +3,9 @@ using Microsoft.Extensions.Logging;
 
 namespace MoonCore.Logging;
 
-public static class LoggingConstants
+internal static class LoggingConstants
 {
-    public static readonly FrozenDictionary<LogLevel, (byte, byte, byte)> ColorMappings = new Dictionary<LogLevel, (byte, byte, byte)>()
+    internal static readonly FrozenDictionary<LogLevel, (byte, byte, byte)> ColorMappings = new Dictionary<LogLevel, (byte, byte, byte)>()
     {
         {
             LogLevel.Critical,
@@ -33,7 +33,7 @@ public static class LoggingConstants
         }
     }.ToFrozenDictionary();
 
-    public static FrozenDictionary<LogLevel, string> ShortTextMappings = new Dictionary<LogLevel, string>()
+    internal static FrozenDictionary<LogLevel, string> ShortTextMappings = new Dictionary<LogLevel, string>()
     {
         {
             LogLevel.Critical,

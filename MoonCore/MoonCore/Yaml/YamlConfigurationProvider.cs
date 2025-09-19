@@ -6,6 +6,9 @@ using YamlDotNet.RepresentationModel;
 
 namespace MoonCore.Yaml;
 
+/// <summary>
+/// Configuration provider for yaml files
+/// </summary>
 public class YamlConfigurationProvider : IConfigurationProvider
 {
     private readonly string Path;
