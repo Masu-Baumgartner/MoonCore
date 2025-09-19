@@ -27,7 +27,7 @@ serviceCollection.AddDbContext<DataContext>();
 
 var serviceProvider = serviceCollection.BuildServiceProvider();
 
-await serviceProvider.EnsureDatabaseMigrated();
+await serviceProvider.EnsureDatabaseMigratedAsync();
 serviceProvider.GenerateDatabaseMappings();
 
 var scope = serviceProvider.CreateScope();

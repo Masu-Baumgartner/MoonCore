@@ -1,6 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using MoonCore.Extended.Abstractions;
 using MoonCore.Extended.Helpers;
 using MoonCore.Helpers;
 
@@ -8,7 +9,11 @@ namespace MoonCore.Extended.Extensions;
 
 public static class ServiceProviderExtensions
 {
-    public static async Task EnsureDatabaseMigrated(this IServiceProvider serviceProvider)
+    /// <summary>
+    /// Ensures all registered DbContext instances have all of their migrations run
+    /// </summary>
+    /// <param name="serviceProvider">Service provider to retrieve the db contexts</param>
+    public static async Task EnsureDatabaseMigratedAsync(this IServiceProvider serviceProvider)
     {
         using var scope = serviceProvider.CreateScope();
 
@@ -47,6 +52,11 @@ public static class ServiceProviderExtensions
         }
     }
 
+    /// <summary>
+    /// Generates the DbContext - Entity mappings used by the <see cref="DatabaseRepository{TEntity}"/>
+    /// </summary>
+    /// <param name="serviceProvider">Service provider to retrieve the DbContexts from</param>
+    /// <exception cref="ArgumentException">Throws if you forgot to call the <see cref="Extensions.ServiceCollectionExtensions.AddDatabaseMappings"/> method</exception>
     public static void GenerateDatabaseMappings(this IServiceProvider serviceProvider)
     {
         using var scope = serviceProvider.CreateScope();
@@ -87,6 +97,12 @@ public static class ServiceProviderExtensions
         logger.LogInformation("Generated {count} entity-context mappings", mappingOptions.Mappings.Count);
     }
 
+    /// <summary>
+    /// Retrieves all DbContexts from a di service provider
+    /// </summary>
+    /// <param name="serviceProvider">Service provider to retrieve the DbContexts from</param>
+    /// <returns></returns>
+    /// <exception cref="ArgumentException">Throws if you forgot to call <see cref="Extensions.ServiceCollectionExtensions.AddServiceCollectionAccessor"/></exception>
     public static Type[] GetDbContexts(this IServiceProvider serviceProvider)
     {
         var scAccessor = serviceProvider.GetService<ServiceCollectionAccessor>();
