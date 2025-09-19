@@ -4,10 +4,10 @@ namespace MoonCore.Blazor.FlyonUi.Files.Manager;
 
 public partial class FileManager
 {
-    private async Task RunToolbarOperation(IToolbarOperation operation)
+    private async Task RunToolbarOperationAsync(IToolbarOperation operation)
     {
         var workingDir = new string(CurrentPath);
 
-        await operation.Execute(workingDir, FsAccess, this);
+        await operation.ExecuteAsync(workingDir, FsAccess, this);
     }
 }

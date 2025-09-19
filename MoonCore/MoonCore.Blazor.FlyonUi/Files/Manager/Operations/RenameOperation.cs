@@ -28,20 +28,20 @@ public class RenameOperation : ISingleFsOperation
         ModalService = modalService;
     }
 
-    public async Task Execute(string workingDir, FsEntry file, IFsAccess fsAccess, IFileManager fileManager)
+    public async Task ExecuteAsync(string workingDir, FsEntry file, IFsAccess fsAccess, IFileManager fileManager)
     {
-        await ModalService.Launch<RenameModal>(parameters =>
+        await ModalService.LaunchAsync<RenameModal>(parameters =>
         {
             parameters["OldName"] = file.Name;
             parameters["OnSubmit"] = async (string newName) =>
             {
-                await fsAccess.Move(
+                await fsAccess.MoveAsync(
                     UnixPath.Combine(workingDir, file.Name),
                     UnixPath.Combine(workingDir, newName)
                 );
 
-                await ToastService.Success("Successfully renamed item");
-                await fileManager.Refresh();
+                await ToastService.SuccessAsync("Successfully renamed item");
+                await fileManager.RefreshAsync();
             };
         });
     }

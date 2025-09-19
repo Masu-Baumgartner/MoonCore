@@ -7,14 +7,14 @@ public partial class FileManager
 {
     private FsEntry? ContextEntry;
 
-    private async Task RunSingleContextOperation(ISingleFsOperation operation)
+    private async Task RunSingleContextOperationAsync(ISingleFsOperation operation)
     {
         if (ContextEntry == null) // Handle possible invalid calls
             return;
         
         var workingDir = new string(CurrentPath);
 
-        await operation.Execute(
+        await operation.ExecuteAsync(
             workingDir,
             ContextEntry,
             FsAccess,
@@ -22,7 +22,7 @@ public partial class FileManager
         );
     }
 
-    private async Task RunMultiContextOperation(IMultiFsOperation operation)
+    private async Task RunMultiContextOperationAsync(IMultiFsOperation operation)
     {
         if (ContextEntry == null) // Handle possible invalid calls
             return;
@@ -37,7 +37,7 @@ public partial class FileManager
         else
             files = [ContextEntry];
 
-        await operation.Execute(
+        await operation.ExecuteAsync(
             workingDir,
             files,
             FsAccess,
@@ -48,12 +48,12 @@ public partial class FileManager
     private async Task OnContextMenu(MouseEventArgs mouseEvent, FsEntry entry)
     {
         ContextEntry = entry;
-        await ContextMenu.Trigger(mouseEvent);
+        await ContextMenu.TriggerAsync(mouseEvent);
     }
 
     private async Task OnContextMenu(double x, double y, FsEntry entry)
     {
         ContextEntry = entry;
-        await ContextMenu.Trigger(x, y);
+        await ContextMenu.TriggerAsync(x, y);
     }
 }

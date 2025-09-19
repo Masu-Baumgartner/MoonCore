@@ -7,7 +7,7 @@
 }
 else
 {
-    <button @onclick="Click" type="@Type" class="@CssClasses">
+    <button @onclick="ClickAsync" type="@Type" class="@CssClasses">
         @ChildContent
     </button>
 }
@@ -23,7 +23,7 @@ else
 
     private string WorkingText = "";
 
-    private async Task Click()
+    private async Task ClickAsync()
     {
         if(IsWorking)
             return;
@@ -50,7 +50,7 @@ else
         }
     }
 
-    public async Task UpdateLoadingText(string text)
+    public async Task UpdateLoadingTextAsync(string text)
     {
         WorkingText = text;
         await InvokeAsync(StateHasChanged);

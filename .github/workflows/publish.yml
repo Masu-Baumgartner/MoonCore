@@ -12,9 +12,7 @@ jobs:
       matrix:
         project:
           - MoonCore
-          - MoonCore.Blazor
           - MoonCore.Blazor.FlyonUi
-          - MoonCore.Blazor.Tailwind
           - MoonCore.Extended
           - MoonCore.Unix
           - MoonCore.PluginFramework

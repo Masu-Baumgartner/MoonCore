@@ -39,7 +39,7 @@
             }
             else
             {
-                <button @onclick="() => Navigate(-1)"
+                <button @onclick="() => NavigateAsync(-1)"
                         class="btn btn-sm btn-secondary">
                     Previous
                 </button>
@@ -55,7 +55,7 @@
             }
             else
             {
-                <button @onclick="() => Navigate(1)"
+                <button @onclick="() => NavigateAsync(1)"
                         class="ms-3 btn btn-sm btn-secondary">
                     Next
                 </button>
@@ -68,7 +68,7 @@
 {
     [Parameter] public Pagination<TItem> Pagination { get; set; }
 
-    private async Task Navigate(int diff)
+    private async Task NavigateAsync(int diff)
     {
         Pagination.Options.Page += diff;
 
@@ -77,6 +77,6 @@
         else if (Pagination.Options.Page > Pagination.PagedData.TotalPages)
             Pagination.Options.Page = Pagination.PagedData.TotalPages;
 
-        await Pagination.DataTable.Refresh();
+        await Pagination.DataTable.RefreshAsync();
     }
 }

@@ -8,6 +8,10 @@ using MoonCore.Exceptions;
 
 namespace MoonCore.Extended.ExceptionHandlers;
 
+/// <summary>
+/// Handles exceptions and returns an RFC 9457 problem detail as the response
+/// Follow <see href="https://www.rfc-editor.org/rfc/rfc9457.html">this</see> link for more details on the RFC
+/// </summary>
 public class ApiExceptionHandler : IExceptionHandler
 {
     public async ValueTask<bool> TryHandleAsync(HttpContext httpContext, Exception exception,

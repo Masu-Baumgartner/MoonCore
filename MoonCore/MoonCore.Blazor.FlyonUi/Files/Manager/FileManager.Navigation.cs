@@ -6,9 +6,9 @@ public partial class FileManager
 {
     public string CurrentPath { get; set; } = "/";
     
-    private async Task<FsEntry[]> Load()
+    private async Task<FsEntry[]> LoadAsync()
     {
-        var items = await FsAccess.List(CurrentPath);
+        var items = await FsAccess.ListAsync(CurrentPath);
 
         return items
             .OrderByDescending(x => x.IsFolder)
@@ -22,27 +22,27 @@ public partial class FileManager
         {
             CurrentPath = UnixPath.Combine(CurrentPath, fsEntry.Name);
 
-            await FileView.Refresh();
+            await FileView.RefreshAsync();
             await InvokeAsync(StateHasChanged);
         }
         else
-            await Open(fsEntry);
+            await OpenAsync(fsEntry);
     }
     
-    private async Task GoUp()
+    private async Task GoUpAsync()
     {
         CurrentPath = UnixPath.GetFullPath(
             UnixPath.Combine(CurrentPath, "..")
         );
 
-        await FileView.Refresh();
+        await FileView.RefreshAsync();
     }
     
-    private async Task SetPath(string path)
+    private async Task SetPathAsync(string path)
     {
         CurrentPath = path;
 
-        await FileView.Refresh();
+        await FileView.RefreshAsync();
         await InvokeAsync(StateHasChanged);
     }
 

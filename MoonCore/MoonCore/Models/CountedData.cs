@@ -1,5 +1,9 @@
 ﻿namespace MoonCore.Models;
 
+/// <summary>
+/// Representation of an excerpt of items from a data source
+/// </summary>
+/// <typeparam name="T">Type of the items</typeparam>
 public class CountedData<T> : ICountedData<T>
 {
     /// <summary>
@@ -8,7 +12,7 @@ public class CountedData<T> : ICountedData<T>
     public int TotalCount { get; set; }
     
     /// <summary>
-    /// Item excerpt from the data source
+    /// Items excerpt from the data source
     /// </summary>
     public T[] Items { get; set; }
     

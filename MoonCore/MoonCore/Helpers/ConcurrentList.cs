@@ -2,11 +2,16 @@
 
 namespace MoonCore.Helpers;
 
+/// <summary>
+/// Threadsafe implementation of <see cref="IList{T}"/>
+/// </summary>
+/// <typeparam name="T">Type to store in the list</typeparam>
 public class ConcurrentList<T> : IList<T>
 {
     private readonly List<T> InnerList = new List<T>();
     private readonly ReaderWriterLockSlim ock = new ReaderWriterLockSlim();
 
+    /// <inheritdoc />
     public T this[int index]
     {
         get
@@ -23,6 +28,7 @@ public class ConcurrentList<T> : IList<T>
         }
     }
 
+    /// <inheritdoc />
     public int Count
     {
         get
@@ -33,8 +39,10 @@ public class ConcurrentList<T> : IList<T>
         }
     }
 
+    /// <inheritdoc />
     public bool IsReadOnly => false;
 
+    /// <inheritdoc />
     public void Add(T item)
     {
         ock.EnterWriteLock();
@@ -42,6 +50,7 @@ public class ConcurrentList<T> : IList<T>
         finally { ock.ExitWriteLock(); }
     }
 
+    /// <inheritdoc />
     public void Clear()
     {
         ock.EnterWriteLock();
@@ -49,6 +58,7 @@ public class ConcurrentList<T> : IList<T>
         finally { ock.ExitWriteLock(); }
     }
 
+    /// <inheritdoc />
     public bool Contains(T item)
     {
         ock.EnterReadLock();
@@ -56,6 +66,7 @@ public class ConcurrentList<T> : IList<T>
         finally { ock.ExitReadLock(); }
     }
 
+    /// <inheritdoc />
     public void CopyTo(T[] array, int arrayIndex)
     {
         ock.EnterReadLock();
@@ -63,6 +74,7 @@ public class ConcurrentList<T> : IList<T>
         finally { ock.ExitReadLock(); }
     }
 
+    /// <inheritdoc />
     public IEnumerator<T> GetEnumerator()
     {
         List<T> snapshot;
@@ -73,8 +85,10 @@ public class ConcurrentList<T> : IList<T>
         return snapshot.GetEnumerator();
     }
 
+    /// <inheritdoc />
     IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
 
+    /// <inheritdoc />
     public int IndexOf(T item)
     {
         ock.EnterReadLock();
@@ -82,6 +96,7 @@ public class ConcurrentList<T> : IList<T>
         finally { ock.ExitReadLock(); }
     }
 
+    /// <inheritdoc />
     public void Insert(int index, T item)
     {
         ock.EnterWriteLock();
@@ -89,6 +104,7 @@ public class ConcurrentList<T> : IList<T>
         finally { ock.ExitWriteLock(); }
     }
 
+    /// <inheritdoc />
     public bool Remove(T item)
     {
         ock.EnterWriteLock();
@@ -96,6 +112,7 @@ public class ConcurrentList<T> : IList<T>
         finally { ock.ExitWriteLock(); }
     }
 
+    /// <inheritdoc />
     public void RemoveAt(int index)
     {
         ock.EnterWriteLock();
@@ -103,6 +120,11 @@ public class ConcurrentList<T> : IList<T>
         finally { ock.ExitWriteLock(); }
     }
 
+    /// <summary>
+    /// Removes a range of elements from the list
+    /// </summary>
+    /// <param name="index">Index to start deleting elements</param>
+    /// <param name="count">Amount of elements to remove</param>
     public void RemoveRange(int index, int count)
     {
         ock.EnterWriteLock();

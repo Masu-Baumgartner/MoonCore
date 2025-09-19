@@ -6,7 +6,7 @@
     
     @foreach (var tab in TabList)
     {
-        <button @onclick="() => SwitchTab(tab)" type="button" class="btn btn-text active-tab:bg-primary active-tab:text-primary-content hover:text-primary active-tab:hover:text-primary-content hover:bg-transparent @(CurrentTab == tab ? "active" : "")" data-tab="dummy" role="tab" aria-selected="true" >
+        <button @onclick="() => SwitchTabAsync(tab)" type="button" class="btn btn-text active-tab:bg-primary active-tab:text-primary-content hover:text-primary active-tab:hover:text-primary-content hover:bg-transparent @(CurrentTab == tab ? "active" : "")" data-tab="dummy" role="tab" aria-selected="true" >
             @if (!string.IsNullOrEmpty(tab.Icon))
             {
                 <i class="@tab.Icon"></i>
@@ -25,6 +25,9 @@
 
 @code
 {
+    /// <summary>
+    /// Define your <see cref="Tab"/> within here
+    /// </summary>
     [Parameter] public RenderFragment ChildContent { get; set; }
 
     private readonly List<Tab> TabList = new();
@@ -36,7 +39,11 @@
             TabList.Add(tab);
     }
 
-    public async Task SwitchTab(Tab tab)
+    /// <summary>
+    /// Changes the current tab
+    /// </summary>
+    /// <param name="tab">Tab to switch to</param>
+    public async Task SwitchTabAsync(Tab tab)
     {
         CurrentTab = tab;
         await InvokeAsync(StateHasChanged);

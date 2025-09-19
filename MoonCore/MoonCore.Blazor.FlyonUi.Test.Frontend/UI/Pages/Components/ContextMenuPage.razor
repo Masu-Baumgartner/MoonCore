@@ -23,7 +23,7 @@
     </button>
 </ContextMenu>
 
-<div class="bg-base-200/50 h-64 w-64 flex justify-center items-center mt-5" @oncontextmenu="e => Menu.Trigger(e)" @oncontextmenu:preventDefault>
+<div class="bg-base-200/50 h-64 w-64 flex justify-center items-center mt-5" @oncontextmenu="e => Menu.TriggerAsync(e)" @oncontextmenu:preventDefault>
     Right click me
 </div>
 

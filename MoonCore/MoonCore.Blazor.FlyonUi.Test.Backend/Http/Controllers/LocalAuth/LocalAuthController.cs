@@ -30,7 +30,7 @@ public class LocalAuthController : Controller
     [AllowAnonymous]
     public async Task<IResult> Get()
     {
-        var html = await ComponentHelper.RenderComponent<LoginByEmailPage>(
+        var html = await ComponentHelper.RenderToHtmlAsync<LoginByEmailPage>(
             ServiceProvider,
             parameters => { parameters["IsEmailSent"] = false; });
 
@@ -47,7 +47,7 @@ public class LocalAuthController : Controller
         Console.WriteLine(
             $"{HttpContext.Request.Scheme}://{HttpContext.Request.Host}/api/localauth/handle?email={email}");
 
-        var html = await ComponentHelper.RenderComponent<LoginByEmailPage>(
+        var html = await ComponentHelper.RenderToHtmlAsync<LoginByEmailPage>(
             ServiceProvider,
             parameters => { parameters["IsEmailSent"] = true; });
 

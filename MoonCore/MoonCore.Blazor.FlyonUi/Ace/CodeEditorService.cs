@@ -11,22 +11,22 @@ public class CodeEditorService
         JsRuntime = jsRuntime;
     }
 
-    public async Task Attach(string id, CodeEditorOptions options)
+    public async Task AttachAsync(string id, CodeEditorOptions options)
     {
         await JsRuntime.InvokeVoidAsync("moonCore.codeEditor.attach", id, options);
     }
 
-    public async Task UpdateOptions(string id, CodeEditorOptions options)
+    public async Task UpdateOptionsAsync(string id, CodeEditorOptions options)
     {
         await JsRuntime.InvokeVoidAsync("moonCore.codeEditor.updateOptions", id, options);
     }
 
-    public async Task<string> GetValue(string id)
+    public async Task<string> GetValueAsync(string id)
     {
         return await JsRuntime.InvokeAsync<string>("moonCore.codeEditor.getValue", id);
     }
 
-    public async Task Destroy(string id)
+    public async Task DestroyAsync(string id)
     {
         await JsRuntime.InvokeVoidAsync("moonCore.codeEditor.destroy", id);
     }

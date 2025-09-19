@@ -22,10 +22,10 @@
     </p>
 
     <div class="flex items-center">
-        <button @onclick="Hide" type="button" class="btn btn-secondary grow me-1.5">
+        <button @onclick="HideAsync" type="button" class="btn btn-secondary grow me-1.5">
             Cancel
         </button>
-        <WButton OnClick="Confirm" CssClasses="btn btn-error grow">
+        <WButton OnClick="ConfirmAsync" CssClasses="btn btn-error grow">
             Confirm
         </WButton>
     </div>
@@ -37,16 +37,16 @@
     [Parameter] public string Text { get; set; }
     [Parameter] public Func<Task> ConfirmAction { get; set; }
 
-    private async Task Confirm(WButton _)
+    private async Task ConfirmAsync()
     {
         try
         {
             await ConfirmAction.Invoke();
-            await Hide();
+            await HideAsync();
         }
         catch (Exception)
         {
-            await Hide();
+            await HideAsync();
             throw;
         }
     }

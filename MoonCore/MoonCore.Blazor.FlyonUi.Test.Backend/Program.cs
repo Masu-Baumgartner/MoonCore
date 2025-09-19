@@ -10,7 +10,7 @@ var builder = WebApplication.CreateBuilder(args);
 
 Directory.CreateDirectory("storage");
 
-await YamlDefaultGenerator.Generate<AppConfiguration>(
+await YamlDefaultGenerator.GenerateAsync<AppConfiguration>(
     Path.Combine("storage", "app.yml")
 );
 

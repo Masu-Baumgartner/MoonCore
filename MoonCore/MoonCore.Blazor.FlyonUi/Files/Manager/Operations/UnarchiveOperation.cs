@@ -28,7 +28,7 @@ public class UnarchiveOperation : ISingleFsOperation
         return true;
     }
 
-    public Task Execute(string workingDir, FsEntry entry, IFsAccess access, IFileManager fileManager)
+    public Task ExecuteAsync(string workingDir, FsEntry entry, IFsAccess access, IFileManager fileManager)
     {
         throw new NotImplementedException();
     }

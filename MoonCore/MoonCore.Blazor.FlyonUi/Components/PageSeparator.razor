@@ -10,12 +10,21 @@
 
 @code
 {
+    /// <summary>
+    /// Spacing to use
+    /// </summary>
     [Parameter]
     public string Spacing { get; set; } = "mt-8 mb-4";
     
+    /// <summary>
+    /// Icon for the separator. For a reference, look <see href="https://lucide.dev/icons">here</see>
+    /// </summary>
     [Parameter]
     public string Icon { get; set; } = "icon-pentagon";
     
+    /// <summary>
+    /// Content within the separator
+    /// </summary>
     [Parameter]
     public RenderFragment ChildContent { get; set; }
 }

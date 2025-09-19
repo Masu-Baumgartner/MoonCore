@@ -2,12 +2,21 @@
 
 public static class FileIconHelper
 {
+    /// <summary>
+    /// Returns a lucide icon matching the type of the file by extension matching
+    /// </summary>
+    /// <param name="fileName">File name to get the icon for</param>
+    /// <returns></returns>
     public static string GetByName(string fileName)
     {
-        var extensionWithDot = Path.GetExtension(fileName);
-        var extension = extensionWithDot.Length > 0 ? extensionWithDot.Remove(0, 1) : extensionWithDot;
+        string identifier;
+
+        if (fileName.Contains('.'))
+            identifier = Path.GetExtension(fileName).Remove(0, 1);
+        else
+            identifier = fileName;
         
-        return extension switch
+        return identifier switch
         {
             // Executables & binaries
             "exe" => "icon-file-digit",
@@ -56,7 +65,7 @@ public static class FileIconHelper
             "pl" => "icon-file-code",
             "pm" => "icon-file-code",
             "lua" => "icon-file-code",
-            "sql" => "icon-file-database",
+            "sql" => "icon-database",
             "r" => "icon-file-code",
             "m" => "icon-file-code",
             "scala" => "icon-file-code",

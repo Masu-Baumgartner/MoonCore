@@ -56,7 +56,18 @@
 
 @code
 {
+    /// <summary>
+    /// Path to show as breadcrumb
+    /// </summary>
     [Parameter] public string Path { get; set; }
+    
+    /// <summary>
+    /// <b>Optional:</b> Callback which gets invoked when a part of the breadcrumb is clicked with the full path to the item
+    /// </summary>
     [Parameter] public Func<string, Task>? OnClick { get; set; }
+    
+    /// <summary>
+    /// <b>Optional:</b> Provider for a custom link for the middle click action for the breadcrumbs
+    /// </summary>
     [Parameter] public Func<string, string>? CustomClickLink { get; set; }
 }

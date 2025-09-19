@@ -11,8 +11,23 @@
 
 @code
 {
+    /// <summary>
+    /// Icon to use. For a reference, look <see href="https://lucide.dev/icons">here</see>
+    /// </summary>
     [Parameter] public string Icon { get; set; } = "";
+    
+    /// <summary>
+    /// Color for the icon
+    /// </summary>
     [Parameter] public string Color { get; set; } = "";
+    
+    /// <summary>
+    /// Title for icon alert
+    /// </summary>
     [Parameter] public string Title { get; set; } = "";
+    
+    /// <summary>
+    /// Content below the icon alert
+    /// </summary>
     [Parameter] public RenderFragment? ChildContent { get; set; }
 }

@@ -1,20 +1,36 @@
 namespace MoonCore.Helpers;
 
+/// <summary>
+/// Provides a mechanism to debounce actions, ensuring that a specified action
+/// is invoked only after a defined interval of inactivity.
+/// </summary>
 public class Debouncer
 {
     private readonly TimeSpan Delay;
     private CancellationTokenSource Cts = new();
 
-    public Debouncer(int delay = 300)
+    /// <summary>
+    /// Initializes a debouncer with <see cref="delayMs"/> amount of delay in miliseconds
+    /// </summary>
+    /// <param name="delayMs">Delay in milliseconds</param>
+    public Debouncer(int delayMs = 300)
     {
-        Delay = TimeSpan.FromMilliseconds(delay);
+        Delay = TimeSpan.FromMilliseconds(delayMs);
     }
     
+    /// <summary>
+    /// Initializes the debouncer with the specified delay
+    /// </summary>
+    /// <param name="delay">Delay for the debouncer</param>
     public Debouncer(TimeSpan delay)
     {
         Delay = delay;
     }
 
+    /// <summary>
+    /// Invokes the provided callback after the constructor defined delay of inactivity
+    /// </summary>
+    /// <param name="action">Callback to debounce</param>
     public void Debounce(Func<Task> action)
     {
         // Cancel any existing scheduled task
@@ -43,6 +59,10 @@ public class Debouncer
         }, token);
     }
 
+    /// <summary>
+    /// Invokes the provided callback after the constructor defined delay of inactivity
+    /// </summary>
+    /// <param name="action">Callback to debounce</param>
     public void Debounce(Action action)
     {
         Debounce(() =>

@@ -18,13 +18,16 @@ public partial class DataTable<TItem>
         SortedColumns = Columns.OrderBy(x => x.Index).ToArray();
         SortedRows = Rows.OrderBy(x => x.Index).ToArray();
 
-        await Refresh();
+        await RefreshAsync();
     }
 
     #endregion
 
     #region Configuration
 
+    /// <summary>
+    /// Configuration components need to be placed in here
+    /// </summary>
     [Parameter] public RenderFragment? Configuration { get; set; }
 
     private readonly List<DataTableColumn<TItem>> Columns = new();
@@ -43,16 +46,38 @@ public partial class DataTable<TItem>
 
     #region Items & Loading
 
+    /// <summary>
+    /// Callback to fetch the items which will be shown
+    /// </summary>
     [Parameter] public Func<Task<TItem[]>> ItemSource { get; set; }
 
+    /// <summary>
+    /// Event which will be called when the refreshing is done
+    /// </summary>
     public event Func<Task>? OnRefreshed;
+    
+    /// <summary>
+    /// Event which will be called when the table is currently refreshing
+    /// </summary>
     public event Func<Task>? OnRefreshing;
 
+    /// <summary>
+    /// Indicates is the table is currently loading
+    /// </summary>
     public bool IsLoading { get; private set; } = true;
+    
+    /// <summary>
+    /// Currently loaded items can be accessed using this property
+    /// </summary>
     public TItem[] Items { get; private set; } = [];
+    
     private Exception? LoadingException;
 
-    public async Task Refresh(bool silent = false)
+    /// <summary>
+    /// Refreshes the table, refetching the items from the source
+    /// </summary>
+    /// <param name="silent">Is true, no loading animation will be shown</param>
+    public async Task RefreshAsync(bool silent = false)
     {
         // Show loading state if not set to silent
         if (!silent)
@@ -92,7 +117,10 @@ public partial class DataTable<TItem>
         }
     }
 
-    public async Task NotifyStateHasChanged()
+    /// <summary>
+    /// Proxy function to invoke StateHasChanged in the data table
+    /// </summary>
+    public async Task NotifyStateHasChangedAsync()
     {
         await InvokeAsync(StateHasChanged);
     }
@@ -101,27 +129,52 @@ public partial class DataTable<TItem>
 
     #region Customization
 
+    /// <summary>
+    /// <b>Optional:</b> Template to replace the default loading indicator
+    /// </summary>
     [Parameter] public RenderFragment? LoadingIndicator { get; set; }
+    
+    /// <summary>
+    /// <b>Optional:</b> Template to replace the exception indicator
+    /// </summary>
     [Parameter] public RenderFragment<Exception>? ExceptionIndicator { get; set; }
+    
+    /// <summary>
+    /// <b>Optional:</b> Template to replace the no items indicator
+    /// </summary>
     [Parameter] public RenderFragment? NoItemsIndicator { get; set; }
 
+    /// <summary>
+    /// <b>Optional:</b> CSS Classes for the container the table is inside. Default value is: <b>w-full overflow-x-auto</b>
+    /// </summary>
     [Parameter] public string ContainerCss { get; set; } = "w-full overflow-x-auto";
+    
+    /// <summary>
+    /// <b>Optional:</b> CSS Classes for the rows
+    /// </summary>
     [Parameter] public string RowCss { get; set; }
 
+    /// <summary>
+    /// <b>Optional:</b> Template to attach to the table as a header
+    /// </summary>
     [Parameter] public RenderFragment? Header { get; set; }
+    
+    /// <summary>
+    /// <b>Optional:</b> Template to attach zo the table as a footer
+    /// </summary>
     [Parameter] public RenderFragment? Footer { get; set; }
 
     #endregion
 
-    private RenderFragment CreateRow(TItem item) => builder =>
+    private RenderFragment CreateRow(TItem item) => __builder =>
     {
         var handlerSeq = 0;
 
         // Base element
 
-        builder.OpenElement(0, "tr");
+        __builder.OpenElement(0, "tr");
 
-        builder.AddAttribute(1, "css", RowCss);
+        __builder.AddAttribute(1, "css", RowCss);
 
         handlerSeq += 2;
 
@@ -129,26 +182,26 @@ public partial class DataTable<TItem>
 
         if (OnClick != null)
         {
-            builder.AddAttribute(
+            __builder.AddAttribute(
                 handlerSeq,
                 "onclick",
                 EventCallback.Factory.Create(this, () => OnClick.Invoke(item))
             );
             
-            builder.AddAttribute(handlerSeq + 1, "style", "cursor: pointer");
+            __builder.AddAttribute(handlerSeq + 1, "style", "cursor: pointer");
 
             handlerSeq += 2;
         }
 
         if (OnContextMenu != null)
         {
-            builder.AddAttribute(
+            __builder.AddAttribute(
                 handlerSeq,
                 "oncontextmenu",
                 EventCallback.Factory.Create(this, (MouseEventArgs args) => OnContextMenu.Invoke(args, item))
             );
 
-            builder.AddEventPreventDefaultAttribute(handlerSeq + 1, "oncontextmenu", true);
+            __builder.AddEventPreventDefaultAttribute(handlerSeq + 1, "oncontextmenu", true);
 
             handlerSeq += 2;
         }
@@ -157,9 +210,9 @@ public partial class DataTable<TItem>
 
         foreach (var column in SortedColumns)
         {
-            builder.OpenElement(handlerSeq, "td");
-            builder.AddAttribute(handlerSeq + 1, "scope", "row");
-            builder.AddAttribute(handlerSeq + 2, "class", column.ColumnCss);
+            __builder.OpenElement(handlerSeq, "td");
+            __builder.AddAttribute(handlerSeq + 1, "scope", "row");
+            __builder.AddAttribute(handlerSeq + 2, "class", column.ColumnCss);
             handlerSeq += 3;
 
             if (column.ColumnTemplate == null)
@@ -167,30 +220,33 @@ public partial class DataTable<TItem>
                 if (column.Field != null)
                 {
                     var val = column.Field.Invoke(item);
-                    builder.AddContent(handlerSeq, val?.ToString() ?? "null");
+                    __builder.AddContent(handlerSeq, val?.ToString() ?? "null");
 
                     handlerSeq++;
                 }
             }
             else
             {
-                builder.AddContent(handlerSeq, column.ColumnTemplate.Invoke(item));
+                __builder.AddContent(handlerSeq, column.ColumnTemplate.Invoke(item));
                 handlerSeq++;
             }
 
-            builder.CloseElement();
+            __builder.CloseElement();
         }
 
         // Finalize
 
-        builder.CloseElement();
+        __builder.CloseElement();
     };
 
     #region Context Menu Handling
 
+    /// <summary>
+    /// <b>Optional:</b> Event callback for context menu actions on the row of a specific item. If none is set, no context menu events will be subscribed to from the DOM
+    /// </summary>
     [Parameter] public Func<MouseEventArgs, TItem, Task>? OnContextMenu { get; set; }
 
-    private async Task InvokeContextMenu(MouseEventArgs args, TItem item)
+    private async Task InvokeContextMenuAsync(MouseEventArgs args, TItem item)
     {
         if (OnContextMenu == null)
             return;
@@ -202,6 +258,9 @@ public partial class DataTable<TItem>
 
     #region On Click Handling
 
+    /// <summary>
+    /// <b>Optional:</b> Event callback for the onclick event on the row of a specific item. If none is set, no onclick events will be subscribed to from the DOM
+    /// </summary>
     [Parameter] public Func<TItem, Task>? OnClick { get; set; }
 
     #endregion

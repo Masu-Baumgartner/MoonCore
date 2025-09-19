@@ -107,14 +107,44 @@
 
 @code
 {
-    [Parameter] public Assembly AppAssembly { get; set; }
+    /// <summary>
+    /// Main assembly to search for blazor pages
+    /// </summary>
+    [Parameter] public required Assembly AppAssembly { get; set; }
+    
+    /// <summary>
+    /// An enumerable of assemblies to search for blazor pages
+    /// </summary>
     [Parameter] public IEnumerable<Assembly> AdditionalAssemblies { get; set; } = [];
-    [Parameter] public Type DefaultLayout { get; set; }
+    
+    /// <summary>
+    /// Type of the main layout to place the content in it
+    /// </summary>
+    [Parameter] public required Type DefaultLayout { get; set; }
+    
+    /// <summary>
+    /// <b>Optional:</b> Disables the initial loading screen used to fix interop issues
+    /// </summary>
     [Parameter] public bool DisableBlazorServerSideSafeMode { get; set; } = false;
 
+    /// <summary>
+    /// <b>Optional:</b> Template to show when the user is not authenticated
+    /// </summary>
     [Parameter] public RenderFragment? LoginTemplate { get; set; }
+    
+    /// <summary>
+    /// <b>Optional:</b> Template which is shown when the authentication is in progress
+    /// </summary>
     [Parameter] public RenderFragment? AuthenticatingTemplate { get; set; }
+    
+    /// <summary>
+    /// <b>Optional:</b> Template which is shown when the application is initializing
+    /// </summary>
     [Parameter] public RenderFragment? LoadingTemplate { get; set; }
+    
+    /// <summary>
+    /// <b>Optional:</b> Template for the 404 page of the application
+    /// </summary>
     [Parameter] public RenderFragment? NotFoundTemplate { get; set; }
 
     private bool IsLoading = true;

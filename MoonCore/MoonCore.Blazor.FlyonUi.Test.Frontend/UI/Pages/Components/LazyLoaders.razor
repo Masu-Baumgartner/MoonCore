@@ -23,7 +23,7 @@
     {
         await Task.Delay(TimeSpan.FromSeconds(3));
 
-        await lazyLoader.UpdateText("Doing something amazing");
+        await lazyLoader.UpdateTextAsync("Doing something amazing");
 
         await Task.Delay(TimeSpan.FromSeconds(5));
     }

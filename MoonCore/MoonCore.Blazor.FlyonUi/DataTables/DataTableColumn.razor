@@ -5,12 +5,39 @@
     [CascadingParameter(Name = "DataTable")]
     public DataTable<TItem> DataTable { get; set; }
 
+    /// <summary>
+    /// Index to sort the columns by. The higher the index the more on the right side the column will be placed
+    /// </summary>
     [Parameter] public int Index { get; set; }
+    
+    /// <summary>
+    /// <b>Optional:</b> Property to display the value of in the column cell content
+    /// </summary>
     [Parameter] public Func<TItem, object?>? Field { get; set; }
+    
+    /// <summary>
+    /// <b>Optional:</b> CSS for the header of the column. Default value is: <b>py-2 px-3 font-semibold text-left</b>
+    /// </summary>
     [Parameter] public string HeaderCss { get; set; } = "py-2 px-3 font-semibold text-left";
+    
+    /// <summary>
+    /// <b>Optional:</b> Template to replace the default header with when specified
+    /// </summary>
     [Parameter] public RenderFragment? HeaderTemplate { get; set; }
+    
+    /// <summary>
+    /// <b>Optional:</b> CSS for the cell of the column. Default value is: <b>py-1.5 px-3 text-left font-normal</b>
+    /// </summary>
     [Parameter] public string ColumnCss { get; set; } = "py-1.5 px-3 text-left font-normal";
+    
+    /// <summary>
+    /// <b>Optional:</b> Template to replace the default column cell with when specified
+    /// </summary>
     [Parameter] public RenderFragment<TItem>? ColumnTemplate { get; set; }
+    
+    /// <summary>
+    /// <b>Optional:</b>Name aka. Title of the column in the default header
+    /// </summary>
     [Parameter] public string Name { get; set; } = "";
 
     protected override void OnInitialized()

@@ -18,7 +18,7 @@
         <RepositoryType>git</RepositoryType>
         <PackageTags>mooncore</PackageTags>
         <PackageReadmeFile>README.md</PackageReadmeFile>
-        <Version>1.2.3</Version>
+        <Version>1.2.4</Version>
     </PropertyGroup>
 
 
@@ -27,6 +27,7 @@
     </ItemGroup>
 
     <ItemGroup>
+        <PackageReference Include="Ben.Demystifier" Version="0.4.1" />
         <PackageReference Include="Microsoft.AspNetCore.Components.Web" Version="9.0.6"/>
         <PackageReference Include="MimeTypesMap" Version="1.0.9" />
     </ItemGroup>
@@ -38,12 +39,12 @@
     </ItemGroup>
 
     <ItemGroup>
-      <ProjectReference Include="..\MoonCore.Blazor\MoonCore.Blazor.csproj" />
+      <Folder Include="Styles\" />
+      <Folder Include="wwwroot\" />
     </ItemGroup>
 
     <ItemGroup>
-      <Folder Include="Styles\" />
-      <Folder Include="wwwroot\" />
+      <ProjectReference Include="..\MoonCore\MoonCore.csproj" />
     </ItemGroup>
 
 </Project>

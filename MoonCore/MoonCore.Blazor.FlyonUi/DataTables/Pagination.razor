@@ -8,7 +8,14 @@
     [CascadingParameter(Name = "DataTable")]
     public DataTable<TItem> DataTable { get; set; }
 
+    /// <summary>
+    /// Item source for paginated data
+    /// </summary>
     [Parameter] public Func<PaginationOptions, Task<IPagedData<TItem>>> ItemSource { get; set; }
+    
+    /// <summary>
+    /// Page size to use when fetching the items and calculating the page counts. Default: 15
+    /// </summary>
     [Parameter] public int PageSize { get; set; } = 15;
 
     internal PaginationOptions Options;
@@ -22,7 +29,7 @@
             PerPage = PageSize
         };
         
-        DataTable.ItemSource = Load;
+        DataTable.ItemSource = LoadAsync;
 
         DataTable.Footer += ComponentHelper.FromType<PaginationDesign<TItem>>(parameters =>
         {
@@ -30,7 +37,7 @@
         });
     }
 
-    private async Task<TItem[]> Load()
+    private async Task<TItem[]> LoadAsync()
     {
         PagedData = await ItemSource.Invoke(Options);
         return PagedData.Items;

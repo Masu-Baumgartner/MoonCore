@@ -24,26 +24,26 @@
 else
 {
     <FileManagerHeader CurrentPath="@CurrentPath"
-                       OnBreadcrumbClick="SetPath"
-                       OnHomeClick="@(() => SetPath("/"))"
-                       OnRefreshClick="() => FileView.Refresh()"
-                       OnFileSelected="HandleFileUpload"
-                       ShowSelectionItems="@(SelectedEntries.Length > 0)"
-                       SelectionOperations="MultiFsOperations"
-                       OnSelectionClicked="RunSelectionOperation"
+                       OnBreadcrumbClick="SetPathAsync"
+                       OnHomeClick="@(() => SetPathAsync("/"))"
+                       OnRefreshClick="() => FileView.RefreshAsync()"
+                       OnFileSelected="HandleFileUploadAsync"
+                       ShowMultiOperations="@(SelectedEntries.Length > 0)"
+                       MultiOperations="MultiFsOperations"
+                       OnMultiOperationClicked="RunSelectionOperationAsync"
                        ToolbarOperations="ToolbarOperations"
-                       OnToolbarClicked="RunToolbarOperation"
+                       OnToolbarClicked="RunToolbarOperationAsync"
                        EnableUpload="EnableUpload"/>
     
     <div class="mt-5">
-        <FileView @ref="FileView" Load="Load" ShowDate="true" ShowSize="true" OnClick="OnClick"
+        <FileView @ref="FileView" Load="LoadAsync" ShowDate="true" ShowSize="true" OnClick="OnClick"
                   CustomClickLink="CustomClickLink" OnContextMenu="OnContextMenu">
             <ChildContent>
                 <DataTableRow TItem="FsEntry" Index="int.MinValue">
                     <Template>
                         @if (CurrentPath != "/")
                         {
-                            <td @onclick="GoUp" scope="row" colspan="99999"
+                            <td @onclick="GoUpAsync" scope="row" colspan="99999"
                                 class="py-1.5 px-3 text-left font-normal cursor-pointer">
                                 <div class="flex flex-row items-center">
                                     <i class="icon-folder-up text-accent text-2xl me-5"></i>
@@ -75,7 +75,7 @@ else
     {
         foreach (var operation in SingleFsOperations.Where(x => x.Filter == null || x.Filter.Invoke(ContextEntry)))
         {
-            <button @onclick="_ => RunSingleContextOperation(operation)" type="button" class="dropdown-item">
+            <button @onclick="_ => RunSingleContextOperationAsync(operation)" type="button" class="dropdown-item">
                 <i class="@(operation.Icon) @(operation.ContextCss) text-lg me-1"></i>
                 @operation.Name
             </button>
@@ -83,7 +83,7 @@ else
 
         foreach (var operation in MultiFsOperations)
         {
-            <button @onclick="_ => RunMultiContextOperation(operation)" type="button" class="dropdown-item">
+            <button @onclick="_ => RunMultiContextOperationAsync(operation)" type="button" class="dropdown-item">
                 <i class="@(operation.Icon) @(operation.ContextCss) text-lg me-1"></i>
                 @operation.Name
             </button>
@@ -93,11 +93,25 @@ else
 
 @code
 {
-
+    /// <summary>
+    /// <see cref="IFsAccess"/> to use for all operations
+    /// </summary>
     [Parameter] public IFsAccess FsAccess { get; set; }
+    
+    /// <summary>
+    /// Configuration callback to register all operations
+    /// which the user should be able to use
+    /// </summary>
     [Parameter] public required Action<FileManagerOptions> OnConfigure { get; set; }
+    
+    /// <summary>
+    /// Toggles whether to allow the user to upload files/folders
+    /// </summary>
     [Parameter] public bool EnableUpload { get; set; } = true;
 
+    /// <summary>
+    /// Current active file view component
+    /// </summary>
     public FileView FileView { get; private set; }
 
     private ContextMenu ContextMenu;
@@ -135,7 +149,7 @@ else
             .ToArray();
 
         if(EnableUpload)
-            await InitializeUpload();
+            await InitializeUploadAsync();
     }
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
@@ -144,15 +158,15 @@ else
             return;
 
         if(EnableUpload)
-            await LateInitializeUpload();
+            await LateInitializeUploadAsync();
     }
 
     public async ValueTask DisposeAsync()
     {
         if (EnableUpload)
-            await DisposeUpload();
+            await DisposeUploadAsync();
     }
 
-    public Task Refresh()
-        => FileView.Refresh();
+    public Task RefreshAsync()
+        => FileView.RefreshAsync();
 }

@@ -33,42 +33,42 @@ public class ArchiveOperation : IMultiFsOperation
     public bool CheckCompatability(IFsAccess access, IFileManager fileManager)
         => access is IArchiveAccess;
 
-    public async Task Execute(string workingDir, FsEntry[] files, IFsAccess fsAccess, IFileManager fileManager)
+    public async Task ExecuteAsync(string workingDir, FsEntry[] files, IFsAccess fsAccess, IFileManager fileManager)
     {
         var archiveAccess = fsAccess as IArchiveAccess;
 
         if (archiveAccess == null)
             return;
 
-        await ModalService.Launch<CreateArchiveModal>(parameters =>
+        await ModalService.LaunchAsync<CreateArchiveModal>(parameters =>
         {
             parameters["Formats"] = archiveAccess.ArchiveFormats;
             parameters["OnSubmit"] = async (string name, ArchiveFormat format) =>
             {
-                await ToastService.Progress(
+                await ToastService.ProgressAsync(
                     "Creating archive",
                     "Archiving content",
                     async toast =>
                     {
                         try
                         {
-                            await archiveAccess.Archive(
+                            await archiveAccess.ArchiveAsync(
                                 UnixPath.Combine(workingDir, name),
                                 format,
                                 workingDir,
                                 files,
-                                async text => await toast.UpdateText(text)
+                                async text => await toast.UpdateTextAsync(text)
                             );
 
-                            await ToastService.Success("Successfully created archive");
+                            await ToastService.SuccessAsync("Successfully created archive");
                         }
                         catch (Exception e)
                         {
                             Logger.LogError(e, "An error occured while archiving");
-                            await ToastService.Error("An unhandled error occured while creating archive");
+                            await ToastService.ErrorAsync("An unhandled error occured while creating archive");
                         }
 
-                        await fileManager.Refresh();
+                        await fileManager.RefreshAsync();
                     }
                 );
             };

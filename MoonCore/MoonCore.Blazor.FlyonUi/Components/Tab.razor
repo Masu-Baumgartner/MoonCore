@@ -1,8 +1,20 @@
 @code
 {
+    /// <summary>
+    /// Name of the tab
+    /// </summary>
     [Parameter] public string Name { get; set; }
+    
+    /// <summary>
+    /// Icon of the tab. For a reference, look <see href="https://lucide.dev/icons">here</see>
+    /// </summary>
     [Parameter] public string Icon { get; set; }
+    
+    /// <summary>
+    /// Content of the tab
+    /// </summary>
     [Parameter] public RenderFragment ChildContent { get; set; }
+    
     [CascadingParameter] public Tabs Tabs { get; set; }
 
     protected override void OnParametersSet() => Tabs.AddTab(this);

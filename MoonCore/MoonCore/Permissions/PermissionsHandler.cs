@@ -4,6 +4,10 @@ using MoonCore.Helpers;
 
 namespace MoonCore.Permissions;
 
+/// <summary>
+/// Implements an <see cref="AuthorizationHandler{TRequirement}"/> to handle LuckPerms specified permissions
+/// from the configured claim
+/// </summary>
 public class PermissionsHandler : AuthorizationHandler<PermissionRequirement>
 {
     private readonly PermissionsOptions Options;

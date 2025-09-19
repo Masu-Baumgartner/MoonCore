@@ -20,12 +20,12 @@
         </div>
     </div>
     <div class="mt-5">
-        <HandleForm @ref="HandleForm" Model="Form" OnValidSubmit="HandleSubmit">
+        <HandleForm @ref="HandleForm" Model="Form" OnValidSubmit="HandleSubmitAsync">
             <div class="mt-2">
                 <label class="label-text">Format</label>
                 <InputItem TItem="ArchiveFormat"
                            DisplayField="@(x => x.DisplayName)"
-                           ItemSource="ItemSource"
+                           ItemSource="ItemSourceAsync"
                            Value="SelectedFormat"
                            ValueChanged="OnFormatChanged"/>
             </div>
@@ -36,10 +36,10 @@
         </HandleForm>
     </div>
     <div class="mt-5 flex justify-end">
-        <button @onclick="Hide" type="button" class="btn btn-secondary me-2">
+        <button @onclick="HideAsync" type="button" class="btn btn-secondary me-2">
             Cancel
         </button>
-        <WButton OnClick="_ => HandleForm.Submit()">
+        <WButton OnClick="HandleForm.SubmitAsync">
             Create
         </WButton>
     </div>
@@ -47,7 +47,14 @@
 
 @code
 {
+    /// <summary>
+    /// Formats to offer to the user
+    /// </summary>
     [Parameter] public required ArchiveFormat[] Formats { get; set; }
+    
+    /// <summary>
+    /// Callback when the user entered the requested data
+    /// </summary>
     [Parameter] public required Func<string, ArchiveFormat, Task> OnSubmit { get; set; }
 
     private HandleForm HandleForm;
@@ -70,16 +77,16 @@
         public string Name { get; set; }
     }
 
-    private async Task HandleSubmit()
+    private async Task HandleSubmitAsync()
     {
         if (SelectedFormat == null)
             throw new DisplayException("You need to select an archive format");
 
         await OnSubmit.Invoke(Form.Name, SelectedFormat);
-        await Hide();
+        await HideAsync();
     }
 
-    private Task<ArchiveFormat[]> ItemSource()
+    private Task<ArchiveFormat[]> ItemSourceAsync()
         => Task.FromResult(Formats);
 
     private async Task OnFormatChanged(ArchiveFormat? newFormat)

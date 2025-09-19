@@ -7,8 +7,8 @@
 {
     [Parameter] public RenderFragment ChildContent { get; set; }
     
-    public override void RenderContent(RenderTreeBuilder __builder)
+    public override void RenderContent(RenderTreeBuilder builder)
     {
-        ChildContent.Invoke(__builder);
+        ChildContent.Invoke(builder);
     }
 }

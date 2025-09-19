@@ -4,7 +4,7 @@
 
 <DataTable @ref="Table"
            TItem="FsEntry"
-           ItemSource="ItemSource"
+           ItemSource="ItemSourceAsync"
            OnClick="OnClick"
            OnContextMenu="OnContextMenu">
     <Configuration>
@@ -105,23 +105,64 @@
 
 @code
 {
+    /// <summary>
+    /// Callback to retrieve the file entries
+    /// </summary>
     [Parameter] public Func<Task<FsEntry[]>> Load { get; set; }
+    
+    /// <summary>
+    /// <b>Optional:</b> Callback which handles when a file is clicked
+    /// </summary>
     [Parameter] public Func<FsEntry, Task>? OnClick { get; set; }
+    
+    /// <summary>
+    /// <b>Optional:</b> Custom middle click link provider callback
+    /// </summary>
     [Parameter] public Func<FsEntry, string>? CustomClickLink { get; set; }
+    
+    /// <summary>
+    /// <b>Optional:</b> Location to put your configuration into
+    /// </summary>
     [Parameter] public RenderFragment? ChildContent { get; set; }
+    
+    /// <summary>
+    /// <b>Optional:</b> Template to override the default NoFiles UI
+    /// </summary>
     [Parameter] public RenderFragment? NoFilesContent { get; set; }
     
+    /// <summary>
+    /// <b>Optional:</b> Callback for handlng context menu actions
+    /// </summary>
     [Parameter] public Func<MouseEventArgs, FsEntry, Task>? OnContextMenu { get; set; }
 
+    /// <summary>
+    /// Toggles whether to use icons when displaying files and folders. Default: true
+    /// </summary>
     [Parameter] public bool ShowIcons { get; set; } = true;
+    
+    /// <summary>
+    /// Toggles whether to use the <see cref="FileIconHelper"/> when displaying files to determine the best icon. Default: true
+    /// </summary>
     [Parameter] public bool UseDynamicIcons { get; set; } = true;
+    
+    /// <summary>
+    /// Toggles whether to show the modification time of a file. Default: false
+    /// </summary>
     [Parameter] public bool ShowDate { get; set; } = false;
+    
+    /// <summary>
+    /// Toggles whether to show the size of a file. Default: false
+    /// </summary>
     [Parameter] public bool ShowSize { get; set; } = false;
 
     private DataTable<FsEntry> Table;
 
-    private async Task<FsEntry[]> ItemSource()
+    private async Task<FsEntry[]> ItemSourceAsync()
         => await Load.Invoke();
 
-    public async Task Refresh(bool silent = false) => await Table.Refresh(silent: silent);
+    /// <summary>
+    /// Proxy function to refresh the underlying table
+    /// </summary>
+    /// <param name="silent">Whether to refresh the table without showing a loading animation</param>
+    public async Task RefreshAsync(bool silent = false) => await Table.RefreshAsync(silent: silent);
 }

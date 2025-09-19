@@ -1,6 +1,8 @@
 @using MoonCore.Blazor.FlyonUi.Exceptions
 @using MoonCore.Exceptions
 
+@inject GlobalErrorService ErrorService
+
 @if (IsLoading)
 {
     <div class="@(EnableDefaultSpacing ? "mt-5" : "")">
@@ -42,10 +44,10 @@ else
         if (!firstRender)
             return;
 
-        await DoLoad();
+        await DoLoadAsync();
     }
 
-    private async Task DoLoad()
+    private async Task DoLoadAsync()
     {
         try
         {
@@ -53,9 +55,9 @@ else
         }
         catch (HttpApiException apiException)
         {
-            // Redirect unauthenticated status errors directly to the next layer
+            // Redirect unauthenticated status errors directly to the global handler
             if (apiException.Status == 401)
-                throw;
+                await ErrorService.HandleExceptionAsync(apiException);
 
             LoadingException = apiException;
         }
@@ -68,18 +70,18 @@ else
         await InvokeAsync(StateHasChanged);
     }
 
-    public async Task UpdateText(string text)
+    public async Task UpdateTextAsync(string text)
     {
         LoadingText = text;
         await InvokeAsync(StateHasChanged);
     }
 
-    public async Task Reload()
+    public async Task ReloadAsync()
     {
         LoadingException = null;
         IsLoading = true;
         await InvokeAsync(StateHasChanged);
 
-        await DoLoad();
+        await DoLoadAsync();
     }
 }

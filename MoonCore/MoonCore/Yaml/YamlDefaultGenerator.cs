@@ -1,8 +1,17 @@
 ﻿namespace MoonCore.Yaml;
 
+/// <summary>
+/// Helper for generating / updating a yaml file in a specific scheme
+/// </summary>
 public static class YamlDefaultGenerator
 {
-    public static async Task Generate<T>(string path)
+    /// <summary>
+    /// Generates a yaml file in a specific scheme using the defined default values.
+    /// If a file already exists it updates 
+    /// </summary>
+    /// <param name="path">Path of the yaml file</param>
+    /// <typeparam name="T">Type of the scheme</typeparam>
+    public static async Task GenerateAsync<T>(string path)
     {
         T model;
 

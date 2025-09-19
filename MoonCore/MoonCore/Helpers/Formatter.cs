@@ -395,6 +395,11 @@ public static class Formatter
         return FromByteToBase64(data);
     }
 
+    /// <summary>
+    /// Converts a byte array to a base 64 string
+    /// </summary>
+    /// <param name="data">Byte array to convert to base64</param>
+    /// <returns>Base 64 string</returns>
     public static string FromByteToBase64(byte[] data)
     {
         var base64 = Convert.ToBase64String(data);
@@ -416,6 +421,11 @@ public static class Formatter
         return Encoding.UTF8.GetString(data);
     }
 
+    /// <summary>
+    /// Converts a base64 string to the byte representation
+    /// </summary>
+    /// <param name="base64">Base64 string to convert from</param>
+    /// <returns>Converted byte array</returns>
     public static byte[] FromBase64ToByte(string base64)
     {
         base64 = base64
@@ -435,21 +445,15 @@ public static class Formatter
         return Convert.FromBase64String(base64);
     }
 
-    public static string ReplaceChars(string input, char[] chars)
-    {
-        var result = input;
-
-        foreach (var c in chars)
-        {
-            result = result.Replace($"{c}", "");
-        }
-
-        return result;
-    }
-    
+    /// <summary>
+    /// Formats a byte array into a string representation of hex values
+    /// </summary>
+    /// <param name="bytes">Bytes to convert to hex</param>
+    /// <param name="upperCase">Whether to print the hex string in all uppercase</param>
+    /// <returns></returns>
     public static string ToHex(byte[] bytes, bool upperCase = false)
     {
-        var result = new StringBuilder(bytes.Length*2);
+        var result = new StringBuilder(bytes.Length * 2);
 
         foreach (var b in bytes)
             result.Append(b.ToString(upperCase ? "X2" : "x2"));
@@ -457,9 +461,15 @@ public static class Formatter
         return result.ToString();
     }
 
-    public static string TransferSpeed(long bytesDiff, TimeSpan timeDiff)
+    /// <summary>
+    /// Calculates and formats a transfer speed from the bytes in a timespan into a human-readable way
+    /// </summary>
+    /// <param name="bytes">Amount of bytes transferred in the provided timespan</param>
+    /// <param name="timeSpan">Timespan in which the bytes have been transfered</param>
+    /// <returns></returns>
+    public static string TransferSpeed(long bytes, TimeSpan timeSpan)
     {
-        var bytesInSecond = timeDiff.TotalSeconds == 0 ? 0 : bytesDiff / timeDiff.TotalSeconds;
-        return FormatSize(bytesInSecond) + "/s";
+        var bytesInSecond = (long)(timeSpan.TotalSeconds == 0 ? 0 : bytes / timeSpan.TotalSeconds);
+        return $"{ByteConverter.FromBytes(bytesInSecond)}/s";
     }
 }

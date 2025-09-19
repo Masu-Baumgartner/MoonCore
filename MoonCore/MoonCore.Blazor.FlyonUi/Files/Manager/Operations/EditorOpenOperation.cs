@@ -14,7 +14,7 @@ public class EditorOpenOperation : IFsOpenOperation
 
     public bool CheckCompatability(IFsAccess access, IFileManager fileManager) => true;
 
-    public async Task<RenderFragment?> Open(
+    public async Task<RenderFragment?> OpenAsync(
         string workingDir,
         FsEntry entry,
         IFsAccess fsAccess,
@@ -25,7 +25,7 @@ public class EditorOpenOperation : IFsOpenOperation
 
         var path = UnixPath.Combine(workingDir, entry.Name);
 
-        await fsAccess.Read(
+        await fsAccess.ReadAsync(
             path,
             async stream =>
             {
@@ -50,10 +50,10 @@ public class EditorOpenOperation : IFsOpenOperation
                     Encoding.UTF8.GetBytes(newContent)
                 );
 
-                await fsAccess.Write(path, ms);
+                await fsAccess.WriteAsync(path, ms);
             };
 
-            parameters["OnClose"] = async () => await fileManager.CloseOpenScreen();
+            parameters["OnClose"] = async () => await fileManager.CloseOpenScreenAsync();
         });
     }
 }

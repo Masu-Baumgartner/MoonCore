@@ -22,7 +22,7 @@
 {
     private async Task Message()
     {
-        await ErrorService.ShowMessage("Teeeeeeeeeeesty");
+        await ErrorService.ShowMessageAsync("Teeeeeeeeeeesty");
     }
     
     private async Task Error1()
@@ -33,18 +33,18 @@
     private async Task Error2()
     {
         var x = new HttpApiException("Goover is an idiot ;)", 500);
-        await ErrorService.HandleException(x);
+        await ErrorService.HandleExceptionAsync(x);
     }
     
     private async Task Error3()
     {
         var x = new HttpApiException("Goover is an idiot ;)", 500);
-        await ErrorService.HandleException(x, "Lost soul", true);
+        await ErrorService.HandleExceptionAsync(x, "Lost soul", true);
     }
     
     private async Task Error4()
     {
         var x = new HttpApiException("Goover is an idiot ;)", 500);
-        await ErrorService.HandleException(x, "Lost soul", true, false);
+        await ErrorService.HandleExceptionAsync(x, "Lost soul", true, false);
     }
 }

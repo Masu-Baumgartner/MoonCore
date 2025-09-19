@@ -26,7 +26,7 @@ public class DeleteOperation : IMultiFsOperation
     public bool CheckCompatability(IFsAccess access, IFileManager fileManager)
         => true;
 
-    public async Task Execute(string workingDir, FsEntry[] files, IFsAccess fsAccess, IFileManager fileManager)
+    public async Task ExecuteAsync(string workingDir, FsEntry[] files, IFsAccess fsAccess, IFileManager fileManager)
     {
         var content = "Do you really want to delete: ";
         content += string.Join(", ", files.Take(4).Select(x => x.Name));
@@ -34,12 +34,12 @@ public class DeleteOperation : IMultiFsOperation
         if (files.Length > 4)
             content += $", and {files.Length - 4} more";
 
-        await AlertService.ConfirmDanger(
+        await AlertService.ConfirmDangerAsync(
             $"You you really want to delete {files.Length} item(s)",
             content,
             async () =>
             {
-                await ToastService.Progress(
+                await ToastService.ProgressAsync(
                     $"Deleing {files.Length} item(s)",
                     "Preparing",
                     async toast =>
@@ -48,11 +48,11 @@ public class DeleteOperation : IMultiFsOperation
 
                         foreach (var file in files)
                         {
-                            await toast.UpdateText(file.Name);
+                            await toast.UpdateTextAsync(file.Name);
 
                             try
                             {
-                                await fsAccess.Delete(
+                                await fsAccess.DeleteAsync(
                                     UnixPath.Combine(
                                         workingDir,
                                         file.Name
@@ -63,16 +63,16 @@ public class DeleteOperation : IMultiFsOperation
                             }
                             catch (HttpApiException e)
                             {
-                                await ToastService.Error(
+                                await ToastService.ErrorAsync(
                                     file.Name,
                                     e.Title
                                 );
                             }
                         }
 
-                        await ToastService.Success($"Successfully deleted {successfully} item(s)");
+                        await ToastService.SuccessAsync($"Successfully deleted {successfully} item(s)");
 
-                        await fileManager.Refresh();
+                        await fileManager.RefreshAsync();
                     }
                 );
             }
