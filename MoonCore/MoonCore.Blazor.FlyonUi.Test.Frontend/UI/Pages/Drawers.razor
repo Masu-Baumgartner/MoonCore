@@ -1,0 +1,15 @@
+@page "/drawers"
+@using MoonCore.Blazor.FlyonUi.Drawers
+@using MoonCore.Blazor.FlyonUi.Test.Frontend.UI.Components
+
+@inject DrawerService DrawerService
+
+<button @onclick="TestyAsync" class="btn btn-primary">Testy</button>
+
+@code
+{
+    private async Task TestyAsync()
+    {
+        await DrawerService.LaunchAsync<ExampleDrawer>(unfocusHide: true);
+    }
+}

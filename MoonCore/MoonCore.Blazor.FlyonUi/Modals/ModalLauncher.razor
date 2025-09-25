@@ -1,4 +1,3 @@
-@using MoonCore.Blazor.FlyonUi.Modals.Components
 @using MoonCore.Helpers
 
 @inject ModalService ModalService
@@ -9,7 +8,7 @@
 
     foreach (var modal in Modals)
     {
-        <div @onclick="HandleOutOfFocusClickAsync"
+        <div @onclick="OnBackdropClickAsync"
              class="overlay-backdrop transition duration-300 fixed inset-0 bg-base-300/50 overflow-y-auto"
              style="z-index: @(i + 100)">
         </div>
@@ -35,7 +34,7 @@
 
 @code
 {
-    private ConcurrentList<ModalItem> Modals = new();
+    private ConcurrentList<ModalReference> Modals = new();
 
     protected override void OnInitialized()
     {
@@ -50,9 +49,9 @@
     /// <param name="allowUnfocusHide"><b>Optional:</b>  Toggles if clicking outside the modal (onto the backdrop) will hide the modal</param>
     /// <typeparam name="T">Type of the component</typeparam>
     /// <returns>ModalItem to close the modal using <see cref="CloseAsync"/></returns>
-    public async Task<ModalItem> LaunchAsync<T>(Action<Dictionary<string, object>>? onConfigure = null, string size = "max-w-lg", bool allowUnfocusHide = false) where T : BaseModal
+    public async Task<ModalReference> LaunchAsync<T>(Action<Dictionary<string, object>>? onConfigure = null, string size = "max-w-lg", bool allowUnfocusHide = false) where T : BaseModal
     {
-        var item = new ModalItem()
+        var item = new ModalReference()
         {
             Size = size,
             AllowUnfocusHide = allowUnfocusHide
@@ -72,7 +71,7 @@
         return item;
     }
 
-    private async Task HandleOutOfFocusClickAsync()
+    private async Task OnBackdropClickAsync()
     {
         var modal = Modals.LastOrDefault();
 
@@ -88,10 +87,10 @@
     /// <summary>
     /// Closes the provided modal
     /// </summary>
-    /// <param name="item">Reference item to the active modal</param>
-    public async Task CloseAsync(ModalItem item)
+    /// <param name="reference">Reference item to the active modal</param>
+    public async Task CloseAsync(ModalReference reference)
     {
-        Modals.Remove(item);
+        Modals.Remove(reference);
         await InvokeAsync(StateHasChanged);
     }
 }

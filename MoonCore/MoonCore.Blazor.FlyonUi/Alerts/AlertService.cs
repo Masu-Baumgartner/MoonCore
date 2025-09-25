@@ -1,7 +1,5 @@
-using Microsoft.AspNetCore.Components;
 using MoonCore.Blazor.FlyonUi.Alerts.Components;
 using MoonCore.Blazor.FlyonUi.Modals;
-using MoonCore.Blazor.FlyonUi.Modals.Components;
 
 namespace MoonCore.Blazor.FlyonUi.Alerts;
 

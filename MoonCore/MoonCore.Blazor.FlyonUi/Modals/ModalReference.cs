@@ -2,7 +2,7 @@ using Microsoft.AspNetCore.Components;
 
 namespace MoonCore.Blazor.FlyonUi.Modals;
 
-public class ModalItem
+public class ModalReference
 {
     /// <summary>
     /// Content to render inside the modal 

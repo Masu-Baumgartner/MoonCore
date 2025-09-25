@@ -1,10 +1,10 @@
 @code
 {
     [Parameter] public ToastLauncher Launcher { get; set; }
-    [Parameter] public ToastItem ToastItem { get; set; }
+    [Parameter] public ToastReference Reference { get; set; }
 
     /// <summary>
     /// Hides/removes this toast component
     /// </summary>
-    public async Task HideAsync() => await Launcher.CloseAsync(ToastItem);
+    public async Task HideAsync() => await Launcher.CloseAsync(Reference);
 }

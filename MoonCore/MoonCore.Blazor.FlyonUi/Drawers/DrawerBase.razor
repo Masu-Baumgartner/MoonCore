@@ -1,0 +1,12 @@
+@inject DrawerService DrawerService
+
+@code
+{
+    [Parameter] public DrawerReference Reference { get; set; }
+
+    /// <summary>
+    /// Closes the current drawer
+    /// </summary>
+    public async Task CloseAsync()
+        => await DrawerService.CloseAsync(Reference);
+}

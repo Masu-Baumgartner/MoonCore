@@ -1,0 +1,98 @@
+@using MoonCore.Helpers
+@inject DrawerService DrawerService
+
+@if (Drawers.Count > 0)
+{
+    for (var i = 0; i < Drawers.Count; i++)
+    {
+        var reference = Drawers[i];
+        
+        <div @onclick="_ => OnBackdropClickAsync(reference)"
+             class="overlay-backdrop transition duration-300 fixed inset-0 bg-base-300/50 overflow-y-auto"
+             style="z-index: @(i + 100)">
+        </div>
+        
+        <div class="overlay overlay-open:translate-x-0 drawer @(reference.CssClasses) @(reference.IsVisible ? "open opened" : "")" role="dialog" tabindex="-1" style="z-index: @(i + 101)">
+            @reference.RenderFragment
+        </div>
+    }
+}
+
+@code
+{
+    private readonly List<DrawerReference> Drawers = new();
+    
+    protected override void OnInitialized()
+    {
+        DrawerService.SetLauncher(this);
+    }
+
+    /// <summary>
+    /// Launches a new drawer instance of the specified type
+    /// </summary>
+    /// <param name="parameters">Callback for providing parameters to the drawer component</param>
+    /// <param name="unfocusHide">Toggles if clicking on the backdrop will close the drawer</param>
+    /// <param name="cssClasses">Additional css classes for the drawer container</param>
+    /// <typeparam name="T">Type of the component to launch</typeparam>
+    /// <returns>Reference to the drawer instance which can be used for <see cref="CloseAsync"/></returns>
+    public async Task<DrawerReference> LaunchAsync<T>(
+        Action<Dictionary<string, object>>? parameters = null,
+        bool unfocusHide = false,
+        string cssClasses = "drawer-start"
+    ) where T : DrawerBase
+    {
+        var reference = new DrawerReference()
+        {
+            AllowUnfocusHide = unfocusHide,
+            IsVisible = false,
+            CssClasses = cssClasses
+        };
+
+        reference.RenderFragment = ComponentHelper.FromType<T>(drawerParams =>
+        {
+            drawerParams["Reference"] = reference;
+            
+            parameters?.Invoke(drawerParams);
+        });
+        
+        Drawers.Add(reference);
+
+        await InvokeAsync(StateHasChanged);
+
+        Task.Run(async () =>
+        {
+            await Task.Delay(150);
+
+            reference.IsVisible = true;
+            await InvokeAsync(StateHasChanged);
+        });
+
+        return reference;
+    }
+
+    private async Task OnBackdropClickAsync(DrawerReference reference)
+    {
+        if(!reference.AllowUnfocusHide)
+        return;
+
+        await CloseAsync(reference);
+    }
+
+    /// <summary>
+    /// Closes the provided drawer reference
+    /// </summary>
+    /// <param name="reference">Reference of the drawer</param>
+    public async Task CloseAsync(DrawerReference reference)
+    {
+        reference.IsVisible = false;
+        await InvokeAsync(StateHasChanged);
+        
+        Task.Run(async () =>
+        {
+            await Task.Delay(150);
+
+            Drawers.Remove(reference);
+            await InvokeAsync(StateHasChanged);
+        });
+    }
+}
