@@ -23,7 +23,7 @@ public class DrawerReference
     public RenderFragment RenderFragment { get; set; }
     
     /// <summary>
-    /// Css classes for the drawer container
+    /// Direction in which the drawer should be opened
     /// </summary>
-    public string CssClasses { get; set; }
+    public DrawerDirection Direction { get; set; }
 }

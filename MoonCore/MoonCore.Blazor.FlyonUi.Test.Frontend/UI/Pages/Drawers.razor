@@ -4,12 +4,17 @@
 
 @inject DrawerService DrawerService
 
-<button @onclick="TestyAsync" class="btn btn-primary">Testy</button>
+<div class="flex flex-row gap-5">
+    <button @onclick="@(_ => TestyAsync(DrawerDirection.Left))" class="btn btn-primary">Left</button>
+    <button @onclick="@(_ => TestyAsync(DrawerDirection.Right))" class="btn btn-primary">Right</button>
+    <button @onclick="@(_ => TestyAsync(DrawerDirection.Top))" class="btn btn-primary">Top</button>
+    <button @onclick="@(_ => TestyAsync(DrawerDirection.Bottom))" class="btn btn-primary">Bottom</button>
+</div>
 
 @code
 {
-    private async Task TestyAsync()
+    private async Task TestyAsync(DrawerDirection direction)
     {
-        await DrawerService.LaunchAsync<ExampleDrawer>(unfocusHide: true);
+        await DrawerService.LaunchAsync<ExampleDrawer>(unfocusHide: true, direction: direction);
     }
 }

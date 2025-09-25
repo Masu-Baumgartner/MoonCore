@@ -6,13 +6,23 @@
     for (var i = 0; i < Drawers.Count; i++)
     {
         var reference = Drawers[i];
-        
+
+        var cssClasses = reference.Direction switch
+        {
+            DrawerDirection.Top => "overlay-open:translate-y-0 drawer-top",
+            DrawerDirection.Bottom => "overlay-open:translate-y-0 drawer-bottom",
+            DrawerDirection.Left => "overlay-open:translate-x-0 drawer-start",
+            DrawerDirection.Right => "overlay-open:translate-x-0 drawer-end",
+            _ => ""
+        };
+
         <div @onclick="_ => OnBackdropClickAsync(reference)"
              class="overlay-backdrop transition duration-300 fixed inset-0 bg-base-300/50 overflow-y-auto"
              style="z-index: @(i + 100)">
         </div>
-        
-        <div class="overlay overlay-open:translate-x-0 drawer @(reference.CssClasses) @(reference.IsVisible ? "open opened" : "")" role="dialog" tabindex="-1" style="z-index: @(i + 101)">
+
+        <div class="overlay overlay-open:translate-x-0 drawer @(cssClasses) @(reference.IsVisible ? "open opened" : "")"
+             role="dialog" tabindex="-1" style="z-index: @(i + 101)">
             @reference.RenderFragment
         </div>
     }
@@ -21,7 +31,7 @@
 @code
 {
     private readonly List<DrawerReference> Drawers = new();
-    
+
     protected override void OnInitialized()
     {
         DrawerService.SetLauncher(this);
@@ -32,29 +42,29 @@
     /// </summary>
     /// <param name="parameters">Callback for providing parameters to the drawer component</param>
     /// <param name="unfocusHide">Toggles if clicking on the backdrop will close the drawer</param>
-    /// <param name="cssClasses">Additional css classes for the drawer container</param>
+    /// <param name="direction">Sets the direction in which the drawer should be opened</param>
     /// <typeparam name="T">Type of the component to launch</typeparam>
     /// <returns>Reference to the drawer instance which can be used for <see cref="CloseAsync"/></returns>
     public async Task<DrawerReference> LaunchAsync<T>(
         Action<Dictionary<string, object>>? parameters = null,
         bool unfocusHide = false,
-        string cssClasses = "drawer-start"
+        DrawerDirection direction = DrawerDirection.Left
     ) where T : DrawerBase
     {
         var reference = new DrawerReference()
         {
             AllowUnfocusHide = unfocusHide,
             IsVisible = false,
-            CssClasses = cssClasses
+            Direction = direction
         };
 
         reference.RenderFragment = ComponentHelper.FromType<T>(drawerParams =>
         {
             drawerParams["Reference"] = reference;
-            
+
             parameters?.Invoke(drawerParams);
         });
-        
+
         Drawers.Add(reference);
 
         await InvokeAsync(StateHasChanged);
@@ -72,8 +82,8 @@
 
     private async Task OnBackdropClickAsync(DrawerReference reference)
     {
-        if(!reference.AllowUnfocusHide)
-        return;
+        if (!reference.AllowUnfocusHide)
+            return;
 
         await CloseAsync(reference);
     }
@@ -86,7 +96,7 @@
     {
         reference.IsVisible = false;
         await InvokeAsync(StateHasChanged);
-        
+
         Task.Run(async () =>
         {
             await Task.Delay(150);
