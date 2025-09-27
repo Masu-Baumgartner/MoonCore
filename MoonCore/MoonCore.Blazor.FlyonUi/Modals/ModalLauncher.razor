@@ -60,7 +60,7 @@
         item.Component = ComponentHelper.FromType<T>(buildAttr =>
         {
             buildAttr.Add("Launcher", this);
-            buildAttr.Add("ModalItem", item);
+            buildAttr.Add("Reference", item);
 
             onConfigure?.Invoke(buildAttr);
         });
