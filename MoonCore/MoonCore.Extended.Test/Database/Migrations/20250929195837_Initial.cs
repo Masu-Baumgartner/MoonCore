@@ -3,16 +3,16 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
 #nullable disable
 
-namespace MoonCore.Extended.Test.Migrations
+namespace MoonCore.Extended.Test.Database.Migrations
 {
     /// <inheritdoc />
-    public partial class AddedCar : Migration
+    public partial class Initial : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.CreateTable(
-                name: "Data_Cars",
+                name: "Cars",
                 columns: table => new
                 {
                     Id = table.Column<int>(type: "integer", nullable: false)
@@ -21,7 +21,7 @@ namespace MoonCore.Extended.Test.Migrations
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_Data_Cars", x => x.Id);
+                    table.PrimaryKey("PK_Cars", x => x.Id);
                 });
         }
 
@@ -29,7 +29,7 @@ namespace MoonCore.Extended.Test.Migrations
         protected override void Down(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.DropTable(
-                name: "Data_Cars");
+                name: "Cars");
         }
     }
 }
