@@ -27,6 +27,7 @@
       <_ContentIncludedByDefault Remove="UI\Components\ImprovedDg\Columns\SelectColumn.razor" />
       <_ContentIncludedByDefault Remove="UI\Components\ImprovedDg\Columns\TemplateColumn.razor" />
       <_ContentIncludedByDefault Remove="UI\Components\ImprovedDg\DataGrid.razor" />
+      <_ContentIncludedByDefault Remove="Layout\MainLayout.razor" />
     </ItemGroup>
 
     <ItemGroup>
@@ -52,8 +53,6 @@
       <AdditionalFiles Include="UI\Pages\Forms\FormComponents.razor" />
       <AdditionalFiles Include="UI\Pages\Forms\Index.razor" />
       <AdditionalFiles Include="UI\Pages\Forms\SelectionPage.razor" />
-      <AdditionalFiles Include="UI\Partials\AppHeader.razor" />
-      <AdditionalFiles Include="UI\Partials\AppSidebar.razor" />
     </ItemGroup>
 
     <ItemGroup>

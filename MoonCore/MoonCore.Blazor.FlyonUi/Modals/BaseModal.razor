@@ -1,0 +1,10 @@
+@code
+{
+    [Parameter] public ModalLauncher Launcher { get; set; }
+    [Parameter] public ModalReference Reference { get; set; }
+
+    /// <summary>
+    /// Hides/removes this modal component
+    /// </summary>
+    public async Task HideAsync() => await Launcher.CloseAsync(Reference);
+}

@@ -1,10 +1,15 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 using MoonCore.Extended.Abstractions;
 using MoonCore.Extended.ExceptionHandlers;
 using MoonCore.Extended.Helpers;
+using MoonCore.Extended.Services;
 
 namespace MoonCore.Extended.Extensions;
 
+/// <summary>
+/// Extension methods to registered mooncore extended services with one method call
+/// </summary>
 public static class ServiceCollectionExtensions
 {
     /// <summary>
@@ -24,7 +29,9 @@ public static class ServiceCollectionExtensions
     /// <param name="collection"></param>
     public static void AddDatabaseMappings(this IServiceCollection collection)
     {
+        collection.TryAddSingleton(new ServiceCollectionAccessor(collection));
         collection.AddSingleton<DatabaseMappingOptions>();
+        collection.AddHostedService<DatabaseMappingsService>();
     }
 
     /// <summary>
@@ -34,6 +41,17 @@ public static class ServiceCollectionExtensions
     /// <param name="collection"></param>
     public static void AddServiceCollectionAccessor(this IServiceCollection collection)
     {
-        collection.AddSingleton(new ServiceCollectionAccessor(collection));
+        collection.TryAddSingleton(new ServiceCollectionAccessor(collection));
+    }
+
+    /// <summary>
+    /// Adds a service which automatically applies all pending migrations of all registered
+    /// <see cref="Microsoft.EntityFrameworkCore.DbContext"/> instances
+    /// </summary>
+    /// <param name="collection">Service collection to register the service to</param>
+    public static void AddDbAutoMigrations(this IServiceCollection collection)
+    {
+        collection.TryAddSingleton(new ServiceCollectionAccessor(collection));
+        collection.AddHostedService<DatabaseMigrationService>();
     }
 }

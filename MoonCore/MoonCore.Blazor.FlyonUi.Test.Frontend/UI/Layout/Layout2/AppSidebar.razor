@@ -1,0 +1,191 @@
+@inherits MoonCore.Blazor.FlyonUi.Drawers.DrawerBase
+
+@inject NavigationManager Navigation
+
+@implements IDisposable
+
+@{
+    var url = new Uri(Navigation.Uri);
+}
+
+<div class="drawer-header">
+    <div class="flex items-center gap-3">
+        <div class="avatar">
+            <img src="/img/icon.png" alt="MoonCore Icon" class="size-8"/>
+        </div>
+        <h3 class="drawer-title text-xl font-semibold">MoonCore</h3>
+    </div>
+</div>
+<div class="drawer-body px-2">
+    <ul class="menu menu-sm p-0">
+        @if (Reference == null)
+        {
+            foreach (var group in Items)
+            {
+                if (!string.IsNullOrEmpty(group.Key))
+                {
+                    <li>
+                        <div class="divider">@group.Key</div>
+                    </li>
+                }
+
+                foreach (var item in group.Value)
+                {
+                    var isActive = item.RequiresExactMatch
+                        ? url.LocalPath == item.Path
+                        : url.LocalPath.StartsWith(item.Path);
+
+                    <li>
+                        <a href="@item.Path" class="@(isActive ? "menu-active" : "")">
+                            <i class="@item.Icon text-lg"></i>
+                            @item.Name
+                        </a>
+                    </li>
+                }
+            }
+        }
+        else
+        {
+            foreach (var group in Items)
+            {
+                if (!string.IsNullOrEmpty(group.Key))
+                {
+                    <li>
+                        <div class="divider">@group.Key</div>
+                    </li>
+                }
+
+                foreach (var item in group.Value)
+                {
+                    var isActive = item.RequiresExactMatch
+                        ? url.LocalPath == item.Path
+                        : url.LocalPath.StartsWith(item.Path);
+
+                    <li>
+                        <a href="@item.Path"
+                           class="@(isActive ? "menu-active" : "")"
+                           @onclick="_ => NavigateMobileAsync(item)"
+                           @onclick:preventDefault>
+                            <i class="@item.Icon text-lg"></i>
+                            @item.Name
+                        </a>
+                    </li>
+                }
+            }
+        }
+    </ul>
+</div>
+
+@code
+{
+    private Dictionary<string, SidebarItem[]> Items = new();
+
+    private string Username = "demouser";
+    private string Email = "user@demo.email";
+
+    protected override void OnInitialized()
+    {
+        var sidebarItems = new List<SidebarItem>()
+        {
+            new()
+            {
+                Name = "Dashboard",
+                Path = "/",
+                Icon = "icon-layout-dashboard",
+                RequiresExactMatch = true
+            },
+            new()
+            {
+                Name = "Components",
+                Path = "/components",
+                Icon = "icon-puzzle",
+                RequiresExactMatch = false
+            },
+            new()
+            {
+                Name = "Feedback",
+                Path = "/feedback",
+                Icon = "icon-message-square",
+                RequiresExactMatch = false
+            },
+            new()
+            {
+                Name = "Data Tables",
+                Path = "/datatables",
+                Icon = "icon-table-2",
+                RequiresExactMatch = false
+            },
+            new()
+            {
+                Name = "Forms",
+                Path = "/forms",
+                Icon = "icon-letter-text",
+                RequiresExactMatch = false
+            },
+            new()
+            {
+                Name = "Colors",
+                Path = "/colors",
+                Icon = "icon-palette",
+                RequiresExactMatch = false
+            },
+            new()
+            {
+                Name = "Auth",
+                Path = "/auth",
+                Icon = "icon-fingerprint",
+                RequiresExactMatch = false
+            },
+            new()
+            {
+                Name = "Files",
+                Path = "/files",
+                Icon = "icon-file-text",
+                RequiresExactMatch = false
+            }
+        };
+
+        Items = sidebarItems
+            //.Where(x => x.Permission == null || (x.Permission != null && IdentityService.HasPermission(x.Permission)))
+            .GroupBy(x => x.Group ?? "")
+            .OrderByDescending(x => string.IsNullOrEmpty(x.Key))
+            .ToDictionary(x => x.Key, x => x.OrderBy(y => y.Priority).ToArray());
+
+        Navigation.LocationChanged += OnNavigated;
+    }
+
+    private async void OnNavigated(object? sender, LocationChangedEventArgs e)
+    {
+        // No async void without try catch to prevent hard app crashes when async task fails
+        
+        try
+        {
+            await InvokeAsync(StateHasChanged);
+        }
+        catch (Exception)
+        {
+            // ignored
+        }
+    }
+
+    private async Task NavigateMobileAsync(SidebarItem item)
+    {
+        await CloseAsync();
+        Navigation.NavigateTo(item.Path);
+    }
+
+    record SidebarItem
+    {
+        public string? Group { get; set; }
+        public int Priority { get; set; }
+        public string Icon { get; set; }
+        public string Path { get; set; }
+        public string Name { get; set; }
+        public bool RequiresExactMatch { get; set; }
+    }
+
+    public void Dispose()
+    {
+        Navigation.LocationChanged -= OnNavigated;
+    }
+}

@@ -18,8 +18,9 @@
         <RepositoryType>git</RepositoryType>
         <PackageTags>mooncore</PackageTags>
         <PackageReadmeFile>README.md</PackageReadmeFile>
-        <Version>1.2.5</Version>
+        <Version>1.2.6</Version>
         <GenerateDocumentationFile>true</GenerateDocumentationFile>
+        <PackageIcon>nuget-icon.png</PackageIcon>
     </PropertyGroup>
 
 
@@ -34,9 +35,14 @@
     </ItemGroup>
 
     <ItemGroup>
+        <None Include="nuget-icon.png" Pack="true" PackagePath="\"/>
         <None Include="README.md" Pack="true" PackagePath="\"/>
         <None Include="Styles/*" Pack="true" PackagePath="Styles/" />
         <None Include="MoonCore.Blazor.FlyonUi.targets" Pack="true" PackagePath="build\MoonCore.Blazor.FlyonUi.targets" />
+        <None Update="nuget-icon.png">
+          <Pack>true</Pack>
+          <PackagePath>/</PackagePath>
+        </None>
     </ItemGroup>
 
     <ItemGroup>

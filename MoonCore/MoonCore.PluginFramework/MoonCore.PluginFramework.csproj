@@ -18,12 +18,14 @@
         <RepositoryType>git</RepositoryType>
         <PackageTags>mooncore</PackageTags>
         <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
-        <Version>1.0.8</Version>
+        <Version>1.0.9</Version>
         <PackageReadmeFile>README.md</PackageReadmeFile>
+        <PackageIcon>nuget-icon.png</PackageIcon>
     </PropertyGroup>
 
     <ItemGroup>
         <None Include="README.md" Pack="true" PackagePath="\"/>
+        <None Include="nuget-icon.png" Pack="true" PackagePath="\"/>
     </ItemGroup>
 
 </Project>

@@ -1,0 +1,51 @@
+@using MoonCore.Blazor.FlyonUi.Drawers
+@using MoonCore.Blazor.FlyonUi.Files.Drop
+@using MoonCore.Blazor.FlyonUi.Modals
+@using MoonCore.Blazor.FlyonUi.Toasts
+
+@inherits LayoutComponentBase
+
+@inject DrawerService DrawerService
+
+<div class="flex flex-row h-screen">
+    <aside class="drawer hidden md:flex shadow-none relative max-w-64 h-full bg-base-250"
+           role="dialog" tabindex="-1">
+        <AppSidebar />
+    </aside>
+    <div class="w-full h-full flex flex-col">
+        <nav class="navbar shadow-base-300/20 shadow-sm grow-0 bg-base-250 p-2">
+            <div class="w-full md:flex md:items-center md:gap-2">
+                <div class="flex items-center justify-between">
+                    <div class="navbar-start items-center justify-between max-md:w-full">
+                        <button @onclick="LaunchSidebarAsync" class="btn btn-square btn-text md:hidden!">
+                            <i class="icon-menu text-xl"></i>
+                        </button>
+                    </div>
+                </div>
+                <div id="default-navbar-collapse" class="md:navbar-end collapse hidden grow basis-full max-md:w-full" >
+                    <div class="avatar p-1">
+                        <div class="size-8.5 rounded-full">
+                            <img src="/img/pfp_placeholder.png" alt="avatar 1" />
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </nav>
+        <div class="grow p-8">
+            @Body
+        </div>
+    </div>
+</div>
+
+<ToastLauncher />
+<ModalLauncher />
+<DrawerLauncher />
+<DropHandler />
+
+@code
+{
+    private async Task LaunchSidebarAsync()
+    {
+        await DrawerService.LaunchAsync<AppSidebar>();
+    }
+}

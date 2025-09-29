@@ -64,16 +64,16 @@ public class ToastService
     /// <param name="hideDelayMs">Time in milliseconds until the modal should hide again. Use <b>-1</b> to disable this. Default: <b>5s</b></param>
     /// <typeparam name="T">Type of the component</typeparam>
     /// <returns>Reference item to close the toast using <see cref="CloseAsync"/></returns>
-    public Task<ToastItem> LaunchAsync<T>(Action<Dictionary<string, object>>? onConfigure = null, int hideDelayMs = 5000)
+    public Task<ToastReference> LaunchAsync<T>(Action<Dictionary<string, object>>? onConfigure = null, int hideDelayMs = 5000)
         where T : BaseToast
         => ToastLauncher.LaunchAsync<T>(onConfigure, hideDelayMs);
 
     /// <summary>
     /// Closes the provided toast
     /// </summary>
-    /// <param name="item">Reference item of the toast to close</param>
-    public Task CloseAsync(ToastItem item)
-        => ToastLauncher.CloseAsync(item);
+    /// <param name="reference">Reference item of the toast to close</param>
+    public Task CloseAsync(ToastReference reference)
+        => ToastLauncher.CloseAsync(reference);
 
     internal void SetLauncher(ToastLauncher launcher) => ToastLauncher = launcher;
 }

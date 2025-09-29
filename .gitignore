@@ -395,7 +395,7 @@ FodyWeavers.xsd
 *.msp
 
 # JetBrains Rider
-*.sln.iml
+**/.idea/**
 
 # Style builds
 style.min.css

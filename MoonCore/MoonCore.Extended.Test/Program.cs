@@ -1,30 +1,31 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
 using MoonCore.Extended.Extensions;
 using MoonCore.Extended.Test;
 using MoonCore.Logging;
 
+var builder = Host.CreateApplicationBuilder();
+
 var serviceCollection = new ServiceCollection();
 
-serviceCollection.AddLogging(builder =>
-{
-    builder.AddAnsiConsole();
-});
+builder.Logging.ClearProviders();
+builder.Logging.AddAnsiConsole();
 
-serviceCollection.AddDatabaseMappings();
-serviceCollection.AddServiceCollectionAccessor();
+builder.Services.AddDatabaseMappings();
+builder.Services.AddDbAutoMigrations();
 
-serviceCollection.AddDbContext<DataContext>();
+builder.Services.AddDbContext<DataContext>();
 
-var serviceProvider = serviceCollection.BuildServiceProvider();
+var app = builder.Build();
 
-await serviceProvider.EnsureDatabaseMigratedAsync();
-serviceProvider.GenerateDatabaseMappings();
-
-var scope = serviceProvider.CreateScope();
+var scope = app.Services.CreateScope();
 
 var dc = scope.ServiceProvider.GetRequiredService<DataContext>();
 
 Console.WriteLine(await dc.Database.CanConnectAsync());
+
+await app.RunAsync();
 
 Console.WriteLine("Exit");
 

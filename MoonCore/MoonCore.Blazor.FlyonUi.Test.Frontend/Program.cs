@@ -5,6 +5,7 @@ using MoonCore.Blazor.FlyonUi;
 using MoonCore.Blazor.FlyonUi.Ace;
 using MoonCore.Blazor.FlyonUi.Alerts;
 using MoonCore.Blazor.FlyonUi.Auth;
+using MoonCore.Blazor.FlyonUi.Drawers;
 using MoonCore.Blazor.FlyonUi.Exceptions;
 using MoonCore.Blazor.FlyonUi.Files;
 using MoonCore.Blazor.FlyonUi.Helpers;
@@ -39,6 +40,7 @@ builder.Services.AddScoped<CodeEditorService>();
 builder.Services.AddScoped<DropHandlerService>();
 builder.Services.AddScoped<DownloadService>();
 builder.Services.AddScoped<GlobalErrorService>();
+builder.Services.AddScoped<DrawerService>();
 
 builder.Services.AddFileManagerOperations();
 

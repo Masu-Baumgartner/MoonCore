@@ -1,0 +1,17 @@
+@inherits MoonCore.Blazor.FlyonUi.Drawers.DrawerBase
+
+<div class="drawer-header">
+    <h3 class="drawer-title">Drawer Title</h3>
+    <button @onclick="CloseAsync" type="button" class="btn btn-text btn-circle btn-sm absolute end-3 top-3">
+        <span class="icon-x text-lg"></span>
+    </button>
+</div>
+<div class="drawer-body">
+    <p>
+        Some text as placeholder. In real life you can have the elements you have chosen. Like, text, images, lists, etc.
+    </p>
+</div>
+<div class="drawer-footer">
+    <button @onclick="CloseAsync" type="button" class="btn btn-soft btn-secondary" data-overlay="#overlay-responsive-example">Close</button>
+    <button type="button" class="btn btn-primary">Save changes</button>
+</div>
