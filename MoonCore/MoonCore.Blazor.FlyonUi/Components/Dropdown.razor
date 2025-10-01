@@ -2,14 +2,14 @@
     <a href="#" @onclick="ToggleAsync" @onclick:preventDefault>
         @Activator
     </a>
-    <div @ref="Reference" @onclick="OnFocusOutDelayed" class="dropdown-menu dropdown-open:opacity-100 block absolute @Align mt-12 w-56 origin-top-left z-150" role="menu" aria-orientation="vertical" aria-labelledby="dropdown-default">
+    <div @ref="Reference" @onclick="OnFocusOutDelayed" class="dropdown-menu dropdown-open:opacity-100 block absolute @Align mt-12 w-56 origin-top-left z-70" role="menu" aria-orientation="vertical" aria-labelledby="dropdown-default">
         @Content
     </div>
 </div>
 
 @if (Show)
 {
-    <div @onclick="OnFocusOut" class="overlay-backdrop transition duration-300 fixed inset-0 overflow-y-auto z-70"></div>
+    <div @onclick="OnFocusOut" class="overlay-backdrop transition duration-300 fixed inset-0 overflow-y-auto z-69"></div>
 }
 
 @code
