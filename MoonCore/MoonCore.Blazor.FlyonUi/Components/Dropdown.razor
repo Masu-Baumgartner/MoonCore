@@ -2,10 +2,15 @@
     <a href="#" @onclick="ToggleAsync" @onclick:preventDefault>
         @Activator
     </a>
-    <div @ref="Reference" @onfocusout="OnFocusOut" class="dropdown-menu dropdown-open:opacity-100 block absolute @Align z-10 mt-12 w-56 origin-top-left" role="menu" aria-orientation="vertical" aria-labelledby="dropdown-default">
+    <div @ref="Reference" @onclick="OnFocusOutDelayed" class="dropdown-menu dropdown-open:opacity-100 block absolute @Align mt-12 w-56 origin-top-left z-150" role="menu" aria-orientation="vertical" aria-labelledby="dropdown-default">
         @Content
     </div>
 </div>
+
+@if (Show)
+{
+    <div @onclick="OnFocusOut" class="overlay-backdrop transition duration-300 fixed inset-0 overflow-y-auto z-70"></div>
+}
 
 @code
 {
@@ -40,18 +45,22 @@
         Show = !Show;
         await InvokeAsync(StateHasChanged);
     }
-    
-    private async Task OnFocusOut()
+
+    private async Task OnFocusOutDelayed()
     {
         try
         {
             await Task.Delay(150);
-            
-            Show = false;
-            await InvokeAsync(StateHasChanged);
+            await OnFocusOut();
         }
         catch (TaskCanceledException)
         {
         }
+    }
+    
+    private async Task OnFocusOut()
+    {
+        Show = false;
+        await InvokeAsync(StateHasChanged);
     }
 }
