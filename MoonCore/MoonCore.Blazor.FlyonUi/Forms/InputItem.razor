@@ -41,7 +41,7 @@
 
     @if (IsVisible && VisibleItems != null)
     {
-        <div class="absolute advance-select-menu opened top-full mt-3 z-50 max-h-52 overflow-y-auto pt-0 px-2.5 bg-base-200! shadow-lg" role="listbox" tabindex="-1"
+        <div class="absolute advance-select-menu opened top-full mt-3 z-70 max-h-52 overflow-y-auto pt-0 px-2.5 bg-base-200! shadow-lg" role="listbox" tabindex="-1"
              aria-orientation="vertical">
 
             @if (SearchField != null)
@@ -94,7 +94,7 @@
             }
         </div>
         
-        <div @onclick="OnFocusOut" class="overlay-backdrop transition duration-300 fixed inset-0 overflow-y-auto z-40"></div>
+        <div @onclick="OnFocusOut" class="overlay-backdrop transition duration-300 fixed inset-0 overflow-y-auto z-100"></div>
     }
 
     @if (IsLoading)
