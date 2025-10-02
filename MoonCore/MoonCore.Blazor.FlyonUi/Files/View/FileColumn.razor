@@ -1,0 +1,116 @@
+@using Microsoft.AspNetCore.Components.Rendering
+@using MoonCore.Helpers
+
+@inherits MoonCore.Blazor.FlyonUi.Grid.Columns.ColumnBase<FsEntry>
+
+@code
+{
+    /// <summary>
+    /// Toggles whether to use icons when displaying files and folders. Default: true
+    /// </summary>
+    [Parameter] public bool ShowIcons { get; set; } = true;
+    
+    /// <summary>
+    /// Toggles whether to use the <see cref="FileIconHelper"/> when displaying files to determine the best icon. Default: true
+    /// </summary>
+    [Parameter] public bool UseDynamicIcons { get; set; } = true;
+    
+    /// <summary>
+    /// Toggles whether to show the modification time of a file. Default: false
+    /// </summary>
+    [Parameter] public bool ShowDate { get; set; } = false;
+    
+    /// <summary>
+    /// Toggles whether to show the size of a file. Default: false
+    /// </summary>
+    [Parameter] public bool ShowSize { get; set; } = false;
+    
+    /// <inheritdoc />
+    protected internal override void RenderHeader(RenderTreeBuilder __builder)
+    {
+        if (ShowIcons)
+        {
+            <th class="w-6">
+                <div class="me-1"></div>
+            </th>
+        }
+        
+        <th>
+            <div class="me-1">
+                Name
+            </div>
+        </th>
+
+        if (ShowSize)
+        {
+            <th class="hidden md:table-cell">
+                <div class="me-1">
+                    Size
+                </div>
+            </th>
+        }
+
+        if (ShowDate)
+        {
+            <th class="hidden md:table-cell">
+                <div class="me-1">
+                    Updated at
+                </div>
+            </th>
+        }
+    }
+
+    /// <inheritdoc />
+    protected internal override void RenderCell(RenderTreeBuilder __builder, FsEntry item)
+    {
+        if (ShowIcons)
+        {
+            <td class="w-6">
+                <div class="flex justify-center">
+                    @if (item.IsFolder)
+                    {
+                        <i class="icon-folder text-primary text-2xl"></i>
+                    }
+                    else
+                    {
+                        string icon;
+
+                        if (UseDynamicIcons)
+                            icon = FileIconHelper.GetByName(item.Name);
+                        else
+                            icon = "icon-file";
+
+                        <i class="@icon text-warning text-2xl"></i>
+                    }
+                </div>
+            </td>
+        }
+        
+        <td>@item.Name</td>
+
+        if (ShowSize)
+        {
+            <td class="hidden md:table-cell">
+                @if (item.IsFolder)
+                {
+                    <span>-</span>
+                }
+                else
+                {
+                    <span>
+                        @Formatter.FormatSize(item.Size)
+                    </span>
+                }
+            </td>
+        }
+
+        if (ShowDate)
+        {
+            <td class="hidden md:table-cell">
+                <span>
+                    @Formatter.FormatDate(item.UpdatedAt.DateTime)
+                </span>
+            </td>
+        }
+    }
+}

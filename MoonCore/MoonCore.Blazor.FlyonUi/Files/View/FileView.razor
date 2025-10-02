@@ -1,91 +1,17 @@
-﻿@using MoonCore.Blazor.FlyonUi.DataTables
-@using MoonCore.Helpers
+﻿@using Microsoft.AspNetCore.Components.Rendering
 @using MoonCore.Blazor.FlyonUi.Components
+@using MoonCore.Blazor.FlyonUi.Grid
 
-<DataTable @ref="Table"
-           TItem="FsEntry"
-           ItemSource="ItemSourceAsync"
-           OnClick="OnClick"
-           OnContextMenu="OnContextMenu">
-    <Configuration>
-        @if (ShowIcons)
-        {
-            <DataTableColumn TItem="FsEntry"
-                             Index="0"
-                             HeaderCss="w-12 px-2"
-                             ColumnCss="w-12 px-2">
-                <ColumnTemplate>
-                    <div class="flex justify-center">
-                        @if (context.IsFolder)
-                        {
-                            <i class="icon-folder text-primary text-2xl"></i>
-                        }
-                        else
-                        {
-                            string icon;
-
-                            if (UseDynamicIcons)
-                                icon = FileIconHelper.GetByName(context.Name);
-                            else
-                                icon = "icon-file";
-                            
-                            <i class="@icon text-warning text-2xl"></i>
-                        }
-                    </div>
-                </ColumnTemplate>
-            </DataTableColumn>
-        }
-
-        <DataTableColumn TItem="FsEntry"
-                         Name="Name"
-                         Field="@(x => x.Name)"
-                         Index="1"/>
-
-        @if (ShowSize)
-        {
-            <DataTableColumn TItem="FsEntry"
-                             Name="Size"
-                             Field="@(x => x.Size)"
-                             Index="2"
-                             HeaderCss="hidden md:table-cell"
-                             ColumnCss="hidden md:table-cell">
-                <ColumnTemplate>
-                    @if (context.IsFolder)
-                    {
-                        <span>-</span>
-                    }
-                    else
-                    {
-                        <span>
-                            @Formatter.FormatSize(context.Size)
-                        </span>
-                    }
-                </ColumnTemplate>
-            </DataTableColumn>
-        }
-
-        @if (ShowDate)
-        {
-            <DataTableColumn TItem="FsEntry"
-                             Name="Updated at"
-                             Field="@(x => x.UpdatedAt)"
-                             Index="3"
-                             HeaderCss="hidden md:table-cell"
-                             ColumnCss="hidden md:table-cell">
-                <ColumnTemplate>
-                    <span>
-                        @Formatter.FormatDate(context.UpdatedAt.DateTime)
-                    </span>
-                </ColumnTemplate>
-            </DataTableColumn>
-        }
-
-        @if (ChildContent != null)
-        {
-            @ChildContent
-        }
-    </Configuration>
-    <NoItemsIndicator>
+<DataGrid @ref="Grid"
+          TGridItem="FsEntry"
+          ItemsProvider="LoadItemsAsync"
+          ColumnsContainer="ColumnsContainer">
+    <ChildContent>
+        <FileColumn ShowIcons="ShowIcons" UseDynamicIcons="UseDynamicIcons" ShowSize="ShowSize" ShowDate="ShowDate" />
+        
+        @ChildContent
+    </ChildContent>
+    <NoItemsContent>
         @if (NoFilesContent == null)
         {
             <div class="p-5">
@@ -100,8 +26,8 @@
         {
             @NoFilesContent
         }
-    </NoItemsIndicator>
-</DataTable>
+    </NoItemsContent>
+</DataGrid>
 
 @code
 {
@@ -123,7 +49,7 @@
     /// <summary>
     /// <b>Optional:</b> Location to put your configuration into
     /// </summary>
-    [Parameter] public RenderFragment? ChildContent { get; set; }
+    [Parameter] public RenderFragment ChildContent { get; set; }
     
     /// <summary>
     /// <b>Optional:</b> Template to override the default NoFiles UI
@@ -131,7 +57,7 @@
     [Parameter] public RenderFragment? NoFilesContent { get; set; }
     
     /// <summary>
-    /// <b>Optional:</b> Callback for handlng context menu actions
+    /// <b>Optional:</b> Callback for handling context menu actions
     /// </summary>
     [Parameter] public Func<MouseEventArgs, FsEntry, Task>? OnContextMenu { get; set; }
 
@@ -155,14 +81,47 @@
     /// </summary>
     [Parameter] public bool ShowSize { get; set; } = false;
 
-    private DataTable<FsEntry> Table;
-
-    private async Task<FsEntry[]> ItemSourceAsync()
-        => await Load.Invoke();
+    private DataGrid<FsEntry> Grid;
 
     /// <summary>
     /// Proxy function to refresh the underlying table
     /// </summary>
     /// <param name="silent">Whether to refresh the table without showing a loading animation</param>
-    public async Task RefreshAsync(bool silent = false) => await Table.RefreshAsync(silent: silent);
+    public async Task RefreshAsync(bool silent = false) => await Grid.RefreshAsync(silent: silent);
+
+    private async Task<DataGridItemResult<FsEntry>> LoadItemsAsync(DataGridItemRequest request)
+    {
+        var items = await Load.Invoke();
+
+        return new()
+        {
+            Items = items,
+            TotalCount = items.Length
+        };
+    }
+
+    private RenderFragment ColumnsContainer(RenderFragment fragment, FsEntry entry)
+    {
+        return __builder =>
+        {
+            __builder.OpenElement(0, "tr");
+            __builder.AddAttribute(1, "class", "cursor-pointer");
+
+            if (OnClick != null)
+            {
+                __builder.AddAttribute(3, "onclick", EventCallback.Factory.Create(this, () => OnClick.Invoke(entry)));
+                __builder.AddEventPreventDefaultAttribute(4, "onclick", true);
+            }
+
+            if (OnContextMenu != null)
+            {
+                __builder.AddAttribute(5, "oncontextmenu", EventCallback.Factory.Create(this, (MouseEventArgs args) =>OnContextMenu.Invoke(args, entry)));
+                __builder.AddEventPreventDefaultAttribute(6, "oncontextmenu", true);
+            }
+            
+            __builder.AddContent(7, fragment);
+            
+            __builder.CloseElement();
+        };
+    }
 }

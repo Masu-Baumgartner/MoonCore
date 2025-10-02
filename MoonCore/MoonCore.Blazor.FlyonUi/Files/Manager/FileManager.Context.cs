@@ -32,7 +32,7 @@ public partial class FileManager
 
         // When the operation can be run at multiple entries and the current context entry is within a possible selection
         // we want to use the whole selection in order to make the selection "context menu clickable"
-        if (SelectedEntries.Length > 0 && SelectedEntries.Contains(ContextEntry))
+        if (SelectedEntries.Count > 0 && SelectedEntries.Contains(ContextEntry))
             files = SelectedEntries.ToArray();
         else
             files = [ContextEntry];

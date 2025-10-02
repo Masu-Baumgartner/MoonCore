@@ -15,6 +15,8 @@ public partial class DataGrid<TGridItem>
 {
     // Parameters
     [Parameter] public RenderFragment ChildContent { get; set; }
+    [Parameter] public RenderFragment? NoItemsContent { get; set; }
+    [Parameter] public Func<RenderFragment, TGridItem, RenderFragment> ColumnsContainer { get; set; }
 
     // Configuration
     private readonly List<ColumnBase<TGridItem>> CollectedColumns = new();

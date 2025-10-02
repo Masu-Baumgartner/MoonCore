@@ -74,14 +74,21 @@
                     {
                         <tr>
                             <td colspan="99999">
-                                <div class="my-5">
-                                    <div class="text-center">
-                                        <h3 class="mt-2 font-semibold text-base-content text-lg">
-                                            ¯\_(ツ)_/¯
-                                        </h3>
-                                        <div class="text-base text-base-content/80">No items could be found</div>
+                                @if (NoItemsContent == null)
+                                {
+                                    <div class="my-5">
+                                        <div class="text-center">
+                                            <h3 class="mt-2 font-semibold text-base-content text-lg">
+                                                ¯\_(ツ)_/¯
+                                            </h3>
+                                            <div class="text-base text-base-content/80">No items could be found</div>
+                                        </div>
                                     </div>
-                                </div>
+                                }
+                                else
+                                {
+                                    @NoItemsContent
+                                }
                             </td>
                         </tr>
                     }
@@ -91,9 +98,16 @@
 
                         foreach (var item in Items)
                         {
-                            <tr>
-                                @CellsRender.Invoke(item)
-                            </tr>
+                            if (ColumnsContainer == null)
+                            {
+                                <tr>
+                                    @CellsRender.Invoke(item)
+                                </tr>
+                            }
+                            else
+                            {
+                                @ColumnsContainer.Invoke(CellsRender.Invoke(item), item)
+                            }
                         }
                     }
                 }
@@ -103,7 +117,7 @@
                 <tr>
                     <td colspan="99999">
                         <div class="flex justify-center items-center my-5">
-                            <Spinner />
+                            <Spinner/>
                         </div>
                     </td>
                 </tr>
@@ -140,7 +154,7 @@
                         <span class="icon-chevrons-left"></span>
                         <span class="sr-only">Start</span>
                     </button>
-                    
+
                     <button type="button" class="btn btn-text btn-circle btn-sm disabled" disabled="disabled">
                         <span class="icon-chevron-left"></span>
                         <span class="sr-only">Previous</span>
@@ -152,7 +166,7 @@
                         <span class="icon-chevrons-left"></span>
                         <span class="sr-only">Start</span>
                     </button>
-                    
+
                     <button @onclick="() => NavigateAsync(-Count)" type="button" class="btn btn-text btn-circle btn-sm">
                         <span class="icon-chevron-left"></span>
                         <span class="sr-only">Previous</span>
@@ -164,7 +178,7 @@
                         <span class="sr-only">Next</span>
                         <span class="icon-chevron-right"></span>
                     </button>
-                    
+
                     <button type="button" class="btn btn-text btn-circle btn-sm disabled" disabled="disabled">
                         <span class="icon-chevrons-right"></span>
                         <span class="sr-only">End</span>
@@ -176,7 +190,7 @@
                         <span class="sr-only">Next</span>
                         <span class="icon-chevron-right"></span>
                     </button>
-                    
+
                     <button @onclick="NavigateEndAsync" type="button" class="btn btn-text btn-circle btn-sm">
                         <span class="icon-chevrons-right"></span>
                         <span class="sr-only">End</span>
@@ -206,7 +220,7 @@
         foreach (var row in Rows)
             row.RenderContent(__builder);
     }
-    
+
     private void RenderAndCombineToolbarItems(RenderTreeBuilder __builder)
     {
         foreach (var toolbarItem in ToolbarItems)
