@@ -1,33 +1,20 @@
 @page "/components/contextmenu"
 
 @using MoonCore.Blazor.FlyonUi.Components
+@using MoonCore.Blazor.FlyonUi.Test.Frontend.UI.Components
+@using MoonCore.Blazor.FlyonUi.Test.Frontend.UI.Showcases
 
 <NavTabs Index="4" Names="UiConstants.ComponentNames" Links="UiConstants.ComponentLinks" Icons="UiConstants.ComponentIcons" />
 
-<ContextMenu @ref="Menu">
-    <button type="button" class="dropdown-item">
-        <i class="icon-cloud-download text-primary text-lg"></i>
-        Download
-    </button>
-    <button type="button" class="dropdown-item">
-        <i class="icon-folder-archive text-warning text-lg"></i>
-        Archive
-    </button>
-    <button type="button" class="dropdown-item">
-        <i class="icon-folder-pen text-accent text-lg"></i>
-        Rename
-    </button>
-    <button type="button" class="dropdown-item">
-        <i class="icon-trash-2 text-error text-lg"></i>
-        Delete
-    </button>
-</ContextMenu>
-
-<div class="bg-base-200/50 h-64 w-64 flex justify-center items-center mt-5" @oncontextmenu="e => Menu.TriggerAsync(e)" @oncontextmenu:preventDefault>
-    Right click me
+<div class="mt-8 mb-25">
+    <div class="font-semibold text-2xl">Context Menu</div>
+    <p class="mt-1 text-base-content/80 text-lg">
+        Enhance interactivity and user experience on your site by implementing a context menu that offers users relevant actions and options through a right-click.
+    </p>
 </div>
 
-@code
-{
-    private ContextMenu Menu;
-}
+<div class="my-20">
+    <Showcase Source="@(nameof(ContextMenuSc))" Title="Context Menu" Description="Default context menu">
+        <ContextMenuSc />
+    </Showcase>
+</div>

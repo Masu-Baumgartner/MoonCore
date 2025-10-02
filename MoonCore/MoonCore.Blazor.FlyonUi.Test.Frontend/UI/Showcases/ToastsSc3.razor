@@ -1,0 +1,24 @@
+@using MoonCore.Blazor.FlyonUi.Toasts
+
+@inject ToastService ToastService
+
+<button @onclick="ProgressAsync" class="btn">Progress</button>
+
+@code
+{
+    private async Task ProgressAsync()
+    {
+        await ToastService.ProgressAsync(
+            "Working on something",
+            "Doing one task",
+            async toast =>
+            {
+                await Task.Delay(TimeSpan.FromSeconds(2));
+
+                await toast.UpdateTextAsync("Doing another task");
+                
+                await Task.Delay(TimeSpan.FromSeconds(2));
+            }
+        );
+    }
+}

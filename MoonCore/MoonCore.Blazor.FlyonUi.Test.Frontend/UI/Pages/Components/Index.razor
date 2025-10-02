@@ -1,43 +1,32 @@
 @page "/components"
 
 @using MoonCore.Blazor.FlyonUi.Components
+@using MoonCore.Blazor.FlyonUi.Test.Frontend.UI.Components
+@using MoonCore.Blazor.FlyonUi.Test.Frontend.UI.Showcases
 
 <NavTabs Index="0" Names="UiConstants.ComponentNames" Links="UiConstants.ComponentLinks" Icons="UiConstants.ComponentIcons" />
 
-<div class="mt-5">
-    <WButton OnClick="OnClick">i am a fucking cool worker button</WButton>
+<div class="mt-8 mb-25">
+    <div class="font-semibold text-2xl">Buttons</div>
+    <p class="mt-1 text-base-content/80 text-lg">
+        Default FlyonUI buttons and advanced buttons to handle actions
+    </p>
 </div>
 
-<div class="mt-5">
-    <button class="btn">Default</button>
-    <button class="btn btn-primary">Primary</button>
-    <button class="btn btn-secondary">Secondary</button>
-    <button class="btn btn-accent">Accent</button>
-    <button class="btn btn-info">Info</button>
-    <button class="btn btn-success">Success</button>
-    <button class="btn btn-warning">Warning</button>
-    <button class="btn btn-error">Error</button>
+<div class="my-20">
+    <Showcase Source="@(nameof(ButtonsSc))" Title="Buttons" Description="Default buttons from FlyonUI">
+        <ButtonsSc />
+    </Showcase>
 </div>
 
-<div class="mt-5">
-    <button class="btn btn-error">
-        <i class="icon-trash"></i>
-        <span>Delete</span>
-    </button>
+<div class="my-20">
+    <Showcase Source="@(nameof(WorkerButtonSc))" Title="Worker Button" Description="Basic usage">
+        <WorkerButtonSc />
+    </Showcase>
 </div>
 
-@code
-{
-    private async Task OnClick(WButton button)
-    {
-        await Task.Delay(TimeSpan.FromSeconds(3));
-
-        await button.UpdateLoadingTextAsync("Doing something longer");
-
-        await Task.Delay(TimeSpan.FromSeconds(4));
-
-        await button.UpdateLoadingTextAsync("Finishing up");
-
-        await Task.Delay(TimeSpan.FromSeconds(3));
-    }
-}
+<div class="my-20">
+    <Showcase Source="@(nameof(WorkerButtonSc2))" Title="Worker Button" Description="Text updates during action">
+        <WorkerButtonSc2 />
+    </Showcase>
+</div>

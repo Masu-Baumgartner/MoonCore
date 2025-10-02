@@ -1,0 +1,18 @@
+@using MoonCore.Blazor.FlyonUi.Components
+
+<LazyLoader Load="LoadAsync">
+    Loaded :)    
+</LazyLoader>
+
+@code
+{
+    private async Task LoadAsync(LazyLoader lazyLoader)
+    {
+        // Simulate work
+        await Task.Delay(TimeSpan.FromSeconds(3));
+
+        await lazyLoader.UpdateTextAsync("Doing something amazing");
+
+        await Task.Delay(TimeSpan.FromSeconds(5));
+    }
+}

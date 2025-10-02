@@ -1,74 +1,46 @@
 @page "/forms/selections"
-@using MoonCore.Blazor.FlyonUi.Forms
-@using MoonCore.Exceptions
+
 @using MoonCore.Blazor.FlyonUi.Components
+@using MoonCore.Blazor.FlyonUi.Test.Frontend.UI.Components
+@using MoonCore.Blazor.FlyonUi.Test.Frontend.UI.Showcases
 
 <NavTabs Index="2" Names="UiConstants.FormsNames" Links="UiConstants.FormsLinks" />
 
-<div class="max-w-sm mt-5">
-    <select class="select">
-        <option>I</option>
-        <option>Dont</option>
-        <option>Care</option>
-    </select>
+<div class="mt-8 mb-25">
+    <div class="font-semibold text-2xl">Selection</div>
+    <p class="mt-1 text-base-content/80 text-lg">
+        Allow the user to select from options with advanced input components improving ux
+    </p>
 </div>
 
-<div class="max-w-sm mt-5">
-    <InputItem TItem="DemoItem" @bind-Value="SelectedItem" DisplayField="@(x => x.Name)" ItemSource="ItemSource" />
+<div class="my-20">
+    <Showcase Source="@(nameof(SelectSc))" Title="Select" Description="Default FlyonUI select">
+        <SelectSc />
+    </Showcase>
 </div>
 
-<div class="max-w-sm mt-1.5">
-    <InputItem TItem="DemoItem" @bind-Value="SelectedItem" DisplayField="@(x => x.Name)" ItemSource="FailingItemSource" />
+<div class="my-20">
+    <Showcase Source="@(nameof(InputItemSc))" Title="Input Item" Description="Select one (or none) from a list of items">
+        <InputItemSc />
+    </Showcase>
 </div>
 
-<div class="max-w-sm mt-1.5">
-    <InputItem TItem="DemoItem" @bind-Value="SelectedItem" DisplayField="@(x => x.Name)" SearchField="@(x => x.Name)" ItemSource="ItemSource" />
+<div class="my-20">
+    <Showcase Source="@(nameof(InputItemSc2))" Title="Input Item" Description="Loading errors are handled by the component">
+        <InputItemSc2 />
+    </Showcase>
 </div>
 
-<div class="max-w-sm mt-1.5">
-    <InputMultipleItem TItem="DemoItem" Value="SelectedItems" DisplayField="@(x => x.Name)" SearchField="@(x => x.Name)" ItemSource="ItemSource" />
+<div class="my-20">
+    <Showcase Source="@(nameof(InputItemSc3))" Title="Input Item" Description="Search through items using frontend side filtering">
+        <InputItemSc3 />
+    </Showcase>
 </div>
 
+<div class="my-20">
+    <Showcase Source="@(nameof(InputMultiItemSc))" Title="Input Multi Item" Description="Select multiple or none items from a provided data source">
+        <InputMultiItemSc />
+    </Showcase>
+</div>
 
-@code
-{
-    private DemoItem[] Items;
-    private DemoItem? SelectedItem = null;
-    private List<DemoItem> SelectedItems = new();
-
-    private async Task<DemoItem[]> ItemSource()
-    {
-        await Task.Delay(TimeSpan.FromSeconds(2));
-        
-        return Items;
-    }
-    
-    private async Task<DemoItem[]> FailingItemSource()
-    {
-        await Task.Delay(TimeSpan.FromSeconds(2));
-
-        throw new HttpApiException("Whoops i failed", 500);
-    }
-
-    protected override void OnInitialized()
-    {
-        var items = new List<DemoItem>();
-
-        for (var i = 0; i < 100; i++)
-        {
-            items.Add(new DemoItem()
-            {
-                Id = i,
-                Name = $"Item {i}"
-            });
-        }
-
-        Items = items.ToArray();
-    }
-
-    record DemoItem
-    {
-        public int Id { get; set; }
-        public string Name { get; set; }
-    }
-}
+<div class="h-36"></div>

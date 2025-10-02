@@ -1,44 +1,20 @@
 ﻿@page "/feedback"
-@using MoonCore.Blazor.FlyonUi.Alerts
-@using MoonCore.Blazor.FlyonUi.Components
 
-@inject AlertService AlertService
+@using MoonCore.Blazor.FlyonUi.Components
+@using MoonCore.Blazor.FlyonUi.Test.Frontend.UI.Components
+@using MoonCore.Blazor.FlyonUi.Test.Frontend.UI.Showcases
 
 <NavTabs Index="0" Names="UiConstants.FeedbackNames" Links="UiConstants.FeedbackLinks" />
 
-<div class="mt-5">
-    <div class="flex flex-row">
-        <button @onclick="Info" class="btn btn-info me-2">Info</button>
-        <button @onclick="Error" class="btn btn-error me-2">Error</button>
-        <button @onclick="Success" class="btn btn-success me-2">Success</button>
-        <button @onclick="Warning" class="btn btn-warning me-2">Warning</button>
-        <button @onclick="ConfirmDanger" class="btn">Confirm danger</button>
-    </div>
+<div class="mt-8 mb-25">
+    <div class="font-semibold text-2xl">Alerts</div>
+    <p class="mt-1 text-base-content/80 text-lg">
+        Notify users and create interaction flows quickly using alerts
+    </p>
 </div>
 
-@code
-{
-    private async Task Info()
-        => await AlertService.InfoAsync("Important information", "Hey this is an important information");
-    
-    private async Task Error()
-        => await AlertService.ErrorAsync("Critical error", "Something went wrong");
-    
-    private async Task Success()
-        => await AlertService.SuccessAsync("Successfully did something", "Successfully failed task");
-    
-    private async Task Warning()
-        => await AlertService.WarningAsync("Irrelevant warning", "Nothing to worry about");
-
-    private async Task ConfirmDanger()
-    {
-        await AlertService.ConfirmDangerAsync(
-            "Destructive action",
-            "You are about to doing something destructive",
-            async () =>
-            {
-                await AlertService.SuccessAsync("Destruction successful", "Whoops :>");
-            }
-        );
-    }
-}
+<div class="my-20">
+    <Showcase Source="@(nameof(AlertsSc))" Title="Alerts" Description="Default alerts">
+        <AlertsSc />
+    </Showcase>
+</div>

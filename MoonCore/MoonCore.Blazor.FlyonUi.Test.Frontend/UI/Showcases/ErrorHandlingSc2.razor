@@ -1,0 +1,36 @@
+@using MoonCore.Blazor.FlyonUi.Exceptions
+@using MoonCore.Exceptions
+
+@inject GlobalErrorService ErrorService
+
+<button @onclick="Error1Async" class="btn btn-error">Error 1</button>
+<button @onclick="Error2Async" class="btn btn-error">Error 2</button>
+<button @onclick="Error3Async" class="btn btn-error">Error 3</button>
+<button @onclick="Error4Async" class="btn btn-error">Error 4</button>
+
+@code
+{
+    private async Task Error1Async()
+    {
+        // Will be caught by the global error boundary
+        throw new HttpApiException("Global error boundary catches every unhandled exception", 404);
+    }
+
+    private async Task Error2Async()
+    {
+        var x = new HttpApiException("Goover is an idiot ;)", 500);
+        await ErrorService.HandleExceptionAsync(x);
+    }
+    
+    private async Task Error3Async()
+    {
+        var x = new HttpApiException("Goover is an idiot ;)", 500);
+        await ErrorService.HandleExceptionAsync(x, "Lost soul", true);
+    }
+    
+    private async Task Error4Async()
+    {
+        var x = new HttpApiException("Goover is an idiot ;)", 500);
+        await ErrorService.HandleExceptionAsync(x, "Lost soul", true, false);
+    }
+}

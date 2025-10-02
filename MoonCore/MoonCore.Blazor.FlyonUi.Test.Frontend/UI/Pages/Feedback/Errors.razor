@@ -1,50 +1,26 @@
 @page "/feedback/errors"
 
 @using MoonCore.Blazor.FlyonUi.Components
-@using MoonCore.Blazor.FlyonUi.Exceptions
-@using MoonCore.Exceptions
+@using MoonCore.Blazor.FlyonUi.Test.Frontend.UI.Components
+@using MoonCore.Blazor.FlyonUi.Test.Frontend.UI.Showcases
 
 <NavTabs Index="3" Names="UiConstants.FeedbackNames" Links="UiConstants.FeedbackLinks"/>
 
-@inject GlobalErrorService ErrorService
-
-<div class="mt-5">
-    <div class="grid grid-cols-4 gap-5 w-full">
-        <button @onclick="Message" class="btn btn-primary">Message</button>
-        <button @onclick="Error1" class="btn btn-error">Error 1</button>
-        <button @onclick="Error2" class="btn btn-error">Error 2</button>
-        <button @onclick="Error3" class="btn btn-error">Error 3</button>
-        <button @onclick="Error4" class="btn btn-error">Error 4</button>
-    </div>
+<div class="mt-8 mb-25">
+    <div class="font-semibold text-2xl">Global Error Handling</div>
+    <p class="mt-1 text-base-content/80 text-lg">
+        Handle errors globally using the global error service
+    </p>
 </div>
 
-@code
-{
-    private async Task Message()
-    {
-        await ErrorService.ShowMessageAsync("Teeeeeeeeeeesty");
-    }
-    
-    private async Task Error1()
-    {
-        throw new HttpApiException("Teeeeeeests", 404);
-    }
+<div class="my-20">
+    <Showcase Source="@(nameof(ErrorHandlingSc))" Title="Global Error Handling" Description="Showing error messages">
+        <ErrorHandlingSc />
+    </Showcase>
+</div>
 
-    private async Task Error2()
-    {
-        var x = new HttpApiException("Goover is an idiot ;)", 500);
-        await ErrorService.HandleExceptionAsync(x);
-    }
-    
-    private async Task Error3()
-    {
-        var x = new HttpApiException("Goover is an idiot ;)", 500);
-        await ErrorService.HandleExceptionAsync(x, "Lost soul", true);
-    }
-    
-    private async Task Error4()
-    {
-        var x = new HttpApiException("Goover is an idiot ;)", 500);
-        await ErrorService.HandleExceptionAsync(x, "Lost soul", true, false);
-    }
-}
+<div class="my-20">
+    <Showcase Source="@(nameof(ErrorHandlingSc2))" Title="Global Error Handling" Description="Handling exceptions">
+        <ErrorHandlingSc2 />
+    </Showcase>
+</div>

@@ -1,0 +1,36 @@
+@using MoonCore.Blazor.FlyonUi.Alerts
+
+@inject AlertService AlertService
+
+<button @onclick="InfoAsync" class="btn btn-info me-2">Info</button>
+<button @onclick="ErrorAsync" class="btn btn-error me-2">Error</button>
+<button @onclick="SuccessAsync" class="btn btn-success me-2">Success</button>
+<button @onclick="WarningAsync" class="btn btn-warning me-2">Warning</button>
+<button @onclick="ConfirmDangerAsync" class="btn">Confirm danger</button>
+
+@code
+{
+    private async Task InfoAsync()
+        => await AlertService.InfoAsync("Important information", "Hey this is an important information");
+    
+    private async Task ErrorAsync()
+        => await AlertService.ErrorAsync("Critical error", "Something went wrong");
+    
+    private async Task SuccessAsync()
+        => await AlertService.SuccessAsync("Successfully did something", "Successfully failed task");
+    
+    private async Task WarningAsync()
+        => await AlertService.WarningAsync("Irrelevant warning", "Nothing to worry about");
+
+    private async Task ConfirmDangerAsync()
+    {
+        await AlertService.ConfirmDangerAsync(
+            "Destructive action",
+            "You are about to doing something destructive",
+            async () =>
+            {
+                await AlertService.SuccessAsync("Destruction successful", "Whoops :>");
+            }
+        );
+    }
+}

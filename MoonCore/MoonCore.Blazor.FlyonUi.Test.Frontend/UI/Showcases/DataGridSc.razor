@@ -1,0 +1,75 @@
+@using MoonCore.Blazor.FlyonUi.Grid
+@using MoonCore.Blazor.FlyonUi.Grid.Columns
+@using MoonCore.Blazor.FlyonUi.Grid.Rows
+@using MoonCore.Blazor.FlyonUi.Grid.ToolbarItems
+@using MoonCore.Blazor.FlyonUi.Test.Shared.Http.Responses
+@using MoonCore.Models
+
+@inject HttpClient HttpClient
+
+<div class="mb-5">
+    @SelectedItems.Count
+</div>
+
+<DataGrid TGridItem="DemoDataModel" ItemsProvider="ItemsProvider" EnablePagination="true" EnableFiltering="true"
+          EnableLiveFiltering="true">
+    <SelectColumn Selection="SelectedItems"
+                  OnSelectionChanged="Callback"/>
+
+    <PropertyColumn Field="x => x.Id" Sortable="true"/>
+    <PropertyColumn Field="x => x.Text" Sortable="true"/>
+    <PropertyColumn Field="x => x.Bool"/>
+    <PropertyColumn Field="x => x.Number"/>
+    
+    <TemplateRow>
+        <tr>
+            <td colspan="99999">
+                <div class="flex justify-center items-center">
+                    My custom row :>
+                </div>
+            </td>
+        </tr>
+    </TemplateRow>
+    
+    <TemplateToolbarItem>
+        <button class="ms-1.5 btn btn-primary">Create</button>
+    </TemplateToolbarItem>
+</DataGrid>
+
+@code
+{
+    private List<DemoDataModel> SelectedItems = new();
+
+    private async Task Callback()
+        => await InvokeAsync(StateHasChanged);
+
+    private async Task<DataGridItemResult<DemoDataModel>> ItemsProvider(DataGridItemRequest request)
+    {
+        var query = $"?startIndex={request.StartIndex}&count={request.Count}";
+
+        if (!string.IsNullOrEmpty(request.SortColumn))
+        {
+            var orderByDir = request.SortDirection switch
+            {
+                SortState.None => "asc",
+                SortState.Ascending => "asc",
+                SortState.Descending => "desc"
+            };
+
+            query += $"&orderBy={request.SortColumn}&orderByDir={orderByDir}";
+        }
+
+        if (!string.IsNullOrEmpty(request.Filter))
+            query += $"&filter={request.Filter}";
+            
+        var data =await HttpClient.GetFromJsonAsync<CountedData<DemoDataModel>>(
+            $"/api/query{query}"
+        )!;
+
+        return new DataGridItemResult<DemoDataModel>()
+        {
+            Items = data.Items,
+            TotalCount = data.TotalCount
+        };
+    }
+}

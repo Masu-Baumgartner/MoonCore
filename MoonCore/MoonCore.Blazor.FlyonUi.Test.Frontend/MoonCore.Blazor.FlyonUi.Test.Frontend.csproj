@@ -28,12 +28,12 @@
       <_ContentIncludedByDefault Remove="UI\Components\ImprovedDg\Columns\TemplateColumn.razor" />
       <_ContentIncludedByDefault Remove="UI\Components\ImprovedDg\DataGrid.razor" />
       <_ContentIncludedByDefault Remove="Layout\MainLayout.razor" />
+      <_ContentIncludedByDefault Remove="UI\Pages\Auth\Testy.razor" />
     </ItemGroup>
 
     <ItemGroup>
       <AdditionalFiles Include="UI\Components\CustomModal.razor" />
       <AdditionalFiles Include="UI\Components\MultiLayerModal.razor" />
-      <AdditionalFiles Include="UI\Pages\Auth\Testy.razor" />
       <AdditionalFiles Include="UI\Pages\Components\ContextMenuPage.razor" />
       <AdditionalFiles Include="UI\Pages\Components\Dropdowns.razor" />
       <AdditionalFiles Include="UI\Pages\Components\Index.razor" />

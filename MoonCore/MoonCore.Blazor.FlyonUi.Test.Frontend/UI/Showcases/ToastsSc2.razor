@@ -1,0 +1,23 @@
+@using MoonCore.Blazor.FlyonUi.Toasts
+
+@inject ToastService ToastService
+
+<button @onclick="SuccessSmallAsync" class="btn btn-success">Success Small</button>
+<button @onclick="InfoSmallAsync" class="btn btn-info">Info Small</button>
+<button @onclick="WarningSmallAsync" class="btn btn-warning">Warning Small</button>
+<button @onclick="ErrorSmallAsync" class="btn btn-error">Error Small</button>
+
+@code
+{
+    private async Task SuccessSmallAsync()
+        => await ToastService.SuccessAsync("Successfully failed an unsuccessful task");
+    
+    private async Task InfoSmallAsync()
+        => await ToastService.InfoAsync("There is a bomb inside your walls");
+    
+    private async Task WarningSmallAsync()
+        => await ToastService.WarningAsync("This message is just pointless");
+    
+    private async Task ErrorSmallAsync()
+        => await ToastService.ErrorAsync("Your windoof instance crashed");
+}
