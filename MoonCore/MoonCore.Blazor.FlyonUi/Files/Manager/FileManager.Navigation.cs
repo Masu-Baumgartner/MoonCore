@@ -6,7 +6,7 @@ public partial class FileManager
 {
     public string CurrentPath { get; set; } = "/";
     
-    private async Task<FsEntry[]> LoadAsync()
+    private async Task<IEnumerable<FsEntry>> LoadAsync()
     {
         var items = await FsAccess.ListAsync(CurrentPath);
 

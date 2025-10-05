@@ -1,0 +1,19 @@
+@using MoonCore.Blazor.FlyonUi.Components
+
+<WButton OnClick="OnClick">i am a fucking cool worker button</WButton>
+
+@code
+{
+    private async Task OnClick(WButton button)
+    {
+        await Task.Delay(TimeSpan.FromSeconds(3));
+
+        await button.UpdateLoadingTextAsync("Doing something longer");
+
+        await Task.Delay(TimeSpan.FromSeconds(4));
+
+        await button.UpdateLoadingTextAsync("Finishing up");
+
+        await Task.Delay(TimeSpan.FromSeconds(3));
+    }
+}

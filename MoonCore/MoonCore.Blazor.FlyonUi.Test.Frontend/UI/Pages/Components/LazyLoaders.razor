@@ -1,37 +1,27 @@
 @page "/components/lazyloaders"
 
 @using MoonCore.Blazor.FlyonUi.Components
+@using MoonCore.Blazor.FlyonUi.Test.Frontend.UI.Components
+@using MoonCore.Blazor.FlyonUi.Test.Frontend.UI.Showcases
 @using MoonCore.Exceptions
 
 <NavTabs Index="1" Names="UiConstants.ComponentNames" Links="UiConstants.ComponentLinks" Icons="UiConstants.ComponentIcons" />
 
-<div class="mt-5">
-    <LazyLoader Load="Load">
-        <h3 class="text-lg">Loaded :)</h3>
-    </LazyLoader>
+<div class="mt-8 mb-25">
+    <div class="font-semibold text-2xl">Lazy loaders</div>
+    <p class="mt-1 text-base-content/80 text-lg">
+        Give the user feedback during fetching data from the backend
+    </p>
 </div>
 
-<div class="mt-5">
-    <LazyLoader Load="LoadFailed">
-        <h3 class="text-lg">Loaded :)</h3>
-    </LazyLoader>
+<div class="my-20">
+    <Showcase Source="@(nameof(LazyLoaderSc))" Title="Lazy Loader" Description="Loading spinner and showing text during action">
+        <LazyLoaderSc />
+    </Showcase>
 </div>
 
-@code
-{
-    private async Task Load(LazyLoader lazyLoader)
-    {
-        await Task.Delay(TimeSpan.FromSeconds(3));
-
-        await lazyLoader.UpdateTextAsync("Doing something amazing");
-
-        await Task.Delay(TimeSpan.FromSeconds(5));
-    }
-    
-    private async Task LoadFailed(LazyLoader lazyLoader)
-    {
-        await Task.Delay(TimeSpan.FromSeconds(3));
-
-        throw new HttpApiException("Whoops", 400, "Something went wrong :)");
-    }
-}
+<div class="my-20">
+    <Showcase Source="@(nameof(LazyLoaderSc2))" Title="Lazy Loader" Description="Handle errors during load actions">
+        <LazyLoaderSc2 />
+    </Showcase>
+</div>

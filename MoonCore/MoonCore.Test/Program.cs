@@ -1,20 +1,20 @@
-﻿using Microsoft.Extensions.Logging;
-using MoonCore.Logging;
+﻿using System.Text.Json;
+using MoonCore.Common;
 
-var loggerFactory = new LoggerFactory();
+var x = new List<string>();
 
-loggerFactory.AddAnsiConsole();
-
-var logger = loggerFactory.CreateLogger<Program>();
-
-try
+for (int i = 0; i < 20; i++)
 {
-    var y = 69;
-    var x = 0;
+    x.Add($"{i} x");
+}
 
-    var a = y / x;
-}
-catch (Exception e)
+var cd = new CountedData<string>(x, 10324);
+
+Console.WriteLine(cd.Count());
+
+foreach (var a in cd)
 {
-    logger.LogError(e, "An exception occurred");
+    Console.WriteLine($"Val: {a}");
 }
+
+Console.WriteLine(JsonSerializer.Serialize(cd));

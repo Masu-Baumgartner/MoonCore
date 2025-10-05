@@ -1,0 +1,13 @@
+@using MoonCore.Blazor.FlyonUi.Exceptions
+
+@inject GlobalErrorService ErrorService
+
+<button @onclick="MessageAsync" class="btn btn-primary">Error Message</button>
+
+@code
+{
+    private async Task MessageAsync()
+    {
+        await ErrorService.ShowMessageAsync("Hey, you did something wrong ^^");
+    }
+}

@@ -1,0 +1,16 @@
+@using MoonCore.Blazor.FlyonUi.Components
+@using MoonCore.Exceptions
+
+<LazyLoader Load="LoadAsync">
+    Loaded :)    
+</LazyLoader>
+
+@code
+{
+    private async Task LoadAsync(LazyLoader lazyLoader)
+    {
+        await Task.Delay(TimeSpan.FromSeconds(3));
+
+        throw new HttpApiException("Whoops", 400, "Something went wrong :)");
+    }
+}

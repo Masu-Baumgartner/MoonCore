@@ -1,20 +1,12 @@
 ﻿@page "/testy"
-@using MoonCore.Blazor.FlyonUi.Components
+@using MoonCore.Blazor.FlyonUi.Test.Frontend.UI.Components
+@using MoonCore.Blazor.FlyonUi.Test.Frontend.UI.Showcases
 
-<Spinner Size="size-12" />
+<Showcase Source="DataGridSc">
+    <DataGridSc />
+</Showcase>
 
 @code
 {
-    private bool IsLoading = true;
     
-    protected async override Task OnAfterRenderAsync(bool firstRender)
-    {
-        if(!firstRender)
-            return;
-
-        await Task.Delay(TimeSpan.FromSeconds(3));
-        
-        IsLoading = false;
-        await InvokeAsync(StateHasChanged);
-    }
 }

@@ -5,6 +5,8 @@
 @using MoonCore.Blazor.FlyonUi.Toasts
 @using MoonCore.Blazor.FlyonUi.Components
 @using MoonCore.Blazor.FlyonUi.Files.Manager.Abstractions
+@using MoonCore.Blazor.FlyonUi.Grid.Columns
+@using MoonCore.Blazor.FlyonUi.Grid.Rows
 
 @inject ToastService ToastService
 @inject ILogger<FileManager> Logger
@@ -28,43 +30,50 @@ else
                        OnHomeClick="@(() => SetPathAsync("/"))"
                        OnRefreshClick="() => FileView.RefreshAsync()"
                        OnFileSelected="HandleFileUploadAsync"
-                       ShowMultiOperations="@(SelectedEntries.Length > 0)"
+                       ShowMultiOperations="@(SelectedEntries.Count > 0)"
                        MultiOperations="MultiFsOperations"
                        OnMultiOperationClicked="RunSelectionOperationAsync"
                        ToolbarOperations="ToolbarOperations"
                        OnToolbarClicked="RunToolbarOperationAsync"
                        EnableUpload="EnableUpload"/>
-    
+
     <div class="mt-5">
         <FileView @ref="FileView" Load="LoadAsync" ShowDate="true" ShowSize="true" OnClick="OnClick"
                   CustomClickLink="CustomClickLink" OnContextMenu="OnContextMenu">
             <ChildContent>
-                <DataTableRow TItem="FsEntry" Index="int.MinValue">
-                    <Template>
-                        @if (CurrentPath != "/")
-                        {
+                <SelectColumn Order="int.MinValue" Selection="SelectedEntries" OnSelectionChanged="OnSelectionChanged"/>
+
+
+                <TemplateRow TGridItem="FsEntry">
+                    @if (CurrentPath != "/")
+                    {
+                        <tr>
+                            <td class="ms-1.5 w-4 pe-1"></td>
+                            <td class="w-6">
+                                <div class="flex justify-center">
+                                    <i class="icon-folder-up text-accent text-2xl me-5"></i>
+                                </div>
+                            </td>
                             <td @onclick="GoUpAsync" scope="row" colspan="99999"
                                 class="py-1.5 px-3 text-left font-normal cursor-pointer">
                                 <div class="flex flex-row items-center">
-                                    <i class="icon-folder-up text-accent text-2xl me-5"></i>
                                     <div>Go up</div>
                                 </div>
                             </td>
-                        }
-                    </Template>
-                </DataTableRow>
+                        </tr>
+                    }
+                </TemplateRow>
 
-                <Selection TItem="FsEntry" OnSelectionChanged="OnSelectionChanged"/>
-                <DataTableColumn TItem="FsEntry" Index="int.MaxValue">
-                    <ColumnTemplate>
+                <TemplateColumn TGridItem="FsEntry" Order="5">
+                    <td>
                         <div class="flex justify-end me-1.5">
                             <a href="#" @onclick="e => OnContextMenu(e.ClientX - 215, e.ClientY, context)"
                                @onclick:preventDefault @onclick:stopPropagation>
                                 <i class="icon-ellipsis text-lg"></i>
                             </a>
                         </div>
-                    </ColumnTemplate>
-                </DataTableColumn>
+                    </td>
+                </TemplateColumn>
             </ChildContent>
         </FileView>
     </div>
@@ -96,18 +105,21 @@ else
     /// <summary>
     /// <see cref="IFsAccess"/> to use for all operations
     /// </summary>
-    [Parameter] public IFsAccess FsAccess { get; set; }
-    
+    [Parameter]
+    public IFsAccess FsAccess { get; set; }
+
     /// <summary>
     /// Configuration callback to register all operations
     /// which the user should be able to use
     /// </summary>
-    [Parameter] public required Action<FileManagerOptions> OnConfigure { get; set; }
-    
+    [Parameter]
+    public required Action<FileManagerOptions> OnConfigure { get; set; }
+
     /// <summary>
     /// Toggles whether to allow the user to upload files/folders
     /// </summary>
-    [Parameter] public bool EnableUpload { get; set; } = true;
+    [Parameter]
+    public bool EnableUpload { get; set; } = true;
 
     /// <summary>
     /// Current active file view component
@@ -127,7 +139,7 @@ else
     {
         Options = new FileManagerOptions(ServiceProvider);
         OnConfigure.Invoke(Options);
-        
+
         SingleFsOperations = Options.SingleFsOperations
             .Where(x => x.CheckCompatability(FsAccess, this))
             .OrderByDescending(x => x.Order)
@@ -148,7 +160,7 @@ else
             .OrderByDescending(x => x.Order)
             .ToArray();
 
-        if(EnableUpload)
+        if (EnableUpload)
             await InitializeUploadAsync();
     }
 
@@ -157,7 +169,7 @@ else
         if (!firstRender)
             return;
 
-        if(EnableUpload)
+        if (EnableUpload)
             await LateInitializeUploadAsync();
     }
 

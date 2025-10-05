@@ -1,4 +1,5 @@
 ﻿@using Microsoft.AspNetCore.Components.Rendering
+@using MoonCore.Blazor.FlyonUi.Common
 @typeparam TGridItem
 
 @code
@@ -11,18 +12,18 @@
         <th scope="col" class="@HeaderCss">
             @if (Sortable)
             {
-                if (SortState == SortState.None)
+                if (SortingDirection == null)
                 {
                     <div class="flex items-center hover:cursor-pointer" @onclick:preventDefault
-                         @onclick="() => Parent.SetColumnSortingAsync(this, SortState.Ascending)">
+                         @onclick="() => Parent.SetColumnSortingAsync(this, SortDirection.Ascending)">
                         @Title
                         <i class="ms-1 icon-chevron-down text-sm"></i>
                     </div>
                 }
-                else if (SortState == SortState.Descending)
+                else if (SortingDirection == SortDirection.Descending)
                 {
                     <div class="flex items-center hover:cursor-pointer" @onclick:preventDefault
-                         @onclick="() => Parent.SetColumnSortingAsync(this, SortState.Ascending)">
+                         @onclick="() => Parent.SetColumnSortingAsync(this, null)">
                         @Title
                         <i class="ms-1 icon-chevron-down text-sm"></i>
                     </div>
@@ -30,7 +31,7 @@
                 else
                 {
                     <div class="flex items-center hover:cursor-pointer" @onclick:preventDefault
-                         @onclick="() => Parent.SetColumnSortingAsync(this, SortState.Descending)">
+                         @onclick="() => Parent.SetColumnSortingAsync(this, SortDirection.Descending)">
                         @Title
                         <i class="ms-1 icon-chevron-up text-sm"></i>
                     </div>

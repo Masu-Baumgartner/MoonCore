@@ -1,0 +1,35 @@
+@using MoonCore.Blazor.FlyonUi.Modals
+@using MoonCore.Blazor.FlyonUi.Test.Frontend.UI.Components
+
+@inject ModalService ModalService
+
+<button @onclick="LaunchMultiLayerAsync" class="btn btn-primary">Launch multi layer</button>
+
+@code
+{
+    private async Task LaunchMultiLayerAsync()
+    {
+        await ModalService.LaunchAsync<MultiLayerModal>(layer1Params =>
+        {
+            layer1Params["Text"] = "Layer 1";
+            layer1Params["FillerCount"] = 1;
+            layer1Params["HandleNext"] = async () =>
+            {
+                await ModalService.LaunchAsync<MultiLayerModal>(layer2Params =>
+                {
+                    layer2Params["Text"] = "Layer 2";
+                    layer2Params["FillerCount"] = 2;
+                    layer2Params["HandleNext"] = async () =>
+                    {
+                        await ModalService.LaunchAsync<MultiLayerModal>(layer3Params =>
+                        {
+                            layer3Params["Text"] = "Layer 3";
+                            layer3Params["FillerCount"] = 3;
+                            layer3Params["HandleNext"] = null;
+                        }, allowUnfocusHide: true);
+                    };
+                }, allowUnfocusHide: true);
+            };
+        }, allowUnfocusHide: true);
+    }
+}

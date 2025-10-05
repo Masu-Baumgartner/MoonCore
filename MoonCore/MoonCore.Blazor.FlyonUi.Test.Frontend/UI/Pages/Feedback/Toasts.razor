@@ -1,68 +1,32 @@
 @page "/feedback/toasts"
-@using MoonCore.Blazor.FlyonUi.Toasts
-@using MoonCore.Blazor.FlyonUi.Components
 
-@inject ToastService ToastService
+@using MoonCore.Blazor.FlyonUi.Components
+@using MoonCore.Blazor.FlyonUi.Test.Frontend.UI.Components
+@using MoonCore.Blazor.FlyonUi.Test.Frontend.UI.Showcases
 
 <NavTabs Index="2" Names="UiConstants.FeedbackNames" Links="UiConstants.FeedbackLinks" />
 
-<div class="mt-5">
-    <button @onclick="Success" class="btn btn-success me-2">Success</button>
-    <button @onclick="Info" class="btn btn-info me-2">Info</button>
-    <button @onclick="Warning" class="btn btn-warning me-2">Warning</button>
-    <button @onclick="Error" class="btn btn-error me-2">Error</button>
+<div class="mt-8 mb-25">
+    <div class="font-semibold text-2xl">Toasts</div>
+    <p class="mt-1 text-base-content/80 text-lg">
+        Small and undistracting messages to inform the user without interrupting their workflow
+    </p>
 </div>
 
-<div class="mt-5">
-    <button @onclick="SuccessSmall" class="btn btn-success">Success Small</button>
-    <button @onclick="InfoSmall" class="btn btn-info">Info Small</button>
-    <button @onclick="WarningSmall" class="btn btn-warning">Warning Small</button>
-    <button @onclick="ErrorSmall" class="btn btn-error">Error Small</button>
+<div class="my-20">
+    <Showcase Source="@(nameof(ToastsSc))" Title="Toasts" Description="Default toasts">
+        <ToastsSc />
+    </Showcase>
 </div>
 
-<div class="mt-5">
-    <button @onclick="Progress" class="btn">Progress</button>
+<div class="my-20">
+    <Showcase Source="@(nameof(ToastsSc2))" Title="Toasts" Description="Small toasts">
+        <ToastsSc2 />
+    </Showcase>
 </div>
 
-@code
-{
-    private async Task Success()
-        => await ToastService.SuccessAsync("Successfully did something", "Successfully failed an unsuccessful task");
-    
-    private async Task Info()
-        => await ToastService.InfoAsync("Important information", "There is a bomb inside your walls");
-    
-    private async Task Warning()
-        => await ToastService.WarningAsync("Useless warning", "This message is just pointless");
-    
-    private async Task Error()
-        => await ToastService.ErrorAsync("Unhandled error", "Your windoof instance crashed");
-    
-    private async Task SuccessSmall()
-        => await ToastService.SuccessAsync("Successfully failed an unsuccessful task");
-    
-    private async Task InfoSmall()
-        => await ToastService.InfoAsync("There is a bomb inside your walls");
-    
-    private async Task WarningSmall()
-        => await ToastService.WarningAsync("This message is just pointless");
-    
-    private async Task ErrorSmall()
-        => await ToastService.ErrorAsync("Your windoof instance crashed");
-
-    private async Task Progress()
-    {
-        await ToastService.ProgressAsync(
-            "Working on something",
-            "Doing one task",
-            async toast =>
-            {
-                await Task.Delay(TimeSpan.FromSeconds(2));
-
-                await toast.UpdateTextAsync("Doing another task");
-                
-                await Task.Delay(TimeSpan.FromSeconds(2));
-            }
-        );
-    }
-}
+<div class="my-20">
+    <Showcase Source="@(nameof(ToastsSc3))" Title="Toasts" Description="Progress toasts">
+        <ToastsSc3 />
+    </Showcase>
+</div>

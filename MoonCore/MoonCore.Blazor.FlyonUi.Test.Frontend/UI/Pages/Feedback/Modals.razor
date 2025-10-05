@@ -1,47 +1,26 @@
 ﻿@page "/feedback/modals"
-@using MoonCore.Blazor.FlyonUi.Components
-@using MoonCore.Blazor.FlyonUi.Modals
-@using MoonCore.Blazor.FlyonUi.Test.Frontend.UI.Components
 
-@inject ModalService ModalService
+@using MoonCore.Blazor.FlyonUi.Components
+@using MoonCore.Blazor.FlyonUi.Test.Frontend.UI.Components
+@using MoonCore.Blazor.FlyonUi.Test.Frontend.UI.Showcases
 
 <NavTabs Index="1" Names="UiConstants.FeedbackNames" Links="UiConstants.FeedbackLinks" />
 
-<div class="mt-5">
-    <button @onclick="LaunchCustom" class="btn btn-primary me-2">Launch custom</button>
-    <button @onclick="LaunchMultiLayer" class="btn btn-primary">Launch multi layer</button>
+<div class="mt-8 mb-25">
+    <div class="font-semibold text-2xl">Modals</div>
+    <p class="mt-1 text-base-content/80 text-lg">
+        Launch modals quickly and easy with the modal service supporting auto hide, various sizes and stacking
+    </p>
 </div>
 
-@code
-{
-    private async Task LaunchCustom()
-    {
-        await ModalService.LaunchAsync<CustomModal>(allowUnfocusHide: true, size: "max-w-7xl");
-    }
+<div class="my-20">
+    <Showcase Source="@(nameof(ModalsSc))" Title="Modals" Description="Custom modal content defined in a separate component">
+        <ModalsSc />
+    </Showcase>
+</div>
 
-    private async Task LaunchMultiLayer()
-    {
-        await ModalService.LaunchAsync<MultiLayerModal>(layer1Params =>
-        {
-            layer1Params["Text"] = "Layer 1";
-            layer1Params["FillerCount"] = 1;
-            layer1Params["HandleNext"] = async () =>
-            {
-                await ModalService.LaunchAsync<MultiLayerModal>(layer2Params =>
-                {
-                    layer2Params["Text"] = "Layer 2";
-                    layer2Params["FillerCount"] = 2;
-                    layer2Params["HandleNext"] = async () =>
-                    {
-                        await ModalService.LaunchAsync<MultiLayerModal>(layer3Params =>
-                        {
-                            layer3Params["Text"] = "Layer 3";
-                            layer3Params["FillerCount"] = 3;
-                            layer3Params["HandleNext"] = null;
-                        }, allowUnfocusHide: true);
-                    };
-                }, allowUnfocusHide: true);
-            };
-        }, allowUnfocusHide: true);
-    }
-}
+<div class="my-20">
+    <Showcase Source="@(nameof(ModalsSc2))" Title="Modals" Description="Multi layer modal support">
+        <ModalsSc2 />
+    </Showcase>
+</div>

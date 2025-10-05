@@ -1,0 +1,55 @@
+@using MoonCore.Blazor.FlyonUi.Components
+@using MoonCore.Helpers
+
+@inject HttpApiClient ApiClient
+
+<div class="flex justify-between gap-4">
+    <div>
+        <div class="text-lg font-semibold">@Title</div>
+        <div class="text-base-content/80">@Description</div>
+    </div>
+    
+    <div>
+        <div class="bg-base-200 rounded-field flex relative p-0.5">
+            <div class="rounded-field bg-base-100 shadow-base-300/20 absolute h-8 w-20 shadow-sm transition-transform duration-300 ease-in-out @(ShowCode ? "translate-x-full" : "translate-x-0")"></div>
+            <button @onclick="() => SetShowCodeAsync(false)" class="rounded-field text-base-content z-1 h-8 w-20">Preview</button>
+            <button @onclick="() => SetShowCodeAsync(true)" class="rounded-field text-base-content z-1 h-8 w-20">Code</button>
+        </div>
+    </div>
+</div>
+
+<div class="mt-5">
+    @if (ShowCode)
+    {
+        <LazyLoader Load="LoadAsync">
+            <Highlight Content="@Code" />
+        </LazyLoader>
+    }
+    else
+    {
+        @ChildContent
+    }
+</div>
+
+@code
+{
+    [Parameter] public RenderFragment ChildContent { get; set; }
+    [Parameter] public string Source { get; set; }
+    [Parameter] public string Title { get; set; }
+    [Parameter] public string Description { get; set; }
+
+    private bool ShowCode = false;
+    private string Code;
+    
+    private async Task LoadAsync(LazyLoader _)
+    {
+        Code = await ApiClient.GetString($"api/showcase/{Source}");
+        Code = Code.Replace("\n\r", "");
+    }
+
+    private async Task SetShowCodeAsync(bool toggle)
+    {
+        ShowCode = toggle;
+        await InvokeAsync(StateHasChanged);
+    }
+}

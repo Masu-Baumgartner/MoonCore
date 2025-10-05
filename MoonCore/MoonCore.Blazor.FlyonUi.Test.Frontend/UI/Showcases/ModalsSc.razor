@@ -1,0 +1,14 @@
+@using MoonCore.Blazor.FlyonUi.Modals
+@using MoonCore.Blazor.FlyonUi.Test.Frontend.UI.Components
+
+@inject ModalService ModalService
+
+<button @onclick="LaunchCustomAsync" class="btn btn-primary">Launch custom</button>
+
+@code
+{
+    private async Task LaunchCustomAsync()
+    {
+        await ModalService.LaunchAsync<CustomModal>(allowUnfocusHide: true, size: "max-w-7xl");
+    }
+}

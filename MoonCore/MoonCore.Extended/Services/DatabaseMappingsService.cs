@@ -43,15 +43,12 @@ public class DatabaseMappingsService : IHostedLifecycleService
         {
             throw new ArgumentException("You need to call AddDatabaseMappings() while registering services before generating the mappings");
         }
-
-        var loggerFactory = scope.ServiceProvider.GetRequiredService<ILoggerFactory>();
-        var logger = loggerFactory.CreateLogger("Database Mappings");
-
-        logger.LogInformation("Generating mappings for {count} database contexts", contextTypes.Length);
+        
+        Logger.LogInformation("Generating mappings for {count} database contexts", contextTypes.Length);
 
         foreach (var contextType in contextTypes)
         {
-            logger.LogInformation("Generating database mappings for {name}", contextType.FullName);
+            Logger.LogInformation("Generating database mappings for {name}", contextType.FullName);
 
             foreach (var property in contextType.GetProperties())
             {
@@ -67,7 +64,7 @@ public class DatabaseMappingsService : IHostedLifecycleService
             }
         }
 
-        logger.LogInformation("Generated {count} entity-context mappings", mappingOptions.Mappings.Count);
+        Logger.LogInformation("Generated {count} entity-context mappings", mappingOptions.Mappings.Count);
         return Task.CompletedTask;
     }
 

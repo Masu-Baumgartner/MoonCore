@@ -1,23 +1,20 @@
 ﻿@page "/forms/components"
+
 @using MoonCore.Blazor.FlyonUi.Components
-@using MoonCore.Blazor.FlyonUi.Forms
+@using MoonCore.Blazor.FlyonUi.Test.Frontend.UI.Components
+@using MoonCore.Blazor.FlyonUi.Test.Frontend.UI.Showcases
 
 <NavTabs Index="1" Names="UiConstants.FormsNames" Links="UiConstants.FormsLinks" />
 
-<div class="mt-5">
-    Tags: @string.Join(", ", Tags)
+<div class="mt-8 mb-25">
+    <div class="font-semibold text-2xl">Form components</div>
+    <p class="mt-1 text-base-content/80 text-lg">
+        General use interactive form components
+    </p>
 </div>
 
-<div class="mt-5">
-    <InputTags Value="Tags" OnValueChanged="OnValueChanged" />
+<div class="my-20">
+    <Showcase Source="@(nameof(TagsSc))" Title="Tags" Description="Allow the user to specify a range of tags">
+        <TagsSc />
+    </Showcase>
 </div>
-
-@code
-{
-    private readonly List<string> Tags = new();
-
-    private async Task OnValueChanged()
-    {
-        await InvokeAsync(StateHasChanged);
-    }
-}

@@ -1,0 +1,43 @@
+@using System.ComponentModel.DataAnnotations
+@using MoonCore.Blazor.FlyonUi.Components
+@using MoonCore.Exceptions
+
+<HandleForm Model="Form" OnValidSubmit="HandleAsync">
+    <div>
+        <label class="label-text" for="name2">Name</label>
+        <input @bind="Form.Name" type="text" placeholder="John Doe" autocomplete="off" class="input" id="name2" />
+        <span class="helper-text">Please write your name</span>
+    </div>
+
+    <div class="mt-2">
+        <label class="label-text" for="password2">Password</label>
+        <input @bind="Form.Password" type="password" class="input" id="password2" />
+        <span class="helper-text">Please write your password</span>
+    </div>
+                
+    <div class="mt-2">
+        <WButton IsWorking="context.IsSubmitting" Type="submit">I will fail</WButton>
+    </div>
+</HandleForm>
+
+@code
+{
+    private DemoModel Form = new();
+    
+    private async Task HandleAsync()
+    {
+        // Simulate work
+        await Task.Delay(TimeSpan.FromSeconds(2));
+        
+        throw new HttpApiException("Whoops", 502, "This was definitely not on prupose");
+    }
+    
+    record DemoModel
+    {
+        [MinLength(8, ErrorMessage = "The name must be at least 8 characters long")]
+        public string Name { get; set; }
+        
+        [MinLength(8, ErrorMessage = "The password must be at least 8 characters long")]
+        public string Password { get; set; }
+    }
+}

@@ -1,0 +1,14 @@
+@using MoonCore.Blazor.FlyonUi.Components
+
+<WButton OnClick="CallbackAsync">
+    Worker Button
+</WButton>
+
+@code
+{
+    private async Task CallbackAsync()
+    {
+        // Simulating work
+        await Task.Delay(3000);
+    }
+}

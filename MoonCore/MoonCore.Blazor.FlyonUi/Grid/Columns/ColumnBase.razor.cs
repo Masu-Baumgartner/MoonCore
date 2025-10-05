@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Rendering;
+using MoonCore.Blazor.FlyonUi.Common;
 
 namespace MoonCore.Blazor.FlyonUi.Grid.Columns;
 
@@ -32,9 +33,9 @@ public abstract partial class ColumnBase<TGridItem>
     /// <summary>
     /// Name of the column which will be put into the <b>SortColumn</b> field of the request
     /// </summary>
-    [Parameter] public string? SortName { get; set; }
+    [Parameter] public string? SortingName { get; set; }
 
-    public SortState SortState { get; set; } = SortState.None;
+    public SortDirection? SortingDirection { get; set; } = null;
 
     protected override void OnInitialized()
     {

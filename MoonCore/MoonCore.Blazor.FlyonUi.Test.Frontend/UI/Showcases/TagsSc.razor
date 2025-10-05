@@ -1,0 +1,17 @@
+@using MoonCore.Blazor.FlyonUi.Forms
+
+Tags: @string.Join(", ", Tags)
+
+<div class="mt-5">
+    <InputTags Value="Tags" OnValueChanged="OnValueChanged" />
+</div>
+
+@code
+{
+    private readonly List<string> Tags = new();
+
+    private async Task OnValueChanged()
+    {
+        await InvokeAsync(StateHasChanged);
+    }
+}

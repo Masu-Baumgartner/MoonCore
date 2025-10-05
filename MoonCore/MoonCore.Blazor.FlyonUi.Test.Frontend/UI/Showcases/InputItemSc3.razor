@@ -1,0 +1,41 @@
+@using MoonCore.Blazor.FlyonUi.Forms
+
+<InputItem TItem="DemoItem"
+           @bind-Value="SelectedItem"
+           DisplayField="@(x => x.Name)"
+           SearchField="@(x => x.Name)"
+           ItemSource="GetItemsAsync" />
+
+@code
+{
+    private DemoItem[] Items;
+    private DemoItem? SelectedItem = null;
+    
+    private async Task<DemoItem[]> GetItemsAsync()
+    {
+        await Task.Delay(TimeSpan.FromSeconds(1));
+        return Items;
+    }
+    
+    protected override void OnInitialized()
+    {
+        var items = new List<DemoItem>();
+
+        for (var i = 0; i < 100; i++)
+        {
+            items.Add(new DemoItem()
+            {
+                Id = i,
+                Name = $"Item {i}"
+            });
+        }
+
+        Items = items.ToArray();
+    }
+    
+    record DemoItem
+    {
+        public int Id { get; set; }
+        public string Name { get; set; }
+    }
+}

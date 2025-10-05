@@ -1,19 +1,26 @@
 @page "/components/tabs"
 
 @using MoonCore.Blazor.FlyonUi.Components
+@using MoonCore.Blazor.FlyonUi.Test.Frontend.UI.Components
+@using MoonCore.Blazor.FlyonUi.Test.Frontend.UI.Showcases
 
 <NavTabs Index="2" Names="UiConstants.ComponentNames" Links="UiConstants.ComponentLinks" Icons="UiConstants.ComponentIcons" />
 
-<div class="mt-5">
-    <Tabs>
-        <Tab Name="Tab 1" Icon="icon-apple">
-            <h1 class="text-lg">Tab 1</h1>
-        </Tab>
-        <Tab Name="Tab 2" Icon="icon-banana">
-            <h1 class="text-lg">Tab 2</h1>
-        </Tab>
-        <Tab Name="Tab 3">
-            <h1 class="text-lg">Tab 3 not fancy</h1>
-        </Tab>
-    </Tabs>
+<div class="mt-8 mb-25">
+    <div class="font-semibold text-2xl">Tabs</div>
+    <p class="mt-1 text-base-content/80 text-lg">
+        Switching between multiple tabs
+    </p>
+</div>
+
+<div class="my-20">
+    <Showcase Source="@(nameof(TabsSc))" Title="Tabs" Description="Default tabs">
+        <TabsSc />
+    </Showcase>
+</div>
+
+<div class="my-20">
+    <Showcase Source="@(nameof(TabsSc2))" Title="Tabs" Description="Tabs with icons">
+        <TabsSc2 />
+    </Showcase>
 </div>

@@ -1,0 +1,71 @@
+@using MoonCore.Blazor.FlyonUi.Common
+@using MoonCore.Blazor.FlyonUi.Grid
+@using MoonCore.Blazor.FlyonUi.Grid.Columns
+@using MoonCore.Blazor.FlyonUi.Grid.Rows
+@using MoonCore.Blazor.FlyonUi.Grid.ToolbarItems
+@using MoonCore.Blazor.FlyonUi.Test.Shared.Http.Responses
+@using MoonCore.Common
+
+@inject HttpClient HttpClient
+
+<div class="mb-5">
+    @SelectedItems.Count
+</div>
+
+<DataGrid TGridItem="DemoDataModel" ItemSource="ItemSource">
+    <SelectColumn Selection="SelectedItems"
+                  OnSelectionChanged="Callback"/>
+
+    <PropertyColumn Field="x => x.Id" Sortable="true"/>
+    <PropertyColumn Field="x => x.Text" Sortable="true"/>
+    <PropertyColumn Field="x => x.Bool"/>
+    <PropertyColumn Field="x => x.Number"/>
+    
+    <TemplateRow>
+        <tr>
+            <td colspan="99999">
+                <div class="flex justify-center items-center">
+                    My custom row :>
+                </div>
+            </td>
+        </tr>
+    </TemplateRow>
+    
+    <TemplateToolbarItem>
+        <button class="ms-1.5 btn btn-primary">Create</button>
+    </TemplateToolbarItem>
+</DataGrid>
+
+@code
+{
+    private List<DemoDataModel> SelectedItems = new();
+
+    private ItemSource<DemoDataModel> ItemSource => ItemSourceFactory.From(LoadItemsAsync);
+
+    private async Task<IEnumerable<DemoDataModel>> LoadItemsAsync(int start, int count, string? filter, SortOption? option)
+    {
+        var query = $"?startIndex={start}&count={count}";
+
+        if (option != null)
+        {
+            var orderByDir = option.Direction switch
+            {
+                SortDirection.Ascending => "asc",
+                SortDirection.Descending => "desc",
+                _ => throw new ArgumentOutOfRangeException()
+            };
+
+            query += $"&orderBy={option.Column}&orderByDir={orderByDir}";
+        }
+
+        if (!string.IsNullOrEmpty(filter))
+            query += $"&filter={filter}";
+
+        return await HttpClient.GetFromJsonAsync<CountedData<DemoDataModel>>(
+            $"/api/query{query}"
+        );
+    }
+
+    private async Task Callback()
+        => await InvokeAsync(StateHasChanged);
+}
