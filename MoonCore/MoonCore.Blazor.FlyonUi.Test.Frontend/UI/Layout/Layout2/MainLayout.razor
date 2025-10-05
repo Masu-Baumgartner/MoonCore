@@ -31,16 +31,16 @@
                 </div>
             </div>
         </nav>
-        <div class="grow p-8 overflow-y-auto">
+        <div class="flex-1 min-h-0 p-8 overflow-y-auto">
             @Body
+            
+            <ToastLauncher />
+            <ModalLauncher />
+            <DrawerLauncher />
+            <DropHandler />
         </div>
     </div>
 </div>
-
-<ToastLauncher />
-<ModalLauncher />
-<DrawerLauncher />
-<DropHandler />
 
 @code
 {

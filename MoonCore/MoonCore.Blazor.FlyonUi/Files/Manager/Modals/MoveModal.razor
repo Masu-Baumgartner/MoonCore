@@ -77,7 +77,7 @@
         return Task.CompletedTask;
     }
 
-    private async Task<FsEntry[]> LoadAsync()
+    private async Task<IEnumerable<FsEntry>> LoadAsync()
     {
         var items = await FsAccess.ListAsync(Path);
 

@@ -1,5 +1,6 @@
 ﻿@page "/files"
 
+@using MoonCore.Blazor.FlyonUi.Common
 @using MoonCore.Blazor.FlyonUi.Files
 @using MoonCore.Blazor.FlyonUi.Files.View
 @using MoonCore.Blazor.FlyonUi.Components
@@ -7,14 +8,14 @@
 <NavTabs Index="0" Names="UiConstants.FilesNames" Links="UiConstants.FilesLinks" />
 
 <div class="mt-5">
-    <FileView Load="Load" ShowDate="true" ShowSize="true" OnClick="OnClick" CustomClickLink="CustomClickLink">
+    <FileView Load="LoadAsync" ShowDate="true" ShowSize="true" OnClick="OnClick" CustomClickLink="CustomClickLink">
         
     </FileView>
 </div>
 
 @code
 {
-    private async Task<FsEntry[]> Load()
+    private async Task<IEnumerable<FsEntry>> LoadAsync()
     {
         return [
             new FsEntry()

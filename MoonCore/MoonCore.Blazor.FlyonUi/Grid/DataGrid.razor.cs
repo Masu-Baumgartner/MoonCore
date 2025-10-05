@@ -1,7 +1,10 @@
 ﻿using Microsoft.AspNetCore.Components;
+using Microsoft.Extensions.Logging;
+using MoonCore.Blazor.FlyonUi.Common;
 using MoonCore.Blazor.FlyonUi.Grid.Columns;
 using MoonCore.Blazor.FlyonUi.Grid.Rows;
 using MoonCore.Blazor.FlyonUi.Grid.ToolbarItems;
+using MoonCore.Common;
 using MoonCore.Exceptions;
 
 namespace MoonCore.Blazor.FlyonUi.Grid;
@@ -14,9 +17,16 @@ namespace MoonCore.Blazor.FlyonUi.Grid;
 public partial class DataGrid<TGridItem>
 {
     // Parameters
+    
+    /// <summary>
+    /// Configure the data grid here
+    /// </summary>
     [Parameter] public RenderFragment ChildContent { get; set; }
-    [Parameter] public RenderFragment? NoItemsContent { get; set; }
-    [Parameter] public Func<RenderFragment, TGridItem, RenderFragment> ColumnsContainer { get; set; }
+    
+    /// <summary>
+    /// <b>Optional:</b> Callback to set advanced options
+    /// </summary>
+    [Parameter] public Action<DataGridOptions<TGridItem>>? OnConfigure { get; set; }
 
     // Configuration
     private readonly List<ColumnBase<TGridItem>> CollectedColumns = new();
@@ -26,12 +36,17 @@ public partial class DataGrid<TGridItem>
     private RowBase<TGridItem>[] Rows;
     private ToolbarItemBase<TGridItem>[] ToolbarItems;
 
+    private DataGridOptions<TGridItem> Options = new();
+
     public ColumnBase<TGridItem>? CurrentSortColumn { get; private set; }
 
     // States
     private bool IsInitialized = false;
     private bool IsLoadCompleted = false;
     private bool IsLoadFailed = false;
+
+    private int StartIndex;
+    private int Count;
 
     // Cache & UI Storage
     private Exception LoadException;
@@ -40,29 +55,29 @@ public partial class DataGrid<TGridItem>
     private RenderFragment ToolbarItemRender;
     private RenderFragment<TGridItem> CellsRender;
 
-    // Item Loading
-
     /// <summary>
-    /// StartIndex to search in the data source
+    /// Items source to retrieve the content from
     /// </summary>
     [Parameter]
-    public int StartIndex { get; set; } = 0;
-
-    /// <summary>
-    /// Amount of items to retrieve from the data source
-    /// </summary>
-    [Parameter]
-    public int Count { get; set; } = 15;
-
-    /// <summary>
-    /// Data source to retrieve the items from
-    /// </summary>
-    [Parameter]
-    public Func<DataGridItemRequest, Task<DataGridItemResult<TGridItem>>> ItemsProvider { get; set; }
+    public required ItemSource<TGridItem> ItemSource { get; set; }
 
     public TGridItem[] Items { get; private set; } = [];
     public int TotalCount { get; private set; } = 0;
 
+    protected override void OnInitialized()
+    {
+        Options.Sorting.Enable = ItemSource.IsSortable;
+        Options.Filtering.Enable = ItemSource.IsFilterable;
+        Options.Navigation.EnablePagination = ItemSource.IsPageable;
+
+        OnConfigure?.Invoke(Options);
+
+        // Set initial values
+        StartIndex = Options.Navigation.StartIndex;
+        Count = Options.Navigation.Count;
+    }
+
+    /// <inheritdoc />
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
         if (!firstRender)
@@ -75,7 +90,7 @@ public partial class DataGrid<TGridItem>
         Rows = CollectedRows
             .OrderBy(x => x.Order)
             .ToArray();
-        
+
         ToolbarItems = CollectedToolbarItems
             .OrderBy(x => x.Order)
             .ToArray();
@@ -109,21 +124,27 @@ public partial class DataGrid<TGridItem>
         // Invoke the ItemProvider and update the local cache
         try
         {
-            // Call provider
-            var result = await ItemsProvider.Invoke(
-                new DataGridItemRequest()
-                {
-                    Count = Count,
-                    StartIndex = StartIndex,
-                    SortColumn = CurrentSortColumn?.SortName ?? null,
-                    SortDirection = CurrentSortColumn?.SortState ?? SortState.None,
-                    Filter = FilterInput
-                }
-            );
+            SortOption? sortOption;
+
+            if (!Options.Sorting.Enable || CurrentSortColumn == null ||
+                string.IsNullOrWhiteSpace(CurrentSortColumn.SortingName))
+                sortOption = null;
+            else
+            {
+                sortOption = new SortOption(
+                    CurrentSortColumn.SortingName!,
+                    CurrentSortColumn.SortingDirection.GetValueOrDefault(SortDirection.Ascending)
+                );
+            }
+
+            var items = await ItemSource.QueryAsync(StartIndex, Count, FilterInput, sortOption);
 
             // Save into cache
-            Items = result.Items.ToArray();
-            TotalCount = result.TotalCount;
+            Items = items.ToArray();
+
+            // For remote data we provide the CountedData<T> type, which contains an additional property TotalCount
+            // required for successfully paginate through the provided item source, so we check it here
+            TotalCount = items is CountedData<TGridItem> countedData ? countedData.TotalCount : Items.Length;
 
             // Invoke column items changed event
             foreach (var column in Columns)
@@ -132,7 +153,7 @@ public partial class DataGrid<TGridItem>
             // Invoke rows items changed event
             foreach (var row in Rows)
                 await row.OnItemsChangedAsync();
-            
+
             // Invoke toolbar item items changed event
             foreach (var toolbarItem in ToolbarItems)
                 await toolbarItem.OnItemsChangedAsync();
@@ -146,6 +167,8 @@ public partial class DataGrid<TGridItem>
 
             IsLoadFailed = true;
             LoadException = e;
+
+            Logger.LogError(e, "An unhandled error occured while loading data from ItemSource");
         }
 
         // Update the loading state
@@ -166,7 +189,7 @@ public partial class DataGrid<TGridItem>
 
     internal void AddRow(RowBase<TGridItem> row)
         => CollectedRows.Add(row);
-    
+
     internal void AddToolbarItem(ToolbarItemBase<TGridItem> toolbarItem)
         => CollectedToolbarItems.Add(toolbarItem);
 
@@ -175,16 +198,16 @@ public partial class DataGrid<TGridItem>
     /// </summary>
     /// <param name="column">Column to sort. Provide <b>null</b> to reset sorting</param>
     /// <param name="state">Sort direction for the column sorting. If you provided <b>null</b> in <see cref="column"/> you can provide <b>SortState.None</b></param>
-    public async Task SetColumnSortingAsync(ColumnBase<TGridItem>? column, SortState state)
+    public async Task SetColumnSortingAsync(ColumnBase<TGridItem>? column, SortDirection? state)
     {
         // Reset current column if it has changed
         if (CurrentSortColumn != null && CurrentSortColumn != column)
-            CurrentSortColumn.SortState = SortState.None;
+            CurrentSortColumn.SortingDirection = null;
 
         CurrentSortColumn = column;
 
         if (CurrentSortColumn != null)
-            CurrentSortColumn.SortState = state;
+            CurrentSortColumn.SortingDirection = state;
 
         await RefreshAsync();
     }

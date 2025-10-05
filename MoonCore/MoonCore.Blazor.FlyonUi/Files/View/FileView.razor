@@ -1,32 +1,17 @@
 ﻿@using Microsoft.AspNetCore.Components.Rendering
+@using MoonCore.Blazor.FlyonUi.Common
 @using MoonCore.Blazor.FlyonUi.Components
 @using MoonCore.Blazor.FlyonUi.Grid
 
 <DataGrid @ref="Grid"
           TGridItem="FsEntry"
-          ItemsProvider="LoadItemsAsync"
-          ColumnsContainer="ColumnsContainer">
+          OnConfigure="OnConfigure"
+          ItemSource="ItemSource">
     <ChildContent>
         <FileColumn ShowIcons="ShowIcons" UseDynamicIcons="UseDynamicIcons" ShowSize="ShowSize" ShowDate="ShowDate" />
         
         @ChildContent
     </ChildContent>
-    <NoItemsContent>
-        @if (NoFilesContent == null)
-        {
-            <div class="p-5">
-                <IconAlert Title="No files/folders found"
-                           Icon="icon-file-stack"
-                           Color="text-info">
-                    No files and folders found in that directory
-                </IconAlert>
-            </div>
-        }
-        else
-        {
-            @NoFilesContent
-        }
-    </NoItemsContent>
 </DataGrid>
 
 @code
@@ -34,7 +19,7 @@
     /// <summary>
     /// Callback to retrieve the file entries
     /// </summary>
-    [Parameter] public Func<Task<FsEntry[]>> Load { get; set; }
+    [Parameter] public Func<Task<IEnumerable<FsEntry>>> Load { get; set; }
     
     /// <summary>
     /// <b>Optional:</b> Callback which handles when a file is clicked
@@ -82,22 +67,29 @@
     [Parameter] public bool ShowSize { get; set; } = false;
 
     private DataGrid<FsEntry> Grid;
+    private ItemSource<FsEntry> ItemSource => ItemSourceFactory.From(Load);
 
     /// <summary>
     /// Proxy function to refresh the underlying table
     /// </summary>
     /// <param name="silent">Whether to refresh the table without showing a loading animation</param>
     public async Task RefreshAsync(bool silent = false) => await Grid.RefreshAsync(silent: silent);
-
-    private async Task<DataGridItemResult<FsEntry>> LoadItemsAsync(DataGridItemRequest request)
+    
+    private void OnConfigure(DataGridOptions<FsEntry> options)
     {
-        var items = await Load.Invoke();
+        options.Customization.NoItemsContent = NoFilesContent ?? DefaultNoItemsContent;
+        options.Customization.ColumnsContainer = ColumnsContainer;
+    }
 
-        return new()
-        {
-            Items = items,
-            TotalCount = items.Length
-        };
+    private void DefaultNoItemsContent(RenderTreeBuilder __builder)
+    {
+        <div class="p-5">
+            <IconAlert Title="No files/folders found"
+                       Icon="icon-file-stack"
+                       Color="text-info">
+                No files and folders found in that directory
+            </IconAlert>
+        </div>
     }
 
     private RenderFragment ColumnsContainer(RenderFragment fragment, FsEntry entry)

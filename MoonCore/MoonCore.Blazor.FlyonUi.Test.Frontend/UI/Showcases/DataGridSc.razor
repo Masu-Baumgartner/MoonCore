@@ -1,9 +1,10 @@
+@using MoonCore.Blazor.FlyonUi.Common
 @using MoonCore.Blazor.FlyonUi.Grid
 @using MoonCore.Blazor.FlyonUi.Grid.Columns
 @using MoonCore.Blazor.FlyonUi.Grid.Rows
 @using MoonCore.Blazor.FlyonUi.Grid.ToolbarItems
 @using MoonCore.Blazor.FlyonUi.Test.Shared.Http.Responses
-@using MoonCore.Models
+@using MoonCore.Common
 
 @inject HttpClient HttpClient
 
@@ -11,8 +12,7 @@
     @SelectedItems.Count
 </div>
 
-<DataGrid TGridItem="DemoDataModel" ItemsProvider="ItemsProvider" EnablePagination="true" EnableFiltering="true"
-          EnableLiveFiltering="true">
+<DataGrid TGridItem="DemoDataModel" ItemSource="ItemSource">
     <SelectColumn Selection="SelectedItems"
                   OnSelectionChanged="Callback"/>
 
@@ -40,36 +40,32 @@
 {
     private List<DemoDataModel> SelectedItems = new();
 
-    private async Task Callback()
-        => await InvokeAsync(StateHasChanged);
+    private ItemSource<DemoDataModel> ItemSource => ItemSourceFactory.From(LoadItemsAsync);
 
-    private async Task<DataGridItemResult<DemoDataModel>> ItemsProvider(DataGridItemRequest request)
+    private async Task<IEnumerable<DemoDataModel>> LoadItemsAsync(int start, int count, string? filter, SortOption? option)
     {
-        var query = $"?startIndex={request.StartIndex}&count={request.Count}";
+        var query = $"?startIndex={start}&count={count}";
 
-        if (!string.IsNullOrEmpty(request.SortColumn))
+        if (option != null)
         {
-            var orderByDir = request.SortDirection switch
+            var orderByDir = option.Direction switch
             {
-                SortState.None => "asc",
-                SortState.Ascending => "asc",
-                SortState.Descending => "desc"
+                SortDirection.Ascending => "asc",
+                SortDirection.Descending => "desc",
+                _ => throw new ArgumentOutOfRangeException()
             };
 
-            query += $"&orderBy={request.SortColumn}&orderByDir={orderByDir}";
+            query += $"&orderBy={option.Column}&orderByDir={orderByDir}";
         }
 
-        if (!string.IsNullOrEmpty(request.Filter))
-            query += $"&filter={request.Filter}";
-            
-        var data =await HttpClient.GetFromJsonAsync<CountedData<DemoDataModel>>(
-            $"/api/query{query}"
-        )!;
+        if (!string.IsNullOrEmpty(filter))
+            query += $"&filter={filter}";
 
-        return new DataGridItemResult<DemoDataModel>()
-        {
-            Items = data.Items,
-            TotalCount = data.TotalCount
-        };
+        return await HttpClient.GetFromJsonAsync<CountedData<DemoDataModel>>(
+            $"/api/query{query}"
+        );
     }
+
+    private async Task Callback()
+        => await InvokeAsync(StateHasChanged);
 }

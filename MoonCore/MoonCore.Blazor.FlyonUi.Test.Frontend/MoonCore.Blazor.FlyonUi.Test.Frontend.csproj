@@ -17,20 +17,7 @@
       <ProjectReference Include="..\MoonCore.Blazor.FlyonUi.Test.Shared\MoonCore.Blazor.FlyonUi.Test.Shared.csproj" />
       <ProjectReference Include="..\MoonCore.Blazor.FlyonUi\MoonCore.Blazor.FlyonUi.csproj" />
     </ItemGroup>
-
-    <ItemGroup>
-      <_ContentIncludedByDefault Remove="wwwroot\css\app.css" />
-      <_ContentIncludedByDefault Remove="UI\Components\Dg\Columns\PropertyColumn.razor" />
-      <_ContentIncludedByDefault Remove="UI\Components\Dg\DataGrid.razor" />
-      <_ContentIncludedByDefault Remove="UI\Components\ImprovedDg\Columns\ColumnBase.razor" />
-      <_ContentIncludedByDefault Remove="UI\Components\ImprovedDg\Columns\PropertyColumn.razor" />
-      <_ContentIncludedByDefault Remove="UI\Components\ImprovedDg\Columns\SelectColumn.razor" />
-      <_ContentIncludedByDefault Remove="UI\Components\ImprovedDg\Columns\TemplateColumn.razor" />
-      <_ContentIncludedByDefault Remove="UI\Components\ImprovedDg\DataGrid.razor" />
-      <_ContentIncludedByDefault Remove="Layout\MainLayout.razor" />
-      <_ContentIncludedByDefault Remove="UI\Pages\Auth\Testy.razor" />
-    </ItemGroup>
-
+    
     <ItemGroup>
       <AdditionalFiles Include="UI\Components\CustomModal.razor" />
       <AdditionalFiles Include="UI\Components\MultiLayerModal.razor" />
@@ -39,17 +26,12 @@
       <AdditionalFiles Include="UI\Pages\Components\Index.razor" />
       <AdditionalFiles Include="UI\Pages\Components\LazyLoaders.razor" />
       <AdditionalFiles Include="UI\Pages\Components\TabsPage.razor" />
-      <AdditionalFiles Include="UI\Pages\DataTables\Index.razor" />
-      <AdditionalFiles Include="UI\Pages\DataTables\Loading.razor" />
-      <AdditionalFiles Include="UI\Pages\DataTables\PaginationPage.razor" />
-      <AdditionalFiles Include="UI\Pages\DataTables\SelectionPage.razor" />
       <AdditionalFiles Include="UI\Pages\Feedback\Index.razor" />
       <AdditionalFiles Include="UI\Pages\Feedback\Modals.razor" />
       <AdditionalFiles Include="UI\Pages\Feedback\Toasts.razor" />
       <AdditionalFiles Include="UI\Pages\Files\Editor.razor" />
       <AdditionalFiles Include="UI\Pages\Files\Index.razor" />
       <AdditionalFiles Include="UI\Pages\Files\ManagerPage.razor" />
-      <AdditionalFiles Include="UI\Pages\Files\Transfer.razor" />
       <AdditionalFiles Include="UI\Pages\Forms\FormComponents.razor" />
       <AdditionalFiles Include="UI\Pages\Forms\Index.razor" />
       <AdditionalFiles Include="UI\Pages\Forms\SelectionPage.razor" />

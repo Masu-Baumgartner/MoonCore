@@ -44,7 +44,7 @@
     private async Task LoadAsync(LazyLoader _)
     {
         Code = await ApiClient.GetString($"api/showcase/{Source}");
-        Code = Code.Replace("\n", "");
+        Code = Code.Replace("\n\r", "");
     }
 
     private async Task SetShowCodeAsync(bool toggle)

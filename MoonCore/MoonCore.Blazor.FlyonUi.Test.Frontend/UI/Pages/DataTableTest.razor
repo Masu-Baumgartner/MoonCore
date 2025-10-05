@@ -1,6 +1,7 @@
 ﻿@page "/datatabletest"
 @using MoonCore.Blazor.FlyonUi.Components
 @using MoonCore.Blazor.FlyonUi.Test.Shared.Http.Responses
+@using MoonCore.Common
 @using MoonCore.Models
 
 @inject HttpClient HttpClient
@@ -160,7 +161,7 @@
 
     var response = await HttpClient.GetFromJsonAsync<CountedData<DemoDataModel>>(url);
 
-    Items = response!.Items;
+    Items = response!.Items.ToArray();
     TotalCount = response.TotalCount;
 
     await InvokeAsync(StateHasChanged);

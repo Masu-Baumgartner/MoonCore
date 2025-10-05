@@ -1,0 +1,22 @@
+@page "/datagrids"
+
+@using MoonCore.Blazor.FlyonUi.Components
+@using MoonCore.Blazor.FlyonUi.Test.Frontend.UI.Components
+@using MoonCore.Blazor.FlyonUi.Test.Frontend.UI.Showcases
+
+<NavTabs Index="0" Names="UiConstants.DataGridNames" Links="UiConstants.DataGridLinks" />
+
+<div class="mt-8 mb-25">
+    <div class="font-semibold text-2xl">Data Grids</div>
+    <p class="mt-1 text-base-content/80 text-lg">
+        Allow the user to view data quick and easy using responsive and ux friendly data tables
+    </p>
+</div>
+
+<div class="my-20">
+    <Showcase Source="@(nameof(DataGridSc))" Title="Data Grid" Description="Search, Pagination and Filtering">
+        <DataGridSc />
+    </Showcase>
+</div>
+
+<div class="h-36"></div>

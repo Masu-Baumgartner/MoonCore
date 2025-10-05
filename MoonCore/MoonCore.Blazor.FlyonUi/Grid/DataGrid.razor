@@ -1,6 +1,10 @@
 ﻿@using Microsoft.AspNetCore.Components.Rendering
+@using Microsoft.Extensions.Logging
 @using MoonCore.Blazor.FlyonUi.Components
+
 @typeparam TGridItem
+
+@inject ILogger<DataGrid<TGridItem>> Logger
 
 <CascadingValue TValue="DataGrid<TGridItem>" Value="this" IsFixed="true">
     @ChildContent
@@ -8,10 +12,10 @@
 
 @if (IsInitialized)
 {
-    if (EnableFiltering)
+    if (Options.Filtering.Enable)
     {
         <div class="flex flex-row justify-end items-center mb-3">
-            @if (EnableLiveFiltering)
+            @if (Options.Filtering.EnableRealtime)
             {
                 <form class="flex flex-row" @onsubmit="_ => FilterAsync()">
                     <div class="join max-w-sm">
@@ -74,7 +78,7 @@
                     {
                         <tr>
                             <td colspan="99999">
-                                @if (NoItemsContent == null)
+                                @if (Options.Customization.NoItemsContent == null)
                                 {
                                     <div class="my-5">
                                         <div class="text-center">
@@ -87,7 +91,7 @@
                                 }
                                 else
                                 {
-                                    @NoItemsContent
+                                    @Options.Customization.NoItemsContent
                                 }
                             </td>
                         </tr>
@@ -98,7 +102,7 @@
 
                         foreach (var item in Items)
                         {
-                            if (ColumnsContainer == null)
+                            if (Options.Customization.ColumnsContainer == null)
                             {
                                 <tr>
                                     @CellsRender.Invoke(item)
@@ -106,7 +110,7 @@
                             }
                             else
                             {
-                                @ColumnsContainer.Invoke(CellsRender.Invoke(item), item)
+                                @Options.Customization.ColumnsContainer.Invoke(CellsRender.Invoke(item), item)
                             }
                         }
                     }
@@ -126,7 +130,7 @@
         </table>
     </div>
 
-    if (EnablePagination)
+    if (Options.Navigation.EnablePagination)
     {
         var nextCount = StartIndex + 1 + Count;
 
@@ -141,7 +145,7 @@
             </div>
             <div class="flex items-center space-x-1">
                 <select @onchange="UpdatePaginationAsync" class="select select-sm">
-                    @foreach (var pageSize in PageSizes)
+                    @foreach (var pageSize in Options.Navigation.Pages)
                     {
                         <option value="@pageSize">
                             @pageSize
@@ -152,48 +156,40 @@
                 {
                     <button type="button" class="btn btn-text btn-circle btn-sm disabled" disabled="disabled">
                         <span class="icon-chevrons-left"></span>
-                        <span class="sr-only">Start</span>
                     </button>
 
                     <button type="button" class="btn btn-text btn-circle btn-sm disabled" disabled="disabled">
                         <span class="icon-chevron-left"></span>
-                        <span class="sr-only">Previous</span>
                     </button>
                 }
                 else
                 {
                     <button @onclick="NavigateStartAsync" type="button" class="btn btn-text btn-circle btn-sm">
                         <span class="icon-chevrons-left"></span>
-                        <span class="sr-only">Start</span>
                     </button>
 
                     <button @onclick="() => NavigateAsync(-Count)" type="button" class="btn btn-text btn-circle btn-sm">
                         <span class="icon-chevron-left"></span>
-                        <span class="sr-only">Previous</span>
                     </button>
                 }
                 @if (nextCount > TotalCount)
                 {
                     <button type="button" class="btn btn-text btn-circle btn-sm disabled" disabled="disabled">
-                        <span class="sr-only">Next</span>
                         <span class="icon-chevron-right"></span>
                     </button>
 
                     <button type="button" class="btn btn-text btn-circle btn-sm disabled" disabled="disabled">
                         <span class="icon-chevrons-right"></span>
-                        <span class="sr-only">End</span>
                     </button>
                 }
                 else
                 {
                     <button @onclick="() => NavigateAsync(Count)" type="button" class="btn btn-text btn-circle btn-sm">
-                        <span class="sr-only">Next</span>
                         <span class="icon-chevron-right"></span>
                     </button>
 
                     <button @onclick="NavigateEndAsync" type="button" class="btn btn-text btn-circle btn-sm">
                         <span class="icon-chevrons-right"></span>
-                        <span class="sr-only">End</span>
                     </button>
                 }
             </div>

@@ -4,16 +4,6 @@ namespace MoonCore.Blazor.FlyonUi.Grid;
 
 public partial class DataGrid<TGridItem>
 {
-    /// <summary>
-    /// Toggle to enable the pagination component on the table
-    /// </summary>
-    [Parameter] public bool EnablePagination { get; set; } = false;
-    
-    /// <summary>
-    /// Page sizes to offer the user to select from
-    /// </summary>
-    [Parameter] public int[] PageSizes { get; set; } = [15, 30, 100];
-    
     public async Task NavigateAsync(int diff)
     {
         StartIndex += diff;
